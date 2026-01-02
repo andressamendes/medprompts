@@ -1,55 +1,64 @@
-import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from "react"
+import { createContext, useContext, useCallback, ReactNode } from 'react';
+import { useSecureStorage } from '@/hooks/useSecureStorage';
 
-const FAVORITES_KEY = "medprompts-favorites"
+const FAVORITES_KEY = 'medprompts-favorites';
 
 interface FavoritesContextType {
-  favorites: string[]
-  toggleFavorite: (id: string) => void
-  isFavorite: (id: string) => boolean
-  clearFavorites: () => void
-  count: number
+  favorites: string[];
+  toggleFavorite: (id: string) => Promise<void>;
+  isFavorite: (id: string) => boolean;
+  clearFavorites: () => void;
+  count: number;
+  isLoading: boolean;
+  error: Error | null;
 }
 
-const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined)
+const FavoritesContext = createContext<FavoritesContextType | undefined>(undefined);
 
 export function FavoritesProvider({ children }: { children: ReactNode }) {
-  const [favorites, setFavorites] = useState<string[]>(() => {
-    try {
-      const stored = localStorage.getItem(FAVORITES_KEY)
-      if (!stored) return []
-      const parsed = JSON.parse(stored)
-      return Array.isArray(parsed) ? parsed : []
-    } catch {
-      return []
-    }
-  })
+  // Usa hook seguro com criptografia AES-256
+  const [favorites, setFavorites, clearStorage, isLoading, error] = useSecureStorage<string[]>(
+    FAVORITES_KEY,
+    []
+  );
 
-  useEffect(() => {
-    try {
-      localStorage.setItem(FAVORITES_KEY, JSON.stringify(favorites))
-    } catch (error) {
-      console.error("Erro ao salvar favoritos:", error)
-    }
-  }, [favorites])
+  /**
+   * Adiciona ou remove favorito
+   * Agora é async porque a encriptação é assíncrona
+   */
+  const toggleFavorite = useCallback(
+    async (id: string) => {
+      if (!id) return;
 
-  const toggleFavorite = useCallback((id: string) => {
-    if (!id) return
-    setFavorites((prev) =>
-      prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
-    )
-  }, [])
+      try {
+        await setFavorites((prev) =>
+          prev.includes(id) ? prev.filter((f) => f !== id) : [...prev, id]
+        );
+      } catch (err) {
+        console.error('Erro ao alternar favorito:', err);
+      }
+    },
+    [setFavorites]
+  );
 
+  /**
+   * Verifica se prompt está nos favoritos
+   * Continua síncrono para não quebrar componentes
+   */
   const isFavorite = useCallback(
     (id: string) => {
-      if (!id) return false
-      return favorites.includes(id)
+      if (!id) return false;
+      return favorites.includes(id);
     },
     [favorites]
-  )
+  );
 
+  /**
+   * Limpa todos os favoritos
+   */
   const clearFavorites = useCallback(() => {
-    setFavorites([])
-  }, [])
+    clearStorage();
+  }, [clearStorage]);
 
   return (
     <FavoritesContext.Provider
@@ -59,17 +68,19 @@ export function FavoritesProvider({ children }: { children: ReactNode }) {
         isFavorite,
         clearFavorites,
         count: favorites.length,
+        isLoading,
+        error,
       }}
     >
       {children}
     </FavoritesContext.Provider>
-  )
+  );
 }
 
 export function useFavorites() {
-  const context = useContext(FavoritesContext)
+  const context = useContext(FavoritesContext);
   if (context === undefined) {
-    throw new Error("useFavorites deve ser usado dentro de FavoritesProvider")
+    throw new Error('useFavorites deve ser usado dentro de FavoritesProvider');
   }
-  return context
+  return context;
 }
