@@ -1,24 +1,22 @@
-import { Routes, Route } from 'react-router-dom'
-import { FavoritesProvider } from './contexts/FavoritesContext'
-import { ThemeProvider } from './contexts/ThemeContext'
-import { Toaster } from './components/ui/toaster'
-import Index from './pages/Index'
-import GuiaIAs from './pages/GuiaIAs'
-import Ferramentas from './pages/Ferramentas'
+import { Routes, Route } from 'react-router-dom';
+import { ThemeProvider } from './contexts/ThemeContext';
+import { FavoritesProvider } from './contexts/FavoritesContext';
+import { SkipLinks } from './components/SkipLinks';
+import Index from './pages/Index';
 
 function App() {
   return (
     <ThemeProvider>
       <FavoritesProvider>
-        <Routes>
-          <Route path="/" element={<Index />} />
-          <Route path="/guia-ias" element={<GuiaIAs />} />
-          <Route path="/ferramentas" element={<Ferramentas />} />
-        </Routes>
-        <Toaster />
+        <SkipLinks />
+        <div id="app-container">
+          <Routes>
+            <Route path="/" element={<Index />} />
+          </Routes>
+        </div>
       </FavoritesProvider>
     </ThemeProvider>
-  )
+  );
 }
 
-export default App
+export default App;

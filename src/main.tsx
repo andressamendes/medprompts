@@ -4,6 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App.tsx'
 import './index.css'
 import './styles/tutorial.css'
+import './styles/accessibility.css' // ← NOVO: CSS de acessibilidade
 
 // Sistema de segurança
 import { applyCSPReportOnly, setupCSPReporting, isCSPSupported } from './lib/csp'

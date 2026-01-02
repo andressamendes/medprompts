@@ -36,6 +36,7 @@ export default function Index() {
         prompt.tags.some((tag) =>
           tag.toLowerCase().includes(searchQuery.toLowerCase())
         );
+
       return matchesCategory && matchesSearch;
     });
   }, [selectedCategory, searchQuery]);
@@ -43,12 +44,16 @@ export default function Index() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
       {/* Header */}
-      <header className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+      <header 
+        id="navigation"
+        role="banner"
+        className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50"
+      >
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             <div className="flex items-center gap-3">
               <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
-                <BookOpen className="w-6 h-6 text-primary" />
+                <BookOpen className="w-6 h-6 text-primary" aria-hidden="true" />
               </div>
               <div>
                 <h1 className="text-2xl font-bold tracking-tight">MedPrompts</h1>
@@ -64,12 +69,13 @@ export default function Index() {
                 size="sm"
                 onClick={() => setShowExportModal(true)}
                 className="hidden sm:flex"
+                aria-label="Fazer backup dos dados"
               >
-                <Download className="w-4 h-4 mr-2" />
+                <Download className="w-4 h-4 mr-2" aria-hidden="true" />
                 Backup
               </Button>
-              <div className="flex items-center gap-2">
-                <Sparkles className="w-5 h-5 text-yellow-500" />
+              <div className="flex items-center gap-2" role="status" aria-label="Status do sistema">
+                <Sparkles className="w-5 h-5 text-yellow-500" aria-hidden="true" />
                 <span className="text-sm font-medium hidden md:inline">Sistema de Gamificação Ativo</span>
               </div>
             </div>
@@ -78,58 +84,94 @@ export default function Index() {
       </header>
 
       {/* Main Content */}
-      <main className="container mx-auto px-4 py-8">
+      <main 
+        id="main-content"
+        role="main"
+        className="container mx-auto px-4 py-8"
+        tabIndex={-1}
+      >
         <div className="space-y-8">
           {/* Perfil do Estudante */}
-          <ProfileCard />
+          <section aria-labelledby="profile-heading">
+            <h2 id="profile-heading" className="sr-only">Perfil do Estudante</h2>
+            <ProfileCard />
+          </section>
 
           {/* Gamificação Section */}
-          <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-            <div className="lg:col-span-2">
-              <XPBar />
+          <section aria-labelledby="gamification-heading">
+            <h2 id="gamification-heading" className="sr-only">Sistema de Gamificação</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
+              <div className="lg:col-span-2">
+                <XPBar />
+              </div>
+              <div>
+                <StreakCounter />
+              </div>
             </div>
-            <div>
-              <StreakCounter />
-            </div>
-          </div>
+          </section>
 
           {/* Desafio Semanal */}
-          <WeeklyChallengeCard />
+          <section aria-labelledby="challenge-heading">
+            <h2 id="challenge-heading" className="sr-only">Desafio Semanal</h2>
+            <WeeklyChallengeCard />
+          </section>
 
           {/* Timer Pomodoro */}
-          <PomodoroTimer />
+          <section aria-labelledby="timer-heading">
+            <h2 id="timer-heading" className="sr-only">Timer Pomodoro</h2>
+            <PomodoroTimer />
+          </section>
 
           {/* Dashboard de Estatísticas */}
-          <StatsSection />
+          <section aria-labelledby="stats-heading">
+            <h2 id="stats-heading" className="sr-only">Estatísticas de Estudo</h2>
+            <StatsSection />
+          </section>
 
           {/* Missões e Badges */}
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-            <DailyMissionsCard />
-            <BadgesDisplay />
-          </div>
+          <section aria-labelledby="missions-heading">
+            <h2 id="missions-heading" className="sr-only">Missões e Conquistas</h2>
+            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+              <DailyMissionsCard />
+              <BadgesDisplay />
+            </div>
+          </section>
 
           {/* Casos Clínicos */}
-          <ClinicalCasesSection />
+          <section aria-labelledby="cases-heading">
+            <h2 id="cases-heading" className="sr-only">Casos Clínicos</h2>
+            <ClinicalCasesSection />
+          </section>
 
           {/* Mnemônicos */}
-          <MnemonicsSection />
+          <section aria-labelledby="mnemonics-heading">
+            <h2 id="mnemonics-heading" className="sr-only">Mnemônicos Médicos</h2>
+            <MnemonicsSection />
+          </section>
 
           {/* Histórico */}
-          <HistorySection />
+          <section aria-labelledby="history-heading">
+            <h2 id="history-heading" className="sr-only">Histórico de Estudos</h2>
+            <HistorySection />
+          </section>
 
           {/* Biblioteca de Prompts */}
-          <div className="space-y-6" data-tutorial="prompts">
+          <section 
+            aria-labelledby="prompts-heading" 
+            className="space-y-6" 
+            data-tutorial="prompts"
+          >
             <div>
-              <h2 className="text-3xl font-bold tracking-tight mb-2">
+              <h2 id="prompts-heading" className="text-3xl font-bold tracking-tight mb-2">
                 Biblioteca de Prompts
               </h2>
-              <p className="text-muted-foreground">
+              <p className="text-muted-foreground" role="status">
                 {filteredPrompts.length} {filteredPrompts.length === 1 ? 'prompt disponível' : 'prompts disponíveis'}
               </p>
             </div>
 
             {/* Filtros */}
-            <div className="flex flex-col sm:flex-row gap-4">
+            <div id="search" className="flex flex-col sm:flex-row gap-4" role="search">
               <div className="flex-1">
                 <SearchBar value={searchQuery} onChange={setSearchQuery} />
               </div>
@@ -141,24 +183,30 @@ export default function Index() {
 
             {/* Grid de Cards */}
             {filteredPrompts.length > 0 ? (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+              <div 
+                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
+                role="list"
+                aria-label="Lista de prompts disponíveis"
+              >
                 {filteredPrompts.map((prompt) => (
-                  <PromptCard key={prompt.id} prompt={prompt} />
+                  <div key={prompt.id} role="listitem">
+                    <PromptCard prompt={prompt} />
+                  </div>
                 ))}
               </div>
             ) : (
-              <div className="text-center py-12">
+              <div className="text-center py-12" role="status">
                 <p className="text-muted-foreground">
                   Nenhum prompt encontrado com os filtros aplicados.
                 </p>
               </div>
             )}
-          </div>
+          </section>
         </div>
       </main>
 
       {/* Footer */}
-      <footer className="border-t mt-16">
+      <footer className="border-t mt-16" role="contentinfo">
         <div className="container mx-auto px-4 py-6">
           <div className="text-center space-y-2">
             <p className="text-sm text-muted-foreground">
