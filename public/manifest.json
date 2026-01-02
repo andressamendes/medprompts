@@ -1,26 +1,52 @@
 {
-  "name": "MedPrompts - Prompts de IA para Medicina",
+  "name": "MedPrompts - Prompts para Estudantes de Medicina",
   "short_name": "MedPrompts",
-  "description": "Biblioteca gamificada de prompts de IA especializados para estudantes de medicina",
+  "description": "Sistema gamificado de prompts de IA, casos clínicos e mnemônicos para estudantes de medicina",
   "start_url": "/medprompts/",
   "display": "standalone",
   "background_color": "#ffffff",
   "theme_color": "#2563eb",
   "orientation": "portrait-primary",
+  "scope": "/medprompts/",
   "icons": [
     {
-      "src": "/medprompts/favicon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml",
+      "src": "/medprompts/icon-192.png",
+      "sizes": "192x192",
+      "type": "image/png",
+      "purpose": "any maskable"
+    },
+    {
+      "src": "/medprompts/icon-512.png",
+      "sizes": "512x512",
+      "type": "image/png",
       "purpose": "any maskable"
     }
   ],
   "categories": ["education", "medical", "productivity"],
-  "screenshots": [
+  "shortcuts": [
     {
-      "src": "/medprompts/favicon.svg",
-      "sizes": "540x720",
-      "type": "image/svg+xml"
+      "name": "Biblioteca de Prompts",
+      "short_name": "Prompts",
+      "description": "Acessar biblioteca de prompts",
+      "url": "/medprompts/#prompts",
+      "icons": [
+        {
+          "src": "/medprompts/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Casos Clínicos",
+      "short_name": "Casos",
+      "description": "Resolver casos clínicos",
+      "url": "/medprompts/#cases",
+      "icons": [
+        {
+          "src": "/medprompts/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
     }
   ]
 }

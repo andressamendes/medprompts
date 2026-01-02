@@ -1,4 +1,4 @@
-import { useState, useRef } from 'react';
+import { useState } from 'react';
 import {
   Dialog,
   DialogContent,
@@ -7,15 +7,15 @@ import {
   DialogTitle,
 } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
-import { Download, Upload, Trash2, AlertTriangle } from 'lucide-react';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Download, Upload, Copy, CheckCircle2, AlertCircle } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import {
-  downloadBackup,
-  importBackup,
-  validateBackup,
-  clearAllData,
-  type MedPromptsBackup,
-} from '@/lib/export-import';
+import { loadProgress } from '@/lib/gamification';
+import { loadProfile } from '@/lib/profile';
+import { loadUserBadges } from '@/lib/badges';
+import { loadDailyMissions } from '@/lib/daily-missions';
+import { loadWeeklyChallengeState } from '@/lib/weekly-challenge';
+import { loadPomodoroState } from '@/lib/pomodoro';
 
 interface ExportImportModalProps {
   open: boolean;
@@ -23,16 +23,39 @@ interface ExportImportModalProps {
 }
 
 export function ExportImportModal({ open, onOpenChange }: ExportImportModalProps) {
-  const [showClearConfirm, setShowClearConfirm] = useState(false);
-  const fileInputRef = useRef<HTMLInputElement>(null);
+  const [importData, setImportData] = useState('');
+  const [copied, setCopied] = useState(false);
   const { toast } = useToast();
 
+  // Exportar todos os dados
   const handleExport = () => {
     try {
-      downloadBackup();
+      const allData = {
+        version: '1.0',
+        exportDate: new Date().toISOString(),
+        profile: loadProfile(),
+        progress: loadProgress(),
+        badges: loadUserBadges(),
+        missions: loadDailyMissions(),
+        weeklyChallenge: loadWeeklyChallengeState(),
+        pomodoro: loadPomodoroState(),
+      };
+
+      const jsonString = JSON.stringify(allData, null, 2);
+      const blob = new Blob([jsonString], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const link = document.createElement('a');
+      link.href = url;
+      link.download = `medprompts-backup-${new Date().toISOString().split('T')[0]}.json`;
+      
+      document.body.appendChild(link);
+      link.click();
+      document.body.removeChild(link);
+      URL.revokeObjectURL(url);
+
       toast({
         title: '✅ Backup criado!',
-        description: 'Arquivo JSON baixado com sucesso.',
+        description: 'Seus dados foram exportados com sucesso.',
       });
     } catch (error) {
       toast({
@@ -42,178 +65,229 @@ export function ExportImportModal({ open, onOpenChange }: ExportImportModalProps
     }
   };
 
-  const handleImportClick = () => {
-    fileInputRef.current?.click();
+  // Copiar dados para área de transferência
+  const handleCopy = () => {
+    try {
+      const allData = {
+        version: '1.0',
+        exportDate: new Date().toISOString(),
+        profile: loadProfile(),
+        progress: loadProgress(),
+        badges: loadUserBadges(),
+        missions: loadDailyMissions(),
+        weeklyChallenge: loadWeeklyChallengeState(),
+        pomodoro: loadPomodoroState(),
+      };
+
+      const jsonString = JSON.stringify(allData, null, 2);
+      navigator.clipboard.writeText(jsonString);
+      
+      setCopied(true);
+      setTimeout(() => setCopied(false), 2000);
+
+      toast({
+        title: '✅ Copiado!',
+        description: 'Dados copiados para área de transferência.',
+      });
+    } catch (error) {
+      toast({
+        title: '❌ Erro ao copiar',
+        description: 'Não foi possível copiar os dados.',
+      });
+    }
   };
 
-  const handleFileChange = (event: React.ChangeEvent<HTMLInputElement>) => {
+  // Importar dados
+  const handleImport = () => {
+    try {
+      if (!importData.trim()) {
+        toast({
+          title: '⚠️ Dados vazios',
+          description: 'Cole os dados do backup no campo acima.',
+        });
+        return;
+      }
+
+      const data = JSON.parse(importData);
+
+      // Validar estrutura básica
+      if (!data.version || !data.profile || !data.progress) {
+        throw new Error('Formato de backup inválido');
+      }
+
+      // Salvar dados importados
+      if (data.profile) localStorage.setItem('medprompts_profile', JSON.stringify(data.profile));
+      if (data.progress) localStorage.setItem('medprompts_progress', JSON.stringify(data.progress));
+      if (data.badges) localStorage.setItem('medprompts_user_badges', JSON.stringify(data.badges));
+      if (data.missions) localStorage.setItem('medprompts_daily_missions', JSON.stringify(data.missions));
+      if (data.weeklyChallenge) localStorage.setItem('medprompts_weekly_challenge', JSON.stringify(data.weeklyChallenge));
+      if (data.pomodoro) localStorage.setItem('medprompts_pomodoro', JSON.stringify(data.pomodoro));
+
+      toast({
+        title: '✅ Dados importados!',
+        description: 'Recarregue a página para ver as mudanças.',
+      });
+
+      setTimeout(() => {
+        window.location.reload();
+      }, 2000);
+
+    } catch (error) {
+      toast({
+        title: '❌ Erro ao importar',
+        description: 'Formato de backup inválido.',
+      });
+    }
+  };
+
+  // Importar de arquivo
+  const handleFileImport = (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
 
     const reader = new FileReader();
     reader.onload = (e) => {
-      try {
-        const content = e.target?.result as string;
-        const data = JSON.parse(content);
-
-        if (!validateBackup(data)) {
-          toast({
-            title: '❌ Arquivo inválido',
-            description: 'O arquivo selecionado não é um backup válido.',
-          });
-          return;
-        }
-
-        const result = importBackup(data as MedPromptsBackup);
-
-        if (result.success) {
-          toast({
-            title: '✅ Backup restaurado!',
-            description: `Importado: ${result.imported.join(', ')}`,
-          });
-          onOpenChange(false);
-          
-          // Recarregar página após 1 segundo
-          setTimeout(() => {
-            window.location.reload();
-          }, 1000);
-        } else {
-          toast({
-            title: '❌ Erro ao importar',
-            description: result.message,
-          });
-        }
-      } catch (error) {
-        toast({
-          title: '❌ Erro ao ler arquivo',
-          description: 'O arquivo não pôde ser processado.',
-        });
-      }
+      const content = e.target?.result as string;
+      setImportData(content);
     };
-
     reader.readAsText(file);
-    
-    // Limpar input
-    if (fileInputRef.current) {
-      fileInputRef.current.value = '';
-    }
-  };
-
-  const handleClearData = () => {
-    clearAllData();
-    toast({
-      title: '🗑️ Dados apagados',
-      description: 'Todos os dados foram removidos.',
-    });
-    setShowClearConfirm(false);
-    onOpenChange(false);
-    
-    // Recarregar página após 500ms
-    setTimeout(() => {
-      window.location.reload();
-    }, 500);
   };
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
-      <DialogContent className="max-w-md">
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle>Gerenciar Dados</DialogTitle>
+          <DialogTitle>Backup e Restauração</DialogTitle>
           <DialogDescription>
-            Faça backup ou restaure seus dados
+            Exporte seus dados para fazer backup ou importe dados de outro dispositivo
           </DialogDescription>
         </DialogHeader>
 
-        <div className="space-y-4 py-4">
-          {!showClearConfirm ? (
-            <>
-              {/* Exportar */}
-              <div className="space-y-2">
-                <h3 className="font-semibold text-sm">Exportar Backup</h3>
-                <p className="text-sm text-muted-foreground">
-                  Salve todos os seus dados (perfil, XP, badges, missões e histórico)
-                </p>
-                <Button onClick={handleExport} className="w-full">
-                  <Download className="w-4 h-4 mr-2" />
-                  Baixar Backup (.json)
-                </Button>
-              </div>
+        <Tabs defaultValue="export" className="mt-4">
+          <TabsList className="grid w-full grid-cols-2">
+            <TabsTrigger value="export">Exportar</TabsTrigger>
+            <TabsTrigger value="import">Importar</TabsTrigger>
+          </TabsList>
 
-              {/* Importar */}
-              <div className="space-y-2 pt-4 border-t">
-                <h3 className="font-semibold text-sm">Importar Backup</h3>
-                <p className="text-sm text-muted-foreground">
-                  Restaure seus dados de um arquivo de backup anterior
-                </p>
-                <Button onClick={handleImportClick} variant="outline" className="w-full">
-                  <Upload className="w-4 h-4 mr-2" />
-                  Carregar Backup
-                </Button>
-                <input
-                  ref={fileInputRef}
-                  type="file"
-                  accept=".json"
-                  onChange={handleFileChange}
-                  className="hidden"
-                />
-              </div>
-
-              {/* Limpar dados */}
-              <div className="space-y-2 pt-4 border-t">
-                <h3 className="font-semibold text-sm text-red-600">Zona de Perigo</h3>
-                <p className="text-sm text-muted-foreground">
-                  Apagar todos os dados permanentemente
-                </p>
-                <Button
-                  onClick={() => setShowClearConfirm(true)}
-                  variant="destructive"
-                  className="w-full"
-                >
-                  <Trash2 className="w-4 h-4 mr-2" />
-                  Apagar Todos os Dados
-                </Button>
-              </div>
-            </>
-          ) : (
-            // Confirmação de limpeza
-            <div className="space-y-4">
-              <div className="flex items-start gap-3 p-4 bg-red-50 border border-red-200 rounded-lg">
-                <AlertTriangle className="w-5 h-5 text-red-600 shrink-0 mt-0.5" />
-                <div className="space-y-1">
-                  <p className="font-semibold text-red-900">Tem certeza?</p>
-                  <p className="text-sm text-red-700">
-                    Esta ação é <strong>irreversível</strong>. Todos os seus dados serão
-                    apagados permanentemente:
-                  </p>
-                  <ul className="text-sm text-red-700 list-disc list-inside space-y-1 mt-2">
+          {/* Tab de Exportação */}
+          <TabsContent value="export" className="space-y-4">
+            <div className="p-4 bg-blue-50 border border-blue-200 rounded-lg">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-5 h-5 text-blue-600 shrink-0 mt-0.5" />
+                <div className="text-sm text-blue-900">
+                  <p className="font-medium mb-1">O que será exportado:</p>
+                  <ul className="list-disc list-inside space-y-1">
                     <li>Perfil e configurações</li>
-                    <li>XP e nível</li>
+                    <li>Progresso e XP</li>
                     <li>Badges conquistados</li>
-                    <li>Missões e histórico</li>
-                    <li>Sessões Pomodoro</li>
+                    <li>Missões e desafios</li>
+                    <li>Estatísticas do Pomodoro</li>
                   </ul>
                 </div>
               </div>
+            </div>
+
+            <div className="space-y-3">
+              <Button
+                onClick={handleExport}
+                className="w-full"
+                size="lg"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Baixar Backup (JSON)
+              </Button>
+
+              <Button
+                onClick={handleCopy}
+                variant="outline"
+                className="w-full"
+                size="lg"
+              >
+                {copied ? (
+                  <>
+                    <CheckCircle2 className="w-4 h-4 mr-2" />
+                    Copiado!
+                  </>
+                ) : (
+                  <>
+                    <Copy className="w-4 h-4 mr-2" />
+                    Copiar para Área de Transferência
+                  </>
+                )}
+              </Button>
+            </div>
+
+            <div className="p-4 bg-gray-50 border rounded-lg">
+              <p className="text-sm text-muted-foreground">
+                💡 <strong>Dica:</strong> Faça backups regulares para não perder seu progresso!
+              </p>
+            </div>
+          </TabsContent>
+
+          {/* Tab de Importação */}
+          <TabsContent value="import" className="space-y-4">
+            <div className="p-4 bg-yellow-50 border border-yellow-200 rounded-lg">
+              <div className="flex items-start gap-2">
+                <AlertCircle className="w-5 h-5 text-yellow-600 shrink-0 mt-0.5" />
+                <div className="text-sm text-yellow-900">
+                  <p className="font-medium mb-1">⚠️ Atenção:</p>
+                  <p>A importação irá <strong>substituir todos os dados atuais</strong>. Faça um backup antes!</p>
+                </div>
+              </div>
+            </div>
+
+            <div className="space-y-3">
+              <div>
+                <label className="block text-sm font-medium mb-2">
+                  Cole os dados do backup ou carregue um arquivo:
+                </label>
+                <textarea
+                  value={importData}
+                  onChange={(e) => setImportData(e.target.value)}
+                  placeholder='{"version": "1.0", "profile": {...}, ...}'
+                  className="w-full h-40 p-3 border rounded-lg font-mono text-xs resize-none"
+                />
+              </div>
 
               <div className="flex gap-2">
+                <input
+                  type="file"
+                  accept=".json"
+                  onChange={handleFileImport}
+                  className="hidden"
+                  id="file-import"
+                />
+                <label htmlFor="file-import" className="flex-1">
+                  <Button
+                    type="button"
+                    variant="outline"
+                    className="w-full"
+                    asChild
+                  >
+                    <span>
+                      <Upload className="w-4 h-4 mr-2" />
+                      Carregar Arquivo
+                    </span>
+                  </Button>
+                </label>
+
                 <Button
-                  onClick={() => setShowClearConfirm(false)}
-                  variant="outline"
+                  onClick={handleImport}
+                  disabled={!importData.trim()}
                   className="flex-1"
                 >
-                  Cancelar
-                </Button>
-                <Button
-                  onClick={handleClearData}
-                  variant="destructive"
-                  className="flex-1"
-                >
-                  Sim, apagar tudo
+                  Importar Dados
                 </Button>
               </div>
             </div>
-          )}
-        </div>
+
+            <div className="p-4 bg-gray-50 border rounded-lg">
+              <p className="text-sm text-muted-foreground">
+                💡 <strong>Dica:</strong> A página será recarregada automaticamente após a importação.
+              </p>
+            </div>
+          </TabsContent>
+        </Tabs>
       </DialogContent>
     </Dialog>
   );

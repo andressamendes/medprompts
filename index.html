@@ -1,47 +1,79 @@
-<!DOCTYPE html>
+<!doctype html>
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/medprompts/favicon.svg" />
+    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="MedPrompts - Biblioteca gamificada de prompts de IA para estudantes de medicina" />
-    <meta name="theme-color" content="#2563eb" />
-    <link rel="manifest" href="/medprompts/manifest.json" />
-    <link rel="apple-touch-icon" href="/medprompts/favicon.svg" />
-    <title>MedPrompts - Prompts de IA para Medicina</title>
+    
+    <!-- PWA Configuration -->
+    <link rel="manifest" href="/medprompts/manifest.json">
+    <meta name="mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="default">
+    <meta name="apple-mobile-web-app-title" content="MedPrompts">
+    <link rel="apple-touch-icon" href="/medprompts/icon-192.png">
+    <meta name="theme-color" content="#2563eb">
+    
+    <!-- SEO Meta Tags -->
+    <meta name="description" content="Sistema gamificado de prompts de IA, casos clínicos e mnemônicos para estudantes de medicina">
+    <meta name="keywords" content="medicina, prompts, IA, casos clínicos, mnemônicos, estudantes, gamificação">
+    <meta name="author" content="Andressa Mendes">
+    
+    <!-- Open Graph -->
+    <meta property="og:title" content="MedPrompts - Prompts para Estudantes de Medicina">
+    <meta property="og:description" content="Sistema gamificado de prompts de IA, casos clínicos e mnemônicos">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://andressamendes.github.io/medprompts/">
+    <meta property="og:image" content="https://andressamendes.github.io/medprompts/icon-512.png">
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image">
+    <meta name="twitter:title" content="MedPrompts - Prompts para Estudantes de Medicina">
+    <meta name="twitter:description" content="Sistema gamificado de prompts de IA, casos clínicos e mnemônicos">
+    <meta name="twitter:image" content="https://andressamendes.github.io/medprompts/icon-512.png">
+    
+    <title>MedPrompts - Prompts para Estudantes de Medicina</title>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     
-    <!-- Service Worker para PWA -->
+    <!-- Service Worker Registration -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
-          navigator.serviceWorker
-            .register('/medprompts/sw.js')
+          navigator.serviceWorker.register('/medprompts/service-worker.js')
             .then((registration) => {
-              console.log('[App] Service Worker registrado com sucesso:', registration.scope);
+              console.log('✅ Service Worker registrado:', registration.scope);
               
-              // Verificar updates
+              // Verificar atualizações
               registration.addEventListener('updatefound', () => {
                 const newWorker = registration.installing;
-                console.log('[App] Nova versão do SW encontrada');
-                
-                newWorker.addEventListener('statechange', () => {
-                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
-                    console.log('[App] Nova versão disponível. Recarregue a página.');
-                  }
-                });
+                if (newWorker) {
+                  newWorker.addEventListener('statechange', () => {
+                    if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                      console.log('🔄 Nova versão disponível! Recarregue a página.');
+                      // Você pode adicionar um toast aqui
+                    }
+                  });
+                }
               });
             })
             .catch((error) => {
-              console.error('[App] Erro ao registrar Service Worker:', error);
+              console.log('❌ Service Worker falhou:', error);
             });
         });
-      } else {
-        console.log('[App] Service Workers não são suportados neste navegador');
       }
+      
+      // Detectar modo standalone (app instalado)
+      if (window.matchMedia('(display-mode: standalone)').matches) {
+        console.log('📱 Rodando como PWA instalado');
+      }
+      
+      // Prevenir zoom no iOS
+      document.addEventListener('gesturestart', function(e) {
+        e.preventDefault();
+      });
     </script>
   </body>
 </html>

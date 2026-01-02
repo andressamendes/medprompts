@@ -15,6 +15,7 @@ import { MnemonicsSection } from '@/components/MnemonicsSection';
 import { WeeklyChallengeCard } from '@/components/WeeklyChallengeCard';
 import { Button } from '@/components/ui/button';
 import { prompts } from '@/data/prompts-data';
+import { InstallPWA } from '@/components/InstallPWA';
 import { BookOpen, Sparkles, Download } from 'lucide-react';
 
 export default function Index() {
