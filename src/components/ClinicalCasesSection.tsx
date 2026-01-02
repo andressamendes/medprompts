@@ -3,7 +3,7 @@ import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { BookOpen, ExternalLink, CheckCircle2, AlertCircle } from 'lucide-react';
-import { clinicalCases, CLINICAL_CASES_DISCLAIMER, type ClinicalCase } from '@/data/clinical-cases-data';
+import { clinicalCases, type ClinicalCase } from '@/data/clinical-cases-data';
 import { useToast } from '@/hooks/use-toast';
 import { updateChallengeProgress } from '@/lib/weekly-challenge';
 import {
