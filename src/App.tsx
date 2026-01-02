@@ -4,6 +4,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { FavoritesProvider } from './contexts/FavoritesContext';
 import { SkipLinks } from './components/SkipLinks';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { InstallPWA } from './components/InstallPWA';
 
 // Lazy load da página principal
 const Index = lazy(() => import('./pages/Index'));
@@ -37,6 +38,7 @@ function App() {
               </Routes>
             </Suspense>
           </div>
+          <InstallPWA />
         </FavoritesProvider>
       </ThemeProvider>
     </ErrorBoundary>
