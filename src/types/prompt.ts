@@ -3,7 +3,7 @@ export interface Prompt {
   title: string
   description: string
   content: string
-  category: 'clinica' | 'estudos' | 'pesquisa'
+  category: 'clinica' | 'estudos' | 'pesquisa' | 'produtividade'
   recommendedModel: string
   tips: string[]
 }
