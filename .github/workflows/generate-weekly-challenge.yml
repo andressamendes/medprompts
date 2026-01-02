@@ -1,0 +1,41 @@
+name: Generate Weekly Challenge
+
+on:
+  schedule:
+    # Toda segunda-feira às 06:00 UTC (03:00 horário de Brasília)
+    - cron: '0 6 * * 1'
+  workflow_dispatch: # Permite execução manual
+
+jobs:
+  generate-challenge:
+    runs-on: ubuntu-latest
+    
+    permissions:
+      contents: write
+    
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+        with:
+          token: ${{ secrets.GITHUB_TOKEN }}
+      
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+      
+      - name: Install dependencies
+        run: npm ci
+      
+      - name: Generate Weekly Challenge
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        run: node scripts/generate-weekly-challenge.js
+      
+      - name: Commit and Push
+        run: |
+          git config --global user.name "MedPrompts Bot"
+          git config --global user.email "bot@medprompts.com"
+          git add src/data/weekly-challenges-data.ts
+          git diff --staged --quiet || git commit -m "feat: novo desafio semanal gerado automaticamente pela IA"
+          git push
