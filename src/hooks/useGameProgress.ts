@@ -185,8 +185,8 @@ export function useGameProgress() {
           totalPromptsUsed: prev.totalPromptsUsed + 1,
         }));
 
-        // Adiciona XP por usar prompt
-        await addXP(XP_PER_PROMPT, 'Prompt usado');
+        // Adiciona XP por usar prompt (usando promptId na mensagem)
+        await addXP(XP_PER_PROMPT, `Prompt usado: ${promptId}`);
       } catch (err) {
         console.error('Erro ao registrar uso de prompt:', err);
       }
