@@ -2,13 +2,98 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/medprompts/vite.svg" />
+    
+    <!-- Viewport responsivo -->
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <meta name="description" content="Biblioteca de prompts para estudantes de medicina - IA aplicada à medicina" />
-    <title>MedPrompts | Biblioteca de Prompts Médicos</title>
+    
+    <!-- Informações básicas -->
+    <meta name="description" content="Plataforma moderna para gerenciamento de prompts médicos especializados. Interface responsiva otimizada para estudantes e profissionais da área da saúde." />
+    <meta name="keywords" content="medicina, prompts, inteligência artificial, IA médica, saúde, estudantes medicina, prompts médicos, medprompts" />
+    <meta name="author" content="Andressa Mendes" />
+    <meta name="robots" content="index, follow" />
+    
+    <!-- Tema do navegador mobile -->
+    <meta name="theme-color" content="#3B82F6" />
+    <meta name="color-scheme" content="light dark" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="MedPrompts" />
+    
+    <!-- Open Graph / Facebook -->
+    <meta property="og:type" content="website" />
+    <meta property="og:url" content="https://andressamendes.github.io/medprompts/" />
+    <meta property="og:title" content="MedPrompts | Biblioteca de Prompts Médicos" />
+    <meta property="og:description" content="Plataforma moderna para gerenciamento de prompts médicos especializados. Interface responsiva otimizada para estudantes e profissionais da saúde." />
+    <meta property="og:image" content="https://andressamendes.github.io/medprompts/og-image.png" />
+    <meta property="og:image:width" content="1200" />
+    <meta property="og:image:height" content="630" />
+    <meta property="og:locale" content="pt_BR" />
+    <meta property="og:site_name" content="MedPrompts" />
+    
+    <!-- Twitter Card -->
+    <meta name="twitter:card" content="summary_large_image" />
+    <meta name="twitter:url" content="https://andressamendes.github.io/medprompts/" />
+    <meta name="twitter:title" content="MedPrompts | Biblioteca de Prompts Médicos" />
+    <meta name="twitter:description" content="Plataforma moderna para gerenciamento de prompts médicos especializados." />
+    <meta name="twitter:image" content="https://andressamendes.github.io/medprompts/og-image.png" />
+    
+    <!-- Canonical URL -->
+    <link rel="canonical" href="https://andressamendes.github.io/medprompts/" />
+    
+    <!-- Favicon -->
+    <link rel="icon" type="image/svg+xml" href="/medprompts/vite.svg" />
+    <link rel="apple-touch-icon" href="/medprompts/apple-touch-icon.png" />
+    
+    <!-- Preconnect para performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    
+    <!-- DNS Prefetch -->
+    <link rel="dns-prefetch" href="https://fonts.googleapis.com" />
+    <link rel="dns-prefetch" href="https://fonts.gstatic.com" />
+    
+    <!-- Título da página -->
+    <title>MedPrompts | Biblioteca de Prompts Médicos para IA</title>
+    
+    <!-- Structured Data (JSON-LD) para SEO -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebApplication",
+      "name": "MedPrompts",
+      "description": "Plataforma moderna para gerenciamento de prompts médicos especializados",
+      "url": "https://andressamendes.github.io/medprompts/",
+      "applicationCategory": "HealthApplication",
+      "operatingSystem": "Web Browser",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "BRL"
+      },
+      "author": {
+        "@type": "Person",
+        "name": "Andressa Mendes"
+      },
+      "inLanguage": "pt-BR",
+      "browserRequirements": "Requires JavaScript. Requires HTML5.",
+      "softwareVersion": "1.0.0"
+    }
+    </script>
   </head>
   <body>
+    <!-- Fallback para JavaScript desabilitado -->
+    <noscript>
+      <div style="padding: 20px; text-align: center; background: #FEF2F2; color: #991B1B; border: 2px solid #FCA5A5;">
+        <strong>JavaScript Necessário</strong>
+        <p>Esta aplicação requer JavaScript habilitado para funcionar corretamente.</p>
+        <p>Por favor, habilite o JavaScript no seu navegador.</p>
+      </div>
+    </noscript>
+    
+    <!-- Root da aplicação React -->
     <div id="root"></div>
+    
+    <!-- Script principal -->
     <script type="module" src="/src/main.tsx"></script>
   </body>
 </html>
