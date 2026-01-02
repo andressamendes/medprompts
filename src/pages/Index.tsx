@@ -124,9 +124,17 @@ export default function Index() {
       {/* Footer */}
       <footer className="border-t mt-16">
         <div className="container mx-auto px-4 py-6">
-          <p className="text-center text-sm text-muted-foreground">
-            MedPrompts © 2026 • Desenvolvido para estudantes de medicina
-          </p>
+          <div className="text-center space-y-2">
+            <p className="text-sm text-muted-foreground">
+              MedPrompts © 2026 • Desenvolvido para estudantes de medicina
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Desenvolvido por <span className="font-semibold">Andressa Mendes</span> • Estudante de Medicina
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Afya - Guanambi/BA
+            </p>
+          </div>
         </div>
       </footer>
     </div>
