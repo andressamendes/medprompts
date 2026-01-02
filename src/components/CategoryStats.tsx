@@ -1,11 +1,10 @@
 import { Doughnut } from 'react-chartjs-2';
 import { Chart as ChartJS, ArcElement, Tooltip, Legend } from 'chart.js';
-import { loadProgress } from '@/lib/gamification';
+// import não necessário - removido
 
 ChartJS.register(ArcElement, Tooltip, Legend);
 
 export function CategoryStats() {
-  const progress = loadProgress();
 
   // Dados simulados por categoria (em produção, viria do histórico)
   const categoryData = {

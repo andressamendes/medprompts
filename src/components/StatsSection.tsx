@@ -6,15 +6,9 @@ import { XPChart } from '@/components/XPChart';
 import { StreakHeatmap } from '@/components/StreakHeatmap';
 import { CategoryStats } from '@/components/CategoryStats';
 import { MetricsCards } from '@/components/MetricsCards';
-import { loadProgress } from '@/lib/gamification';
-import { loadUserBadges } from '@/lib/badges';
-import { loadPomodoroState } from '@/lib/pomodoro';
 
 export function StatsSection() {
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | 'all'>('30d');
-  const progress = loadProgress();
-  const badges = loadUserBadges();
-  const pomodoro = loadPomodoroState();
 
   return (
     <Card>
