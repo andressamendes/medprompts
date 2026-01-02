@@ -13,6 +13,7 @@ import { ExportImportModal } from '@/components/ExportImportModal';
 import { ClinicalCasesSection } from '@/components/ClinicalCasesSection';
 import { MnemonicsSection } from '@/components/MnemonicsSection';
 import { WeeklyChallengeCard } from '@/components/WeeklyChallengeCard';
+import { StatsSection } from '@/components/StatsSection';
 import { InstallPWA } from '@/components/InstallPWA';
 import { Button } from '@/components/ui/button';
 import { prompts } from '@/data/prompts-data';
@@ -96,6 +97,9 @@ export default function Index() {
 
           {/* Timer Pomodoro */}
           <PomodoroTimer />
+
+          {/* Dashboard de Estatísticas */}
+          <StatsSection />
 
           {/* Missões e Badges */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
