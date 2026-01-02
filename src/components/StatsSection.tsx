@@ -11,7 +11,7 @@ export function StatsSection() {
   const [timeRange, setTimeRange] = useState<'7d' | '30d' | 'all'>('30d');
 
   return (
-    <Card>
+    <Card data-tutorial="dashboard">
       <CardHeader>
         <div className="flex items-center justify-between">
           <CardTitle className="flex items-center gap-2">

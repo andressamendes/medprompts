@@ -1,111 +1,38 @@
-import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { History, RotateCcw } from 'lucide-react';
-import { loadProgress, type PromptHistoryItem } from '@/lib/gamification';
-import { prompts } from '@/data/prompts-data';
-import { PromptDialog } from './PromptDialog';
+import { History, BookOpen, Calendar } from 'lucide-react';
 
 export function HistorySection() {
-  const [history, setHistory] = useState<PromptHistoryItem[]>([]);
-  const [selectedPromptId, setSelectedPromptId] = useState<string | null>(null);
-
-  useEffect(() => {
-    const progress = loadProgress();
-    setHistory(progress.history);
-
-    // Atualizar quando houver mudanças
-    const handleUpdate = () => {
-      const updatedProgress = loadProgress();
-      setHistory(updatedProgress.history);
-    };
-
-    window.addEventListener('storage', handleUpdate);
-    window.addEventListener('progressUpdated', handleUpdate as EventListener);
-
-    return () => {
-      window.removeEventListener('storage', handleUpdate);
-      window.removeEventListener('progressUpdated', handleUpdate as EventListener);
-    };
-  }, []);
-
-  if (history.length === 0) {
-    return null;
-  }
-
-  const selectedPrompt = selectedPromptId 
-    ? prompts.find(p => p.id === selectedPromptId) 
-    : null;
-
-  const formatTimestamp = (timestamp: string) => {
-    const date = new Date(timestamp);
-    const now = new Date();
-    const diffMs = now.getTime() - date.getTime();
-    const diffMins = Math.floor(diffMs / 60000);
-    const diffHours = Math.floor(diffMs / 3600000);
-    const diffDays = Math.floor(diffMs / 86400000);
-
-    if (diffMins < 1) return 'Agora';
-    if (diffMins < 60) return `Há ${diffMins} min`;
-    if (diffHours < 24) return `Há ${diffHours}h`;
-    if (diffDays === 1) return 'Ontem';
-    return `Há ${diffDays} dias`;
-  };
-
   return (
-    <>
-      <Card>
-        <CardHeader>
-          <CardTitle className="flex items-center gap-2">
-            <History className="w-5 h-5" />
-            Histórico de Uso
-          </CardTitle>
-        </CardHeader>
-        <CardContent>
-          <div className="space-y-2">
-            {history.map((item) => (
-              <div
-                key={`${item.promptId}-${item.timestamp}`}
-                className="flex items-center justify-between p-3 rounded-lg border bg-card hover:bg-accent/50 transition-colors"
-              >
-                <div className="flex-1 min-w-0">
-                  <p className="font-medium text-sm truncate">
-                    {item.promptTitle}
-                  </p>
-                  <p className="text-xs text-muted-foreground">
-                    {formatTimestamp(item.timestamp)}
-                  </p>
-                </div>
+    <Card className="border-2 border-amber-200">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <History className="w-5 h-5 text-amber-500" />
+          Histórico de Estudos
+        </CardTitle>
+      </CardHeader>
+      <CardContent>
+        <div className="text-center py-8 text-muted-foreground">
+          <BookOpen className="w-12 h-12 mx-auto mb-3 opacity-50" />
+          <p className="font-medium mb-1">Nenhum registro ainda</p>
+          <p className="text-sm">
+            Seu histórico de flashcards e sessões de estudo aparecerá aqui
+          </p>
+        </div>
 
-                <div className="flex items-center gap-2 ml-2">
-                  <Badge variant="secondary" className="text-xs">
-                    +{item.xpEarned} XP
-                  </Badge>
-                  
-                  <Button
-                    size="sm"
-                    variant="outline"
-                    onClick={() => setSelectedPromptId(item.promptId)}
-                    className="flex items-center gap-1"
-                  >
-                    <RotateCcw className="w-3 h-3" />
-                    Usar
-                  </Button>
-                </div>
-              </div>
-            ))}
+        <div className="mt-4 p-4 bg-amber-50 border border-amber-200 rounded-lg">
+          <div className="flex items-start gap-2">
+            <Calendar className="w-4 h-4 text-amber-600 mt-0.5" />
+            <div className="flex-1">
+              <p className="text-sm font-medium text-amber-900">
+                Recursos em breve
+              </p>
+              <p className="text-xs text-amber-700 mt-1">
+                Estatísticas detalhadas, gráficos de progresso e histórico completo
+              </p>
+            </div>
           </div>
-        </CardContent>
-      </Card>
-
-      {selectedPrompt && (
-        <PromptDialog
-          prompt={selectedPrompt}
-          open={!!selectedPromptId}
-          onOpenChange={(open) => !open && setSelectedPromptId(null)}
-        />
-      )}
-    </>
+        </div>
+      </CardContent>
+    </Card>
   );
 }

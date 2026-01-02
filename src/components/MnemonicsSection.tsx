@@ -1,145 +1,168 @@
 import { useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { Input } from '@/components/ui/input';
-import { Brain, Search, Copy, CheckCircle2 } from 'lucide-react';
-import { mnemonics, type Mnemonic } from '@/data/mnemonics-data';
+import { Brain, ChevronDown, ChevronUp, Copy, Check } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
-import { updateChallengeProgress } from '@/lib/weekly-challenge';
+
+interface Mnemonic {
+  id: string;
+  title: string;
+  mnemonic: string;
+  explanation: string[];
+  category: string;
+}
+
+const mnemonics: Mnemonic[] = [
+  {
+    id: 'mnem-1',
+    title: 'Nervos Cranianos',
+    mnemonic: 'Oh Oh Oh To Touch And Feel Very Good Velvet AH!',
+    explanation: [
+      'Olfatório',
+      'Óptico',
+      'Oculomotor',
+      'Troclear',
+      'Trigêmeo',
+      'Abducente',
+      'Facial',
+      'Vestibulococlear',
+      'Glossofaríngeo',
+      'Vago',
+      'Acessório',
+      'Hipoglosso',
+    ],
+    category: 'Anatomia',
+  },
+  {
+    id: 'mnem-2',
+    title: 'Causas de Hipercalemia',
+    mnemonic: 'MACHINE',
+    explanation: [
+      'Medications (medicações)',
+      'Acidose',
+      'Cellular breakdown (destruição celular)',
+      'Hypoaldosteronism',
+      'Intake (ingestão excessiva)',
+      'Números falsos (pseudo-hipercalemia)',
+      'Excretion (diminuição da excreção renal)',
+    ],
+    category: 'Nefrologia',
+  },
+  {
+    id: 'mnem-3',
+    title: 'Sintomas de Hipercalcemia',
+    mnemonic: 'Stones, Bones, Groans, Thrones, Psychiatric Overtones',
+    explanation: [
+      'Stones: Cálculos renais',
+      'Bones: Dor óssea',
+      'Groans: Dor abdominal, náuseas',
+      'Thrones: Poliúria (vai ao banheiro)',
+      'Psychiatric Overtones: Alterações psiquiátricas',
+    ],
+    category: 'Endocrinologia',
+  },
+];
 
 export function MnemonicsSection() {
-  const [searchQuery, setSearchQuery] = useState('');
+  const [expandedMnemonic, setExpandedMnemonic] = useState<string | null>(null);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const { toast } = useToast();
 
-  const filteredMnemonics = mnemonics.filter(mne => 
-    mne.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    mne.category.toLowerCase().includes(searchQuery.toLowerCase()) ||
-    mne.tags.some(tag => tag.toLowerCase().includes(searchQuery.toLowerCase()))
-  );
-
-  const handleCopy = (mnemonic: Mnemonic) => {
-    const text = `${mnemonic.title}\n\n${mnemonic.mnemonic}\n\n${mnemonic.meaning.join('\n')}`;
-    navigator.clipboard.writeText(text);
-    setCopiedId(mnemonic.id);
-
-    // Atualizar desafio semanal
-    const { tasksCompleted } = updateChallengeProgress('mnemonic', 1);
-    
-    toast({
-      title: '✅ Mnemônico copiado!',
-      description: tasksCompleted.length > 0 
-        ? `${tasksCompleted[0].title} - +${tasksCompleted[0].xpReward} XP`
-        : 'Memorize e pratique!',
-    });
-
-    setTimeout(() => setCopiedId(null), 2000);
+  const toggleMnemonic = (id: string) => {
+    setExpandedMnemonic(expandedMnemonic === id ? null : id);
   };
 
-  const categories = Array.from(new Set(mnemonics.map(m => m.category)));
+  const handleCopy = (mnemonic: Mnemonic) => {
+    const text = `${mnemonic.title}\n\n${mnemonic.mnemonic}\n\n${mnemonic.explanation.join('\n')}`;
+    navigator.clipboard.writeText(text);
+    setCopiedId(mnemonic.id);
+    setTimeout(() => setCopiedId(null), 2000);
+    toast({
+      title: '✅ Copiado!',
+      description: 'Mnemônico copiado para área de transferência',
+    });
+  };
 
   return (
-    <Card>
+    <Card data-tutorial="mnemonics">
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span className="flex items-center gap-2">
-            <Brain className="w-5 h-5 text-purple-500" />
-            Mnemônicos Médicos
-          </span>
-          <Badge variant="secondary">{filteredMnemonics.length}</Badge>
+        <CardTitle className="flex items-center gap-2">
+          <Brain className="w-5 h-5 text-purple-500" />
+          Mnemônicos
         </CardTitle>
       </CardHeader>
-      <CardContent className="space-y-4">
-        {/* Busca */}
-        <div className="relative">
-          <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 w-4 h-4 text-muted-foreground" />
-          <Input
-            placeholder="Buscar mnemônicos..."
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            className="pl-10"
-          />
-        </div>
+      <CardContent>
+        <div className="space-y-4">
+          {mnemonics.map((mnemonic) => {
+            const isExpanded = expandedMnemonic === mnemonic.id;
+            const isCopied = copiedId === mnemonic.id;
 
-        {/* Categorias */}
-        <div className="flex flex-wrap gap-2">
-          {categories.map(category => (
-            <Badge
-              key={category}
-              variant="outline"
-              className="cursor-pointer hover:bg-primary hover:text-primary-foreground transition-colors"
-              onClick={() => setSearchQuery(category)}
-            >
-              {category}
-            </Badge>
-          ))}
-        </div>
-
-        {/* Grid de Mnemônicos */}
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-4 max-h-[600px] overflow-y-auto">
-          {filteredMnemonics.map((mnemonic) => (
-            <Card key={mnemonic.id} className="hover:shadow-md transition-shadow">
-              <CardContent className="pt-6 space-y-3">
-                <div className="flex items-start justify-between gap-2">
-                  <div>
-                    <h3 className="font-semibold text-sm">{mnemonic.title}</h3>
-                    <Badge variant="secondary" className="text-xs mt-1">
+            return (
+              <div
+                key={mnemonic.id}
+                className="border rounded-lg overflow-hidden"
+              >
+                <button
+                  onClick={() => toggleMnemonic(mnemonic.id)}
+                  className="w-full flex items-center justify-between p-4 hover:bg-gray-50 transition-colors"
+                >
+                  <div className="flex items-center gap-3">
+                    <span className="px-2 py-1 text-xs rounded bg-purple-100 text-purple-700">
                       {mnemonic.category}
-                    </Badge>
+                    </span>
+                    <span className="font-medium text-left">
+                      {mnemonic.title}
+                    </span>
                   </div>
-                </div>
-
-                <div className="p-3 bg-purple-50 rounded-lg border border-purple-100">
-                  <p className="text-sm font-medium text-purple-900">
-                    "{mnemonic.mnemonic}"
-                  </p>
-                </div>
-
-                <div className="space-y-1">
-                  {mnemonic.meaning.map((item, idx) => (
-                    <p key={idx} className="text-xs text-muted-foreground">
-                      {item}
-                    </p>
-                  ))}
-                </div>
-
-                <div className="pt-2 border-t">
-                  <p className="text-xs text-muted-foreground italic mb-2">
-                    {mnemonic.context}
-                  </p>
-                  
-                  <Button
-                    onClick={() => handleCopy(mnemonic)}
-                    size="sm"
-                    variant="outline"
-                    className="w-full"
-                    disabled={copiedId === mnemonic.id}
-                  >
-                    {copiedId === mnemonic.id ? (
-                      <>
-                        <CheckCircle2 className="w-4 h-4 mr-2" />
-                        Copiado!
-                      </>
+                  <div className="flex items-center gap-2">
+                    <button
+                      onClick={(e) => {
+                        e.stopPropagation();
+                        handleCopy(mnemonic);
+                      }}
+                      className="p-2 hover:bg-gray-100 rounded transition-colors"
+                      title="Copiar"
+                    >
+                      {isCopied ? (
+                        <Check className="w-4 h-4 text-green-500" />
+                      ) : (
+                        <Copy className="w-4 h-4 text-muted-foreground" />
+                      )}
+                    </button>
+                    {isExpanded ? (
+                      <ChevronUp className="w-5 h-5 text-muted-foreground" />
                     ) : (
-                      <>
-                        <Copy className="w-4 h-4 mr-2" />
-                        Copiar
-                      </>
+                      <ChevronDown className="w-5 h-5 text-muted-foreground" />
                     )}
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))}
-        </div>
+                  </div>
+                </button>
 
-        {filteredMnemonics.length === 0 && (
-          <div className="text-center py-8 text-muted-foreground">
-            <Brain className="w-12 h-12 mx-auto mb-2 opacity-50" />
-            <p>Nenhum mnemônico encontrado</p>
-          </div>
-        )}
+                {isExpanded && (
+                  <div className="p-4 border-t bg-purple-50">
+                    <div className="mb-4 p-4 bg-white rounded-lg border-2 border-purple-200">
+                      <p className="font-bold text-lg text-center text-purple-900">
+                        {mnemonic.mnemonic}
+                      </p>
+                    </div>
+
+                    <div className="space-y-2">
+                      {mnemonic.explanation.map((item, index) => (
+                        <div
+                          key={index}
+                          className="flex items-start gap-2 text-sm"
+                        >
+                          <span className="flex-shrink-0 w-6 h-6 rounded-full bg-purple-200 text-purple-700 flex items-center justify-center text-xs font-bold">
+                            {index + 1}
+                          </span>
+                          <span className="pt-0.5">{item}</span>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                )}
+              </div>
+            );
+          })}
+        </div>
       </CardContent>
     </Card>
   );

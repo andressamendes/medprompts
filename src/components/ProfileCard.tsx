@@ -1,112 +1,86 @@
-import { useEffect, useState } from 'react';
-import { Card, CardContent } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Badge } from '@/components/ui/badge';
-import { UserCircle2, Settings } from 'lucide-react';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { User, GraduationCap, BookOpen } from 'lucide-react';
 import { loadProfile, type StudentProfile } from '@/lib/profile';
-import { ProfileSetup } from './ProfileSetup';
+import { useEffect, useState } from 'react';
 
 export function ProfileCard() {
-  const [profile, setProfile] = useState<StudentProfile | null>(null);
-  const [showSetup, setShowSetup] = useState(false);
+  const [profile, setProfile] = useState<StudentProfile>(loadProfile());
 
   useEffect(() => {
-    const userProfile = loadProfile();
-    setProfile(userProfile);
-
-    // Se não configurou, mostrar setup na primeira vez
-    if (!userProfile.isConfigured) {
-      setShowSetup(true);
-    }
-
-    const handleUpdate = () => {
-      const updatedProfile = loadProfile();
-      setProfile(updatedProfile);
+    const handleProfileUpdate = () => {
+      setProfile(loadProfile());
     };
 
-    window.addEventListener('profileUpdated', handleUpdate);
-
+    window.addEventListener('profileUpdated', handleProfileUpdate);
     return () => {
-      window.removeEventListener('profileUpdated', handleUpdate);
+      window.removeEventListener('profileUpdated', handleProfileUpdate);
     };
   }, []);
 
-  const handleProfileComplete = (updatedProfile: StudentProfile) => {
-    setProfile(updatedProfile);
-    setShowSetup(false);
-  };
-
-  if (!profile?.isConfigured) {
+  if (!profile.isConfigured) {
     return (
-      <>
-        <Card className="border-dashed border-2 border-primary/50">
-          <CardContent className="pt-6 text-center space-y-3">
-            <UserCircle2 className="w-12 h-12 mx-auto text-muted-foreground" />
-            <div>
-              <p className="font-medium">Configure seu perfil</p>
-              <p className="text-sm text-muted-foreground">
-                Personalize sua experiência
-              </p>
-            </div>
-            <Button onClick={() => setShowSetup(true)}>
-              Começar
-            </Button>
-          </CardContent>
-        </Card>
-
-        <ProfileSetup
-          open={showSetup}
-          onComplete={handleProfileComplete}
-          initialProfile={profile || undefined}
-        />
-      </>
+      <Card data-tutorial="profile" className="border-2 border-indigo-200">
+        <CardContent className="py-6">
+          <div className="text-center text-muted-foreground">
+            <User className="w-12 h-12 mx-auto mb-2 opacity-50" />
+            <p>Configure seu perfil para personalizar sua experiência!</p>
+          </div>
+        </CardContent>
+      </Card>
     );
   }
 
   return (
-    <>
-      <Card>
-        <CardContent className="pt-6">
-          <div className="flex items-start justify-between">
-            <div className="flex items-start gap-3">
-              <div className="w-12 h-12 rounded-full bg-primary/10 flex items-center justify-center">
-                <UserCircle2 className="w-7 h-7 text-primary" />
-              </div>
-              <div className="space-y-1">
-                <p className="font-semibold">{profile.name}</p>
-                <p className="text-sm text-muted-foreground">
-                  {profile.currentYear}º ano • Medicina
-                </p>
-                <div className="flex flex-wrap gap-1 mt-2">
-                  {profile.ongoingDisciplines.slice(0, 3).map(discipline => (
-                    <Badge key={discipline} variant="secondary" className="text-xs">
-                      {discipline}
-                    </Badge>
-                  ))}
-                  {profile.ongoingDisciplines.length > 3 && (
-                    <Badge variant="secondary" className="text-xs">
-                      +{profile.ongoingDisciplines.length - 3}
-                    </Badge>
-                  )}
-                </div>
-              </div>
-            </div>
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={() => setShowSetup(true)}
-            >
-              <Settings className="w-4 h-4" />
-            </Button>
-          </div>
-        </CardContent>
-      </Card>
+    <Card data-tutorial="profile" className="border-2 border-indigo-200">
+      <CardHeader>
+        <CardTitle className="flex items-center gap-2">
+          <User className="w-5 h-5 text-indigo-500" />
+          Perfil
+        </CardTitle>
+      </CardHeader>
+      <CardContent className="space-y-3">
+        <div>
+          <p className="text-2xl font-bold">{profile.name}</p>
+        </div>
 
-      <ProfileSetup
-        open={showSetup}
-        onComplete={handleProfileComplete}
-        initialProfile={profile || undefined}
-      />
-    </>
+        <div className="flex items-center gap-2 text-muted-foreground">
+          <GraduationCap className="w-4 h-4" />
+          <span className="text-sm">
+            {profile.currentYear}º ano - Formatura {profile.graduationYear}
+          </span>
+        </div>
+
+        {profile.ongoingDisciplines.length > 0 && (
+          <div>
+            <div className="flex items-center gap-2 mb-2">
+              <BookOpen className="w-4 h-4 text-indigo-500" />
+              <span className="text-sm font-medium">Disciplinas Atuais</span>
+            </div>
+            <div className="flex flex-wrap gap-2">
+              {profile.ongoingDisciplines.slice(0, 3).map((discipline) => (
+                <span
+                  key={discipline}
+                  className="px-2 py-1 bg-indigo-50 text-indigo-700 rounded-md text-xs"
+                >
+                  {discipline}
+                </span>
+              ))}
+              {profile.ongoingDisciplines.length > 3 && (
+                <span className="px-2 py-1 bg-gray-100 text-gray-600 rounded-md text-xs">
+                  +{profile.ongoingDisciplines.length - 3}
+                </span>
+              )}
+            </div>
+          </div>
+        )}
+
+        {profile.areaOfInterest.length > 0 && (
+          <div className="pt-2 border-t">
+            <p className="text-xs text-muted-foreground mb-1">Áreas de Interesse</p>
+            <p className="text-sm">{profile.areaOfInterest.join(', ')}</p>
+          </div>
+        )}
+      </CardContent>
+    </Card>
   );
 }

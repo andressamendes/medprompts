@@ -1,106 +1,111 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Badge } from '@/components/ui/badge';
 import { Progress } from '@/components/ui/progress';
-import { CheckCircle2, Target } from 'lucide-react';
-import { loadDailyMissions, getMissionsCompletionRate, type DailyMission } from '@/lib/daily-missions';
+import { Target, Calendar } from 'lucide-react';
+import { loadDailyMissions, type DailyMissionsState } from '@/lib/daily-missions';
 
 export function DailyMissionsCard() {
-  const [missions, setMissions] = useState<DailyMission[]>([]);
-  const [completionRate, setCompletionRate] = useState(0);
+  const [missionsState, setMissionsState] = useState<DailyMissionsState>(
+    loadDailyMissions()
+  );
 
   useEffect(() => {
-    updateMissions();
-
-    const handleUpdate = () => {
-      updateMissions();
+    const handleMissionsUpdate = () => {
+      setMissionsState(loadDailyMissions());
     };
 
-    window.addEventListener('missionsUpdated', handleUpdate);
+    window.addEventListener('missionsUpdated', handleMissionsUpdate);
+    const interval = setInterval(handleMissionsUpdate, 5000);
 
     return () => {
-      window.removeEventListener('missionsUpdated', handleUpdate);
+      window.removeEventListener('missionsUpdated', handleMissionsUpdate);
+      clearInterval(interval);
     };
   }, []);
 
-  const updateMissions = () => {
-    const state = loadDailyMissions();
-    setMissions(state.missions);
-    setCompletionRate(getMissionsCompletionRate());
-  };
+  const completionRate = missionsState.missions.length > 0
+    ? (missionsState.completedCount / missionsState.missions.length) * 100
+    : 0;
 
-  const allCompleted = missions.every(m => m.completed);
+  const allCompleted = missionsState.missions.every((m) => m.completed);
 
   return (
-    <Card className={allCompleted ? 'border-green-300 bg-green-50/50' : ''}>
+    <Card data-tutorial="daily-missions" className="border-2 border-green-200 bg-gradient-to-br from-green-50 to-white">
       <CardHeader>
-        <CardTitle className="flex items-center justify-between">
-          <span className="flex items-center gap-2">
-            <Target className="w-5 h-5 text-blue-500" />
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <Target className="w-5 h-5 text-green-500" />
             Missões Diárias
-          </span>
-          <Badge variant="secondary">
-            {Math.round(completionRate)}%
-          </Badge>
-        </CardTitle>
+          </CardTitle>
+          <div className="flex items-center gap-2 text-sm text-muted-foreground">
+            <Calendar className="w-4 h-4" />
+            <span>Hoje</span>
+          </div>
+        </div>
       </CardHeader>
-      <CardContent>
+      <CardContent className="space-y-4">
+        <div className="space-y-2">
+          <div className="flex justify-between text-sm">
+            <span className="text-muted-foreground">Progresso</span>
+            <span className="font-medium">
+              {missionsState.completedCount} / {missionsState.missions.length} completas
+            </span>
+          </div>
+          <Progress value={completionRate} className="h-2" />
+        </div>
+
         <div className="space-y-3">
-          {missions.map((mission) => (
+          {missionsState.missions.map((mission) => (
             <div
               key={mission.id}
-              className={`p-3 rounded-lg border transition-all ${
+              className={`p-4 rounded-lg border transition-all ${
                 mission.completed
-                  ? 'border-green-300 bg-green-50'
-                  : 'border-gray-200 bg-white'
+                  ? 'bg-green-50 border-green-200'
+                  : 'bg-gray-50 border-gray-200'
               }`}
             >
               <div className="flex items-start gap-3">
                 <div className="text-2xl">{mission.icon}</div>
-                <div className="flex-1 space-y-2">
-                  <div className="flex items-start justify-between gap-2">
-                    <div>
-                      <p className="font-semibold text-sm">{mission.title}</p>
-                      <p className="text-xs text-muted-foreground">
-                        {mission.description}
-                      </p>
-                    </div>
-                    {mission.completed ? (
-                      <CheckCircle2 className="w-5 h-5 text-green-600 shrink-0" />
-                    ) : (
-                      <Badge variant="outline" className="text-xs shrink-0">
-                        +{mission.xpReward} XP
-                      </Badge>
-                    )}
+                <div className="flex-1 min-w-0">
+                  <div className="flex items-center justify-between mb-1">
+                    <h4 className="font-semibold text-sm">{mission.title}</h4>
+                    <span className="text-xs font-medium text-green-600">
+                      +{mission.xpReward} XP
+                    </span>
                   </div>
-
-                  {!mission.completed && (
-                    <div className="space-y-1">
-                      <div className="flex justify-between text-xs text-muted-foreground">
-                        <span>Progresso</span>
-                        <span>
-                          {mission.progress}/{mission.requirement.value}
-                        </span>
-                      </div>
-                      <Progress
-                        value={(mission.progress / mission.requirement.value) * 100}
-                        className="h-2"
-                      />
+                  <p className="text-xs text-muted-foreground mb-2">
+                    {mission.description}
+                  </p>
+                  <div className="space-y-1">
+                    <Progress
+                      value={(mission.progress / mission.requirement.value) * 100}
+                      className="h-1.5"
+                    />
+                    <div className="flex justify-between text-xs text-muted-foreground">
+                      <span>
+                        {mission.progress} / {mission.requirement.value}
+                      </span>
+                      {mission.completed && (
+                        <span className="text-green-600 font-medium">✓ Completa</span>
+                      )}
                     </div>
-                  )}
+                  </div>
                 </div>
               </div>
             </div>
           ))}
-
-          {allCompleted && (
-            <div className="text-center py-2">
-              <p className="text-sm font-medium text-green-700">
-                🎉 Todas as missões concluídas hoje!
-              </p>
-            </div>
-          )}
         </div>
+
+        {allCompleted && (
+          <div className="p-4 bg-green-100 border-2 border-green-300 rounded-lg text-center">
+            <p className="font-semibold text-green-900">
+              🎉 Todas as Missões Completas!
+            </p>
+            <p className="text-sm text-green-700 mt-1">
+              Volte amanhã para novas missões e mais XP!
+            </p>
+          </div>
+        )}
       </CardContent>
     </Card>
   );

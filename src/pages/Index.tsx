@@ -15,6 +15,7 @@ import { MnemonicsSection } from '@/components/MnemonicsSection';
 import { WeeklyChallengeCard } from '@/components/WeeklyChallengeCard';
 import { StatsSection } from '@/components/StatsSection';
 import { InstallPWA } from '@/components/InstallPWA';
+import { TutorialButton } from '@/components/TutorialButton';
 import { Button } from '@/components/ui/button';
 import { prompts } from '@/data/prompts-data';
 import { BookOpen, Sparkles, Download } from 'lucide-react';
@@ -117,7 +118,7 @@ export default function Index() {
           <HistorySection />
 
           {/* Biblioteca de Prompts */}
-          <div className="space-y-6">
+          <div className="space-y-6" data-tutorial="prompts">
             <div>
               <h2 className="text-3xl font-bold tracking-tight mb-2">
                 Biblioteca de Prompts
@@ -181,6 +182,9 @@ export default function Index() {
 
       {/* PWA Install Prompt */}
       <InstallPWA />
+
+      {/* Tutorial Interativo */}
+      <TutorialButton />
     </div>
   );
 }
