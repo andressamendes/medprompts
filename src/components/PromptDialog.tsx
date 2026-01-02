@@ -9,6 +9,7 @@ import {
 import { Button } from "@/components/ui/button"
 import { Copy, CheckCircle2, Sparkles } from "lucide-react"
 import { DynamicPromptForm } from "@/components/DynamicPromptForm"
+import { IntegrationButtons } from "@/components/IntegrationButtons"
 import { parsePromptContent } from "@/utils/prompt-parser"
 import { useToast } from "@/hooks/use-toast"
 import { registerPromptUse, loadProgress } from "@/lib/gamification"
@@ -166,6 +167,12 @@ export const PromptDialog = ({ prompt, open, onOpenChange }: PromptDialogProps) 
                       {generatedPrompt}
                     </p>
                   </div>
+
+                  {/* Botões de integração */}
+                  <IntegrationButtons
+                    promptContent={generatedPrompt}
+                    promptTitle={prompt.title}
+                  />
                 </div>
               )}
             </>
@@ -204,6 +211,14 @@ export const PromptDialog = ({ prompt, open, onOpenChange }: PromptDialogProps) 
                   Fechar
                 </Button>
               </div>
+
+              {/* Botões de integração para prompts estáticos */}
+              {copied && (
+                <IntegrationButtons
+                  promptContent={prompt.content}
+                  promptTitle={prompt.title}
+                />
+              )}
             </>
           )}
         </div>

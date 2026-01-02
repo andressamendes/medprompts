@@ -1,0 +1,26 @@
+{
+  "name": "MedPrompts - Prompts de IA para Medicina",
+  "short_name": "MedPrompts",
+  "description": "Biblioteca gamificada de prompts de IA especializados para estudantes de medicina",
+  "start_url": "/medprompts/",
+  "display": "standalone",
+  "background_color": "#ffffff",
+  "theme_color": "#2563eb",
+  "orientation": "portrait-primary",
+  "icons": [
+    {
+      "src": "/medprompts/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ],
+  "categories": ["education", "medical", "productivity"],
+  "screenshots": [
+    {
+      "src": "/medprompts/favicon.svg",
+      "sizes": "540x720",
+      "type": "image/svg+xml"
+    }
+  ]
+}

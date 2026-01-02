@@ -8,12 +8,16 @@ import { StreakCounter } from '@/components/StreakCounter';
 import { ProfileCard } from '@/components/ProfileCard';
 import { BadgesDisplay } from '@/components/BadgesDisplay';
 import { DailyMissionsCard } from '@/components/DailyMissionsCard';
+import { PomodoroTimer } from '@/components/PomodoroTimer';
+import { ExportImportModal } from '@/components/ExportImportModal';
+import { Button } from '@/components/ui/button';
 import { prompts } from '@/data/prompts-data';
-import { BookOpen, Sparkles } from 'lucide-react';
+import { BookOpen, Sparkles, Download } from 'lucide-react';
 
 export default function Index() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
+  const [showExportModal, setShowExportModal] = useState(false);
 
   const filteredPrompts = useMemo(() => {
     return prompts.filter((prompt) => {
@@ -48,9 +52,20 @@ export default function Index() {
               </div>
             </div>
             
-            <div className="flex items-center gap-2">
-              <Sparkles className="w-5 h-5 text-yellow-500" />
-              <span className="text-sm font-medium hidden sm:inline">Sistema de Gamificação Ativo</span>
+            <div className="flex items-center gap-3">
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => setShowExportModal(true)}
+                className="hidden sm:flex"
+              >
+                <Download className="w-4 h-4 mr-2" />
+                Backup
+              </Button>
+              <div className="flex items-center gap-2">
+                <Sparkles className="w-5 h-5 text-yellow-500" />
+                <span className="text-sm font-medium hidden md:inline">Sistema de Gamificação Ativo</span>
+              </div>
             </div>
           </div>
         </div>
@@ -71,6 +86,9 @@ export default function Index() {
               <StreakCounter />
             </div>
           </div>
+
+          {/* Timer Pomodoro */}
+          <PomodoroTimer />
 
           {/* Missões e Badges */}
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
@@ -137,6 +155,12 @@ export default function Index() {
           </div>
         </div>
       </footer>
+
+      {/* Modal de Export/Import */}
+      <ExportImportModal
+        open={showExportModal}
+        onOpenChange={setShowExportModal}
+      />
     </div>
   );
 }
