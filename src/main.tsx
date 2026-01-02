@@ -4,7 +4,7 @@ import { BrowserRouter } from 'react-router-dom'
 import App from './App.tsx'
 import './index.css'
 import './styles/tutorial.css'
-import './styles/accessibility.css' // ← NOVO: CSS de acessibilidade
+import './styles/accessibility.css'
 
 // Sistema de segurança
 import { applyCSPReportOnly, setupCSPReporting, isCSPSupported } from './lib/csp'
@@ -12,7 +12,7 @@ import { applyCSPReportOnly, setupCSPReporting, isCSPSupported } from './lib/csp
 // Aplica Content Security Policy
 if (isCSPSupported()) {
   // Modo Report-Only em desenvolvimento (apenas loga violações)
-  if (import.meta.env.DEV) {
+  if (process.env.NODE_ENV === 'development') {
     applyCSPReportOnly();
     console.info('🔒 CSP ativo em modo Report-Only (desenvolvimento)');
   } else {
