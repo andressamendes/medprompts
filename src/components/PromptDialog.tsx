@@ -7,12 +7,14 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Copy, CheckCircle2 } from "lucide-react"
+import { Copy, CheckCircle2, Sparkles } from "lucide-react"
 import { DynamicPromptForm } from "@/components/DynamicPromptForm"
 import { parsePromptContent } from "@/utils/prompt-parser"
 import { useToast } from "@/hooks/use-toast"
+import { registerPromptUse } from "@/lib/gamification"
 import type { Prompt } from "@/types/prompt"
 import type { FieldValues } from "@/types/dynamic-fields"
+
 
 interface PromptDialogProps {
   prompt: Prompt
@@ -20,26 +22,38 @@ interface PromptDialogProps {
   onOpenChange: (open: boolean) => void
 }
 
+
 export const PromptDialog = ({ prompt, open, onOpenChange }: PromptDialogProps) => {
   const [generatedPrompt, setGeneratedPrompt] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const { toast } = useToast()
 
+
   // Analisar o prompt para detectar campos dinâmicos
   const parsedPrompt = parsePromptContent(prompt.content)
   const hasDynamicFields = parsedPrompt.fields.length > 0
+
 
   const handleGenerate = (values: FieldValues) => {
     const finalPrompt = parsedPrompt.generatePrompt(values)
     setGeneratedPrompt(finalPrompt)
 
+    // Registrar uso e ganhar XP
+    const { xpEarned, leveledUp } = registerPromptUse(prompt.id, prompt.title)
+
+    // Disparar evento customizado para atualizar componentes
+    window.dispatchEvent(new Event('progressUpdated'))
+
     // Copiar automaticamente após gerar
     navigator.clipboard.writeText(finalPrompt)
     setCopied(true)
 
+    // Toast com informação de XP
     toast({
-      title: "Prompt gerado!",
-      description: "Copiado para a área de transferência",
+      title: leveledUp ? "🎉 Subiu de nível!" : "Prompt gerado!",
+      description: leveledUp 
+        ? `Parabéns! Você ganhou +${xpEarned} XP e subiu de nível!`
+        : `+${xpEarned} XP ganhos • Copiado para a área de transferência`,
     })
 
     // Fechar dialog após 1 segundo
@@ -53,13 +67,22 @@ export const PromptDialog = ({ prompt, open, onOpenChange }: PromptDialogProps) 
     }, 1000)
   }
 
+
   const handleCopyStatic = () => {
     navigator.clipboard.writeText(prompt.content)
     setCopied(true)
 
+    // Registrar uso e ganhar XP
+    const { xpEarned, leveledUp } = registerPromptUse(prompt.id, prompt.title)
+
+    // Disparar evento customizado para atualizar componentes
+    window.dispatchEvent(new Event('progressUpdated'))
+
     toast({
-      title: "Copiado!",
-      description: "Prompt copiado para a área de transferência",
+      title: leveledUp ? "🎉 Subiu de nível!" : "Copiado!",
+      description: leveledUp 
+        ? `Parabéns! Você ganhou +${xpEarned} XP e subiu de nível!`
+        : `+${xpEarned} XP ganhos • Prompt copiado`,
     })
 
     setTimeout(() => {
@@ -67,13 +90,18 @@ export const PromptDialog = ({ prompt, open, onOpenChange }: PromptDialogProps) 
     }, 2000)
   }
 
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
-          <DialogTitle className="text-2xl">{prompt.title}</DialogTitle>
+          <DialogTitle className="text-2xl flex items-center gap-2">
+            {prompt.title}
+            <Sparkles className="w-5 h-5 text-yellow-500" />
+          </DialogTitle>
           <DialogDescription>{prompt.description}</DialogDescription>
         </DialogHeader>
+
 
         <div className="space-y-6 py-4">
           {hasDynamicFields ? (
@@ -86,6 +114,7 @@ export const PromptDialog = ({ prompt, open, onOpenChange }: PromptDialogProps) 
                       Este prompt precisa de informações personalizadas. Preencha os campos abaixo:
                     </p>
                   </div>
+
 
                   <DynamicPromptForm
                     fields={parsedPrompt.fields}
@@ -108,6 +137,7 @@ export const PromptDialog = ({ prompt, open, onOpenChange }: PromptDialogProps) 
                     </div>
                   </div>
 
+
                   <div className="bg-muted/50 rounded-lg p-4 border">
                     <p className="text-sm font-mono whitespace-pre-wrap max-h-[300px] overflow-y-auto">
                       {generatedPrompt}
@@ -124,6 +154,7 @@ export const PromptDialog = ({ prompt, open, onOpenChange }: PromptDialogProps) 
                   {prompt.content}
                 </p>
               </div>
+
 
               <div className="flex gap-3">
                 <Button
@@ -153,6 +184,7 @@ export const PromptDialog = ({ prompt, open, onOpenChange }: PromptDialogProps) 
             </>
           )}
         </div>
+
 
         {prompt.tips && prompt.tips.length > 0 && !generatedPrompt && (
           <div className="border-t pt-4 space-y-2">
