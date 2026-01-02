@@ -11,7 +11,9 @@ import { Copy, CheckCircle2, Sparkles } from "lucide-react"
 import { DynamicPromptForm } from "@/components/DynamicPromptForm"
 import { parsePromptContent } from "@/utils/prompt-parser"
 import { useToast } from "@/hooks/use-toast"
-import { registerPromptUse } from "@/lib/gamification"
+import { registerPromptUse, loadProgress } from "@/lib/gamification"
+import { checkNewBadges } from "@/lib/badges"
+import { updateMissionProgress } from "@/lib/daily-missions"
 import type { Prompt } from "@/types/prompt"
 import type { FieldValues } from "@/types/dynamic-fields"
 
@@ -33,28 +35,59 @@ export const PromptDialog = ({ prompt, open, onOpenChange }: PromptDialogProps) 
   const parsedPrompt = parsePromptContent(prompt.content)
   const hasDynamicFields = parsedPrompt.fields.length > 0
 
+  const handlePromptUse = () => {
+    // Registrar uso e ganhar XP (passando categoria)
+    const { xpEarned, leveledUp } = registerPromptUse(prompt.id, prompt.title, prompt.category)
+    
+    // Verificar novos badges
+    const userProgress = loadProgress()
+    const newBadges = checkNewBadges(userProgress)
+    
+    // Atualizar missões diárias
+    const { completedMissions, totalXP: missionXP } = updateMissionProgress(
+      prompt.category,
+      userProgress.streak
+    )
+
+    // Disparar evento para atualizar componentes
+    window.dispatchEvent(new Event('progressUpdated'))
+
+    // Toast com informações completas
+    let toastTitle = "Prompt copiado!"
+    let toastDescription = `+${xpEarned} XP ganhos`
+
+    if (missionXP > 0) {
+      toastDescription += ` • +${missionXP} XP de missões`
+    }
+
+    if (leveledUp) {
+      toastTitle = "🎉 Subiu de nível!"
+      toastDescription = `Parabéns! Você ganhou +${xpEarned + missionXP} XP total e subiu de nível!`
+    } else if (newBadges.length > 0) {
+      toastTitle = `🏆 Nova conquista desbloqueada!`
+      toastDescription = `${newBadges[0].icon} ${newBadges[0].name} • +${xpEarned + missionXP + newBadges[0].xpReward} XP total`
+    } else if (completedMissions.length > 0) {
+      toastTitle = `✅ Missão concluída!`
+      toastDescription = `${completedMissions[0].icon} ${completedMissions[0].title} • +${xpEarned + missionXP} XP total`
+    }
+
+    toast({
+      title: toastTitle,
+      description: toastDescription,
+    })
+  }
+
 
   const handleGenerate = (values: FieldValues) => {
     const finalPrompt = parsedPrompt.generatePrompt(values)
     setGeneratedPrompt(finalPrompt)
 
-    // Registrar uso e ganhar XP
-    const { xpEarned, leveledUp } = registerPromptUse(prompt.id, prompt.title)
-
-    // Disparar evento customizado para atualizar componentes
-    window.dispatchEvent(new Event('progressUpdated'))
+    // Processar XP, badges e missões
+    handlePromptUse()
 
     // Copiar automaticamente após gerar
     navigator.clipboard.writeText(finalPrompt)
     setCopied(true)
-
-    // Toast com informação de XP
-    toast({
-      title: leveledUp ? "🎉 Subiu de nível!" : "Prompt gerado!",
-      description: leveledUp 
-        ? `Parabéns! Você ganhou +${xpEarned} XP e subiu de nível!`
-        : `+${xpEarned} XP ganhos • Copiado para a área de transferência`,
-    })
 
     // Fechar dialog após 1 segundo
     setTimeout(() => {
@@ -72,18 +105,8 @@ export const PromptDialog = ({ prompt, open, onOpenChange }: PromptDialogProps) 
     navigator.clipboard.writeText(prompt.content)
     setCopied(true)
 
-    // Registrar uso e ganhar XP
-    const { xpEarned, leveledUp } = registerPromptUse(prompt.id, prompt.title)
-
-    // Disparar evento customizado para atualizar componentes
-    window.dispatchEvent(new Event('progressUpdated'))
-
-    toast({
-      title: leveledUp ? "🎉 Subiu de nível!" : "Copiado!",
-      description: leveledUp 
-        ? `Parabéns! Você ganhou +${xpEarned} XP e subiu de nível!`
-        : `+${xpEarned} XP ganhos • Prompt copiado`,
-    })
+    // Processar XP, badges e missões
+    handlePromptUse()
 
     setTimeout(() => {
       setCopied(false)

@@ -5,6 +5,9 @@ import { SearchBar } from '@/components/SearchBar';
 import { XPBar } from '@/components/XPBar';
 import { HistorySection } from '@/components/HistorySection';
 import { StreakCounter } from '@/components/StreakCounter';
+import { ProfileCard } from '@/components/ProfileCard';
+import { BadgesDisplay } from '@/components/BadgesDisplay';
+import { DailyMissionsCard } from '@/components/DailyMissionsCard';
 import { prompts } from '@/data/prompts-data';
 import { BookOpen, Sparkles } from 'lucide-react';
 
@@ -47,7 +50,7 @@ export default function Index() {
             
             <div className="flex items-center gap-2">
               <Sparkles className="w-5 h-5 text-yellow-500" />
-              <span className="text-sm font-medium">Sistema de XP Ativo</span>
+              <span className="text-sm font-medium hidden sm:inline">Sistema de Gamificação Ativo</span>
             </div>
           </div>
         </div>
@@ -56,6 +59,9 @@ export default function Index() {
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
         <div className="space-y-8">
+          {/* Perfil do Estudante */}
+          <ProfileCard />
+
           {/* Gamificação Section */}
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
             <div className="lg:col-span-2">
@@ -64,6 +70,12 @@ export default function Index() {
             <div>
               <StreakCounter />
             </div>
+          </div>
+
+          {/* Missões e Badges */}
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
+            <DailyMissionsCard />
+            <BadgesDisplay />
           </div>
 
           {/* Histórico */}

@@ -12,6 +12,7 @@ export interface UserProgress {
 export interface PromptHistoryItem {
   promptId: string;
   promptTitle: string;
+  promptCategory?: string;
   timestamp: string;
   xpEarned: number;
 }
@@ -139,7 +140,8 @@ export function updateStreak(progress: UserProgress): UserProgress {
 // Registrar uso de prompt
 export function registerPromptUse(
   promptId: string,
-  promptTitle: string
+  promptTitle: string,
+  promptCategory?: string
 ): { progress: UserProgress; xpEarned: number; leveledUp: boolean } {
   const progress = loadProgress();
   
@@ -180,6 +182,7 @@ export function registerPromptUse(
   const historyItem: PromptHistoryItem = {
     promptId,
     promptTitle,
+    promptCategory,
     timestamp: new Date().toISOString(),
     xpEarned,
   };
