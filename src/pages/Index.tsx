@@ -10,6 +10,9 @@ import { BadgesDisplay } from '@/components/BadgesDisplay';
 import { DailyMissionsCard } from '@/components/DailyMissionsCard';
 import { PomodoroTimer } from '@/components/PomodoroTimer';
 import { ExportImportModal } from '@/components/ExportImportModal';
+import { ClinicalCasesSection } from '@/components/ClinicalCasesSection';
+import { MnemonicsSection } from '@/components/MnemonicsSection';
+import { WeeklyChallengeCard } from '@/components/WeeklyChallengeCard';
 import { Button } from '@/components/ui/button';
 import { prompts } from '@/data/prompts-data';
 import { BookOpen, Sparkles, Download } from 'lucide-react';
@@ -87,6 +90,9 @@ export default function Index() {
             </div>
           </div>
 
+          {/* Desafio Semanal */}
+          <WeeklyChallengeCard />
+
           {/* Timer Pomodoro */}
           <PomodoroTimer />
 
@@ -95,6 +101,12 @@ export default function Index() {
             <DailyMissionsCard />
             <BadgesDisplay />
           </div>
+
+          {/* Casos Clínicos */}
+          <ClinicalCasesSection />
+
+          {/* Mnemônicos */}
+          <MnemonicsSection />
 
           {/* Histórico */}
           <HistorySection />
