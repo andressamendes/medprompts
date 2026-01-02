@@ -1,55 +1,92 @@
-import { createContext, useContext, useEffect, useState, ReactNode } from "react"
+import { createContext, useContext, useCallback, ReactNode } from 'react';
+import { useSecureStorage } from '@/hooks/useSecureStorage';
 
-type Theme = "dark" | "light" | "system"
+type Theme = 'light' | 'dark';
+
+const THEME_KEY = 'medprompts-theme';
 
 interface ThemeContextType {
-  theme: Theme
-  setTheme: (theme: Theme) => void
+  theme: Theme;
+  toggleTheme: () => Promise<void>;
+  setTheme: (theme: Theme) => Promise<void>;
+  isDark: boolean;
+  isLoading: boolean;
+  error: Error | null;
 }
 
-const ThemeContext = createContext<ThemeContextType | undefined>(undefined)
+const ThemeContext = createContext<ThemeContextType | undefined>(undefined);
 
 export function ThemeProvider({ children }: { children: ReactNode }) {
-  const [theme, setTheme] = useState<Theme>(() => {
+  // Detecta preferência do sistema como fallback
+  const systemPrefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+  const defaultTheme: Theme = systemPrefersDark ? 'dark' : 'light';
+
+  // Usa hook seguro com criptografia AES-256
+  const [theme, setThemeStorage, , isLoading, error] = useSecureStorage<Theme>(
+    THEME_KEY,
+    defaultTheme
+  );
+
+  /**
+   * Alterna entre light e dark
+   */
+  const toggleTheme = useCallback(async () => {
     try {
-      const stored = localStorage.getItem("medprompts-theme")
-      return (stored as Theme) || "system"
-    } catch {
-      return "system"
+      const newTheme: Theme = theme === 'light' ? 'dark' : 'light';
+      await setThemeStorage(newTheme);
+      
+      // Aplica classe no documento para Tailwind
+      document.documentElement.classList.remove('light', 'dark');
+      document.documentElement.classList.add(newTheme);
+    } catch (err) {
+      console.error('Erro ao alternar tema:', err);
     }
-  })
+  }, [theme, setThemeStorage]);
 
-  useEffect(() => {
-    const root = window.document.documentElement
-    root.classList.remove("light", "dark")
+  /**
+   * Define tema específico
+   */
+  const setTheme = useCallback(
+    async (newTheme: Theme) => {
+      try {
+        await setThemeStorage(newTheme);
+        
+        // Aplica classe no documento
+        document.documentElement.classList.remove('light', 'dark');
+        document.documentElement.classList.add(newTheme);
+      } catch (err) {
+        console.error('Erro ao definir tema:', err);
+      }
+    },
+    [setThemeStorage]
+  );
 
-    if (theme === "system") {
-      const systemTheme = window.matchMedia("(prefers-color-scheme: dark)").matches
-        ? "dark"
-        : "light"
-      root.classList.add(systemTheme)
-    } else {
-      root.classList.add(theme)
-    }
-
-    try {
-      localStorage.setItem("medprompts-theme", theme)
-    } catch (error) {
-      console.error("Erro ao salvar tema:", error)
-    }
-  }, [theme])
+  // Aplica tema inicial ao carregar
+  if (!isLoading && theme) {
+    document.documentElement.classList.remove('light', 'dark');
+    document.documentElement.classList.add(theme);
+  }
 
   return (
-    <ThemeContext.Provider value={{ theme, setTheme }}>
+    <ThemeContext.Provider
+      value={{
+        theme,
+        toggleTheme,
+        setTheme,
+        isDark: theme === 'dark',
+        isLoading,
+        error,
+      }}
+    >
       {children}
     </ThemeContext.Provider>
-  )
+  );
 }
 
 export function useTheme() {
-  const context = useContext(ThemeContext)
+  const context = useContext(ThemeContext);
   if (context === undefined) {
-    throw new Error("useTheme deve ser usado dentro de ThemeProvider")
+    throw new Error('useTheme deve ser usado dentro de ThemeProvider');
   }
-  return context
+  return context;
 }
