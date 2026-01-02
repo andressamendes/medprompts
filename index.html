@@ -7,27 +7,41 @@
     <meta name="description" content="MedPrompts - Biblioteca gamificada de prompts de IA para estudantes de medicina" />
     <meta name="theme-color" content="#2563eb" />
     <link rel="manifest" href="/medprompts/manifest.json" />
+    <link rel="apple-touch-icon" href="/medprompts/favicon.svg" />
     <title>MedPrompts - Prompts de IA para Medicina</title>
   </head>
   <body>
     <div id="root"></div>
     <script type="module" src="/src/main.tsx"></script>
     
-    <!-- Service Worker para PWA - DESATIVADO TEMPORARIAMENTE PARA DEBUG
+    <!-- Service Worker para PWA -->
     <script>
       if ('serviceWorker' in navigator) {
         window.addEventListener('load', () => {
           navigator.serviceWorker
             .register('/medprompts/sw.js')
             .then((registration) => {
-              console.log('SW registrado:', registration);
+              console.log('[App] Service Worker registrado com sucesso:', registration.scope);
+              
+              // Verificar updates
+              registration.addEventListener('updatefound', () => {
+                const newWorker = registration.installing;
+                console.log('[App] Nova versão do SW encontrada');
+                
+                newWorker.addEventListener('statechange', () => {
+                  if (newWorker.state === 'installed' && navigator.serviceWorker.controller) {
+                    console.log('[App] Nova versão disponível. Recarregue a página.');
+                  }
+                });
+              });
             })
             .catch((error) => {
-              console.log('Erro no SW:', error);
+              console.error('[App] Erro ao registrar Service Worker:', error);
             });
         });
+      } else {
+        console.log('[App] Service Workers não são suportados neste navegador');
       }
     </script>
-    -->
   </body>
 </html>
