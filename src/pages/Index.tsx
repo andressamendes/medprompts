@@ -13,9 +13,9 @@ import { ExportImportModal } from '@/components/ExportImportModal';
 import { ClinicalCasesSection } from '@/components/ClinicalCasesSection';
 import { MnemonicsSection } from '@/components/MnemonicsSection';
 import { WeeklyChallengeCard } from '@/components/WeeklyChallengeCard';
+import { InstallPWA } from '@/components/InstallPWA';
 import { Button } from '@/components/ui/button';
 import { prompts } from '@/data/prompts-data';
-import { InstallPWA } from '@/components/InstallPWA';
 import { BookOpen, Sparkles, Download } from 'lucide-react';
 
 export default function Index() {
@@ -174,6 +174,9 @@ export default function Index() {
         open={showExportModal}
         onOpenChange={setShowExportModal}
       />
+
+      {/* PWA Install Prompt */}
+      <InstallPWA />
     </div>
   );
 }
