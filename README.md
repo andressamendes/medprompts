@@ -1,105 +1,95 @@
-# 🩺 MedPrompts
+# 🩺 MedPrompts - Plataforma de Prompts para Estudantes de Medicina
 
-<div align="center">
+> Sistema gamificado de prompts de IA para estudantes de medicina, com casos clínicos, mnemônicos e desafios semanais.
 
-![MedPrompts Logo](https://img.shields.io/badge/MedPrompts-Medicina%20+%20IA-blue?style=for-the-badge)
-[![Deploy](https://img.shields.io/badge/Deploy-GitHub%20Pages-success?style=for-the-badge)](https://andressamendes.github.io/medprompts/)
-[![React](https://img.shields.io/badge/React-18.x-61DAFB?style=for-the-badge&logo=react)](https://reactjs.org/)
-[![TypeScript](https://img.shields.io/badge/TypeScript-5.x-3178C6?style=for-the-badge&logo=typescript)](https://www.typescriptlang.org/)
-
-**[Acesse a aplicação em produção](https://andressamendes.github.io/medprompts/)**
-
-</div>
+[![Deploy Status](https://img.shields.io/badge/deploy-active-success)](https://andressamendes.github.io/medprompts/)
+[![React](https://img.shields.io/badge/React-18.3-blue)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.6-blue)](https://www.typescriptlang.org/)
+[![Vite](https://img.shields.io/badge/Vite-6.0-purple)](https://vitejs.dev/)
 
 ---
 
-## 📋 Sobre o Projeto
+## 🚀 Funcionalidades
 
-MedPrompts é uma aplicação web gamificada desenvolvida para facilitar o acesso e gerenciamento de prompts de IA especializados para estudantes de medicina. A plataforma oferece uma experiência interativa com sistema de progressão, conquistas e missões diárias.
+### 📚 Biblioteca de Prompts
+- **130+ prompts** organizados por categorias
+- Filtros por disciplina e busca inteligente
+- Sistema de favoritos e histórico de uso
+- Copiar com um clique
 
-### ✨ Funcionalidades Principais
+### 🎮 Sistema de Gamificação
+- **Sistema de XP e níveis** (5 níveis)
+- **Streak diário** com recompensas
+- **15+ badges** (Bronze, Prata, Ouro)
+- **Missões diárias** com XP bônus
+- **Desafios semanais** temáticos
 
-#### 🎮 Sistema de Gamificação Completo
-- **XP e Níveis**: Ganhe 10 XP ao usar qualquer prompt
-- **5 Níveis Progressivos**: Iniciante → Estudante → Residente → Especialista → Mestre
-- **Contador de Streak**: Bônus de XP para dias consecutivos (5 XP × dias)
-- **Histórico de Uso**: Últimos 10 prompts usados com botão "Usar novamente"
+### 🏥 Casos Clínicos
+- Casos validados cientificamente via Perplexity
+- Questões de múltipla escolha
+- Explicações detalhadas
+- Sistema de progresso e acertos
 
-#### 🏆 Sistema de Conquistas
-- **12 Badges Diferentes**: Bronze, Prata e Ouro
-- **Categorias de Badges**:
-  - XP acumulado (100, 500, 1000)
-  - Prompts usados (10, 50, 100)
-  - Streak mantido (3, 7, 30 dias)
-  - Níveis alcançados (2, 4, 5)
-- **Recompensas em XP**: Cada badge desbloqueado concede XP extra
+### 🧠 Mnemônicos Médicos
+- Biblioteca de mnemônicos por categoria
+- Busca e filtros inteligentes
+- Sistema de cópia rápida
+- Integração com desafios semanais
 
-#### 🎯 Missões Diárias
-- **3 Missões por Dia**: Renovadas automaticamente à meia-noite
-- **Tipos de Missões**:
-  - Usar X prompts no dia
-  - Usar prompts de categoria específica
-  - Manter streak ativo
-- **Recompensas**: 20-50 XP por missão completada
+### ⏱️ Timer Pomodoro
+- Técnica Pomodoro (25min trabalho / 5min descanso)
+- Notificações sonoras
+- Contabiliza XP por sessão completa
+- Histórico de sessões
 
-#### 👤 Perfil Personalizado
-- **Configuração de Perfil**: Nome, ano da graduação
-- **Disciplinas em Andamento**: Selecione suas matérias atuais
-- **Áreas de Interesse**: Especialidades que você quer explorar
-- **Filtros Inteligentes**: Prompts relevantes ao seu perfil
-
-#### 📚 Biblioteca de Prompts
-- 🔍 Pesquisa avançada por título, descrição ou tags
-- 🎨 Categorização por especialidades médicas
-- 📱 Interface responsiva (mobile-first)
-- ⚡ Campos dinâmicos para personalização de prompts
-- 📋 Sistema de favoritos
+### 👤 Perfil do Estudante
+- Personalização com nome e ano do curso
+- Disciplinas em andamento
+- Estatísticas de progresso
+- Sistema de backup e importação
 
 ---
 
-## 🛠️ Tecnologias Utilizadas
+## 🛠️ Tecnologias
 
-### Frontend
-- **React 18** - Biblioteca JavaScript para interfaces
-- **TypeScript** - Tipagem estática
-- **Vite** - Build tool ultrarrápido
-- **Tailwind CSS** - Framework CSS utilitário
+- **React 18.3** - Framework principal
+- **TypeScript 5.6** - Tipagem estática
+- **Vite 6.0** - Build tool
+- **Tailwind CSS** - Estilização
+- **shadcn/ui** - Componentes UI
+- **Lucide React** - Ícones
+- **LocalStorage** - Persistência de dados
 
-### Componentes UI
-- **Radix UI** - Componentes acessíveis sem estilo
-  - Dialog, Select, Progress, Checkbox
-- **Lucide React** - Ícones modernos
+🤝 Contribuindo
+Contribuições são bem-vindas! Sinta-se à vontade para:
 
-### Persistência
-- **LocalStorage** - Armazenamento local de dados
-  - Progresso do usuário
-  - Perfil do estudante
-  - Badges conquistados
-  - Missões diárias
+Reportar bugs
 
-### Deploy
-- **GitHub Pages** - Hospedagem estática
-- **GitHub Actions** - CI/CD automatizado
+Sugerir novos prompts
 
----
+Adicionar casos clínicos
 
-## 🚀 Começando
+Melhorar a documentação
 
-### Pré-requisitos
-- Node.js 18+ 
-- npm ou yarn
+👩‍⚕️ Autora
+Andressa Mendes
+Estudante de Medicina - Afya Guanambi/BA
+Interesse em IA aplicada à Medicina
 
-### Instalação
+📄 Licença
+Este projeto está sob a licença MIT. Veja o arquivo LICENSE para mais detalhes.
 
-```bash
-# Clone o repositório
-git clone https://github.com/andressamendes/medprompts.git
+🌟 Agradecimentos
+Perplexity AI - Validação científica dos casos clínicos
 
-# Entre no diretório
-cd medprompts
+shadcn/ui - Componentes UI
 
-# Instale as dependências
-npm install
+Lucide - Ícones
 
-# Execute em modo desenvolvimento
-npm run dev
+Comunidade médica acadêmica
+
+📞 Contato
+GitHub: @andressamendes
+
+Plataforma: andressamendes.github.io/medprompts
+
