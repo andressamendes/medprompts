@@ -41,6 +41,9 @@ export function PromptDialog({ prompt, open, onOpenChange }: PromptDialogProps) 
     window.open(url, '_blank');
   };
 
+  // Verifica qual IA é recomendada
+  const recommendedAI = prompt.recommendedAI?.primary;
+
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
@@ -71,7 +74,7 @@ export function PromptDialog({ prompt, open, onOpenChange }: PromptDialogProps) 
             ))}
           </div>
 
-          {/* NOVA SEÇÃO: Recomendação de IA */}
+          {/* Seção de Recomendação de IA */}
           {prompt.recommendedAI && (
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4 space-y-3">
               <div className="flex items-start gap-2">
@@ -121,17 +124,32 @@ export function PromptDialog({ prompt, open, onOpenChange }: PromptDialogProps) 
               {copied ? 'Copiado!' : 'Copiar Prompt'}
             </Button>
             
-            <Button onClick={openInChatGPT} variant="outline" className="flex-1">
+            <Button 
+              onClick={openInChatGPT} 
+              variant={recommendedAI === 'ChatGPT' ? 'default' : 'outline'}
+              className="flex-1"
+            >
+              {recommendedAI === 'ChatGPT' && <Star className="w-4 h-4 mr-2 fill-current" />}
               <ExternalLink className="w-4 h-4 mr-2" />
               ChatGPT
             </Button>
             
-            <Button onClick={openInClaude} variant="outline" className="flex-1">
+            <Button 
+              onClick={openInClaude} 
+              variant={recommendedAI === 'Claude' ? 'default' : 'outline'}
+              className="flex-1"
+            >
+              {recommendedAI === 'Claude' && <Star className="w-4 h-4 mr-2 fill-current" />}
               <ExternalLink className="w-4 h-4 mr-2" />
               Claude
             </Button>
             
-            <Button onClick={openInPerplexity} variant="outline" className="flex-1">
+            <Button 
+              onClick={openInPerplexity} 
+              variant={recommendedAI === 'Perplexity' ? 'default' : 'outline'}
+              className="flex-1"
+            >
+              {recommendedAI === 'Perplexity' && <Star className="w-4 h-4 mr-2 fill-current" />}
               <ExternalLink className="w-4 h-4 mr-2" />
               Perplexity
             </Button>
