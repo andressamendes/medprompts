@@ -12,7 +12,8 @@ import {
   StudentProfile, 
   WeeklySchedule,
   generateWeeklySchedule,
-  generateMonthlySchedule,
+   // generateMonthlySchedule, // Não usado ainda - será implementado em versão futura
+
   exportToICal
 } from '@/utils/scheduleAlgorithm';
 import { logger } from '@/utils/logger';
@@ -48,7 +49,7 @@ export function StudyScheduleGenerator() {
   });
   const [selectedTopics, setSelectedTopics] = useState<StudyTopic[]>([]);
   const [generatedSchedule, setGeneratedSchedule] = useState<WeeklySchedule | null>(null);
-  const [scheduleType, setScheduleType] = useState<'weekly' | 'monthly'>('weekly');
+   const [scheduleType] = useState<'weekly' | 'monthly'>('weekly');
 
   const handleProfileSubmit = () => {
     logger.info('Perfil de estudo configurado', {

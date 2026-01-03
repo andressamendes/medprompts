@@ -1,7 +1,7 @@
 import { useEffect, useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { X, Play, Pause, Volume2, VolumeX, Maximize2, Minimize2 } from 'lucide-react';
+import { X, Volume2, VolumeX, Maximize2, Minimize2 } from 'lucide-react';
 import { logger } from '@/utils/logger';
 
 const MOTIVATIONAL_WORDS = [
