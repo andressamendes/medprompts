@@ -10,6 +10,7 @@ import { ProfileCard } from '@/components/ProfileCard';
 import { BadgesDisplay } from '@/components/BadgesDisplay';
 import { DailyMissionsCard } from '@/components/DailyMissionsCard';
 import { PomodoroTimer } from '@/components/PomodoroTimer';
+import { StudyScheduleGenerator } from '@/components/StudyScheduleGenerator';
 import { ExportImportModal } from '@/components/ExportImportModal';
 import { ClinicalCasesSection } from '@/components/ClinicalCasesSection';
 import { MnemonicsSection } from '@/components/MnemonicsSection';
@@ -207,6 +208,12 @@ export default function Index() {
               <DailyMissionsCard />
               <BadgesDisplay />
             </div>
+          </section>
+
+          {/* Cronograma Inteligente */}
+          <section aria-labelledby="schedule-heading">
+            <h2 id="schedule-heading" className="sr-only">Gerador de Cronograma Inteligente</h2>
+            <StudyScheduleGenerator />
           </section>
 
           {/* Casos Clínicos */}
