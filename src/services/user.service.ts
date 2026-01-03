@@ -191,7 +191,7 @@ class UserService {
     try {
       // Busca dados antigos do localStorage
       const oldXP = parseInt(localStorage.getItem('userXP') || '0');
-      const oldLevel = parseInt(localStorage.getItem('userLevel') || '1');
+      // const oldLevel = parseInt(localStorage.getItem('userLevel') || '1');
       const oldBadges = JSON.parse(localStorage.getItem('unlockedBadges') || '[]');
 
       // Busca dados atuais do backend
