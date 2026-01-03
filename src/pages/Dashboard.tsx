@@ -26,7 +26,7 @@ const Dashboard = () => {
   };
 
   // Calcula XP para próximo nível (fórmula simples: level * 100)
-  const xpForNextLevel = user ? user.level * 100 : 100;
+  // const xpForNextLevel = user ? user.level * 100 : 100; // Será usado quando implementar sistema de level
   const xpProgress = user ? (user.xp % 100) : 0;
   const xpPercentage = (xpProgress / 100) * 100;
 

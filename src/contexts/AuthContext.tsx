@@ -1,6 +1,7 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { authService, User, LoginCredentials, RegisterData } from '../services/auth.service';
-import { userService } from '../services/user.service';
+import { User, LoginCredentials, RegisterData } from '../services/auth.service';
+// import { authService } from '../services/auth.service'; // Descomentar quando backend estiver pronto
+// import { userService } from '../services/user.service'; // Descomentar quando backend estiver pronto
 
 // Interface do contexto de autenticação
 interface AuthContextData {
@@ -76,7 +77,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
    * Faz login do usuário
    * 🎭 MODO MOCK: Login é feito diretamente no componente Login.tsx
    */
-  const login = async (credentials: LoginCredentials): Promise<void> => {
+  const login = async (_credentials: LoginCredentials): Promise<void> => {
     try {
       setLoading(true);
       
@@ -105,7 +106,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
    * Registra novo usuário
    * 🎭 MODO MOCK: Registro é feito diretamente no componente Register.tsx
    */
-  const register = async (data: RegisterData): Promise<void> => {
+  const register = async (_data: RegisterData): Promise<void> => {
     try {
       setLoading(true);
       
