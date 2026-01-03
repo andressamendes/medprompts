@@ -1,4 +1,4 @@
-import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
 import { authService, User, LoginCredentials, RegisterData } from '../services/auth.service';
 import { userService } from '../services/user.service';
 
@@ -32,25 +32,35 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   /**
    * Verifica se usuário está autenticado ao carregar aplicação
+   * 🎭 MODO MOCK: Carrega do localStorage sem verificar API
    */
   useEffect(() => {
     const initializeAuth = async () => {
       try {
-        // Verifica se há token salvo
+        // 🎭 MODO MOCK: Carrega usuário do localStorage sem verificar API
+        const userStr = localStorage.getItem('user');
+        const token = localStorage.getItem('accessToken');
+        
+        if (userStr && token) {
+          const userData = JSON.parse(userStr);
+          setUser(userData);
+          console.log('✅ Usuário carregado do localStorage:', userData.name);
+        } else {
+          setUser(null);
+        }
+        
+        // ⚠️ QUANDO BACKEND ESTIVER PRONTO, descomente e use:
+        /*
         if (authService.isAuthenticated()) {
-          // Verifica se token ainda é válido
           const userData = await authService.verifyToken();
-          
           if (userData) {
             setUser(userData);
-            
-            // Sincroniza dados de gamificação antigos (migração)
             await userService.syncGamificationData();
           } else {
-            // Token inválido, limpa dados
             setUser(null);
           }
         }
+        */
       } catch (error) {
         console.error('Erro ao inicializar autenticação:', error);
         setUser(null);
@@ -64,15 +74,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   /**
    * Faz login do usuário
+   * 🎭 MODO MOCK: Login é feito diretamente no componente Login.tsx
    */
   const login = async (credentials: LoginCredentials): Promise<void> => {
     try {
       setLoading(true);
+      
+      // ⚠️ QUANDO BACKEND ESTIVER PRONTO, descomente:
+      /*
       const authResponse = await authService.login(credentials);
       setUser(authResponse.user);
-      
-      // Sincroniza dados de gamificação antigos (migração)
       await userService.syncGamificationData();
+      */
+      
+      // 🎭 MODO MOCK: Por enquanto, apenas carrega do localStorage
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const userData = JSON.parse(userStr);
+        setUser(userData);
+      }
     } catch (error) {
       console.error('Erro ao fazer login:', error);
       throw error;
@@ -83,12 +103,24 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   /**
    * Registra novo usuário
+   * 🎭 MODO MOCK: Registro é feito diretamente no componente Register.tsx
    */
   const register = async (data: RegisterData): Promise<void> => {
     try {
       setLoading(true);
+      
+      // ⚠️ QUANDO BACKEND ESTIVER PRONTO, descomente:
+      /*
       const authResponse = await authService.register(data);
       setUser(authResponse.user);
+      */
+      
+      // 🎭 MODO MOCK: Por enquanto, apenas carrega do localStorage
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const userData = JSON.parse(userStr);
+        setUser(userData);
+      }
     } catch (error) {
       console.error('Erro ao registrar:', error);
       throw error;
@@ -103,8 +135,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const logout = async (): Promise<void> => {
     try {
       setLoading(true);
-      await authService.logout();
+      
+      // ⚠️ QUANDO BACKEND ESTIVER PRONTO, descomente:
+      // await authService.logout();
+      
+      // 🎭 MODO MOCK: Limpa localStorage
+      localStorage.removeItem('accessToken');
+      localStorage.removeItem('refreshToken');
+      localStorage.removeItem('user');
+      
       setUser(null);
+      console.log('✅ Logout realizado');
     } catch (error) {
       console.error('Erro ao fazer logout:', error);
       // Mesmo com erro, remove usuário do estado
@@ -120,6 +161,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
    */
   const updateUser = (updatedUser: User): void => {
     setUser(updatedUser);
+    // Atualiza também no localStorage
+    localStorage.setItem('user', JSON.stringify(updatedUser));
   };
 
   /**
@@ -127,8 +170,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
    */
   const refreshUserData = async (): Promise<void> => {
     try {
+      // ⚠️ QUANDO BACKEND ESTIVER PRONTO, descomente:
+      /*
       const userData = await userService.getProfile();
       setUser(userData);
+      */
+      
+      // 🎭 MODO MOCK: Recarrega do localStorage
+      const userStr = localStorage.getItem('user');
+      if (userStr) {
+        const userData = JSON.parse(userStr);
+        setUser(userData);
+      }
     } catch (error) {
       console.error('Erro ao atualizar dados do usuário:', error);
       throw error;

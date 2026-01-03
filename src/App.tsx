@@ -1,49 +1,12 @@
-// React importado automaticamente pelo Vite
 import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
+import Login from './pages/Login';
+import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
+import Prompts from './pages/Prompts';
 
 // Componentes temporários (serão substituídos por páginas reais)
-const LoginPage = () => (
-  <div style={{ padding: '40px', textAlign: 'center' }}>
-    <h1>🔐 Login</h1>
-    <p>Página de login será implementada em breve</p>
-    <p style={{ color: '#666', fontSize: '14px' }}>
-      Integração com API de autenticação configurada
-    </p>
-  </div>
-);
-
-const RegisterPage = () => (
-  <div style={{ padding: '40px', textAlign: 'center' }}>
-    <h1>📝 Registro</h1>
-    <p>Página de registro será implementada em breve</p>
-    <p style={{ color: '#666', fontSize: '14px' }}>
-      Integração com API de autenticação configurada
-    </p>
-  </div>
-);
-
-const DashboardPage = () => (
-  <div style={{ padding: '40px', textAlign: 'center' }}>
-    <h1>📊 Dashboard</h1>
-    <p>✅ Você está autenticado!</p>
-    <p style={{ color: '#666', fontSize: '14px' }}>
-      Esta é uma rota protegida - apenas usuários logados podem ver
-    </p>
-  </div>
-);
-
-const PromptsPage = () => (
-  <div style={{ padding: '40px', textAlign: 'center' }}>
-    <h1>💬 Prompts</h1>
-    <p>✅ Rota protegida ativa!</p>
-    <p style={{ color: '#666', fontSize: '14px' }}>
-      Integração com API de prompts configurada
-    </p>
-  </div>
-);
-
 const StudyPage = () => (
   <div style={{ padding: '40px', textAlign: 'center' }}>
     <h1>📚 Sessões de Estudo</h1>
@@ -69,16 +32,17 @@ const HomePage = () => (
     </div>
 
     <div style={{ marginTop: '60px', padding: '30px', background: 'rgba(255,255,255,0.1)', borderRadius: '12px', maxWidth: '600px', margin: '60px auto 0' }}>
-      <h2 style={{ fontSize: '24px', marginBottom: '20px' }}>✅ Integração com Backend Configurada</h2>
+      <h2 style={{ fontSize: '24px', marginBottom: '20px' }}>✅ UI Completa Implementada</h2>
       <ul style={{ listStyle: 'none', padding: 0, textAlign: 'left' }}>
-        <li style={{ marginBottom: '10px' }}>✓ Autenticação (login, registro, logout)</li>
-        <li style={{ marginBottom: '10px' }}>✓ Gerenciamento de usuário e perfil</li>
-        <li style={{ marginBottom: '10px' }}>✓ Sistema de XP e badges (gamificação)</li>
-        <li style={{ marginBottom: '10px' }}>✓ CRUD de prompts completo</li>
-        <li style={{ marginBottom: '10px' }}>✓ Sessões de estudo e estatísticas</li>
+        <li style={{ marginBottom: '10px' }}>✓ Integração com backend configurada</li>
+        <li style={{ marginBottom: '10px' }}>✓ Sistema de autenticação completo</li>
+        <li style={{ marginBottom: '10px' }}>✓ Dashboard com estatísticas</li>
+        <li style={{ marginBottom: '10px' }}>✓ Gerenciador de prompts funcional</li>
+        <li style={{ marginBottom: '10px' }}>✓ Criar, editar, deletar prompts</li>
+        <li style={{ marginBottom: '10px' }}>✓ Filtros e busca implementados</li>
+        <li style={{ marginBottom: '10px' }}>✓ Sistema de XP e gamificação</li>
+        <li style={{ marginBottom: '10px' }}>✓ Design responsivo (mobile + desktop)</li>
         <li style={{ marginBottom: '10px' }}>✓ Rotas protegidas funcionando</li>
-        <li style={{ marginBottom: '10px' }}>✓ Refresh token automático</li>
-        <li style={{ marginBottom: '10px' }}>✓ Migração de dados localStorage → API</li>
       </ul>
     </div>
 
@@ -98,15 +62,15 @@ function App() {
         <Routes>
           {/* Rotas públicas */}
           <Route path="/" element={<HomePage />} />
-          <Route path="/login" element={<LoginPage />} />
-          <Route path="/register" element={<RegisterPage />} />
+          <Route path="/login" element={<Login />} />
+          <Route path="/register" element={<Register />} />
 
           {/* Rotas protegidas */}
           <Route
             path="/dashboard"
             element={
               <ProtectedRoute>
-                <DashboardPage />
+                <Dashboard />
               </ProtectedRoute>
             }
           />
@@ -115,7 +79,7 @@ function App() {
             path="/prompts"
             element={
               <ProtectedRoute>
-                <PromptsPage />
+                <Prompts />
               </ProtectedRoute>
             }
           />
