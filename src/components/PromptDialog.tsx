@@ -9,9 +9,8 @@ import {
 import { Button } from "@/components/ui/button"
 import { Copy, CheckCircle2, Sparkles, ExternalLink } from "lucide-react"
 import { DynamicPromptForm } from "@/components/DynamicPromptForm"
-import { IntegrationButtons } from "@/components/IntegrationButtons"
 import { parsePromptContent } from "@/utils/prompt-parser"
-import { hasVariables, detectVariables, fillVariables, validateVariables } from "@/utils/promptVariables"
+import { hasVariables, detectVariables } from "@/utils/promptVariables"
 import { useToast } from "@/hooks/use-toast"
 import { registerPromptUse, loadProgress } from "@/lib/gamification"
 import { checkNewBadges } from "@/lib/badges"
@@ -46,10 +45,6 @@ export const PromptDialog = ({ prompt, open, onOpenChange }: PromptDialogProps) 
   // Analisar o prompt para detectar campos dinâmicos
   const parsedPrompt = parsePromptContent(prompt.content)
   const hasDynamicFields = parsedPrompt.fields.length > 0
-  
-  // Detectar variáveis [VARIAVEL], {opcional}, <LISTA|opcoes>
-  const hasCustomVariables = hasVariables(prompt.content)
-  const variables = hasCustomVariables ? detectVariables(prompt.content) : []
 
   const handlePromptUse = () => {
     // Registrar uso e ganhar XP (passando categoria)
