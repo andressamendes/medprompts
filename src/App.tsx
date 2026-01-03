@@ -1,4 +1,5 @@
 import { Routes, Route, Navigate } from 'react-router-dom';
+import { PromptHistoryProvider } from './contexts/PromptHistoryContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { FavoritesProvider } from './contexts/FavoritesContext';
 import Index from './pages/Index';
@@ -29,17 +30,19 @@ function App() {
 
   return (
     <ErrorBoundary>
-      <ThemeProvider>
-        <FavoritesProvider>
-          <Routes>
-            <Route path="/" element={<Index />} />
-            <Route path="/focus-zone" element={<FocusZone />} />
-            <Route path="*" element={<Navigate to="/" replace />} />
-          </Routes>
-          <Toaster />
-          {isDev && <DebugPanel />}
-        </FavoritesProvider>
-      </ThemeProvider>
+      <PromptHistoryProvider>
+        <ThemeProvider>
+          <FavoritesProvider>
+            <Routes>
+              <Route path="/" element={<Index />} />
+              <Route path="/focus-zone" element={<FocusZone />} />
+              <Route path="*" element={<Navigate to="/" replace />} />
+            </Routes>
+            <Toaster />
+            {isDev && <DebugPanel />}
+          </FavoritesProvider>
+        </ThemeProvider>
+      </PromptHistoryProvider>
     </ErrorBoundary>
   );
 }

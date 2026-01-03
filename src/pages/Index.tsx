@@ -11,6 +11,7 @@ import { BadgesDisplay } from '@/components/BadgesDisplay';
 import { DailyMissionsCard } from '@/components/DailyMissionsCard';
 import { PomodoroTimer } from '@/components/PomodoroTimer';
 import { StudyScheduleGenerator } from '@/components/StudyScheduleGenerator';
+import { RecentPromptsSection } from '@/components/RecentPromptsSection';
 import { ExportImportModal } from '@/components/ExportImportModal';
 import { ClinicalCasesSection } from '@/components/ClinicalCasesSection';
 import { MnemonicsSection } from '@/components/MnemonicsSection';
@@ -214,6 +215,12 @@ export default function Index() {
           <section aria-labelledby="schedule-heading">
             <h2 id="schedule-heading" className="sr-only">Gerador de Cronograma Inteligente</h2>
             <StudyScheduleGenerator />
+          </section>
+
+          {/* Prompts Recentes */}
+          <section aria-labelledby="recent-heading">
+            <h2 id="recent-heading" className="sr-only">Prompts Visualizados Recentemente</h2>
+            <RecentPromptsSection />
           </section>
 
           {/* Casos Clínicos */}

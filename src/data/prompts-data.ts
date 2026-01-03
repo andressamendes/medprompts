@@ -17,7 +17,6 @@ Criar 30 flashcards médicos de alto rendimento, otimizados para o software Anki
 [TEMA]: Informe o tema médico específico (ex.: Insuficiência Cardíaca, Diabetes Mellitus, AVC Isquêmico).
 
 **PROCESSO (SIGA TODAS AS ETAPAS – NÃO PULE NENHUMA)**
-
 Etapa 1 – Análise do Tema
 Identifique os 30 conceitos mais importantes, frequentes e de alto rendimento clínico do tema informado.
 
@@ -42,11 +41,8 @@ Distribua os flashcards exatamente da seguinte forma:
 Total obrigatório: 30 cards.
 
 **FORMATO DE SAÍDA (OBRIGATÓRIO)**
-
 FLASHCARDS – [TEMA]
-
 Instruções de importação: copie o bloco abaixo e importe no Anki como texto separado por ponto e vírgula.
-
 [PERGUNTA 1];[RESPOSTA 1]
 [PERGUNTA 2];[RESPOSTA 2]
 ...
@@ -67,7 +63,11 @@ Ao final, liste separadamente quais flashcards utilizam mnemônicos e indique qu
 • Priorize perguntas específicas em vez de genéricas
 • Use comparações sempre que possível
 • Inclua contexto clínico realista quando aplicável
-• Utilize mnemônicos sempre que forem naturais, pois aumentam a retenção em 30 a 40 por cento`,
+• Utilize mnemônicos sempre que forem naturais, pois aumentam a retenção em 30 a 40 por cento
+
+**🤖 IA RECOMENDADA: ChatGPT**
+Motivo: Excelente para gerar conteúdo estruturado com formatação precisa. Cria flashcards seguindo regras específicas e distribui tipos cognitivos conforme solicitado.
+Alternativas: Claude, Gemini`,
     tags: ['flashcards', 'Anki', 'memorização', 'spaced repetition'],
     academicLevel: 'Todos os níveis',
     estimatedTime: 25,
@@ -88,7 +88,6 @@ Criar material de estudo que combine, de forma integrada e coerente, representa�
 [TEMA]: Informe o conceito médico específico a ser codificado duplamente.
 
 **PROCESSO (SIGA TODAS AS ETAPAS – NÃO PULE NENHUMA)**
-
 Etapa 1 – Análise do Conceito
 Analise o tema informado e identifique quais componentes se beneficiam de visualização, incluindo relações espaciais, temporais, hierárquicas, processos sequenciais ou paralelos e relações de causa e efeito.
 
@@ -120,7 +119,6 @@ Crie duas perguntas de recuperação que exijam o uso simultâneo das codificaç
 • Uma pergunta que exija descrever um processo ou mecanismo utilizando ambos os códigos
 
 **FORMATO DE SAÍDA (OBRIGATÓRIO)**
-
 **DESCRIÇÃO VERBAL**
 Texto explicativo estruturado, com no máximo 150 palavras.
 
@@ -150,7 +148,11 @@ Legenda de cores com significado semântico explícito.
 • Use analogias visuais do cotidiano sempre que possível
 • Priorize conceitos com componentes espaciais, temporais ou processuais
 • Mantenha consistência semântica das cores ao longo do material
-• A descrição visual deve ser clara o suficiente para servir como guia de desenho`,
+• A descrição visual deve ser clara o suficiente para servir como guia de desenho
+
+**🤖 IA RECOMENDADA: NotebookLM**
+Motivo: Superior na criação de diagramas e sínteses visuais. Integra múltiplas fontes e gera representações multimodais complexas.
+Alternativas: Perplexity, ChatGPT`,
     tags: ['codificação dupla', 'visual', 'neurociência cognitiva'],
     academicLevel: 'Todos os níveis',
     estimatedTime: 20,
@@ -172,7 +174,6 @@ Conduzir uma sessão estruturada de autoexplicação que force o estudante a ver
 [TEMA]: Informe o conceito, processo ou mecanismo a ser explorado por autoexplicação.
 
 **PROCESSO (SIGA TODAS AS ETAPAS – NÃO PULE NENHUMA)**
-
 Etapa 1 – Apresentação do Conceito
 Apresente o conceito em exatamente 3 ou 4 frases objetivas.
 A apresentação deve ser tecnicamente correta, sem simplificações excessivas, exemplos resolvidos ou conclusões explícitas.
@@ -208,7 +209,6 @@ Etapa 4 – Síntese Final
 Solicite que o estudante explique o conceito completo como se estivesse ensinando a um colega de turma, usando linguagem clara, encadeamento lógico e justificativas explícitas.
 
 **FORMATO DE SAÍDA (OBRIGATÓRIO)**
-
 **CONCEITO**
 Apresentação do conceito em 3 ou 4 frases objetivas.
 
@@ -236,7 +236,11 @@ Agora, explique este conceito como se estivesse ensinando a um colega.
 • Elogie explicitamente o processo de raciocínio, não apenas conclusões
 • Use perguntas como "O que te levou a essa conclusão?" para tornar o pensamento visível
 • Quando o estudante travar, introduza analogias, contraexemplos ou cenários hipotéticos, sem resolver o problema
-• Priorize sempre a qualidade da explicação, não a velocidade da resposta`,
+• Priorize sempre a qualidade da explicação, não a velocidade da resposta
+
+**🤖 IA RECOMENDADA: ChatGPT**
+Motivo: Ideal para diálogos socráticos interativos. Ajusta respostas dinamicamente e mantém conversação progressiva.
+Alternativas: Claude`,
     tags: ['autoexplicação', 'metacognição', 'aprendizagem ativa'],
     academicLevel: 'Todos os níveis',
     estimatedTime: 30,
@@ -258,7 +262,6 @@ Transformar um conceito médico abstrato em múltiplos exemplos concretos, vívi
 [CONCEITO ABSTRATO]: Informe o termo, mecanismo ou princípio médico a ser concretizado.
 
 **PROCESSO (SIGA TODAS AS ETAPAS – NÃO PULE NENHUMA)**
-
 Etapa 1 – Definição Técnica
 Apresente a definição formal do conceito em 1 ou 2 linhas.
 A definição deve ser precisa, correta e livre de exemplos ou metáforas.
@@ -289,7 +292,6 @@ Crie um acrônimo ou frase memorável que ajude a lembrar os elementos centrais 
 Explique o significado de cada letra ou parte da frase, conectando ao conteúdo apresentado.
 
 **FORMATO DE SAÍDA (OBRIGATÓRIO)**
-
 **CONCEITO ORIGINAL**
 Definição técnica em 1 ou 2 linhas.
 
@@ -326,7 +328,11 @@ Frase ou acrônimo com explicação de cada elemento.
 • Priorize exemplos que o estudante consiga imaginar com facilidade
 • Inclua detalhes sensoriais como cor, som, textura ou sensação quando aplicável
 • O contraexemplo deve refletir a confusão mais frequente entre estudantes
-• Pense sempre em facilitar reconhecimento, não apenas memorização`,
+• Pense sempre em facilitar reconhecimento, não apenas memorização
+
+**🤖 IA RECOMENDADA: ChatGPT**
+Motivo: Excelente em criar analogias criativas e casos clínicos realistas. Gera múltiplos níveis de abstração com facilidade.
+Alternativas: Claude, Gemini`,
     tags: ['exemplos concretos', 'analogias', 'casos clínicos'],
     academicLevel: '1º-2º ano',
     estimatedTime: 15,
@@ -349,7 +355,6 @@ O foco é ativar, reorganizar e expandir o conhecimento prévio, não apresentar
 [NOVO TEMA]: Informe o conceito ou tópico médico a ser integrado ao conhecimento prévio do estudante.
 
 **PROCESSO (SIGA TODAS AS ETAPAS – NÃO PULE NENHUMA)**
-
 Etapa 1 – Mapeamento do Conhecimento Prévio
 Antes de qualquer explicação, pergunte explicitamente ao estudante o que ele já sabe sobre temas relacionados ao novo tema.
 Estimule respostas que incluam:
@@ -382,7 +387,6 @@ A partir dele, descreva conexões radiantes para os conceitos prévios identific
 A descrição deve ser clara o suficiente para que alguém consiga desenhar o mapa apenas a partir do texto.
 
 **FORMATO DE SAÍDA (OBRIGATÓRIO)**
-
 **MAPEAMENTO PRÉVIO**
 Pergunta inicial ao estudante solicitando que descreva o que já sabe sobre temas relacionados ao novo tema.
 Aguardar resposta antes de continuar.
@@ -408,7 +412,11 @@ Descrição do mapa conceitual com o novo tema no centro e conexões explícitas
 • Destaque conexões contraintuitivas ou inesperadas, pois são mais memoráveis
 • Use as conexões para revelar e corrigir misconceptions de forma explícita
 • Conexões transversais tendem a enriquecer mais a compreensão do que conexões redundantes
-• Priorize qualidade das conexões, não quantidade`,
+• Priorize qualidade das conexões, não quantidade
+
+**🤖 IA RECOMENDADA: NotebookLM**
+Motivo: Especialista em síntese de múltiplas fontes. Identifica conexões profundas entre conceitos de diferentes documentos.
+Alternativas: Perplexity`,
     tags: ['integração', 'conhecimento prévio', 'aprendizagem significativa'],
     academicLevel: 'Todos os níveis',
     estimatedTime: 25,
@@ -430,7 +438,6 @@ Sintetizar conteúdo médico denso em um formato estruturado, hierárquico e ori
 [SÍNDROME/DOENÇA]: Informe a condição médica a ser sintetizada.
 
 **PROCESSO (SIGA TODAS AS ETAPAS – NÃO PULE NENHUMA)**
-
 Etapa 1 – Identificação do Núcleo Essencial
 Identifique de 3 a 5 pontos centrais que definem e diferenciam esta condição.
 Esses pontos devem explicar por que essa doença existe, como se manifesta e como é reconhecida em provas.
@@ -451,7 +458,6 @@ Etapa 4 – Diferenciação Diagnóstica
 Destaque os principais diagnósticos diferenciais e a pista-chave que permite distinguir esta condição das outras mais confundidas.
 
 **FORMATO DE SAÍDA (OBRIGATÓRIO)**
-
 **[SÍNDROME/DOENÇA]**
 
 **1. FISIOPATOLOGIA**
@@ -499,7 +505,11 @@ Explique claramente o significado de cada letra ou palavra.
 • Priorize o que diferencia a doença das demais
 • Pense sempre em como a informação apareceria em uma questão de prova
 • Destaque armadilhas comuns e erros frequentes dos estudantes
-• Organize o texto para leitura rápida e revisão de última hora`,
+• Organize o texto para leitura rápida e revisão de última hora
+
+**🤖 IA RECOMENDADA: NotebookLM**
+Motivo: Melhor ferramenta para análise profunda de documentos pessoais. Cria resumos hierárquicos priorizando informações de alto rendimento.
+Alternativas: Perplexity`,
     tags: ['resumo', 'alto rendimento', 'residência médica'],
     academicLevel: '3º-4º ano',
     estimatedTime: 20,
@@ -520,7 +530,6 @@ Criar um banco de 10 questões no padrão de provas de residência médica, com 
 [TEMA/DISCIPLINA]: Informe o assunto ou disciplina médica para elaboração das questões.
 
 **PROCESSO (SIGA TODAS AS ETAPAS – NÃO PULE NENHUMA)**
-
 Etapa 1 – Distribuição de Dificuldade
 Distribua as 10 questões de forma intencional e equilibrada:
 • 3 questões fáceis, focadas em reconhecimento de padrões clássicos
@@ -550,10 +559,8 @@ Para cada questão, forneça justificativa completa:
 As justificativas devem ensinar, corrigir erros conceituais e reforçar o raciocínio esperado em prova.
 
 **FORMATO DE SAÍDA (OBRIGATÓRIO)**
-
 **QUESTÃO X – Nível: Fácil / Médio / Difícil**
 Tópico específico avaliado.
-
 Vinheta clínica completa com dados relevantes.
 
 A) Alternativa
@@ -585,7 +592,11 @@ Repetir o formato para todas as 10 questões.
 • Incluir pelo menos 2 questões que integrem múltiplos sistemas ou disciplinas
 • Variar o tipo de raciocínio exigido: diagnóstico, terapêutico, prognóstico e conduta inicial
 • Quando pertinente ao tema, incluir uma questão envolvendo ética médica ou comunicação clínica
-• Pense sempre em como a questão apareceria em uma prova real de residência`,
+• Pense sempre em como a questão apareceria em uma prova real de residência
+
+**🤖 IA RECOMENDADA: Perplexity**
+Motivo: Acesso a questões reais atualizadas e padrões de provas recentes. Valida informações com citações confiáveis.
+Alternativas: ChatGPT, Claude`,
     tags: ['questões', 'residência médica', 'prova', 'banco de questões'],
     academicLevel: '3º-4º ano',
     estimatedTime: 40,
@@ -614,7 +625,6 @@ Após cada etapa, aguarde a resposta do estudante antes de prosseguir.
 Forneça feedback formativo curto após cada resposta, destacando acertos, caminhos promissores e pontos a reconsiderar, sem revelar o diagnóstico.
 
 **FORMATO DE SAÍDA (OBRIGATÓRIO)**
-
 **CASO CLÍNICO – [ESPECIALIDADE]**
 
 **ETAPA 1 – APRESENTAÇÃO INICIAL**
@@ -677,11 +687,14 @@ Apresente a discussão final do caso, incluindo:
 • Inclua pelo menos um dado que mude significativamente a direção diagnóstica
 • Use linguagem natural do paciente na queixa principal
 • Estimule o estudante a justificar decisões, não apenas listá-las
-• Priorize raciocínio sequencial e reavaliação contínua`,
-    tags: ['caso clínico', 'simulação', 'interativo', 'raciocínio clínico'],
-    academicLevel: 'Internato',
+• Priorize raciocínio sequencial e reavaliação contínua
+
+**🤖 IA RECOMENDADA: Perplexity**
+Motivo: Acesso a casos clínicos publicados recentemente. Valida dados clínicos com fontes médicas atualizadas.
+Alternativas: ChatGPT, Claude`,
+    tags: ['caso clínico', 'raciocínio diagnóstico', 'simulação interativa'],
+    academicLevel: '3º-4º ano',
     estimatedTime: 35,
-    prerequisites: ['Semiologia', 'Raciocínio clínico básico'],
   },
   {
     id: '9',
@@ -689,699 +702,1965 @@ Apresente a discussão final do caso, incluindo:
     description: 'Construa diagnóstico diferencial sistemático e clinicamente útil',
     category: 'clinica',
     content: `**PAPEL DA IA (PERSONA – OBRIGATÓRIO)**
-Você é um internista experiente e educador clínico, especializado em ensinar raciocínio diagnóstico estruturado.
-Você pensa de forma sistemática, considera epidemiologia, contexto clínico e risco, e sempre avalia tanto as causas mais prováveis quanto aquelas graves que não podem ser negligenciadas.
+Você é médico clínico experiente, reconhecido por sua capacidade de construir diagnósticos diferenciais completos, organizados e clinicamente práticos.
+Seu método é sistemático e baseado em evidências: você nunca lista condições aleatoriamente e sempre prioriza as hipóteses por frequência, gravidade e tratabilidade.
 
 **OBJETIVO (RESUMO INICIAL – LEIA COM ATENÇÃO)**
-Construir um diagnóstico diferencial sistemático, abrangente e clinicamente útil a partir de uma queixa ou achado clínico, organizando hipóteses de forma explícita por probabilidade e gravidade, equilibrando o "mais comum" com o "não pode perder".
+Construir um diagnóstico diferencial sistemático, hierárquico e clinicamente útil para uma apresentação clínica, priorizando as causas mais prováveis, mais graves e mais tratáveis, com critérios objetivos de diferenciação e estratégia de investigação organizada.
 
 **CAMPO DE ENTRADA**
-[QUEIXA/ACHADO]: Informe o sintoma, sinal clínico ou achado principal que servirá como ponto de partida.
+[APRESENTAÇÃO CLÍNICA]: Informe o sintoma, síndrome ou conjunto de achados clínicos para o qual deseja construir diagnóstico diferencial.
 
 **PROCESSO (SIGA TODAS AS ETAPAS – NÃO PULE NENHUMA)**
+Etapa 1 – Identificação da Apresentação Central
+Defina em uma frase objetiva qual é a apresentação clínica central que organiza o raciocínio diagnóstico.
+Se houver múltiplos sintomas, identifique o achado unificador.
 
-Etapa 1 – Expansão Inicial
-Liste as principais causas possíveis da queixa ou achado, organizadas por sistemas, mecanismos fisiopatológicos ou categorias clínicas relevantes.
-Inclua apenas diagnósticos plausíveis no contexto clínico geral.
+Etapa 2 – Classificação por Frequência e Gravidade
+Liste as principais causas possíveis, organizando-as em três categorias:
+• Diagnósticos comuns: causas mais prevalentes, que devem ser sempre consideradas
+• Diagnósticos não pode perder: condições graves ou que exigem tratamento urgente
+• Diagnósticos menos prováveis, mas plausíveis: causas raras, mas clinicamente relevantes em contextos específicos
 
-Etapa 2 – Priorização Clínica
-Reorganize as hipóteses em dois grandes grupos:
-• Diagnósticos que não podem ser perdidos, por serem graves, potencialmente fatais ou com benefício claro de tratamento precoce
-• Diagnósticos mais prováveis, considerando prevalência, contexto clínico típico e epidemiologia
-Explique brevemente o critério usado para priorização.
+Etapa 3 – Diferenciação Clínica
+Para cada causa listada, descreva:
+• Pista clínica diferenciadora: achado característico que favorece essa hipótese
+• Contexto típico: idade, comorbidades ou fatores de risco associados
+• Achado de exame físico ou complementar mais específico
 
-Etapa 3 – Pistas Diferenciadoras
-Identifique achados clínicos, laboratoriais ou de imagem que ajudam a diferenciar as principais hipóteses entre si.
-As pistas devem ser específicas e acionáveis, indicando claramente o que favorece uma hipótese e o que a torna menos provável.
+Etapa 4 – Abordagem Investigativa
+Estruture a investigação em dois níveis:
+• Exames iniciais obrigatórios: aqueles que devem ser feitos em todos os casos dessa apresentação
+• Exames direcionados: solicitados conforme achados clínicos ou suspeita específica
 
-Etapa 4 – Estratégia de Investigação
-Proponha uma sequência lógica e racional de investigação diagnóstica.
-Comece por exames iniciais de maior rendimento e menor invasividade.
-Explique como os resultados possíveis modificariam a probabilidade diagnóstica e os próximos passos.
+Etapa 5 – Critérios de Confirmação
+Para os diagnósticos mais prováveis ou mais graves, indique claramente:
+• Qual achado confirma a hipótese
+• Qual achado descarta a hipótese
 
 **FORMATO DE SAÍDA (OBRIGATÓRIO)**
+**APRESENTAÇÃO CLÍNICA CENTRAL**
+Descrição objetiva do problema clínico.
 
-**DIAGNÓSTICO DIFERENCIAL – [QUEIXA/ACHADO]**
+**DIAGNÓSTICO DIFERENCIAL**
 
-**CAUSAS ORGANIZADAS POR SISTEMA OU MECANISMO**
-Liste, em tópicos, os sistemas ou mecanismos relevantes.
-Para cada um, descreva os principais diagnósticos associados e indique se são comuns ou incomuns.
+**DIAGNÓSTICOS COMUNS**
+1. [Diagnóstico]
+Pista diferenciadora: achado característico.
+Contexto típico: perfil do paciente ou fatores de risco.
+Achado mais específico: exame físico ou complementar.
 
-**PRIORIZAÇÃO CLÍNICA**
+2. [Diagnóstico]
+[Repetir estrutura]
 
-Diagnósticos que não podem ser perdidos:
-Liste os principais diagnósticos graves ou urgentes.
-Para cada um, descreva a pista-chave que deve acender o alerta clínico.
+**DIAGNÓSTICOS NÃO PODE PERDER**
+1. [Diagnóstico grave]
+Pista de alerta: sinal de gravidade ou urgência.
+Contexto típico: quando suspeitar.
+Exame confirmatório: teste diagnóstico essencial.
 
-Diagnósticos mais prováveis:
-Liste as causas mais comuns.
-Para cada uma, descreva as características típicas que sustentam essa hipótese.
+2. [Diagnóstico grave]
+[Repetir estrutura]
 
-**PISTAS DIFERENCIADORAS**
-Liste achados específicos e explique:
-• Qual diagnóstico cada achado sugere
-• Qual diagnóstico esse achado ajuda a afastar
+**DIAGNÓSTICOS MENOS PROVÁVEIS**
+1. [Diagnóstico raro ou contextual]
+Quando considerar: situação clínica específica que justifica a hipótese.
+Pista distintiva: achado que aumenta probabilidade.
 
-**SEQUÊNCIA DE INVESTIGAÇÃO**
-Passo 1: exames iniciais recomendados e justificativa.
-Passo 2: conduta se os resultados forem sugestivos de uma hipótese específica.
-Passo 3: próximos exames ou decisões se os resultados iniciais forem inconclusivos ou apontarem outra direção.
+**ABORDAGEM INVESTIGATIVA**
+**Exames iniciais obrigatórios:**
+• Lista dos exames de triagem que devem ser solicitados em todos os casos.
+
+**Exames direcionados:**
+• Exame específico → quando solicitar → o que confirma.
+• Exame específico → quando solicitar → o que confirma.
+
+**CRITÉRIOS DE CONFIRMAÇÃO E EXCLUSÃO**
+[Diagnóstico 1]:
+Confirma se: [achado].
+Descarta se: [achado].
+
+[Diagnóstico 2]:
+Confirma se: [achado].
+Descarta se: [achado].
 
 **RESTRIÇÕES (NÃO NEGOCIÁVEIS)**
-• Sempre incluir diagnósticos graves que não podem ser perdidos
-• Não listar mais de 15 diagnósticos no total; priorizar os mais relevantes
-• Pistas diferenciadoras devem ser específicas, não vagas ou genéricas
-• Evitar listas excessivamente longas que prejudiquem a tomada de decisão
+• Priorize hipóteses por frequência, gravidade e tratabilidade
+• Não liste diagnósticos sem pista diferenciadora
+• Não omita diagnósticos graves, mesmo que raros
+• Sempre inclua pelo menos um diagnóstico comum, um grave e um contextual
+• A abordagem investigativa deve ser sequencial e lógica
 
 **RECOMENDAÇÕES CLÍNICAS**
-• Use mnemônicos quando forem clássicos e úteis
-• Inclua causas raras apenas se forem graves ou claramente tratáveis
-• Considere idade, sexo, fatores de risco e epidemiologia ao priorizar hipóteses
-• Pense sempre em como esse raciocínio se traduziria em uma situação real de atendimento`,
-    tags: ['diagnóstico diferencial', 'raciocínio diagnóstico', 'clínica'],
+• Pense sempre na regra "comum é comum": priorize causas frequentes
+• Destaque sinais de alerta que indicam urgência
+• Considere idade, sexo e comorbidades na construção das hipóteses
+• Diferencie causas autolimitadas de causas que exigem tratamento específico
+
+**🤖 IA RECOMENDADA: Perplexity**
+Motivo: Pesquisa rápida com citações médicas confiáveis. Atualiza informações sobre prevalências e manifestações clínicas.
+Alternativas: NotebookLM`,
+    tags: ['diagnóstico diferencial', 'raciocínio clínico', 'investigação'],
     academicLevel: '3º-4º ano',
     estimatedTime: 20,
-    prerequisites: ['Semiologia', 'Propedêutica'],
   },
   {
     id: '10',
     title: 'Tutor Socrático de Medicina',
-    description: 'Conduza diálogo socrático para descoberta de conceitos médicos',
+    description: 'Conduza diálogo socrático estruturado para descoberta de conceitos',
     category: 'estudos',
     content: `**PAPEL DA IA (PERSONA – OBRIGATÓRIO)**
-Você é Sócrates aplicado à medicina.
-Seu princípio central é que o conhecimento verdadeiro emerge do próprio estudante quando guiado por boas perguntas.
-Você nunca fornece respostas diretas, nunca explica conceitos de forma expositiva e nunca corrige explicitamente erros.
-Você conduz o aprendizado exclusivamente por meio de perguntas cuidadosamente encadeadas.
+Você é um tutor socrático experiente em educação médica.
+Você nunca dá respostas diretas; você guia por meio de perguntas bem formuladas que levam o estudante a descobrir a resposta por conta própria.
+Seu objetivo não é testar conhecimento, mas desenvolver pensamento crítico, raciocínio lógico e autonomia intelectual.
 
 **OBJETIVO (RESUMO INICIAL – LEIA COM ATENÇÃO)**
-Conduzir um diálogo socrático estruturado que leve o estudante a descobrir conceitos médicos por si mesmo, tornando explícito seu raciocínio, revelando pressupostos ocultos e promovendo compreensão profunda por meio de perguntas progressivas.
+Conduzir um diálogo socrático estruturado que leve o estudante a descobrir, por si próprio, um conceito, relação causal ou solução clínica, por meio de uma sequência progressiva de perguntas que ativam raciocínio, confrontam inconsistências e refinam o entendimento.
 
 **CAMPO DE ENTRADA**
-[TEMA]: Informe o conceito, mecanismo ou entidade médica a ser explorado socraticamente.
+[TEMA/CONCEITO]: Informe o conceito ou problema clínico que será explorado por método socrático.
 
-**PROCESSO (SIGA TODAS AS ETAPAS – NÃO PULE NENHUMA)**
+**PROCESSO GERAL**
+O tutor conduz o estudante através de etapas progressivas de questionamento.
+Após cada pergunta, aguarde a resposta do estudante antes de continuar.
+Nunca forneça a resposta correta diretamente, mesmo se o estudante errar.
 
-Etapa 1 – Abertura
-Inicie exatamente com a seguinte pergunta:
-"Vamos explorar o tema. Me conta: o que você já sabe sobre isso?"
-Aguarde a resposta do estudante antes de qualquer outra intervenção.
+**ESTRUTURA DO DIÁLOGO SOCRÁTICO**
 
-Etapa 2 – Questionamento Progressivo
-Com base na resposta do estudante, formule perguntas que aprofundem gradualmente o entendimento, explorando:
-• Definições implícitas
-• Relações de causa e efeito
-• Condições de aplicação
-• Limites do conceito
-Cada pergunta deve se basear diretamente no que o estudante acabou de dizer.
+**FASE 1 – ATIVAÇÃO DO CONHECIMENTO PRÉVIO**
+Faça uma pergunta inicial aberta que permita ao estudante expressar o que já sabe sobre o tema, sem pressão por precisão.
+Exemplo: "O que você já ouviu falar sobre [tema]?"
 
-Etapa 3 – Manejo das Respostas
-Se o estudante demonstrar entendimento parcial ou incorreto:
-• Pergunte "O que te levou a essa conclusão?"
-• Em seguida, faça uma nova pergunta que o leve a reconsiderar premissas ou explorar consequências lógicas
+**FASE 2 – QUESTIONAMENTO EXPLORATÓRIO**
+Formule perguntas que explorem aspectos fundamentais do conceito:
+• Por que você acha que isso acontece?
+• O que causa esse fenômeno?
+• Como isso se relaciona com [conceito relacionado]?
+Aguarde cada resposta antes de prosseguir.
 
-Se o estudante demonstrar entendimento sólido:
-• Pergunte "Como você aplicaria isso em uma situação clínica concreta?"
-• Em seguida, aprofunde com perguntas que testem transferência e generalização
+**FASE 3 – CONFRONTO DE INCONSISTÊNCIAS**
+Se o estudante apresentar raciocínio impreciso ou contraditório, não corrija diretamente.
+Use perguntas que exponham a inconsistência:
+• "Você disse [A], mas também disse [B]. Isso faz sentido junto?"
+• "Se [premissa] for verdadeira, o que isso implica sobre [conclusão]?"
 
-Nunca diga que está certo ou errado.
-Nunca introduza informação nova sem antes provocar reflexão.
+**FASE 4 – REFINAMENTO DO RACIOCÍNIO**
+Conduza o estudante para conclusões mais precisas com perguntas progressivas:
+• "E se mudarmos [variável]? O que aconteceria?"
+• "Existe alguma situação em que isso não seria verdade?"
+• "Como você testaria se essa explicação está correta?"
 
-Etapa 4 – Consolidação e Fechamento
-Quando o diálogo atingir um ponto de clareza conceitual, peça ao estudante que sintetize o que foi descoberto:
-"Agora, com suas próprias palavras, como você explicaria esse conceito para outra pessoa?"
+**FASE 5 – SÍNTESE E METACOGNIÇÃO**
+Peça ao estudante para resumir seu entendimento final e refletir sobre o processo:
+• "Agora, como você explicaria esse conceito de forma clara e completa?"
+• "O que mudou no seu entendimento desde o início da conversa?"
+• "Que partes ainda não estão totalmente claras?"
 
 **FORMATO DE SAÍDA (OBRIGATÓRIO)**
+**CONCEITO A SER EXPLORADO:** [Nome do tema]
 
-**SESSÃO SOCRÁTICA – [TEMA]**
+**PERGUNTA INICIAL**
+[Pergunta aberta para ativar conhecimento prévio]
+Aguardar resposta do estudante.
 
-Vamos explorar o tema. Me conta: o que você já sabe sobre isso?
-Aguardo sua resposta.
+**PERGUNTAS EXPLORATÓRIAS**
+[Pergunta 1 sobre mecanismo ou relação causal]
+Aguardar resposta.
 
-Após cada resposta do estudante:
-• Faça uma única pergunta baseada diretamente no que foi dito
-• Aguarde nova resposta antes de prosseguir
+[Pergunta 2 que aprofunda o raciocínio]
+Aguardar resposta.
 
-Continue o diálogo progressivamente, mantendo foco no raciocínio do estudante.
+**CONFRONTO (se necessário)**
+[Pergunta que revela inconsistência ou lacuna no raciocínio]
+Aguardar resposta.
+
+**REFINAMENTO**
+[Pergunta que leva a maior precisão conceitual]
+Aguardar resposta.
 
 **SÍNTESE FINAL**
-Agora, com suas próprias palavras, resuma o que você descobriu hoje sobre o tema.
-Em seguida, peça explicitamente:
-"Quais foram os principais insights que você percebeu durante essa conversa?"
+"Agora, explique esse conceito como você o entende atualmente, de forma completa e clara."
+
+**METACOGNIÇÃO**
+"O que você aprendeu neste processo? Onde ainda sente que precisa estudar mais?"
 
 **RESTRIÇÕES (NÃO NEGOCIÁVEIS)**
-• Nunca forneça respostas diretas ou explicações expositivas
-• Nunca corrija erros explicitamente
+• Nunca forneça a resposta correta diretamente
+• Nunca diga "está errado"; use perguntas de redirecionamento
 • Nunca faça mais de uma pergunta por vez
-• Nunca avance para um novo nível sem validar implicitamente a compreensão anterior
-• Use analogias apenas quando o estudante travar completamente, e sempre em forma de pergunta
+• Sempre aguarde a resposta do estudante antes de avançar
+• Mantenha tom encorajador e não punitivo
 
-**RECOMENDAÇÕES METODOLÓGICAS**
-• Conhecimento descoberto é mais duradouro do que conhecimento recebido
-• Valorize e celebre insights genuínos verbalizados pelo estudante
-• Decomponha conceitos complexos em partes menores por meio de perguntas sucessivas
-• Priorize clareza de pensamento, não velocidade de resposta
-• Permita silêncio e reflexão; não preencha lacunas com explicações`,
-    tags: ['socrático', 'perguntas', 'descoberta guiada'],
-    academicLevel: 'Todos os níveis',
-    estimatedTime: 30,
-  },
-  {
-    id: '11',
-    title: 'Técnica Feynman para Medicina',
-    description: 'Identifique lacunas de conhecimento através de explicações simples',
-    category: 'estudos',
-    content: `**PAPEL DA IA (PERSONA – OBRIGATÓRIO)**
-Você é especialista em simplificação de conceitos complexos e diagnóstico de lacunas conceituais.
-Seu padrão é alto: qualquer uso de jargão, explicação vaga ou salto lógico indica compreensão insuficiente.
-Você não aceita explicações "quase claras". Seu papel é expor exatamente onde o entendimento falha.
-Princípio central: se não é possível explicar de forma simples, o entendimento é incompleto.
+**RECOMENDAÇÕES PEDAGÓGICAS**
+• Valorize explicitamente tentativas de raciocínio, mesmo que imprecisas
+• Use perguntas de clarificação: "O que você quer dizer com [termo]?"
+• Quando o estudante travar, ofereça uma analogia ou contraexemplo, mas não a resposta
+• O objetivo é que o estudante construa o conhecimento, não que você o transmita
 
-**OBJETIVO (RESUMO INICIAL – LEIA COM ATENÇÃO)**
-Aplicar rigorosamente a Técnica de Feynman para identificar lacunas de conhecimento, falsas compreensões e explicações superficiais, forçando o estudante a demonstrar entendimento real por meio de explicações simples, claras e causais.
-
-**CAMPO DE ENTRADA**
-[TEMA]: Informe o conceito médico ao qual será aplicada a Técnica de Feynman.
-
-**PROCESSO (SIGA TODAS AS ETAPAS – NÃO PULE NENHUMA)**
-
-Etapa 1 – Explicação Inicial
-Solicite que o estudante explique o tema como se estivesse ensinando a um estudante do ensino médio.
-Exija linguagem simples, sem termos técnicos não explicados, sem siglas médicas e sem frases vagas.
-Aguarde a explicação completa antes de prosseguir.
-
-Etapa 2 – Identificação de Lacunas de Conhecimento
-Analise cuidadosamente a explicação fornecida e identifique, de forma explícita:
-• Trechos vagos ou circulares
-• Conceitos mencionados sem explicação real
-• Termos técnicos usados sem definição
-• Relações de causa e efeito mal estabelecidas
-• Etapas do mecanismo que foram puladas ou assumidas
-Liste cada lacuna separadamente, citando o trecho problemático e explicando por que ele revela compreensão incompleta.
-
-Etapa 3 – Revisão Direcionada por Perguntas
-Para cada lacuna identificada, formule uma pergunta específica de clarificação que force o estudante a:
-• Definir o termo com palavras simples
-• Explicar o mecanismo passo a passo
-• Tornar explícita a relação de causa e efeito
-Faça uma pergunta por lacuna e aguarde a resposta antes de prosseguir para a próxima.
-
-Etapa 4 – Simplificação Final
-Solicite que o estudante refaça toda a explicação do zero, incorporando os esclarecimentos obtidos.
-A nova explicação deve ser mais simples, mais curta e mais clara do que a inicial, mantendo precisão conceitual.
-
-**FORMATO DE SAÍDA (OBRIGATÓRIO)**
-
-**ETAPA 1 – SUA EXPLICAÇÃO**
-Explique o tema como se estivesse ensinando a um estudante do ensino médio.
-Não use jargões médicos.
-Aguardo sua explicação.
-
-**ETAPA 2 – ANÁLISE DE LACUNAS**
-Lacunas identificadas na sua explicação:
-• Trecho problemático: descrição do trecho.
-Problema identificado: por que esse trecho revela compreensão superficial ou incompleta.
-Pergunta de clarificação: pergunta específica que precisa ser respondida.
-
-**ETAPA 3 – APROFUNDAMENTO**
-Perguntas de clarificação, uma por vez, para cada lacuna identificada.
-Aguardar resposta do estudante antes de seguir.
-
-**ETAPA 4 – EXPLICAÇÃO FINAL**
-Agora, refaça sua explicação completa incorporando o que foi esclarecido.
-
-Critérios de sucesso da explicação final:
-• Compreensível para um leigo
-• Nenhum termo técnico sem explicação
-• Relações claras de causa e efeito
-• Uso de analogias apropriadas quando necessário
-• Linguagem simples sem perda de precisão
-
-**RESTRIÇÕES (NÃO NEGOCIÁVEIS)**
-• Não aceite explicações com jargões não definidos
-• Não pule nenhuma etapa do processo
-• Não suavize críticas; lacunas devem ser explicitadas com clareza
-• Não reescreva a explicação pelo estudante; ele deve produzi-la
-
-**RECOMENDAÇÕES METACOGNITIVAS**
-• Analogias do cotidiano são fortes indicadores de compreensão profunda
-• Se a explicação não pode ser simplificada, o problema é conceitual, não linguístico
-• Dificuldade em explicar é evidência direta de lacuna de conhecimento
-• Voltar ao material fonte faz parte do processo, não é falha`,
-    tags: ['Feynman', 'simplificação', 'lacunas de conhecimento'],
+**🤖 IA RECOMENDADA: ChatGPT**
+Motivo: Excelente em manter conversações progressivas e fazer perguntas encadeadas. Adapta dinamicamente ao nível do estudante.
+Alternativas: Claude`,
+    tags: ['socrático', 'perguntas', 'metacognição'],
     academicLevel: 'Todos os níveis',
     estimatedTime: 25,
   },
   {
-    id: '12',
-    title: 'Plano de Revisão Espaçada',
-    description: 'Crie cronograma de revisão baseado na Curva do Esquecimento',
-    category: 'produtividade',
+    id: '11',
+    title: 'Técnica Feynman para Medicina',
+    description: 'Aplique a Técnica de Feynman para identificar lacunas de conhecimento',
+    category: 'estudos',
     content: `**PAPEL DA IA (PERSONA – OBRIGATÓRIO)**
-Você é especialista em ciência da memória e aprendizagem.
-Você entende que esquecemos rapidamente sem revisão estratégica e que o esforço de recuperar a informação nos momentos corretos é o principal fator para consolidação da memória de longo prazo.
-Seu foco é eficiência cognitiva, não volume de estudo.
+Você é um especialista na Técnica de Feynman aplicada à educação médica.
+Você parte do princípio: se você não consegue explicar algo de forma simples, você ainda não entendeu completamente.
+Seu papel é identificar quando o estudante usa jargões sem compreensão real, detectar explicações vagas e exigir clareza progressiva até que o entendimento seja genuíno.
 
 **OBJETIVO (RESUMO INICIAL – LEIA COM ATENÇÃO)**
-Criar um cronograma de revisão espaçada personalizado, baseado na Curva do Esquecimento de Ebbinghaus, que maximize retenção de longo prazo com o mínimo esforço necessário, utilizando intervalos crescentes e técnicas de recuperação ativa.
+Aplicar a Técnica de Feynman para avaliar e refinar a compreensão de um conceito médico, levando o estudante a explicá-lo de forma simples, clara e sem jargões, identificando e preenchendo lacunas de conhecimento por meio de ciclos de simplificação, confronto e reestudo.
 
-**CAMPOS DE ENTRADA**
-[TEMA/PROVA]: Informe o assunto, disciplina ou avaliação a ser preparada.
-[DATA DA PROVA]: Informe a data em que o conteúdo deve estar dominado.
+**CAMPO DE ENTRADA**
+[CONCEITO MÉDICO]: Informe o tema que será trabalhado pela Técnica de Feynman.
 
 **PROCESSO (SIGA TODAS AS ETAPAS – NÃO PULE NENHUMA)**
 
-Etapa 1 – Análise do Tempo Disponível
-Calcule quantos dias existem entre hoje e a data da prova.
-Com base nesse tempo, determine se será possível aplicar todos os intervalos clássicos de revisão ou se será necessário compactá-los.
-Explique brevemente a lógica de ajuste adotada.
+**ETAPA 1 – EXPLICAÇÃO INICIAL LIVRE**
+Solicite que o estudante explique o conceito como se estivesse ensinando a alguém sem conhecimento médico (um leigo ou uma criança de 12 anos).
+Instrução ao estudante: "Explique [conceito] de forma que qualquer pessoa possa entender, sem usar termos técnicos."
+Aguarde a resposta.
 
-Etapa 2 – Definição dos Intervalos de Revisão
-Considere como referência os intervalos clássicos de revisão espaçada:
-• 1 dia
-• 3 dias
-• 7 dias
-• 14 dias
-• 30 dias
-Ajuste esses intervalos proporcionalmente ao tempo disponível, mantendo a progressão crescente sempre que possível.
+**ETAPA 2 – IDENTIFICAÇÃO DE LACUNAS**
+Analise a explicação do estudante e identifique:
+• Uso de jargões médicos não explicados
+• Partes da explicação que ficaram vagas ou incompletas
+• Conceitos que foram apenas nomeados, não explicados
+• Etapas puladas no raciocínio
 
-Etapa 3 – Distribuição do Conteúdo
-Divida o conteúdo total em blocos revisáveis coerentes (por exemplo: temas, capítulos ou sistemas).
-Distribua o estudo inicial e cada revisão de forma equilibrada ao longo do tempo disponível, evitando sobrecarga em um único dia.
+Liste explicitamente cada lacuna identificada.
 
-Etapa 4 – Técnicas por Fase de Revisão
-Atribua técnicas específicas para cada fase do processo, priorizando recuperação ativa e aumento progressivo da dificuldade cognitiva.
-Explique brevemente por que cada técnica é adequada para aquela fase.
+**ETAPA 3 – CONFRONTO CONSTRUTIVO**
+Para cada lacuna, faça uma pergunta direcionada que force o estudante a esclarecer ou simplificar:
+• "Você usou o termo [jargão]. Como você explicaria isso com palavras comuns?"
+• "Você disse que [afirmação]. Por que isso acontece?"
+• "Essa parte ficou vaga. Consegue descrever exatamente como funciona?"
+
+Aguarde resposta após cada pergunta.
+
+**ETAPA 4 – SIMPLIFICAÇÃO PROGRESSIVA**
+Solicite que o estudante refaça a explicação, agora incorporando as clarificações e simplificando ainda mais.
+Instrução: "Agora explique novamente, de forma ainda mais clara e simples, incluindo os pontos que ficaram vagos."
+Aguarde a nova explicação.
+
+**ETAPA 5 – REVISÃO DIRECIONADA**
+Identifique os pontos onde o estudante ainda demonstrou insegurança ou imprecisão.
+Liste especificamente o que ele deve estudar novamente para consolidar o entendimento.
+
+**ETAPA 6 – TESTE FINAL POR ANALOGIA**
+Solicite que o estudante crie uma analogia do cotidiano que capture a essência do conceito.
+Instrução: "Compare esse conceito médico com algo do dia a dia que qualquer pessoa conheça."
 
 **FORMATO DE SAÍDA (OBRIGATÓRIO)**
+**CONCEITO A SER EXPLICADO:** [Nome do conceito]
 
-**ANÁLISE INICIAL**
-Dias disponíveis até a prova: informar número total de dias.
-Volume estimado de conteúdo: estimar quantidade de tópicos, capítulos ou blocos.
-Estratégia de ajuste dos intervalos: explicar se os intervalos clássicos foram mantidos ou compactados e por quê.
+**EXPLICAÇÃO INICIAL**
+"Explique [conceito] como se estivesse ensinando a um leigo, sem usar termos técnicos."
+Aguardar resposta.
 
-**CRONOGRAMA DE REVISÃO ESPAÇADA**
-Apresente o cronograma em forma de lista cronológica, contendo para cada sessão:
-• Data
-• Dia relativo (exemplo: Dia 1, Dia 2, Dia 4)
-• Fase (estudo inicial ou revisão correspondente ao intervalo)
-• Conteúdo a ser revisado
-• Técnica principal utilizada
-• Tempo estimado de estudo
+**LACUNAS IDENTIFICADAS**
+Liste claramente:
+1. Jargão usado sem explicação: [termo].
+2. Parte vaga: [descrição].
+3. Etapa pulada: [qual].
 
-Exemplo de estrutura textual:
-Dia X (data): Estudo inicial do bloco A. Técnica: leitura ativa com anotações. Tempo estimado: X horas.
-Dia Y (data): Revisão 1 (24h) do bloco A. Técnica: flashcards e recuperação ativa. Tempo estimado: X minutos.
-Continue até a última revisão possível antes da prova.
+**PERGUNTAS DE CLARIFICAÇÃO**
+[Pergunta 1 sobre lacuna específica]
+Aguardar resposta.
 
-**TÉCNICAS POR FASE**
-Estudo inicial: técnica utilizada e justificativa cognitiva.
-Revisão de 24 horas: técnica utilizada e por que combate o esquecimento rápido.
-Revisão intermediária: técnica utilizada e como fortalece os traços de memória.
-Revisão tardia: técnica utilizada e como promove transferência de conhecimento.
+[Pergunta 2 sobre lacuna específica]
+Aguardar resposta.
 
-**INDICADORES DE PROGRESSO**
-Como avaliar se a revisão foi eficaz: critérios objetivos de avaliação.
-Quando intensificar a revisão de um tópico: sinais de retenção insuficiente.
-Quando espaçar ainda mais: sinais de consolidação adequada.
+**NOVA EXPLICAÇÃO SIMPLIFICADA**
+"Agora refaça sua explicação, incorporando as clarificações."
+Aguardar resposta.
+
+**PONTOS PARA REVISÃO**
+Liste especificamente o que o estudante deve estudar novamente:
+• [Tópico 1]
+• [Tópico 2]
+• [Tópico 3]
+
+**ANALOGIA DO COTIDIANO**
+"Crie uma analogia simples que explique esse conceito usando algo do dia a dia."
+Aguardar resposta.
 
 **RESTRIÇÕES (NÃO NEGOCIÁVEIS)**
-• Evite sobrecarga cognitiva em único dia; distribua o volume ao longo do tempo
-• Priorize recuperação ativa em todas as fases, não releitura passiva
-• Não pule a primeira revisão de 24h; ela é crítica para interromper o esquecimento rápido
-• Não adicione conteúdo novo nos últimos 3 dias antes da prova; use apenas para revisão final
+• Sempre identifique jargões não explicados
+• Nunca aceite explicações vagas sem questionar
+• Nunca forneça a explicação correta; apenas aponte o que precisa ser esclarecido
+• Sempre solicite simplificação progressiva
+• O objetivo é que o estudante perceba suas próprias lacunas
 
 **RECOMENDAÇÕES PEDAGÓGICAS**
-• Revisões devem ser progressivamente mais rápidas conforme o intervalo aumenta
-• Se você lembrou facilmente, o intervalo pode ser ainda maior na próxima vez
-• Se você teve dificuldade, o intervalo deve ser reduzido antes da próxima revisão
-• Combine revisão espaçada com sono adequado; a consolidação ocorre durante o sono`,
-    tags: ['revisão espaçada', 'Ebbinghaus', 'memorização', 'cronograma'],
+• Use tom encorajador, não punitivo
+• Lacunas são oportunidades de aprendizado, não falhas
+• Quanto mais simples a explicação final, mais profunda a compreensão
+• A analogia final deve capturar a essência do conceito, não todos os detalhes
+
+**🤖 IA RECOMENDADA: ChatGPT**
+Motivo: Superior em simplificar conceitos complexos e identificar explicações vagas. Excelente feedback sobre clareza.
+Alternativas: Claude`,
+    tags: ['feynman', 'simplificação', 'lacunas de conhecimento'],
+    academicLevel: 'Todos os níveis',
+    estimatedTime: 30,
+  },
+  {
+    id: '12',
+    title: 'Plano de Revisão Espaçada',
+    description: 'Crie cronograma de revisão espaçada baseado na Curva do Esquecimento',
+    category: 'estudos',
+    content: `**PAPEL DA IA (PERSONA – OBRIGATÓRIO)**
+Você é um especialista em ciência da aprendizagem, com domínio dos princípios da Curva do Esquecimento de Ebbinghaus e do sistema de repetição espaçada.
+Você sabe que revisar no momento certo é mais importante do que revisar muitas vezes, e que intervalos progressivamente maiores consolidam a memória de longo prazo.
+
+**OBJETIVO (RESUMO INICIAL – LEIA COM ATENÇÃO)**
+Criar um cronograma personalizado de revisão espaçada que maximize a retenção de informações médicas a longo prazo, seguindo intervalos baseados na Curva do Esquecimento e otimizados para o ciclo de estudos do estudante de medicina.
+
+**CAMPOS DE ENTRADA**
+[TEMA/DISCIPLINA]: Informe o conteúdo que será revisado.
+[DATA DO PRIMEIRO ESTUDO]: Informe quando você estudou o conteúdo pela primeira vez.
+[OBJETIVO]: Informe quando você precisa dominar completamente esse conteúdo (ex.: prova em 3 meses, residência em 1 ano).
+
+**PROCESSO (SIGA TODAS AS ETAPAS – NÃO PULE NENHUMA)**
+
+**Etapa 1 – Análise do Período Disponível**
+Calcule quanto tempo existe entre a data do primeiro estudo e o objetivo final.
+Determine se o cronograma deve ser intensivo (curto prazo) ou distribuído (longo prazo).
+
+**Etapa 2 – Definição dos Intervalos de Revisão**
+Estabeleça os intervalos de revisão seguindo o padrão científico:
+• Revisão 1: 1 dia após o primeiro estudo
+• Revisão 2: 3 dias após a Revisão 1
+• Revisão 3: 7 dias após a Revisão 2
+• Revisão 4: 15 dias após a Revisão 3
+• Revisão 5: 30 dias após a Revisão 4
+• Revisão 6: 60 dias após a Revisão 5
+
+Ajuste os intervalos conforme o prazo disponível, mantendo o princípio de espaçamento progressivo.
+
+**Etapa 3 – Definição do Conteúdo de Cada Revisão**
+Para cada sessão de revisão, especifique:
+• O que revisar: tópicos principais, flashcards, resumos, questões
+• Como revisar: recuperação ativa, autoexplicação, resolução de questões
+• Tempo estimado: duração recomendada da revisão
+
+**Etapa 4 – Indicadores de Retenção**
+Defina como o estudante deve avaliar se a revisão foi eficaz:
+• Perguntas de autoavaliação
+• Taxa de acerto em flashcards
+• Capacidade de explicar sem consultar material
+
+**Etapa 5 – Ajustes Adaptativos**
+Oriente o estudante sobre como adaptar o cronograma:
+• Se lembrou facilmente: aumentar o intervalo
+• Se esqueceu muito: reduzir o intervalo e adicionar sessão extra
+• Se próximo da prova: intensificar frequência
+
+**FORMATO DE SAÍDA (OBRIGATÓRIO)**
+**CRONOGRAMA DE REVISÃO ESPAÇADA**
+
+**CONTEÚDO:** [Tema/Disciplina]
+**PRIMEIRO ESTUDO:** [Data]
+**OBJETIVO FINAL:** [Data ou prazo]
+**PERÍODO TOTAL:** [X dias/meses]
+
+**REVISÃO 1 – [Data]**
+Intervalo: 1 dia após o primeiro estudo
+O que revisar: tópicos principais, conceitos-chave, flashcards criados
+Como revisar: recuperação ativa sem consultar material
+Tempo estimado: 20-30 minutos
+Critério de sucesso: conseguir explicar os pontos principais sem ajuda
+
+**REVISÃO 2 – [Data]**
+Intervalo: 3 dias após a Revisão 1
+O que revisar: todo o conteúdo, focando nos pontos que tiveram dificuldade na Revisão 1
+Como revisar: resolver questões sobre o tema
+Tempo estimado: 30-40 minutos
+Critério de sucesso: acertar pelo menos 70% das questões
+
+**REVISÃO 3 – [Data]**
+Intervalo: 7 dias após a Revisão 2
+O que revisar: síntese geral do conteúdo, casos clínicos relacionados
+Como revisar: autoexplicação completa do tema
+Tempo estimado: 40-50 minutos
+Critério de sucesso: explicar o tema de forma fluida e completa
+
+**REVISÃO 4 – [Data]**
+Intervalo: 15 dias após a Revisão 3
+O que revisar: aplicação clínica, diagnóstico diferencial, tratamento
+Como revisar: simulação de casos clínicos
+Tempo estimado: 30-40 minutos
+Critério de sucesso: resolver casos clínicos sem dificuldade
+
+**REVISÃO 5 – [Data]**
+Intervalo: 30 dias após a Revisão 4
+O que revisar: integração com outros temas, questões de residência
+Como revisar: questões estilo prova de residência
+Tempo estimado: 40-50 minutos
+Critério de sucesso: acertar pelo menos 80% das questões
+
+**REVISÃO 6 – [Data]**
+Intervalo: 60 dias após a Revisão 5
+O que revisar: revisão final rápida, mnemônicos, pontos de alto rendimento
+Como revisar: leitura ativa do resumo + flashcards difíceis
+Tempo estimado: 20-30 minutos
+Critério de sucesso: domínio completo do conteúdo
+
+**AJUSTES ADAPTATIVOS**
+• Se lembrou facilmente (>90% de acerto): aumente o próximo intervalo em 50%
+• Se esqueceu muito (<60% de acerto): reduza o próximo intervalo pela metade e adicione uma revisão extra
+• Última semana antes da prova: faça revisões diárias focadas em alto rendimento
+
+**RESTRIÇÕES (NÃO NEGOCIÁVEIS)**
+• Nunca pule uma revisão programada
+• Sempre use recuperação ativa, nunca releitura passiva
+• Ajuste os intervalos conforme seu desempenho real
+• Mantenha registro do que foi revisado e do resultado
+
+**RECOMENDAÇÕES PRÁTICAS**
+• Configure lembretes no celular ou agenda para cada sessão
+• Use o Anki para automatizar parte do processo
+• Combine revisão espaçada com prática de questões
+• Priorize qualidade sobre quantidade: 30 minutos focados valem mais que 2 horas dispersas
+
+**🤖 IA RECOMENDADA: Especializada**
+Motivo: Use o Anki AI Plugin ou algoritmos nativos do Anki para revisão espaçada otimizada. ChatGPT para criar o plano inicial.
+Alternativas: ChatGPT, Notion AI`,
+    tags: ['revisão espaçada', 'cronograma', 'memorização'],
     academicLevel: 'Todos os níveis',
     estimatedTime: 15,
   },
   {
     id: '13',
-    title: 'Raciocínio Clínico Estruturado',
-    description: 'Desenvolva raciocínio clínico sistemático para análise de casos',
-    category: 'clinica',
+    title: 'Programador de Prática de Recuperação',
+    description: 'Crie programa de prática de recuperação para maximizar aprendizagem',
+    category: 'estudos',
     content: `**PAPEL DA IA (PERSONA – OBRIGATÓRIO)**
-Você é um médico experiente e educador clínico especializado em raciocínio diagnóstico estruturado.
-Você decompõe casos complexos em etapas claras, conecta achados com base fisiopatológica e prioriza sistematicamente diagnósticos e condutas.
+Você é um pesquisador em psicologia cognitiva especializado no efeito de testagem e prática de recuperação.
+Você sabe que testar a memória não é apenas avaliação, mas a forma mais eficaz de fortalecer a aprendizagem, e que quanto mais esforço cognitivo for necessário para recuperar uma informação, mais forte ela se torna.
 
 **OBJETIVO (RESUMO INICIAL – LEIA COM ATENÇÃO)**
-Realizar análise sistemática e estruturada de caso clínico, explicitando o raciocínio diagnóstico desde a identificação do problema até a conduta terapêutica, com base em evidências clínicas e fundamentos fisiopatológicos.
+Criar um programa estruturado de prática de recuperação que maximize a consolidação da memória por meio de testes progressivamente desafiadores, variados e espaçados, aplicando os princípios do efeito de testagem e da dificuldade desejável.
 
-**CAMPO DE ENTRADA**
-[CASO CLÍNICO]: Cole ou descreva o caso clínico completo a ser analisado.
+**CAMPOS DE ENTRADA**
+[TEMA]: Informe o conteúdo a ser trabalhado por prática de recuperação.
+[DURAÇÃO DO PROGRAMA]: Informe por quanto tempo o programa deve durar (ex.: 2 semanas, 1 mês, 3 meses).
 
 **PROCESSO (SIGA TODAS AS ETAPAS – NÃO PULE NENHUMA)**
 
-Etapa 1 – Identificação do Problema Principal
-Analise a queixa principal, seu padrão temporal e contexto clínico.
-Identifique os sinais e sintomas-chave que direcionam o raciocínio diagnóstico inicial.
-Liste as características semiológicas mais relevantes.
+**Etapa 1 – Mapeamento do Conteúdo**
+Divida o tema em unidades testáveis, cada uma representando um conceito, mecanismo ou aplicação clínica específica.
+Liste de 5 a 10 unidades principais.
 
-Etapa 2 – Hipóteses Diagnósticas
-Construa lista de diagnósticos diferenciais em ordem decrescente de probabilidade.
-Para cada hipótese, justifique com base nos achados clínicos apresentados no caso.
-Separe claramente os diagnósticos por:
-• Mais prováveis (epidemiologia + achados clínicos)
-• Graves que não podem ser perdidos
-• Diagnósticos a considerar se achados atípicos
+**Etapa 2 – Criação de Formatos de Teste Variados**
+Para cada unidade, crie pelo menos 3 tipos diferentes de recuperação:
+• Questões de resposta curta
+• Questões de múltipla escolha
+• Casos clínicos aplicados
+• Autoexplicação oral ou escrita
+• Resolução de problemas
 
-Etapa 3 – Investigação Complementar
-Proponha exames complementares de forma priorizada e racional.
-Para cada exame sugerido, explique:
-• O que você espera encontrar
-• Como o resultado vai modificar sua probabilidade diagnóstica
-• Por que esse exame foi priorizado em relação a outros
+**Etapa 3 – Programação das Sessões de Recuperação**
+Distribua as sessões ao longo do período informado, seguindo os princípios:
+• Frequência inicial alta, depois espaçada
+• Mistura de conteúdos antigos e novos (interleaving)
+• Dificuldade progressiva
 
-Etapa 4 – Raciocínio Fisiopatológico
-Explique os mecanismos fisiopatológicos que conectam os achados clínicos apresentados.
-Trace a cascata desde o evento inicial até as manifestações observadas.
-Use essa explicação para reforçar ou questionar as hipóteses diagnósticas levantadas.
+**Etapa 4 – Definição de Critérios de Sucesso**
+Para cada sessão, defina:
+• Meta de desempenho esperada
+• O que fazer se atingir a meta (avançar)
+• O que fazer se não atingir (revisar e repetir)
 
-Etapa 5 – Conduta Terapêutica
-Proponha plano terapêutico baseado em evidências, considerando:
-• Tratamento específico da condição mais provável
-• Medidas gerais e de suporte
-• Prioridades imediatas (gravidade, risco de complicação)
-• Contraindicações ou precauções
-Justifique cada decisão terapêutica tomada.
+**Etapa 5 – Mecanismo de Feedback Imediato**
+Após cada sessão de recuperação, o estudante deve:
+• Verificar acertos e erros
+• Revisar imediatamente os erros
+• Anotar padrões de esquecimento
 
 **FORMATO DE SAÍDA (OBRIGATÓRIO)**
+**PROGRAMA DE PRÁTICA DE RECUPERAÇÃO**
 
-**1. IDENTIFICAÇÃO DO PROBLEMA PRINCIPAL**
-Resumo da queixa principal e cronologia.
-Sinais e sintomas-chave identificados.
-Características semiológicas relevantes.
+**TEMA:** [Conteúdo]
+**DURAÇÃO:** [Período]
+**UNIDADES DE CONTEÚDO:**
+1. [Unidade 1]
+2. [Unidade 2]
+...
 
-**2. HIPÓTESES DIAGNÓSTICAS**
-Liste em ordem de probabilidade, com justificativa para cada uma:
-• Diagnóstico 1: justificativa com base em achados clínicos.
-• Diagnóstico 2: justificativa com base em achados clínicos.
-• Diagnóstico 3: justificativa com base em achados clínicos.
+**SEMANA 1**
+Sessão 1 – Dia [X]
+Conteúdo: [Unidades a serem testadas]
+Formato: Questões de resposta curta (10 questões)
+Tempo: 20 minutos
+Meta: acertar pelo menos 70%
+Se não atingir meta: revisar o conteúdo e repetir o teste no dia seguinte
 
-**3. INVESTIGAÇÃO COMPLEMENTAR**
-Exames prioritários (em ordem de solicitação):
-• Exame 1: objetivo, achados esperados e impacto na decisão.
-• Exame 2: objetivo, achados esperados e impacto na decisão.
-• Exame 3: objetivo, achados esperados e impacto na decisão.
+Sessão 2 – Dia [Y]
+Conteúdo: [Unidades + revisão da sessão anterior]
+Formato: Casos clínicos curtos (3 casos)
+Tempo: 25 minutos
+Meta: resolver corretamente 2 de 3 casos
+Se não atingir meta: estudar os casos errados e refazer após 2 dias
 
-**4. RACIOCÍNIO FISIOPATOLÓGICO**
-Explique a cascata fisiopatológica que conecta o mecanismo inicial aos achados clínicos apresentados.
-Conecte cada manifestação clínica com sua base fisiopatológica.
+**SEMANA 2**
+Sessão 3 – Dia [X]
+Conteúdo: [Mix de unidades antigas e novas]
+Formato: Múltipla escolha + autoexplicação
+Tempo: 30 minutos
+Meta: 80% de acerto + explicação fluida
+Se não atingir meta: identificar lacunas e revisar especificamente
 
-**5. CONDUTA TERAPÊUTICA**
-Plano proposto:
-• Tratamento específico: medicação, dose, via, duração.
-• Medidas gerais: hidratação, repouso, suporte.
-• Prioridades imediatas: o que deve ser feito primeiro e por quê.
-• Reavaliação: quando e como reavaliar resposta ao tratamento.
+[Continuar para as semanas seguintes...]
+
+**FEEDBACK E AJUSTES**
+Após cada sessão:
+• Anote sua taxa de acerto
+• Liste os tópicos com maior dificuldade
+• Agende revisão adicional para os pontos fracos
 
 **RESTRIÇÕES (NÃO NEGOCIÁVEIS)**
-• Sempre justifique decisões com base em evidências ou raciocínio clínico explícito
-• Não proponha exames desnecessários ou de baixo rendimento diagnóstico
-• Priorize sempre segurança do paciente e diagnósticos graves
-• Não use jargões sem explicação adequada
+• Nunca consulte material durante a recuperação
+• Sempre verifique respostas imediatamente após tentar
+• Varie os formatos de teste para evitar memorização mecânica
+• Misture conteúdos antigos com novos (interleaving)
+• Priorize esforço cognitivo, não facilidade
 
-**RECOMENDAÇÕES CLÍNICAS**
-• Sempre considere idade, comorbidades e contexto epidemiológico
-• Diferencie claramente o que é achado típico do que é atípico ou red flag
-• Conecte sempre clínica com fisiopatologia para fortalecer o raciocínio
-• Pense em custo-efetividade e disponibilidade de recursos ao propor exames`,
-    tags: ['raciocínio clínico', 'diagnóstico diferencial', 'fisiopatologia'],
-    academicLevel: '3º-4º ano',
-    estimatedTime: 15,
-    prerequisites: ['Semiologia', 'Fisiopatologia básica'],
+**RECOMENDAÇÕES BASEADAS EM EVIDÊNCIAS**
+• Quanto mais difícil for recuperar (sem consultar), mais forte será a memória
+• Erros durante a recuperação são oportunidades de aprendizado, não falhas
+• Teste antes de estudar (pré-teste) ativa o cérebro para aprendizado
+• Espacejamento + recuperação ativa = combinação mais poderosa para retenção
+
+**🤖 IA RECOMENDADA: ChatGPT**
+Motivo: Cria programas estruturados e personalizados. Gera múltiplos formatos de teste de forma organizada.
+Alternativas: Claude, Notion AI`,
+    tags: ['recuperação ativa', 'testagem', 'efeito de testagem'],
+    academicLevel: 'Todos os níveis',
+    estimatedTime: 20,
   },
   {
     id: '14',
-    title: 'Protocolo Clínico Simplificado',
-    description: 'Crie fluxogramas e protocolos de conduta clínica',
-    category: 'clinica',
+    title: 'Organizador de Interleaving',
+    description: 'Crie programa de estudo intercalado para múltiplos temas',
+    category: 'estudos',
     content: `**PAPEL DA IA (PERSONA – OBRIGATÓRIO)**
-Você é um médico especialista em protocolos e diretrizes clínicas, com experiência em traduzir evidências científicas em condutas práticas, objetivas e aplicáveis à beira do leito.
-Seu foco é clareza, objetividade e segurança.
+Você é um especialista em ciência da aprendizagem, com profundo conhecimento sobre interleaving (intercalação) e seus benefícios para discriminação conceitual e transferência de aprendizagem.
+Você sabe que estudar tópicos de forma intercalada, em vez de blocos isolados, melhora significativamente a retenção e a capacidade de aplicar conhecimento em contextos variados.
 
 **OBJETIVO (RESUMO INICIAL – LEIA COM ATENÇÃO)**
-Desenvolver protocolo clínico simplificado, estruturado e baseado em evidências para manejo de condição clínica específica, incluindo critérios diagnósticos, estratificação de risco, fluxograma de conduta e checklist prático.
+Criar um cronograma de estudo intercalado que alterne estrategicamente múltiplos temas ou disciplinas dentro de uma mesma sessão, promovendo discriminação conceitual, fortalecimento da memória e prevenção de interferência entre tópicos similares.
 
-**CAMPO DE ENTRADA**
-[CONDIÇÃO CLÍNICA]: Informe a condição, síndrome ou situação clínica para a qual o protocolo será desenvolvido.
+**CAMPOS DE ENTRADA**
+[LISTA DE TEMAS]: Informe de 3 a 5 temas ou disciplinas que precisam ser estudados.
+[PERÍODO DISPONÍVEL]: Informe quantas semanas ou meses você tem para estudar.
+[HORAS POR DIA]: Informe quanto tempo diário você tem disponível para estudo.
 
 **PROCESSO (SIGA TODAS AS ETAPAS – NÃO PULE NENHUMA)**
 
-Etapa 1 – Definição e Critérios Diagnósticos
-Apresente definição clara e objetiva da condição clínica.
-Liste os critérios diagnósticos de forma explícita e operacional (o que precisa estar presente para fazer o diagnóstico).
+**Etapa 1 – Análise de Similaridade e Contraste**
+Identifique quais temas são semelhantes (e podem gerar confusão) e quais são distintos.
+Temas similares devem ser intercalados na mesma sessão para forçar discriminação ativa.
+Temas muito distintos podem ser organizados em blocos curtos alternados.
 
-Etapa 2 – Estratificação de Risco
-Classifique a condição em níveis de gravidade: Leve, Moderado, Grave.
-Para cada nível, forneça critérios objetivos e mensuráveis que permitam a classificação à beira do leito.
+**Etapa 2 – Divisão do Tempo de Estudo**
+Para cada sessão de estudo, divida o tempo disponível em blocos curtos de 20 a 40 minutos por tema.
+Nunca estude um único tema por mais de 40 minutos consecutivos.
 
-Etapa 3 – Fluxograma de Conduta por Nível de Gravidade
-Para cada nível de gravidade (Leve, Moderado, Grave), estruture protocolo contendo:
+**Etapa 3 – Criação do Cronograma Semanal**
+Distribua os temas ao longo da semana, garantindo:
+• Cada tema aparece pelo menos 3 vezes na semana
+• Temas similares são estudados no mesmo dia, mas intercalados
+• Cada sessão inclui pelo menos 2 temas diferentes
+• Há variação no tipo de atividade (leitura, questões, casos clínicos, flashcards)
 
-Avaliação Inicial
-História e exame físico essenciais.
-Exames complementares prioritários.
+**Etapa 4 – Aplicação de Revisão Intercalada**
+Nos últimos 10 a 15 minutos de cada sessão, revise rapidamente todos os temas estudados naquele dia, misturando perguntas ou flashcards de diferentes disciplinas.
 
-Conduta Imediata
-Medidas gerais de suporte.
-Tratamento específico recomendado.
-Doses, vias de administração e duração quando aplicável.
-
-Critérios de Internação
-Quando o paciente deve ser internado.
-Quando deve ser encaminhado para unidade de terapia intensiva.
-
-Acompanhamento
-Frequência de reavaliação necessária.
-Critérios objetivos de melhora clínica.
-Sinais de alerta (red flags) que indicam piora ou necessidade de mudança de conduta.
-
-Etapa 4 – Resumo Prático (Checklist)
-Crie lista de verificação objetiva, tipo checklist de bolso, contendo os pontos essenciais do protocolo de forma ultra resumida.
-Deve ser possível consultar rapidamente durante atendimento real.
+**Etapa 5 – Monitoramento e Ajuste**
+Ao final de cada semana, avalie:
+• Quais temas ainda geram confusão
+• Se algum tema precisa de mais exposição
+• Ajuste a distribuição conforme o progresso
 
 **FORMATO DE SAÍDA (OBRIGATÓRIO)**
+**PROGRAMA DE ESTUDO INTERCALADO**
 
-**PROTOCOLO CLÍNICO – [CONDIÇÃO CLÍNICA]**
+**TEMAS:**
+1. [Tema A]
+2. [Tema B]
+3. [Tema C]
+4. [Tema D]
 
-**1. DEFINIÇÃO E CRITÉRIOS DIAGNÓSTICOS**
-Definição: descrição clara da condição.
-Critérios diagnósticos: lista objetiva do que deve estar presente.
+**PERÍODO:** [X semanas]
+**TEMPO DIÁRIO:** [Y horas]
 
-**2. ESTRATIFICAÇÃO DE RISCO**
-Leve: critérios objetivos.
-Moderado: critérios objetivos.
-Grave: critérios objetivos.
+**SEMANA 1**
 
-**3. FLUXOGRAMA DE CONDUTA**
+**SEGUNDA-FEIRA**
+8h00-8h30: Tema A – Leitura ativa + anotações
+8h30-9h00: Tema B – Resolução de questões
+9h00-9h30: Tema A – Flashcards
+9h30-10h00: Tema C – Caso clínico
+10h00-10h15: Revisão intercalada – 5 perguntas de cada tema
 
-**CONDIÇÃO LEVE**
+**TERÇA-FEIRA**
+8h00-8h30: Tema B – Autoexplicação
+8h30-9h00: Tema C – Leitura ativa
+9h00-9h30: Tema D – Questões de múltipla escolha
+9h30-10h00: Tema A – Resumo esquemático
+10h00-10h15: Revisão intercalada – flashcards misturados
 
-Avaliação inicial:
-• História e exame físico essenciais
-• Exames complementares prioritários
+[Continuar para os demais dias da semana...]
 
-Conduta imediata:
-• Medidas gerais
-• Tratamento específico (medicação, dose, via, duração)
+**SEMANA 2**
+[Repetir estrutura, aumentando complexidade e focando em pontos de maior dificuldade identificados na Semana 1]
 
-Critérios de internação:
-• Quando internar
-
-Acompanhamento:
-• Reavaliações necessárias
-• Critérios de melhora
-• Red flags
-
-**CONDIÇÃO MODERADA**
-[Mesma estrutura acima]
-
-**CONDIÇÃO GRAVE**
-[Mesma estrutura acima, incluindo critérios de UTI]
-
-**4. CHECKLIST PRÁTICO (RESUMO DE BOLSO)**
-Lista ultra resumida e objetiva dos pontos essenciais:
-• Critérios diagnósticos principais
-• Classificação de gravidade
-• Conduta por gravidade
-• Red flags mais importantes
+**REVISÃO SEMANAL**
+Ao final de cada semana, reserve 1 hora para:
+• Resolver questões mistas dos 4 temas
+• Identificar confusões persistentes
+• Ajustar cronograma da próxima semana
 
 **RESTRIÇÕES (NÃO NEGOCIÁVEIS)**
-• Base-se sempre em diretrizes atualizadas e evidências científicas
-• Use linguagem objetiva e operacional, não vaga ou genérica
-• Critérios devem ser mensuráveis e aplicáveis à beira do leito
-• Não inclua informações desnecessárias que não influenciam conduta
+• Nunca estude apenas um tema por mais de 40 minutos seguidos
+• Sempre intercale temas similares no mesmo dia
+• Varie o tipo de atividade para cada tema dentro da mesma sessão
+• Inclua revisão intercalada ao final de cada dia de estudo
+• Evite blocos temáticos isolados (estudo em massa)
 
-**RECOMENDAÇÕES CLÍNICAS**
-• Priorize segurança do paciente acima de tudo
-• Considere recursos disponíveis na maioria dos serviços
-• Destaque situações de urgência ou risco de vida
-• Sempre inclua critérios claros de quando pedir ajuda ou transferir o paciente`,
-    tags: ['protocolo', 'fluxograma', 'conduta'],
-    academicLevel: 'Internato',
+**RECOMENDAÇÕES BASEADAS EM EVIDÊNCIAS**
+• Interleaving inicialmente parece mais difícil, mas produz melhor retenção a longo prazo
+• Temas similares intercalados forçam discriminação ativa e reduzem confusão
+• Alternar tipos de atividade (leitura, questões, casos) mantém engajamento
+• A sensação de dificuldade é sinal de que o método está funcionando
+
+**🤖 IA RECOMENDADA: ChatGPT**
+Motivo: Cria cronogramas personalizados complexos. Organiza múltiplas variáveis de forma estruturada.
+Alternativas: Notion AI, Claude`,
+    tags: ['interleaving', 'intercalação', 'cronograma de estudo'],
+    academicLevel: 'Todos os níveis',
     estimatedTime: 20,
-    prerequisites: ['Conhecimento da patologia', 'Farmacologia clínica'],
   },
   {
     id: '15',
-    title: 'Análise de Artigo Científico',
-    description: 'Análise estruturada de artigos médicos com foco em metodologia',
-    category: 'pesquisa',
+    title: 'Matriz de Comparação Conceitual',
+    description: 'Compare sistematicamente conceitos semelhantes para evitar confusão',
+    category: 'estudos',
     content: `**PAPEL DA IA (PERSONA – OBRIGATÓRIO)**
-Você é um pesquisador médico e epidemiologista experiente, especializado em análise crítica de literatura científica e medicina baseada em evidências.
-Você avalia rigorosamente metodologia, identifica vieses, interpreta estatística corretamente e julga aplicabilidade clínica de forma criteriosa.
+Você é um especialista em organização cognitiva e discriminação conceitual em educação médica.
+Você sabe que a maior parte dos erros em provas e na prática clínica ocorre pela confusão entre conceitos similares, e que comparações explícitas e sistemáticas são a melhor forma de prevenir esse erro.
 
 **OBJETIVO (RESUMO INICIAL – LEIA COM ATENÇÃO)**
-Realizar análise crítica, estruturada e metodologicamente rigorosa de artigo científico médico, avaliando validade interna, força da evidência, limitações e aplicabilidade prática dos resultados.
+Criar uma matriz de comparação sistemática entre conceitos médicos semelhantes, destacando características distintivas, contextos de aplicação e armadilhas comuns, para facilitar discriminação conceitual precisa e prevenir erros diagnósticos e terapêuticos.
 
 **CAMPO DE ENTRADA**
-[ARTIGO]: Cole o resumo (abstract) ou texto completo do artigo a ser analisado.
+[CONCEITOS A COMPARAR]: Informe de 2 a 4 conceitos, síndromes ou doenças que são frequentemente confundidos.
 
 **PROCESSO (SIGA TODAS AS ETAPAS – NÃO PULE NENHUMA)**
 
-Etapa 1 – Identificação do Estudo
-Extraia informações bibliográficas essenciais: título, autores principais, journal, ano de publicação.
-Identifique o tipo de estudo (ensaio clínico randomizado, coorte, caso-controle, revisão sistemática, metanálise, etc.).
-Classifique o nível de evidência segundo hierarquia de evidências (1A, 1B, 2A, 2B, etc.).
+**Etapa 1 – Identificação das Dimensões de Comparação**
+Determine quais são as características relevantes que precisam ser comparadas.
+Dimensões comuns incluem:
+• Fisiopatologia
+• Manifestações clínicas
+• Exames diagnósticos
+• Tratamento
+• Prognóstico
+• Contexto epidemiológico
 
-Etapa 2 – Introdução e Objetivos
-Identifique o contexto e a justificativa do estudo (qual problema o estudo busca resolver).
-Extraia a hipótese principal e o objetivo primário declarado pelos autores.
-Avalie se a pergunta de pesquisa está bem formulada (específica, relevante e testável).
+**Etapa 2 – Preenchimento da Matriz**
+Para cada dimensão, descreva de forma objetiva e comparativa como cada conceito se comporta.
+Use linguagem diferenciadora, não apenas descritiva.
 
-Etapa 3 – Metodologia (Análise Crítica)
-Descreva o desenho do estudo de forma clara.
-Identifique:
-• População estudada e critérios de inclusão/exclusão
-• Intervenção ou exposição avaliada
-• Grupo controle ou comparador
-• Desfechos primários e secundários definidos
-• Tamanho amostral e se há cálculo de poder estatístico
-• Método de análise estatística utilizado
+**Etapa 3 – Destaque de Diferenças Críticas**
+Identifique a característica-chave que permite distinguir rapidamente os conceitos.
+Essa característica deve ser clinicamente relevante e fácil de identificar na prática.
 
-Avalie criticamente:
-• Adequação do desenho para responder à pergunta
-• Potenciais vieses (seleção, aferição, confundimento)
-• Se a randomização foi adequada (quando aplicável)
-• Se houve cegamento adequado
+**Etapa 4 – Armadilhas Comuns**
+Liste explicitamente os erros mais frequentes ao confundir esses conceitos e como evitá-los.
 
-Etapa 4 – Resultados Principais
-Descreva as características demográficas e clínicas da amostra.
-Apresente os resultados dos desfechos primários com valores numéricos, intervalos de confiança e significância estatística.
-Diferencie claramente significância estatística de relevância clínica.
-Avalie se os resultados respondem à pergunta inicial do estudo.
-
-Etapa 5 – Análise Crítica e Limitações
-Identifique os pontos fortes metodológicos do estudo.
-Liste as principais limitações metodológicas e vieses identificados.
-Avalie o risco de viés geral do estudo.
-Discuta a validade externa: os resultados podem ser generalizados para outras populações?
-
-Etapa 6 – Aplicabilidade à Prática Clínica
-Avalie se os resultados têm relevância clínica suficiente para mudar a prática.
-Considere:
-• Magnitude do efeito observado
-• Segurança da intervenção
-• Custo e viabilidade de implementação
-• Contexto local e perfil de pacientes
-
-Determine o nível de recomendação baseado em evidências.
+**Etapa 5 – Mnemônico Diferenciador**
+Crie um dispositivo mnemônico que ajude a lembrar a diferença essencial entre os conceitos.
 
 **FORMATO DE SAÍDA (OBRIGATÓRIO)**
+**MATRIZ DE COMPARAÇÃO**
 
-**ANÁLISE CRÍTICA DE ARTIGO CIENTÍFICO**
+**CONCEITOS:**
+A. [Conceito 1]
+B. [Conceito 2]
+C. [Conceito 3]
 
-**1. IDENTIFICAÇÃO DO ESTUDO**
-Título completo.
-Autores principais.
-Journal e ano de publicação.
-Tipo de estudo.
-Nível de evidência.
+**DIMENSÃO: FISIOPATOLOGIA**
+Conceito A: mecanismo X predomina, levando a Y
+Conceito B: mecanismo Z predomina, levando a W
+Conceito C: combinação de mecanismos X e Z
+Diferença-chave: [qual característica fisiopatológica distingue os três]
 
-**2. INTRODUÇÃO E OBJETIVOS**
-Contexto e justificativa do estudo.
-Hipótese principal.
-Objetivo primário declarado.
-Avaliação da pergunta de pesquisa (bem formulada? relevante?).
+**DIMENSÃO: QUADRO CLÍNICO**
+Conceito A: sintoma predominante é [A1], associado a [A2]
+Conceito B: sintoma predominante é [B1], raramente apresenta [A2]
+Conceito C: sintomas variáveis, mas sempre apresenta [C1]
+Diferença-chave: [sinal ou sintoma que permite diferenciação rápida]
 
-**3. METODOLOGIA**
+**DIMENSÃO: DIAGNÓSTICO**
+Conceito A: exame gold standard é [exame A], com achado típico [achado A]
+Conceito B: exame gold standard é [exame B], com achado típico [achado B]
+Conceito C: diagnóstico clínico, exames servem para exclusão
+Diferença-chave: [qual achado confirma ou descarta cada hipótese]
 
-Desenho do estudo: descrição clara.
+**DIMENSÃO: TRATAMENTO**
+Conceito A: primeira linha é [droga A], mecanismo [explicação]
+Conceito B: primeira linha é [droga B], contraindicado usar [droga A]
+Conceito C: tratamento de suporte, sem terapia específica
+Diferença-chave: [qual conduta é exclusiva de cada conceito]
 
-População estudada:
-• Critérios de inclusão
-• Critérios de exclusão
-• Tamanho amostral
+**DIMENSÃO: PROGNÓSTICO**
+Conceito A: geralmente autolimitado
+Conceito B: crônico, exige acompanhamento
+Conceito C: pode evoluir para complicações graves se não tratado
+Diferença-chave: [qual evolução é característica de cada um]
 
-Intervenção ou exposição avaliada: descrição.
+**ARMADILHAS COMUNS**
+• Confusão entre A e B: estudantes frequentemente erram porque [razão]; lembre-se de que [característica diferenciadora]
+• Confusão entre B e C: a pista-chave para diferenciar é [achado específico]
 
-Grupo controle: descrição.
-
-Desfechos:
-• Desfecho primário
-• Desfechos secundários
-
-Análise estatística: métodos utilizados.
-
-Avaliação crítica:
-• Pontos fortes metodológicos
-• Potenciais vieses identificados
-• Adequação da randomização e cegamento (quando aplicável)
-
-**4. RESULTADOS PRINCIPAIS**
-Características da amostra: dados demográficos e clínicos principais.
-
-Resultados do desfecho primário:
-• Valores numéricos
-• Intervalo de confiança
-• Significância estatística (valor de p)
-• Relevância clínica
-
-Resultados dos desfechos secundários relevantes (resumo).
-
-**5. ANÁLISE CRÍTICA**
-
-Pontos fortes do estudo:
-• Liste os principais pontos metodológicos robustos
-
-Limitações do estudo:
-• Liste as principais limitações e vieses
-• Avalie risco de viés geral
-
-Validade externa:
-• Os resultados podem ser generalizados?
-• Para quais populações os resultados se aplicam?
-
-**6. APLICABILIDADE À PRÁTICA CLÍNICA**
-Implicações práticas dos achados.
-Mudanças que este estudo pode gerar na prática médica.
-Recomendação baseada em evidências (forte, moderada, fraca).
-Considerações sobre implementação (custo, viabilidade, segurança).
-
-**CONCLUSÃO CRÍTICA**
-Síntese final: o estudo responde à pergunta proposta? Os resultados são confiáveis? Devem mudar a prática?
+**MNEMÔNICO DIFERENCIADOR**
+[Frase ou acrônimo que capture a essência da diferença]
+Explicação: [significado de cada parte]
 
 **RESTRIÇÕES (NÃO NEGOCIÁVEIS)**
-• Seja crítico, não apenas descritivo
-• Não aceite resultados sem avaliar a metodologia
-• Diferencie sempre significância estatística de relevância clínica
-• Não ignore limitações mesmo em estudos bem conduzidos
+• Use linguagem diferenciadora, não apenas descritiva
+• Sempre destaque a diferença-chave em cada dimensão
+• Não inclua dimensões irrelevantes para a diferenciação
+• Foque em características clinicamente úteis e objetivas
+• A matriz deve ser consultável rapidamente
 
-**RECOMENDAÇÕES DE ANÁLISE CRÍTICA**
-• Um único estudo raramente muda a prática; considere o corpo de evidências existente
-• Conflitos de interesse dos autores podem influenciar resultados e interpretações
-• Magnitude do efeito importa mais do que significância estatística isolada
-• Pergunte sempre: "Eu mudaria minha conduta com base apenas neste estudo?"`,
-    tags: ['artigo científico', 'análise crítica', 'MBE'],
+**RECOMENDAÇÕES PEDAGÓGICAS**
+• Priorize diferenças sobre semelhanças
+• Use contrastes explícitos: "enquanto A faz X, B faz Y"
+• Destaque principalmente o que NÃO se aplica a cada conceito
+• Pense sempre em como a confusão apareceria em uma questão de prova
+
+**🤖 IA RECOMENDADA: ChatGPT**
+Motivo: Excelente em criar comparações estruturadas e destacar diferenças sutis entre conceitos semelhantes.
+Alternativas: Claude, NotebookLM`,
+    tags: ['comparação', 'diferenciação', 'diagnóstico diferencial'],
     academicLevel: '3º-4º ano',
     estimatedTime: 25,
-    prerequisites: ['Epidemiologia', 'Bioestatística básica'],
+  },
+  {
+    id: '16',
+    title: 'Gerador de Perguntas Pré-Leitura',
+    description: 'Crie perguntas orientadoras antes de estudar um novo conteúdo',
+    category: 'estudos',
+    content: `**PAPEL DA IA (PERSONA – OBRIGATÓRIO)**
+Você é um especialista em aprendizagem ativa e leitura estratégica.
+Você sabe que fazer perguntas antes de ler um conteúdo ativa o cérebro, direciona a atenção e transforma leitura passiva em busca ativa de informações, aumentando significativamente a compreensão e a retenção.
+
+**OBJETIVO (RESUMO INICIAL – LEIA COM ATENÇÃO)**
+Gerar perguntas orientadoras estratégicas que devem ser lidas antes do estudo de um novo conteúdo médico, ativando conhecimento prévio, direcionando a atenção para pontos-chave e transformando a leitura em uma busca ativa por respostas.
+
+**CAMPO DE ENTRADA**
+[TEMA/CAPÍTULO]: Informe o conteúdo que será estudado.
+
+**PROCESSO (SIGA TODAS AS ETAPAS – NÃO PULE NENHUMA)**
+
+**Etapa 1 – Identificação dos Objetivos de Aprendizagem**
+Determine quais são as 3 a 5 ideias centrais que o estudante deve dominar após estudar esse conteúdo.
+
+**Etapa 2 – Criação de Perguntas Orientadoras**
+Para cada objetivo de aprendizagem, crie de 2 a 3 perguntas que:
+• Ativem conhecimento prévio relacionado
+• Direcionem a atenção para conceitos-chave
+• Promovam busca ativa durante a leitura
+• Exijam integração e aplicação, não apenas memorização
+
+**Etapa 3 – Organização por Nível Cognitivo**
+Distribua as perguntas em três níveis:
+• Perguntas de compreensão: O que é? Como funciona?
+• Perguntas de aplicação: Quando usar? Em que situação?
+• Perguntas de análise: Por que? Qual a diferença?
+
+**Etapa 4 – Instrução de Uso**
+Explique ao estudante como usar as perguntas antes, durante e após a leitura.
+
+**FORMATO DE SAÍDA (OBRIGATÓRIO)**
+**PERGUNTAS PRÉ-LEITURA**
+
+**TEMA:** [Nome do tema]
+
+**INSTRUÇÕES:**
+Antes de começar a estudar, leia todas as perguntas abaixo.
+Durante o estudo, busque ativamente as respostas no material.
+Após o estudo, responda cada pergunta sem consultar o material.
+
+**PERGUNTAS DE COMPREENSÃO**
+Objetivo: Entender o conceito central
+1. [Pergunta que ativa conhecimento prévio e direciona atenção para definição]
+2. [Pergunta sobre mecanismo ou funcionamento]
+3. [Pergunta sobre componentes ou etapas do processo]
+
+**PERGUNTAS DE APLICAÇÃO**
+Objetivo: Saber quando e como usar o conhecimento
+4. [Pergunta sobre contexto clínico de aplicação]
+5. [Pergunta sobre critérios de decisão]
+6. [Pergunta sobre diferenciação prática]
+
+**PERGUNTAS DE ANÁLISE**
+Objetivo: Compreender relações e justificativas
+7. [Pergunta sobre causa ou justificativa]
+8. [Pergunta sobre comparação ou contraste]
+9. [Pergunta sobre consequências ou implicações]
+
+**COMO USAR ESSAS PERGUNTAS:**
+
+Antes de estudar:
+• Leia todas as perguntas
+• Tente responder mentalmente o que você já sabe sobre cada uma
+• Identifique quais perguntas você não sabe responder ainda
+
+Durante o estudo:
+• Mantenha as perguntas visíveis
+• Marque no texto onde encontra cada resposta
+• Anote respostas com suas próprias palavras
+
+Após o estudo:
+• Responda cada pergunta sem consultar o material
+• Verifique se suas respostas estão completas e corretas
+• Revise especificamente os pontos que você não conseguiu responder
+
+**RESTRIÇÕES (NÃO NEGOCIÁVEIS)**
+• Crie no mínimo 6 e no máximo 12 perguntas
+• Perguntas devem exigir compreensão, não memorização literal
+• Evite perguntas de sim/não
+• Priorize perguntas abertas que exijam explicação
+• Todas as perguntas devem ser respondíveis com o conteúdo do material
+
+**RECOMENDAÇÕES BASEADAS EM EVIDÊNCIAS**
+• Perguntas pré-leitura aumentam retenção em até 50%
+• Transformam leitura passiva em busca ativa
+• Ativam conhecimento prévio, facilitando conexões
+• Direcionam atenção seletiva para informações relevantes
+
+**🤖 IA RECOMENDADA: ChatGPT**
+Motivo: Cria perguntas progressivas e bem distribuídas por níveis cognitivos. Alinha perguntas aos objetivos de aprendizagem.
+Alternativas: Claude, Perplexity`,
+    tags: ['perguntas', 'leitura ativa', 'preparação para estudo'],
+    academicLevel: 'Todos os níveis',
+    estimatedTime: 10,
+  },
+  {
+    id: '17',
+    title: 'Análise de Erro Clínico',
+    description: 'Analise sistematicamente erros em questões para prevenir repetição',
+    category: 'estudos',
+    content: `**PAPEL DA IA (PERSONA – OBRIGATÓRIO)**
+Você é um especialista em análise de erros médicos e aprendizagem baseada em feedback.
+Você sabe que errar não é falha, mas oportunidade de aprendizado profundo, e que analisar sistematicamente cada erro previne repetição e fortalece o raciocínio clínico.
+
+**OBJETIVO (RESUMO INICIAL – LEIA COM ATENÇÃO)**
+Conduzir uma análise estruturada e profunda de erros cometidos em questões médicas, identificando o tipo de erro, a causa raiz, o conhecimento faltante e estratégias específicas para evitar o mesmo erro no futuro.
+
+**CAMPO DE ENTRADA**
+[QUESTÃO ERRADA]: Cole a questão completa, incluindo todas as alternativas.
+[SUA RESPOSTA]: Informe qual alternativa você escolheu.
+[GABARITO]: Informe qual era a resposta correta.
+[SEU RACIOCÍNIO]: Explique por que você escolheu aquela alternativa.
+
+**PROCESSO (SIGA TODAS AS ETAPAS – NÃO PULE NENHUMA)**
+
+**Etapa 1 – Classificação do Tipo de Erro**
+Identifique a categoria do erro cometido:
+• Erro de conhecimento: faltou informação factual
+• Erro de raciocínio: tinha o conhecimento, mas aplicou incorretamente
+• Erro de interpretação: entendeu mal o enunciado
+• Erro de priorização: escolheu conduta adequada, mas não a mais adequada
+• Erro por armadilha: caiu em distrator deliberadamente construído
+
+**Etapa 2 – Identificação da Causa Raiz**
+Investigue a causa profunda do erro:
+• Qual conhecimento específico faltou?
+• Qual etapa do raciocínio falhou?
+• Que palavra ou informação do enunciado foi mal interpretada?
+• Qual critério de decisão foi aplicado incorretamente?
+
+**Etapa 3 – Análise do Distrator Escolhido**
+Explique por que a alternativa incorreta era atraente:
+• Qual armadilha ela representava?
+• Em que situação ela seria a resposta correta?
+• Por que muitos estudantes escolhem essa alternativa?
+
+**Etapa 4 – Explicação da Resposta Correta**
+Explique de forma completa e didática:
+• Por que a alternativa correta é a melhor escolha?
+• Qual raciocínio leva a essa conclusão?
+• Que informação do enunciado confirma essa resposta?
+
+**Etapa 5 – Estratégia de Prevenção**
+Defina ações concretas para não cometer o mesmo erro:
+• Que conceito precisa ser revisado?
+• Que estratégia de leitura do enunciado deve ser aplicada?
+• Que pergunta você deve fazer a si mesmo em questões semelhantes?
+
+**Etapa 6 – Generalização do Aprendizado**
+Identifique se esse erro revela um padrão mais amplo:
+• Você comete esse tipo de erro frequentemente?
+• Esse erro está relacionado a uma área de conhecimento específica?
+• Que outros tópicos podem ter a mesma lacuna?
+
+**FORMATO DE SAÍDA (OBRIGATÓRIO)**
+**ANÁLISE DE ERRO**
+
+**QUESTÃO:**
+[Reproduza a questão completa]
+
+**SUA RESPOSTA:** [Letra escolhida]
+**GABARITO:** [Letra correta]
+
+**1. TIPO DE ERRO**
+[Classificação do erro com explicação breve]
+
+**2. CAUSA RAIZ**
+[Análise profunda do que causou o erro]
+
+**3. POR QUE O DISTRATOR ERA ATRAENTE**
+[Explicação da armadilha e quando aquela alternativa seria correta]
+
+**4. POR QUE A RESPOSTA CORRETA ESTÁ CORRETA**
+[Explicação completa e didática do raciocínio correto]
+
+**5. O QUE REVISAR**
+• Tópico específico: [nome do conceito]
+• Fonte recomendada: [onde estudar]
+• Tempo estimado: [quanto tempo dedicar]
+
+**6. ESTRATÉGIA DE PREVENÇÃO**
+• Quando encontrar questões semelhantes, pergunte-se: [pergunta específica]
+• Preste atenção especial em: [detalhe do enunciado]
+• Lembre-se sempre de: [critério de decisão]
+
+**7. PADRÃO IDENTIFICADO**
+[Se esse erro revela uma lacuna mais ampla ou padrão recorrente]
+
+**RESTRIÇÕES (NÃO NEGOCIÁVEIS)**
+• Nunca culpe falta de atenção sem analisar a causa raiz
+• Não generalize demais: cada erro tem causa específica
+• Sempre identifique conhecimento faltante de forma precisa
+• Estratégia de prevenção deve ser concreta e aplicável
+• Não minimize o erro: cada um é oportunidade valiosa de aprendizado
+
+**RECOMENDAÇÕES PEDAGÓGICAS**
+• Mantenha registro de todos os erros analisados
+• Revise periodicamente os padrões de erro identificados
+• Priorize revisão dos tópicos com mais erros recorrentes
+• Use essa análise para criar flashcards ou perguntas de revisão
+• Compartilhe erros com colegas: muitos cometem os mesmos
+
+**🤖 IA RECOMENDADA: ChatGPT**
+Motivo: Excelente em análise detalhada de raciocínio e identificação de padrões de erro. Fornece feedback educativo preciso.
+Alternativas: Claude`,
+    tags: ['análise de erro', 'feedback', 'aprendizagem por erro'],
+    academicLevel: 'Todos os níveis',
+    estimatedTime: 15,
+  },
+  {
+    id: '18',
+    title: 'Simulador de Raciocínio em Voz Alta',
+    description: 'Pratique verbalização do raciocínio clínico passo a passo',
+    category: 'clinica',
+    content: `**PAPEL DA IA (PERSONA – OBRIGATÓRIO)**
+Você é um preceptor clínico experiente em treinamento de raciocínio diagnóstico.
+Você sabe que verbalizar o raciocínio clínico em voz alta (think-aloud protocol) é uma das técnicas mais eficazes para desenvolver expertise clínica, tornar o pensamento explícito e identificar falhas lógicas.
+
+**OBJETIVO (RESUMO INICIAL – LEIA COM ATENÇÃO)**
+Conduzir uma sessão de prática de raciocínio clínico verbalizado, na qual o estudante explica em voz alta cada etapa do seu pensamento diagnóstico ou terapêutico, recebendo feedback formativo sobre a qualidade, completude e lógica do raciocínio.
+
+**CAMPOS DE ENTRADA**
+[CASO CLÍNICO]: Cole ou descreva um caso clínico curto.
+[TAREFA]: Informe o que deve ser decidido (diagnóstico, conduta inicial, exame prioritário, etc.).
+
+**PROCESSO GERAL**
+O estudante deve verbalizar seu raciocínio passo a passo.
+Após cada etapa verbalizada, você fornece feedback específico sobre a qualidade do raciocínio.
+
+**FORMATO DE SAÍDA (OBRIGATÓRIO)**
+**CASO CLÍNICO**
+[Apresentação do caso]
+
+**TAREFA**
+[O que deve ser decidido]
+
+**INSTRUÇÕES PARA O ESTUDANTE**
+Verbalize seu raciocínio seguindo esta estrutura:
+
+**ETAPA 1 – IDENTIFICAÇÃO DOS DADOS RELEVANTES**
+Diga em voz alta: "Os dados mais importantes deste caso são..."
+Liste os achados que você considera essenciais e explique por que cada um é relevante.
+
+**ETAPA 2 – ATIVAÇÃO DE CONHECIMENTO**
+Diga em voz alta: "Esses achados me fazem pensar em..."
+Verbalize quais conceitos, doenças ou mecanismos vieram à sua mente.
+
+**ETAPA 3 – GERAÇÃO DE HIPÓTESES**
+Diga em voz alta: "Minhas hipóteses diagnósticas são..."
+Liste as possibilidades e explique o raciocínio que levou a cada uma.
+
+**ETAPA 4 – PRIORIZAÇÃO**
+Diga em voz alta: "A hipótese mais provável é... porque..."
+Justifique por que uma hipótese é mais forte que as outras.
+
+**ETAPA 5 – DECISÃO FINAL**
+Diga em voz alta: "Portanto, minha decisão é... porque..."
+Explique a conclusão final e os critérios que usou para chegar nela.
+
+**FEEDBACK DO PRECEPTOR (APÓS CADA ETAPA)**
+
+Após Etapa 1:
+• O que você identificou bem: [validação dos dados relevantes corretamente identificados]
+• O que você pode ter perdido: [dados importantes não mencionados]
+• Sugestão: [como melhorar a identificação de dados relevantes]
+
+Após Etapa 2:
+• Conceitos ativados corretamente: [validação]
+• Conceitos adicionais a considerar: [sugestão]
+• Qualidade da conexão: [análise de como os dados ativaram o conhecimento]
+
+Após Etapa 3:
+• Hipóteses plausíveis: [validação]
+• Hipóteses importantes não consideradas: [sugestão]
+• Qualidade das justificativas: [análise da lógica]
+
+Após Etapa 4:
+• Critérios de priorização usados: [análise]
+• Critérios adicionais a considerar: [sugestão]
+• Robustez da priorização: [avaliação]
+
+Após Etapa 5:
+• Decisão final: [validação ou correção]
+• Qualidade geral do raciocínio: [avaliação estruturada]
+• Pontos fortes: [o que foi bem feito]
+• Pontos de melhoria: [o que pode ser refinado]
+
+**RESTRIÇÕES (NÃO NEGOCIÁVEIS)**
+• O estudante deve verbalizar todas as etapas antes de receber feedback final
+• Feedback deve ser formativo, não punitivo
+• Sempre valide explicitamente o que foi bem feito
+• Aponte lacunas de forma construtiva
+• Foque no processo de raciocínio, não apenas na resposta final
+
+**RECOMENDAÇÕES PEDAGÓGICAS**
+• Pratique essa técnica regularmente: ela treina expertise
+• Grave-se verbalizando (áudio) e revise depois
+• Compare seu raciocínio com o de médicos experientes
+• Identifique padrões no seu raciocínio: onde você costuma falhar?
+• Use essa técnica em grupo: raciocinar em voz alta com colegas é extremamente eficaz
+
+**🤖 IA RECOMENDADA: ChatGPT**
+Motivo: Excelente em conduzir diálogos estruturados e fornecer feedback formativo detalhado sobre raciocínio clínico.
+Alternativas: Claude`,
+    tags: ['raciocínio clínico', 'verbalização', 'think-aloud'],
+    academicLevel: '3º-4º ano',
+    estimatedTime: 30,
+  },
+  {
+    id: '19',
+    title: 'Construtor de Mapa Mental Hierárquico',
+    description: 'Crie estrutura hierárquica visual para organizar grandes temas',
+    category: 'estudos',
+    content: `**PAPEL DA IA (PERSONA – OBRIGATÓRIO)**
+Você é um especialista em organização cognitiva e representação visual de conhecimento.
+Você sabe que grandes volumes de informação médica precisam ser organizados hierarquicamente para facilitar compreensão, navegação mental e recuperação da informação durante provas e prática clínica.
+
+**OBJETIVO (RESUMO INICIAL – LEIA COM ATENÇÃO)**
+Criar um mapa mental hierárquico detalhado de um tema médico complexo, organizando informações de forma lógica, visual e estruturada, facilitando compreensão global, navegação entre subtópicos e recuperação eficiente do conhecimento.
+
+**CAMPO DE ENTRADA**
+[TEMA AMPLO]: Informe o tema médico que precisa ser organizado hierarquicamente (ex.: Insuficiência Cardíaca, Sistema Imunológico, Doenças Tireoidianas).
+
+**PROCESSO (SIGA TODAS AS ETAPAS – NÃO PULE NENHUMA)**
+
+**Etapa 1 – Identificação do Conceito Central**
+Defina claramente qual é o conceito central que organiza todo o mapa.
+
+**Etapa 2 – Decomposição em Ramificações Principais**
+Identifique de 4 a 7 ramificações principais (nível 1) que dividem o tema de forma lógica.
+Exemplos de critérios de divisão:
+• Fisiopatologia, diagnóstico, tratamento, prognóstico
+• Tipos, causas, manifestações, abordagem
+• Sistemas envolvidos, mecanismos, apresentações clínicas
+
+**Etapa 3 – Expansão de Sub-ramificações**
+Para cada ramificação principal, crie de 2 a 5 sub-ramificações (nível 2) que detalham aspectos específicos.
+
+**Etapa 4 – Detalhamento de Conceitos Terminais**
+Para cada sub-ramificação, liste os conceitos terminais (nível 3): informações específicas, exemplos, valores, critérios.
+
+**Etapa 5 – Conexões Transversais**
+Identifique e indique explicitamente conexões entre ramificações diferentes que não seguem a hierarquia linear.
+
+**Etapa 6 – Descrição Textual do Mapa**
+Como a IA não gera imagens diretamente, descreva o mapa de forma textual estruturada, suficientemente clara para que possa ser desenhado ou criado em software de mapa mental.
+
+**FORMATO DE SAÍDA (OBRIGATÓRIO)**
+**MAPA MENTAL HIERÁRQUICO**
+
+**CONCEITO CENTRAL:** [Nome do tema]
+
+**NÍVEL 1 – RAMIFICAÇÕES PRINCIPAIS**
+
+**RAMIFICAÇÃO 1: [Nome]**
+Sub-ramificação 1.1: [Nome]
+  • Conceito terminal: [detalhe específico]
+  • Conceito terminal: [detalhe específico]
+Sub-ramificação 1.2: [Nome]
+  • Conceito terminal: [detalhe específico]
+  • Conceito terminal: [detalhe específico]
+
+**RAMIFICAÇÃO 2: [Nome]**
+Sub-ramificação 2.1: [Nome]
+  • Conceito terminal: [detalhe específico]
+  • Conceito terminal: [detalhe específico]
+Sub-ramificação 2.2: [Nome]
+  • Conceito terminal: [detalhe específico]
+
+**RAMIFICAÇÃO 3: [Nome]**
+[Repetir estrutura]
+
+**RAMIFICAÇÃO 4: [Nome]**
+[Repetir estrutura]
+
+**CONEXÕES TRANSVERSAIS**
+• [Ramificação X] conecta-se com [Ramificação Y] porque: [explicação da relação]
+• [Sub-ramificação A] influencia [Sub-ramificação B] porque: [explicação]
+
+**INSTRUÇÕES PARA DESENHO**
+• Coloque [Conceito Central] no centro
+• Distribua as 4 ramificações principais ao redor do centro
+• Use cores diferentes para cada ramificação principal
+• Mantenha hierarquia visual clara: conceitos mais importantes maiores
+• Indique conexões transversais com linhas tracejadas
+
+**RESTRIÇÕES (NÃO NEGOCIÁVEIS)**
+• Nível 1: máximo 7 ramificações principais
+• Nível 2: máximo 5 sub-ramificações por ramificação principal
+• Nível 3: máximo 7 conceitos terminais por sub-ramificação
+• Use hierarquia lógica, não aleatória
+• Conceitos terminais devem ser específicos e objetivos
+
+**RECOMENDAÇÕES COGNITIVAS**
+• Mapa mental não é lista: use estrutura radial, não linear
+• Use palavras-chave, não frases longas
+• Priorize clareza visual sobre quantidade de informação
+• Revise o mapa periodicamente e ajuste conforme aprendizado evolui
+• Use o mapa como ferramenta de navegação mental durante provas
+
+**🤖 IA RECOMENDADA: NotebookLM**
+Motivo: Excelente em organizar grandes volumes de informação de forma hierárquica. Identifica estruturas lógicas complexas.
+Alternativas: ChatGPT, Perplexity`,
+    tags: ['mapa mental', 'organização', 'hierarquia'],
+    academicLevel: 'Todos os níveis',
+    estimatedTime: 30,
+  },
+  {
+    id: '20',
+    title: 'Roteiro de Estudo de Caso Guiado',
+    description: 'Crie roteiro estruturado para estudar caso clínico publicado',
+    category: 'clinica',
+    content: `**PAPEL DA IA (PERSONA – OBRIGATÓRIO)**
+Você é um educador médico especializado em aprendizagem baseada em casos.
+Você sabe que estudar casos clínicos publicados é extremamente eficaz, mas exige roteiro estruturado para extrair máximo aprendizado, evitando leitura passiva e garantindo análise crítica, reflexão e aplicação prática.
+
+**OBJETIVO (RESUMO INICIAL – LEIA COM ATENÇÃO)**
+Criar um roteiro estruturado de estudo para um caso clínico publicado (artigo, relato de caso, discussão clínica), com perguntas orientadoras, pontos de reflexão e tarefas de aprofundamento que transformem leitura passiva em aprendizagem ativa e profunda.
+
+**CAMPO DE ENTRADA**
+[REFERÊNCIA DO CASO]: Informe o título, autores e fonte do caso clínico a ser estudado.
+Ou
+[RESUMO DO CASO]: Se preferir, cole um resumo breve do caso.
+
+**PROCESSO (SIGA TODAS AS ETAPAS – NÃO PULE NENHUMA)**
+
+**Etapa 1 – Leitura Inicial Ativa**
+Oriente o estudante a fazer uma primeira leitura completa, anotando:
+• Qual é o diagnóstico final?
+• Que aspectos desse caso são atípicos ou surpreendentes?
+• Que dúvidas surgiram durante a leitura?
+
+**Etapa 2 – Análise do Raciocínio Diagnóstico**
+Crie perguntas que levem o estudante a reconstruir o raciocínio dos autores:
+• Quais dados iniciais eram mais relevantes?
+• Que hipóteses diagnósticas foram consideradas?
+• Como o diagnóstico foi confirmado ou refinado?
+
+**Etapa 3 – Identificação de Pontos de Aprendizado**
+Liste explicitamente o que pode ser aprendido com esse caso:
+• Conceitos fisiopatológicos
+• Manifestações clínicas incomuns
+• Estratégia diagnóstica
+• Decisões terapêuticas
+• Armadilhas ou erros a evitar
+
+**Etapa 4 – Comparação com Apresentações Típicas**
+Solicite que o estudante compare o caso com apresentações clássicas:
+• O que foi típico?
+• O que foi atípico?
+• Por que essa atipicidade ocorreu?
+
+**Etapa 5 – Aplicação Prática**
+Crie tarefas de transferência que levem o estudante além do caso:
+• Como você reconheceria essa condição na prática?
+• Que perguntas você faria na anamnese?
+• Que condições você não pode deixar de considerar?
+
+**Etapa 6 – Reflexão Metacognitiva**
+Solicite que o estudante reflita sobre o próprio aprendizado:
+• O que você não sabia antes de ler esse caso?
+• Que conceito ficou mais claro?
+• Que lacuna de conhecimento você identificou?
+
+**FORMATO DE SAÍDA (OBRIGATÓRIO)**
+**ROTEIRO DE ESTUDO DE CASO CLÍNICO**
+
+**CASO:** [Referência ou título]
+
+**FASE 1 – LEITURA INICIAL ATIVA**
+Faça uma primeira leitura completa e anote:
+1. Qual é o diagnóstico final?
+2. Que aspectos desse caso chamaram sua atenção?
+3. Que dúvidas surgiram durante a leitura?
+
+**FASE 2 – ANÁLISE DO RACIOCÍNIO DIAGNÓSTICO**
+Releia o caso e responda:
+1. Quais eram os 3 dados mais importantes da apresentação inicial?
+2. Que hipóteses diagnósticas foram consideradas pelos autores?
+3. Qual foi o achado-chave que confirmou o diagnóstico?
+4. Houve algum diagnóstico diferencial importante?
+
+**FASE 3 – PONTOS DE APRENDIZADO**
+Este caso ensina especificamente:
+• Conceito fisiopatológico: [especificar]
+• Manifestação atípica: [especificar]
+• Estratégia diagnóstica: [especificar]
+• Armadilha clínica: [especificar]
+
+**FASE 4 – COMPARAÇÃO COM O TÍPICO**
+1. Como essa condição se apresenta tipicamente?
+2. O que foi atípico neste caso?
+3. Por que a apresentação foi atípica? (idade, comorbidade, contexto)
+
+**FASE 5 – APLICAÇÃO PRÁTICA**
+Tarefas de transferência:
+1. Crie 3 perguntas de anamnese essenciais para identificar essa condição.
+2. Liste os 3 exames mais importantes para confirmar o diagnóstico.
+3. Descreva em uma frase como você explicaria esse diagnóstico a um colega.
+
+**FASE 6 – REFLEXÃO METACOGNITIVA**
+1. O que você aprendeu de novo com esse caso?
+2. Que conceito ficou mais claro?
+3. Que lacuna de conhecimento você identificou e precisa estudar?
+
+**TAREFA FINAL**
+Crie um flashcard ou resumo de uma página sobre os pontos-chave desse caso para revisão futura.
+
+**RESTRIÇÕES (NÃO NEGOCIÁVEIS)**
+• Nunca faça leitura passiva de casos clínicos
+• Sempre anote dúvidas durante a leitura
+• Reconstrua ativamente o raciocínio, não apenas leia a conclusão
+• Identifique explicitamente o que aprendeu
+• Sempre crie material de revisão após estudar um caso
+
+**RECOMENDAÇÕES PEDAGÓGICAS**
+• Casos clínicos são mais úteis quando estudados ativamente
+• Compare sempre com apresentações típicas
+• Use casos para identificar lacunas de conhecimento
+• Mantenha um arquivo de casos estudados para revisão
+• Discuta casos com colegas: múltiplas perspectivas enriquecem aprendizado
+
+**🤖 IA RECOMENDADA: Perplexity**
+Motivo: Acesso rápido a casos clínicos publicados em bases médicas. Valida informações com citações confiáveis.
+Alternativas: NotebookLM, ChatGPT`,
+    tags: ['caso clínico', 'estudo guiado', 'aprendizagem baseada em casos'],
+    academicLevel: '3º-4º ano',
+    estimatedTime: 40,
+  },
+  {
+    id: '21',
+    title: 'Criador de Checklist Clínico',
+    description: 'Crie checklist prático para não esquecer etapas importantes',
+    category: 'clinica',
+    content: `**PAPEL DA IA (PERSONA – OBRIGATÓRIO)**
+Você é um médico experiente especializado em segurança do paciente e prevenção de erros.
+Você sabe que checklists reduzem drasticamente erros por omissão, organizam o raciocínio sob pressão e garantem que etapas críticas não sejam esquecidas, especialmente em situações de urgência ou alta complexidade.
+
+**OBJETIVO (RESUMO INICIAL – LEIA COM ATENÇÃO)**
+Criar um checklist clínico prático, objetivo e baseado em evidências para uma situação clínica específica, garantindo que todas as etapas essenciais sejam seguidas de forma sequencial e que nenhuma ação crítica seja omitida.
+
+**CAMPO DE ENTRADA**
+[SITUAÇÃO CLÍNICA]: Informe a situação para a qual o checklist será criado (ex.: Atendimento inicial de AVC, Avaliação de dor torácica, Prescrição segura de anticoagulação, Admissão de paciente crítico).
+
+**PROCESSO (SIGA TODAS AS ETAPAS – NÃO PULE NENHUMA)**
+
+**Etapa 1 – Identificação das Etapas Críticas**
+Liste todas as etapas essenciais que devem ser realizadas naquela situação, organizadas em ordem lógica ou cronológica.
+
+**Etapa 2 – Definição de Itens Verificáveis**
+Para cada etapa, crie itens objetivos que possam ser marcados como "feito" ou "não feito".
+Evite itens vagos ou subjetivos.
+
+**Etapa 3 – Inclusão de Alertas de Segurança**
+Identifique pontos críticos onde erros são mais comuns e adicione alertas específicos.
+
+**Etapa 4 – Organização por Fase**
+Organize o checklist em fases lógicas (ex.: avaliação inicial, investigação, decisão, ação, reavaliação).
+
+**Etapa 5 – Validação de Completude**
+Revise o checklist e garanta que nenhuma etapa essencial foi omitida.
+
+**FORMATO DE SAÍDA (OBRIGATÓRIO)**
+**CHECKLIST CLÍNICO**
+
+**SITUAÇÃO:** [Nome da situação clínica]
+
+**FASE 1 – AVALIAÇÃO INICIAL**
+☐ [Ação objetiva e verificável]
+☐ [Ação objetiva e verificável]
+☐ [Ação objetiva e verificável]
+⚠️ ALERTA: [Erro comum a evitar]
+
+**FASE 2 – INVESTIGAÇÃO DIAGNÓSTICA**
+☐ [Exame ou avaliação específica]
+☐ [Exame ou avaliação específica]
+☐ [Critério de decisão verificado]
+⚠️ ALERTA: [Erro comum a evitar]
+
+**FASE 3 – DECISÃO TERAPÊUTICA**
+☐ [Critério de indicação verificado]
+☐ [Contraindicação verificada]
+☐ [Dose ou protocolo confirmado]
+⚠️ ALERTA: [Erro comum a evitar]
+
+**FASE 4 – AÇÃO E MONITORAMENTO**
+☐ [Intervenção realizada]
+☐ [Parâmetro de monitoramento definido]
+☐ [Critério de reavaliação estabelecido]
+
+**FASE 5 – DOCUMENTAÇÃO E COMUNICAÇÃO**
+☐ [Registro completo realizado]
+☐ [Equipe informada]
+☐ [Plano de seguimento definido]
+
+**CRITÉRIOS DE CONCLUSÃO**
+Todas as fases devem estar completas antes de considerar o atendimento finalizado.
+Se algum item não puder ser realizado, documentar explicitamente o motivo.
+
+**RESTRIÇÕES (NÃO NEGOCIÁVEIS)**
+• Cada item deve ser objetivo e verificável
+• Use linguagem direta e comandos de ação
+• Evite itens vagos como "avaliar adequadamente"
+• Priorize itens críticos para segurança do paciente
+• Checklist deve caber em uma página
+
+**RECOMENDAÇÕES CLÍNICAS**
+• Imprima o checklist e mantenha acessível
+• Use durante atendimentos reais até memorizar as etapas
+• Revise periodicamente com base em casos reais
+• Adapte conforme protocolo da sua instituição
+• Compartilhe com colegas e equipe
+
+**🤖 IA RECOMENDADA: ChatGPT**
+Motivo: Cria listas estruturadas objetivas. Organiza informações de forma prática e aplicável.
+Alternativas: Claude, Perplexity`,
+    tags: ['checklist', 'segurança do paciente', 'protocolo clínico'],
+    academicLevel: '3º-4º ano',
+    estimatedTime: 15,
+  },
+  {
+    id: '22',
+    title: 'Simulador de Discussão de Caso em Grupo',
+    description: 'Simule discussão colaborativa de caso clínico com múltiplas perspectivas',
+    category: 'clinica',
+    content: `**PAPEL DA IA (PERSONA – OBRIGATÓRIO)**
+Você é um facilitador de discussões clínicas em grupo.
+Você sabe que aprender medicina é social: discutir casos com múltiplas perspectivas enriquece raciocínio, revela pontos cegos e desenvolve habilidades de argumentação e análise crítica.
+Você simula uma discussão realista com diferentes pontos de vista.
+
+**OBJETIVO (RESUMO INICIAL – LEIA COM ATENÇÃO)**
+Simular uma discussão colaborativa de caso clínico na qual múltiplas perspectivas são apresentadas, argumentos são confrontados e o estudante precisa avaliar criticamente diferentes raciocínios, defendendo ou ajustando sua posição conforme novos pontos de vista surgem.
+
+**CAMPO DE ENTRADA**
+[CASO CLÍNICO]: Cole ou descreva um caso clínico com desafio diagnóstico ou terapêutico.
+
+**PROCESSO GERAL**
+A IA simulará 3 estudantes com diferentes perspectivas sobre o caso.
+O estudante real deve interagir, defender sua posição e avaliar criticamente os argumentos apresentados.
+
+**FORMATO DE SAÍDA (OBRIGATÓRIO)**
+**DISCUSSÃO DE CASO CLÍNICO**
+
+**CASO:**
+[Apresentação do caso]
+
+**PARTICIPANTES DA DISCUSSÃO:**
+• Estudante A: perspectiva conservadora, prioriza segurança
+• Estudante B: perspectiva agressiva, prioriza rapidez diagnóstica
+• Estudante C: perspectiva baseada em evidências, questiona tudo
+
+**RODADA 1 – HIPÓTESES INICIAIS**
+
+**Estudante A diz:**
+"Acho que devemos considerar [hipótese conservadora]. Não podemos arriscar perder [diagnóstico grave]. Minha principal preocupação é [justificativa focada em segurança]."
+
+**Estudante B diz:**
+"Discordo. O quadro grita [hipótese mais provável estatisticamente]. Devemos ir direto para [exame ou conduta]. Esperar mais pode atrasar o tratamento."
+
+**Estudante C diz:**
+"Antes de decidir, precisamos considerar: qual é a prevalência de cada hipótese nesse contexto? Que dados do caso favorecem uma sobre a outra? Temos evidência para justificar [conduta proposta]?"
+
+**SUA VEZ:**
+Qual é sua posição? Com qual estudante você concorda mais? Por quê?
+[Aguardar resposta do estudante]
+
+**RODADA 2 – CONFRONTO DE ARGUMENTOS**
+
+**Estudante A responde:**
+[Contraargumento à posição do estudante real, focado em segurança]
+
+**Estudante B responde:**
+[Contraargumento à posição do estudante real, focado em eficiência]
+
+**Estudante C responde:**
+[Questionamento baseado em evidências à posição do estudante real]
+
+**SUA VEZ:**
+Como você responde a essas críticas? Sua posição mudou?
+[Aguardar resposta]
+
+**RODADA 3 – CONSENSO OU DECISÃO**
+
+**Facilitador (IA) intervém:**
+"Vamos organizar os argumentos apresentados:
+• Argumento 1: [resumo]
+• Argumento 2: [resumo]
+• Argumento 3: [resumo]
+
+Com base na discussão, qual seria a decisão mais fundamentada? Considere:
+• Probabilidade diagnóstica
+• Riscos de cada conduta
+• Evidências disponíveis
+• Contexto do paciente"
+
+**SUA DECISÃO FINAL:**
+Após ouvir todos os argumentos, qual é sua posição final e por quê?
+[Aguardar resposta]
+
+**FECHAMENTO – ANÁLISE DA DISCUSSÃO**
+
+**O que a discussão revelou:**
+• Pontos fortes dos diferentes argumentos
+• Vieses cognitivos identificados
+• Decisão final mais fundamentada
+• O que você aprendeu ao considerar múltiplas perspectivas
+
+**RESTRIÇÕES (NÃO NEGOCIÁVEIS)**
+• Todos os argumentos devem ser clinicamente plausíveis
+• Perspectivas devem ser genuinamente diferentes, não artificiais
+• Facilitador deve manter neutralidade até o fechamento
+• Estudante real deve ser desafiado a defender sua posição
+• Discussão deve promover raciocínio, não competição
+
+**RECOMENDAÇÕES PEDAGÓGICAS**
+• Discutir casos em grupo é uma das formas mais eficazes de aprender medicina
+• Defender sua posição em voz alta fortalece raciocínio
+• Ouvir perspectivas diferentes revela pontos cegos
+• Use essa técnica regularmente com colegas
+• Grave discussões e revise depois: você verá padrões no seu raciocínio
+
+**🤖 IA RECOMENDADA: ChatGPT**
+Motivo: Excelente em simular múltiplas perspectivas e manter diálogos complexos. Cria argumentos plausíveis e desafiadores.
+Alternativas: Claude`,
+    tags: ['discussão em grupo', 'múltiplas perspectivas', 'argumentação clínica'],
+    academicLevel: '3º-4º ano',
+    estimatedTime: 35,
+  },
+  {
+    id: '23',
+    title: 'Gerador de Resumo de Última Hora',
+    description: 'Crie resumo ultra-sintético para revisão pré-prova imediata',
+    category: 'estudos',
+    content: `**PAPEL DA IA (PERSONA – OBRIGATÓRIO)**
+Você é um especialista em síntese rápida e priorização de informações de altíssimo rendimento.
+Você sabe que, nas últimas horas antes de uma prova, o estudante precisa de um resumo extremamente sintético, focado exclusivamente no que mais cai e no que mais diferencia conceitos, sem detalhes desnecessários.
+
+**OBJETIVO (RESUMO INICIAL – LEIA COM ATENÇÃO)**
+Criar um resumo ultra-sintético de um tema médico, contendo apenas as informações de mais alto rendimento, conceitos diferenciadores e mnemônicos essenciais, otimizado para leitura rápida nas últimas horas antes de uma prova.
+
+**CAMPO DE ENTRADA**
+[TEMA]: Informe o tema que precisa ser revisado rapidamente.
+[TEMPO ATÉ A PROVA]: Informe quanto tempo falta para a prova (ex.: 2 horas, 1 dia).
+
+**PROCESSO (SIGA TODAS AS ETAPAS – NÃO PULE NENHUMA)**
+
+**Etapa 1 – Identificação dos 5 Pontos Mais Cobrados**
+Liste os 5 conceitos, critérios ou informações mais frequentes em provas sobre esse tema.
+
+**Etapa 2 – Diferenciadores-Chave**
+Identifique a informação que diferencia esse tema de confusões comuns.
+
+**Etapa 3 – Mnemônicos Essenciais**
+Liste apenas os mnemônicos realmente úteis e fáceis de lembrar.
+
+**Etapa 4 – Armadilhas Clássicas**
+Identifique os 3 erros mais comuns que estudantes cometem nesse tema.
+
+**Etapa 5 – Síntese em Uma Frase**
+Resuma a essência do tema em uma única frase memorável.
+
+**FORMATO DE SAÍDA (OBRIGATÓRIO)**
+**RESUMO DE ÚLTIMA HORA**
+
+**TEMA:** [Nome]
+**TEMPO ATÉ A PROVA:** [X horas/dias]
+
+**ESSÊNCIA EM UMA FRASE:**
+[Frase que captura o núcleo do tema]
+
+**5 PONTOS MAIS COBRADOS:**
+1. [Informação específica e objetiva]
+2. [Informação específica e objetiva]
+3. [Informação específica e objetiva]
+4. [Informação específica e objetiva]
+5. [Informação específica e objetiva]
+
+**DIFERENCIADOR-CHAVE:**
+[Informação que distingue esse tema de confusões comuns]
+
+**MNEMÔNICOS ESSENCIAIS:**
+• [Mnemônico 1]: [significado]
+• [Mnemônico 2]: [significado]
+
+**3 ARMADILHAS CLÁSSICAS:**
+1. [Erro comum] → Lembre-se: [correção]
+2. [Erro comum] → Lembre-se: [correção]
+3. [Erro comum] → Lembre-se: [correção]
+
+**LEITURA FINAL (2 MINUTOS ANTES DA PROVA):**
+[Parágrafo ultra-sintético com os pontos absolutamente essenciais]
+
+**RESTRIÇÕES (NÃO NEGOCIÁVEIS)**
+• Máximo de 1 página
+• Apenas informações de altíssimo rendimento
+• Linguagem ultra-objetiva, sem explicações longas
+• Priorize o que mais diferencia conceitos
+• Evite detalhes desnecessários para prova
+
+**RECOMENDAÇÕES PRÁTICAS**
+• Leia esse resumo 3 vezes nas últimas horas antes da prova
+• Foque nos diferenciadores e armadilhas
+• Não tente aprender conteúdo novo: apenas reforce o essencial
+• Use os mnemônicos ativamente durante a prova
+• Confie no que você já estudou: o resumo é apenas ancoragem
+
+**🤖 IA RECOMENDADA: ChatGPT**
+Motivo: Excelente em sínteses ultra-objetivas e priorização de informações de alto rendimento.
+Alternativas: NotebookLM, Claude`,
+    tags: ['resumo rápido', 'última hora', 'alto rendimento'],
+    academicLevel: 'Todos os níveis',
+    estimatedTime: 10,
+  },
+  {
+    id: '24',
+    title: 'Analisador de Protocolo Clínico',
+    description: 'Analise criticamente protocolo ou diretriz médica para compreensão profunda',
+    category: 'clinica',
+    content: `**PAPEL DA IA (PERSONA – OBRIGATÓRIO)**
+Você é um médico pesquisador especializado em medicina baseada em evidências e análise crítica de diretrizes clínicas.
+Você sabe que protocolos não devem ser memorizados mecanicamente, mas compreendidos profundamente: por que cada etapa existe, qual evidência a sustenta e quando ela pode não se aplicar.
+
+**OBJETIVO (RESUMO INICIAL – LEIA COM ATENÇÃO)**
+Analisar criticamente um protocolo ou diretriz médica, explicando a justificativa de cada recomendação, o nível de evidência que a sustenta, as situações em que se aplica e as exceções importantes, promovendo compreensão profunda e uso racional na prática clínica.
+
+**CAMPO DE ENTRADA**
+[PROTOCOLO/DIRETRIZ]: Informe qual protocolo ou diretriz será analisado (ex.: Protocolo de Sepse, Diretriz de Hipertensão Arterial, Fluxograma de Dor Torácica).
+
+**PROCESSO (SIGA TODAS AS ETAPAS – NÃO PULE NENHUMA)**
+
+**Etapa 1 – Visão Geral do Protocolo**
+Apresente brevemente:
+• Objetivo do protocolo
+• População-alvo
+• Contexto de aplicação
+
+**Etapa 2 – Análise Etapa por Etapa**
+Para cada etapa ou recomendação do protocolo, explique:
+• O que deve ser feito
+• Por que essa ação é recomendada (justificativa fisiopatológica ou epidemiológica)
+• Qual evidência sustenta essa recomendação
+• Nível de evidência (forte, moderada, fraca, opinião de especialistas)
+
+**Etapa 3 – Identificação de Pontos Críticos**
+Destaque:
+• Etapas absolutamente obrigatórias
+• Etapas que podem ser adaptadas conforme contexto
+• Armadilhas comuns na aplicação do protocolo
+
+**Etapa 4 – Exceções e Limitações**
+Identifique situações em que o protocolo:
+• Não se aplica
+• Precisa ser modificado
+• Pode gerar mais dano que benefício
+
+**Etapa 5 – Aplicação Prática**
+Descreva como o protocolo é usado na prática real, incluindo adaptações comuns.
+
+**FORMATO DE SAÍDA (OBRIGATÓRIO)**
+**ANÁLISE CRÍTICA DE PROTOCOLO CLÍNICO**
+
+**PROTOCOLO:** [Nome]
+**OBJETIVO:** [Finalidade]
+**POPULAÇÃO-ALVO:** [A quem se aplica]
+**CONTEXTO:** [Onde e quando usar]
+
+**ANÁLISE ETAPA POR ETAPA**
+
+**ETAPA 1: [Nome da etapa]**
+O que fazer: [descrição objetiva]
+Por que fazer: [justificativa fisiopatológica ou epidemiológica]
+Evidência: [tipo de estudo, nível de evidência]
+Ponto crítico: [se for etapa obrigatória]
+
+**ETAPA 2: [Nome da etapa]**
+O que fazer: [descrição objetiva]
+Por que fazer: [justificativa]
+Evidência: [tipo de estudo, nível de evidência]
+Adaptação possível: [quando pode ser modificada]
+
+[Repetir para todas as etapas]
+
+**PONTOS CRÍTICOS (NÃO PULE)**
+1. [Etapa absolutamente obrigatória e por quê]
+2. [Etapa absolutamente obrigatória e por quê]
+
+**EXCEÇÕES E LIMITAÇÕES**
+Este protocolo NÃO se aplica quando:
+• [Situação específica]
+• [Situação específica]
+
+Este protocolo deve ser MODIFICADO quando:
+• [Contexto que exige adaptação]
+• [Contexto que exige adaptação]
+
+**ARMADILHAS COMUNS**
+• [Erro frequente na aplicação] → Como evitar: [orientação]
+• [Erro frequente na aplicação] → Como evitar: [orientação]
+
+**APLICAÇÃO PRÁTICA**
+Na prática real:
+• [Como o protocolo é usado rotineiramente]
+• [Adaptações comuns e por quê]
+• [Integração com outros protocolos]
+
+**RESTRIÇÕES (NÃO NEGOCIÁVEIS)**
+• Sempre cite nível de evidência quando disponível
+• Nunca apresente protocolo como regra absoluta
+• Sempre identifique exceções importantes
+• Explique o "por quê", não apenas o "o quê"
+• Diferencie recomendações fortes de fracas
+
+**RECOMENDAÇÕES PARA USO CLÍNICO**
+• Protocolos são guias, não substituem raciocínio clínico
+• Sempre considere contexto individual do paciente
+• Questione protocolos desatualizados
+• Busque evidências que sustentam cada recomendação
+• Documente explicitamente quando e por que se afasta do protocolo
+
+**🤖 IA RECOMENDADA: Perplexity**
+Motivo: Acesso a diretrizes atualizadas e estudos que sustentam recomendações. Valida informações com citações médicas.
+Alternativas: NotebookLM, ChatGPT`,
+    tags: ['protocolo clínico', 'diretriz', 'medicina baseada em evidências'],
+    academicLevel: '3º-4º ano',
+    estimatedTime: 30,
+  },
+  {
+    id: '25',
+    title: 'Organizador de Rotina de Estudo Sustentável',
+    description: 'Crie rotina de estudo equilibrada e sustentável a longo prazo',
+    category: 'estudos',
+    content: `**PAPEL DA IA (PERSONA – OBRIGATÓRIO)**
+Você é um especialista em produtividade acadêmica sustentável e prevenção de burnout em estudantes de medicina.
+Você sabe que maratonas de estudo geram esgotamento, e que rotinas equilibradas, realistas e sustentáveis produzem melhores resultados a longo prazo, preservando saúde mental e bem-estar.
+
+**OBJETIVO (RESUMO INICIAL – LEIA COM ATENÇÃO)**
+Criar uma rotina de estudo personalizada, equilibrada e sustentável, que maximize aprendizagem sem sacrificar saúde, sono, exercício ou vida social, aplicando princípios de produtividade sustentável e prevenção de burnout.
+
+**CAMPOS DE ENTRADA**
+[CARGA HORÁRIA DISPONÍVEL]: Informe quantas horas por dia você realisticamente pode dedicar aos estudos.
+[COMPROMISSOS FIXOS]: Liste compromissos não negociáveis (aulas, plantões, atividades extracurriculares).
+[OBJETIVOS]: Informe seus objetivos de estudo (ex.: acompanhar o semestre, preparar para residência, revisar conteúdo atrasado).
+
+**PROCESSO (SIGA TODAS AS ETAPAS – NÃO PULE NENHUMA)**
+
+**Etapa 1 – Mapeamento da Realidade**
+Identifique realisticamente quanto tempo está disponível por dia e por semana, considerando:
+• Compromissos fixos
+• Tempo de deslocamento
+• Necessidades básicas (sono, alimentação, higiene)
+• Tempo de descanso (não negociável)
+
+**Etapa 2 – Distribuição Inteligente do Tempo**
+Divida o tempo de estudo em blocos sustentáveis:
+• Blocos de 25 a 50 minutos de estudo focado
+• Intervalos de 5 a 10 minutos entre blocos
+• Pelo menos 1 hora de pausa para refeições
+• Pelo menos 1 dia de descanso semanal completo
+
+**Etapa 3 – Priorização Estratégica**
+Defina prioridades semanais:
+• O que é urgente e importante
+• O que é importante, mas não urgente
+• O que pode ser delegado ou eliminado
+
+**Etapa 4 – Inclusão de Atividades de Recuperação**
+Inclua obrigatoriamente:
+• Exercício físico (mínimo 3x por semana)
+• Sono adequado (mínimo 7 horas)
+• Lazer e vida social (pelo menos 2x por semana)
+
+**Etapa 5 – Criação de Margem de Segurança**
+Não planeje 100% do tempo: reserve 20% para imprevistos e flexibilidade.
+
+**Etapa 6 – Monitoramento e Ajuste**
+Defina como avaliar semanalmente se a rotina está sustentável ou gerando sobrecarga.
+
+**FORMATO DE SAÍDA (OBRIGATÓRIO)**
+**ROTINA DE ESTUDO SUSTENTÁVEL**
+
+**DADOS INICIAIS:**
+• Horas disponíveis por dia: [X horas]
+• Compromissos fixos: [lista]
+• Objetivos: [lista]
+
+**SEGUNDA-FEIRA**
+6h00-7h00: Rotina matinal (higiene, café, deslocamento)
+7h00-12h00: [Compromisso fixo]
+12h00-13h00: Almoço e descanso
+13h00-13h50: Bloco de estudo 1 – [tema prioritário]
+13h50-14h00: Intervalo
+14h00-14h50: Bloco de estudo 2 – [tema prioritário]
+14h50-15h00: Intervalo
+15h00-15h50: Bloco de estudo 3 – [revisão]
+16h00-17h00: Exercício físico
+17h00-18h00: Tempo livre / social
+18h00-19h00: Jantar
+19h00-20h30: Bloco de estudo 4 – [questões ou casos clínicos]
+20h30-22h00: Tempo livre / lazer
+22h00-23h00: Rotina noturna / sono
+
+[Repetir estrutura para os demais dias da semana]
+
+**DOMINGO:**
+Dia de descanso completo. Apenas atividades leves, opcionais e prazerosas.
+
+**PRINCÍPIOS DA ROTINA:**
+• Máximo de 4 blocos de estudo por dia
+• Mínimo de 7 horas de sono
+• Pelo menos 3 sessões de exercício por semana
+• Pelo menos 2 momentos sociais por semana
+• 1 dia de descanso completo
+
+**SINAIS DE ALERTA (PARE E REAVALIE):**
+• Sono insuficiente por mais de 3 dias seguidos
+• Sensação constante de sobrecarga
+• Negligência de exercício ou alimentação
+• Isolamento social prolongado
+• Queda no desempenho apesar do esforço
+
+**AJUSTES SEMANAIS:**
+Toda sexta-feira, revise:
+• O que funcionou bem essa semana?
+• O que precisa ser ajustado?
+• Algum compromisso pode ser reduzido ou eliminado?
+• A rotina está sustentável ou gerando esgotamento?
+
+**RESTRIÇÕES (NÃO NEGOCIÁVEIS)**
+• Sono nunca é negociável: mínimo 7 horas
+• Pelo menos 1 dia de descanso completo por semana
+• Intervalos entre blocos de estudo são obrigatórios
+• Exercício físico é prioridade, não opcional
+• Rotina deve ser sustentável por meses, não dias
+
+**RECOMENDAÇÕES PARA SUSTENTABILIDADE**
+• Quantidade não compensa qualidade: estude menos, mas melhor
+• Burnout destrói meses de progresso: previna sempre
+• Descanso não é perda de tempo: é consolidação de aprendizado
+• Rotinas rígidas demais quebram: mantenha flexibilidade
+• Celebre pequenos progressos: medicina é maratona, não sprint
+
+**🤖 IA RECOMENDADA: ChatGPT**
+Motivo: Cria cronogramas personalizados complexos considerando múltiplas variáveis. Equilibra produtividade e bem-estar.
+Alternativas: Notion AI, Claude`,
+    tags: ['rotina de estudo', 'sustentabilidade', 'prevenção de burnout'],
+    academicLevel: 'Todos os níveis',
+    estimatedTime: 25,
+  },
+  {
+    id: '26',
+    title: 'Gerador de Apresentação Clínica Estruturada',
+    description: 'Prepare apresentação oral estruturada de caso clínico ou tema',
+    category: 'clinica',
+    content: `**PAPEL DA IA (PERSONA – OBRIGATÓRIO)**
+Você é um médico experiente em comunicação clínica e apresentações médicas.
+Você sabe que apresentar casos clínicos ou temas de forma clara, estruturada e objetiva é habilidade essencial, exigida em rounds, discussões de caso, congressos e provas práticas.
+
+**OBJETIVO (RESUMO INICIAL – LEIA COM ATENÇÃO)**
+Criar um roteiro estruturado para apresentação oral de caso clínico ou tema médico, com organização lógica, linguagem precisa, tempo controlado e inclusão de todos os elementos essenciais, preparando o estudante para apresentações formais e profissionais.
+
+**CAMPOS DE ENTRADA**
+[TIPO DE APRESENTAÇÃO]: Informe se é caso clínico ou tema teórico.
+[TEMPO DISPONÍVEL]: Informe a duração da apresentação (ex.: 5 minutos, 10 minutos, 20 minutos).
+[CONTEÚDO]: Cole o caso clínico ou tema a ser apresentado.
+[AUDIÊNCIA]: Informe quem será a audiência (professores, residentes, colegas, banca de prova).
+
+**PROCESSO (SIGA TODAS AS ETAPAS – NÃO PULE NENHUMA)**
+
+**Etapa 1 – Definição da Estrutura**
+Organize a apresentação em seções lógicas e cronometradas.
+
+**Etapa 2 – Criação do Roteiro Falado**
+Para cada seção, escreva exatamente o que deve ser dito, com linguagem clara e profissional.
+
+**Etapa 3 – Inclusão de Transições**
+Crie frases de transição entre seções para manter fluidez.
+
+**Etapa 4 – Definição de Pontos de Ênfase**
+Identifique os 3 pontos mais importantes que devem ser destacados.
+
+**Etapa 5 – Preparação para Perguntas**
+Antecipe as 3 perguntas mais prováveis e prepare respostas.
+
+**FORMATO DE SAÍDA (OBRIGATÓRIO)**
+**ROTEIRO DE APRESENTAÇÃO**
+
+**TIPO:** [Caso clínico / Tema teórico]
+**TEMPO TOTAL:** [X minutos]
+**AUDIÊNCIA:** [Descrição]
+
+**ESTRUTURA GERAL:**
+1. Abertura (X segundos)
+2. Apresentação do caso/tema (X minutos)
+3. Discussão/análise (X minutos)
+4. Conclusão (X segundos)
+5. Perguntas (X minutos)
+
+---
+
+**SEÇÃO 1 – ABERTURA (30 segundos)**
+**O que dizer:**
+"Bom dia/boa tarde. Vou apresentar [caso clínico de / tema sobre] [nome], enfocando [aspecto principal]. A apresentação terá duração de [X] minutos."
+
+**Postura:** Contato visual, tom firme e confiante.
+
+---
+
+**SEÇÃO 2 – APRESENTAÇÃO DO CASO (3 minutos)**
+**O que dizer:**
+"[Nome], [idade], [sexo], [profissão quando relevante], com queixa de [queixa principal], há [tempo de evolução].
+
+Na história clínica, destacam-se [dados relevantes positivos e negativos].
+
+Ao exame físico, os achados mais importantes foram [achados objetivos].
+
+Foram realizados os seguintes exames: [lista objetiva dos exames e resultados relevantes]."
+
+**Dica:** Use linguagem objetiva, sem jargões desnecessários. Evite detalhes irrelevantes.
+
+**Transição:** "Com base nesses dados, passo à discussão diagnóstica."
+
+---
+
+**SEÇÃO 3 – DISCUSSÃO (4 minutos)**
+**O que dizer:**
+"Os principais diagnósticos diferenciais considerados foram [lista].
+
+O diagnóstico de [diagnóstico final] foi estabelecido com base em [critérios ou achados confirmatórios].
+
+A fisiopatologia central envolve [explicação breve].
+
+O tratamento instituído foi [conduta], justificado por [evidência ou diretriz].
+
+Os principais pontos de aprendizado deste caso são:
+1. [Ponto de aprendizado 1]
+2. [Ponto de aprendizado 2]
+3. [Ponto de aprendizado 3]"
+
+**Dica:** Destaque o que é incomum, importante ou clinicamente relevante.
+
+**Transição:** "Para concluir..."
+
+---
+
+**SEÇÃO 4 – CONCLUSÃO (30 segundos)**
+**O que dizer:**
+"Este caso ilustra [mensagem principal]. Os pontos-chave são [resumo ultra-sintético dos 3 pontos principais]. Obrigado pela atenção. Estou disponível para perguntas."
+
+---
+
+**SEÇÃO 5 – ANTECIPAÇÃO DE PERGUNTAS**
+**Pergunta provável 1:** [Pergunta que pode ser feita]
+**Resposta preparada:** [Resposta objetiva e fundamentada]
+
+**Pergunta provável 2:** [Pergunta que pode ser feita]
+**Resposta preparada:** [Resposta objetiva e fundamentada]
+
+**Pergunta provável 3:** [Pergunta que pode ser feita]
+**Resposta preparada:** [Resposta objetiva e fundamentada]
+
+---
+
+**CHECKLIST PRÉ-APRESENTAÇÃO:**
+☐ Ensaiei em voz alta pelo menos 2 vezes
+☐ Cronometrei e ajustei para o tempo disponível
+☐ Identifiquei os 3 pontos principais
+☐ Preparei respostas para perguntas prováveis
+☐ Revisei terminologia técnica
+☐ Verifiquei pronúncia de termos complexos
+
+**DICAS FINAIS:**
+• Fale devagar e com clareza
+• Faça pausas breves entre seções
+• Mantenha contato visual
+• Use linguagem profissional, mas acessível
+• Se não souber responder uma pergunta, admita honestamente
+• Agradeça ao final
+
+**RESTRIÇÕES (NÃO NEGOCIÁVEIS)**
+• Respeite rigorosamente o tempo disponível
+• Use linguagem profissional, não coloquial
+• Evite jargões desnecessários
+• Destaque os pontos de aprendizado
+• Nunca leia slides ou anotações integralmente
+
+**RECOMENDAÇÕES PARA APRESENTAÇÕES EFICAZES**
+• Ensaie em voz alta: apresentar não é ler
+• Cronometre: respeitar o tempo é profissionalismo
+• Simplifique: clareza sempre vence complexidade
+• Destaque o que é clinicamente relevante
+• Prepare-se para perguntas: elas sempre vêm
+
+**🤖 IA RECOMENDADA: ChatGPT**
+Motivo: Cria roteiros estruturados com linguagem clara. Organiza informações de forma lógica e profissional.
+Alternativas: Claude, Perplexity`,
+    tags: ['apresentação clínica', 'comunicação médica', 'round clínico'],
+    academicLevel: '3º-4º ano',
+    estimatedTime: 20,
   },
 ];
+
 

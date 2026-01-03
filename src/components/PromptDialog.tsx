@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useState, useEffect } from "react"
 import {
   Dialog,
   DialogContent,
@@ -7,17 +7,18 @@ import {
   DialogTitle,
 } from "@/components/ui/dialog"
 import { Button } from "@/components/ui/button"
-import { Copy, CheckCircle2, Sparkles } from "lucide-react"
+import { Copy, CheckCircle2, Sparkles, ExternalLink } from "lucide-react"
 import { DynamicPromptForm } from "@/components/DynamicPromptForm"
 import { IntegrationButtons } from "@/components/IntegrationButtons"
 import { parsePromptContent } from "@/utils/prompt-parser"
+import { hasVariables, detectVariables, fillVariables, validateVariables } from "@/utils/promptVariables"
 import { useToast } from "@/hooks/use-toast"
 import { registerPromptUse, loadProgress } from "@/lib/gamification"
 import { checkNewBadges } from "@/lib/badges"
 import { updateMissionProgress } from "@/lib/daily-missions"
+import { usePromptHistory } from "@/contexts/PromptHistoryContext"
 import type { Prompt } from "@/types/prompt"
 import type { FieldValues } from "@/types/dynamic-fields"
-
 
 interface PromptDialogProps {
   prompt: Prompt
@@ -25,16 +26,30 @@ interface PromptDialogProps {
   onOpenChange: (open: boolean) => void
 }
 
-
 export const PromptDialog = ({ prompt, open, onOpenChange }: PromptDialogProps) => {
   const [generatedPrompt, setGeneratedPrompt] = useState<string | null>(null)
   const [copied, setCopied] = useState(false)
   const { toast } = useToast()
+  const { addToHistory } = usePromptHistory()
 
+  // Adiciona ao histórico quando abre
+  useEffect(() => {
+    if (open) {
+      addToHistory({
+        id: prompt.id,
+        title: prompt.title,
+        category: prompt.category,
+      })
+    }
+  }, [open, prompt.id, prompt.title, prompt.category, addToHistory])
 
   // Analisar o prompt para detectar campos dinâmicos
   const parsedPrompt = parsePromptContent(prompt.content)
   const hasDynamicFields = parsedPrompt.fields.length > 0
+  
+  // Detectar variáveis [VARIAVEL], {opcional}, <LISTA|opcoes>
+  const hasCustomVariables = hasVariables(prompt.content)
+  const variables = hasCustomVariables ? detectVariables(prompt.content) : []
 
   const handlePromptUse = () => {
     // Registrar uso e ganhar XP (passando categoria)
@@ -78,7 +93,6 @@ export const PromptDialog = ({ prompt, open, onOpenChange }: PromptDialogProps) 
     })
   }
 
-
   const handleGenerate = (values: FieldValues) => {
     const finalPrompt = parsedPrompt.generatePrompt(values)
     setGeneratedPrompt(finalPrompt)
@@ -101,7 +115,6 @@ export const PromptDialog = ({ prompt, open, onOpenChange }: PromptDialogProps) 
     }, 1000)
   }
 
-
   const handleCopyStatic = () => {
     navigator.clipboard.writeText(prompt.content)
     setCopied(true)
@@ -114,6 +127,23 @@ export const PromptDialog = ({ prompt, open, onOpenChange }: PromptDialogProps) 
     }, 2000)
   }
 
+  const openInChatGPT = () => {
+    const content = generatedPrompt || prompt.content
+    const url = `https://chatgpt.com/?q=${encodeURIComponent(content)}`
+    window.open(url, '_blank')
+  }
+
+  const openInClaude = () => {
+    const content = generatedPrompt || prompt.content
+    const url = `https://claude.ai/new?q=${encodeURIComponent(content)}`
+    window.open(url, '_blank')
+  }
+
+  const openInPerplexity = () => {
+    const content = generatedPrompt || prompt.content
+    const url = `https://www.perplexity.ai/?q=${encodeURIComponent(content)}`
+    window.open(url, '_blank')
+  }
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -126,7 +156,6 @@ export const PromptDialog = ({ prompt, open, onOpenChange }: PromptDialogProps) 
           <DialogDescription>{prompt.description}</DialogDescription>
         </DialogHeader>
 
-
         <div className="space-y-6 py-4">
           {hasDynamicFields ? (
             // Prompt com campos dinâmicos
@@ -138,7 +167,6 @@ export const PromptDialog = ({ prompt, open, onOpenChange }: PromptDialogProps) 
                       Este prompt precisa de informações personalizadas. Preencha os campos abaixo:
                     </p>
                   </div>
-
 
                   <DynamicPromptForm
                     fields={parsedPrompt.fields}
@@ -156,11 +184,10 @@ export const PromptDialog = ({ prompt, open, onOpenChange }: PromptDialogProps) 
                         Prompt gerado com sucesso!
                       </p>
                       <p className="text-sm text-green-700 dark:text-green-300">
-                        Copiado automaticamente. Você pode fechar esta janela.
+                        Copiado automaticamente. Use os botões abaixo para abrir em uma IA.
                       </p>
                     </div>
                   </div>
-
 
                   <div className="bg-muted/50 rounded-lg p-4 border">
                     <p className="text-sm font-mono whitespace-pre-wrap max-h-[300px] overflow-y-auto">
@@ -169,10 +196,23 @@ export const PromptDialog = ({ prompt, open, onOpenChange }: PromptDialogProps) 
                   </div>
 
                   {/* Botões de integração */}
-                  <IntegrationButtons
-                    promptContent={generatedPrompt}
-                    promptTitle={prompt.title}
-                  />
+                  <div className="space-y-2">
+                    <p className="text-sm font-medium">🚀 Abrir diretamente em:</p>
+                    <div className="grid grid-cols-3 gap-2">
+                      <Button variant="outline" onClick={openInChatGPT} className="w-full">
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        ChatGPT
+                      </Button>
+                      <Button variant="outline" onClick={openInClaude} className="w-full">
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Claude
+                      </Button>
+                      <Button variant="outline" onClick={openInPerplexity} className="w-full">
+                        <ExternalLink className="w-4 h-4 mr-2" />
+                        Perplexity
+                      </Button>
+                    </div>
+                  </div>
                 </div>
               )}
             </>
@@ -184,7 +224,6 @@ export const PromptDialog = ({ prompt, open, onOpenChange }: PromptDialogProps) 
                   {prompt.content}
                 </p>
               </div>
-
 
               <div className="flex gap-3">
                 <Button
@@ -213,16 +252,26 @@ export const PromptDialog = ({ prompt, open, onOpenChange }: PromptDialogProps) 
               </div>
 
               {/* Botões de integração para prompts estáticos */}
-              {copied && (
-                <IntegrationButtons
-                  promptContent={prompt.content}
-                  promptTitle={prompt.title}
-                />
-              )}
+              <div className="space-y-2">
+                <p className="text-sm font-medium">🚀 Abrir diretamente em:</p>
+                <div className="grid grid-cols-3 gap-2">
+                  <Button variant="outline" onClick={openInChatGPT} className="w-full">
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    ChatGPT
+                  </Button>
+                  <Button variant="outline" onClick={openInClaude} className="w-full">
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Claude
+                  </Button>
+                  <Button variant="outline" onClick={openInPerplexity} className="w-full">
+                    <ExternalLink className="w-4 h-4 mr-2" />
+                    Perplexity
+                  </Button>
+                </div>
+              </div>
             </>
           )}
         </div>
-
 
         {prompt.tips && prompt.tips.length > 0 && !generatedPrompt && (
           <div className="border-t pt-4 space-y-2">
