@@ -3,8 +3,9 @@ import { Badge } from '@/components/ui/badge';
 import { Button } from '@/components/ui/button';
 import { Prompt } from '@/types';
 import { Clock, GraduationCap, Tag } from 'lucide-react';
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { PromptDialog } from './PromptDialog';
+import { logger } from '@/utils/logger';
 
 interface PromptCardProps {
   prompt: Prompt;
@@ -12,12 +13,60 @@ interface PromptCardProps {
 
 export function PromptCard({ prompt }: PromptCardProps) {
   const [open, setOpen] = useState(false);
+  const [renderTime] = useState(Date.now());
+
+  // Log quando o card é renderizado
+  useEffect(() => {
+    logger.debug('PromptCard renderizado', {
+      component: 'PromptCard',
+      promptId: prompt.id,
+      promptTitle: prompt.title,
+      category: prompt.category,
+      academicLevel: prompt.academicLevel,
+      tags: prompt.tags,
+      renderTimestamp: renderTime,
+    });
+  }, [prompt.id, prompt.title, prompt.category, prompt.academicLevel, prompt.tags, renderTime]);
 
   const categoryColors: Record<string, string> = {
     estudos: 'bg-blue-100 text-blue-800 hover:bg-blue-200',
     clinica: 'bg-green-100 text-green-800 hover:bg-green-200',
     pesquisa: 'bg-purple-100 text-purple-800 hover:bg-purple-200',
     produtividade: 'bg-orange-100 text-orange-800 hover:bg-orange-200',
+  };
+
+  const handleOpenDialog = () => {
+    const viewTime = Date.now() - renderTime;
+
+    logger.info('Prompt visualizado - Dialog aberto', {
+      component: 'PromptCard',
+      action: 'open_dialog',
+      promptId: prompt.id,
+      promptTitle: prompt.title,
+      category: prompt.category,
+      academicLevel: prompt.academicLevel,
+      estimatedTime: prompt.estimatedTime,
+      tagsCount: prompt.tags.length,
+      timeToClick: viewTime,
+      userMetrics: {
+        cardViewDuration: viewTime,
+        clickedAt: new Date().toISOString(),
+      },
+    });
+
+    setOpen(true);
+  };
+
+  const handleCloseDialog = (isOpen: boolean) => {
+    if (!isOpen && open) {
+      logger.info('Prompt Dialog fechado', {
+        component: 'PromptCard',
+        action: 'close_dialog',
+        promptId: prompt.id,
+        promptTitle: prompt.title,
+      });
+    }
+    setOpen(isOpen);
   };
 
   return (
@@ -78,7 +127,7 @@ export function PromptCard({ prompt }: PromptCardProps) {
         <CardFooter>
           <Button
             className="w-full"
-            onClick={() => setOpen(true)}
+            onClick={handleOpenDialog}
           >
             Ver Prompt Completo
           </Button>
@@ -88,7 +137,7 @@ export function PromptCard({ prompt }: PromptCardProps) {
       <PromptDialog
         prompt={prompt}
         open={open}
-        onOpenChange={setOpen}
+        onOpenChange={handleCloseDialog}
       />
     </>
   );
