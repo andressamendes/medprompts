@@ -45,30 +45,30 @@ interface UserCreationAttributes extends Optional<UserAttributes,
 
 // Classe do modelo User
 class User extends Model<UserAttributes, UserCreationAttributes> implements UserAttributes {
-  public id!: string;
-  public email!: string;
-  public password!: string;
-  public name!: string;
-  public university?: string;
-  public graduationYear?: number;
-  public bio?: string;
-  public avatarUrl?: string;
+  declare id: string;
+  declare email: string;
+  declare password: string;
+  declare name: string;
+  declare university?: string;
+  declare graduationYear?: number;
+  declare bio?: string;
+  declare avatarUrl?: string;
   
-  public xp!: number;
-  public level!: number;
-  public badges!: string[];
+  declare xp: number;
+  declare level: number;
+  declare badges: string[];
   
-  public studyGoalHours?: number;
-  public preferredAI?: 'chatgpt' | 'claude' | 'gemini' | 'perplexity';
-  public studyDays?: number[];
+  declare studyGoalHours?: number;
+  declare preferredAI?: 'chatgpt' | 'claude' | 'gemini' | 'perplexity';
+  declare studyDays?: number[];
   
-  public emailVerified!: boolean;
-  public isActive!: boolean;
-  public tokenVersion!: number;
+  declare emailVerified: boolean;
+  declare isActive: boolean;
+  declare tokenVersion: number;
   
-  public lastLoginAt?: Date;
-  public readonly createdAt!: Date;
-  public readonly updatedAt!: Date;
+  declare lastLoginAt?: Date;
+  declare readonly createdAt: Date;
+  declare readonly updatedAt: Date;
 
   /**
    * Verifica se senha fornecida corresponde ao hash armazenado
@@ -287,23 +287,37 @@ User.init(
     hooks: {
       // Antes de criar usuário, faz hash da senha
       beforeCreate: async (user: User) => {
-        if (user.password) {
-          const salt = await bcrypt.genSalt(12);
-          user.password = await bcrypt.hash(user.password, salt);
+        try {
+          if (user.password) {
+            logger.info('🔐 Hasheando senha antes de criar usuário', { email: user.email });
+            const salt = await bcrypt.genSalt(12);
+            user.password = await bcrypt.hash(user.password, salt);
+            logger.info('✅ Senha hasheada com sucesso');
+          }
+        } catch (error) {
+          logger.error('❌ Erro ao hashear senha no beforeCreate:', error);
+          throw error;
         }
       },
       
       // Antes de atualizar, verifica se senha mudou e faz hash
       beforeUpdate: async (user: User) => {
-        if (user.changed('password')) {
-          const salt = await bcrypt.genSalt(12);
-          user.password = await bcrypt.hash(user.password, salt);
+        try {
+          if (user.changed('password') && user.password) {
+            logger.info('🔐 Hasheando senha antes de atualizar usuário', { userId: user.id });
+            const salt = await bcrypt.genSalt(12);
+            user.password = await bcrypt.hash(user.password, salt);
+            logger.info('✅ Senha hasheada com sucesso');
+          }
+        } catch (error) {
+          logger.error('❌ Erro ao hashear senha no beforeUpdate:', error);
+          throw error;
         }
       },
       
       // Após criar, registra no log
       afterCreate: (user: User) => {
-        logger.info('Novo usuário criado', {
+        logger.info('✅ Novo usuário criado', {
           userId: user.id,
           email: user.email
         });
@@ -311,7 +325,7 @@ User.init(
       
       // Após atualizar, registra no log
       afterUpdate: (user: User) => {
-        logger.info('Usuário atualizado', {
+        logger.info('✅ Usuário atualizado', {
           userId: user.id,
           changedFields: user.changed()
         });

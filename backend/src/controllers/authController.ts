@@ -1,4 +1,5 @@
 import { Request, Response } from 'express';
+import bcrypt from 'bcryptjs';
 import User from '../models/User';
 import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../config/jwt';
 import { logger, logAudit, logAuthAttempt } from '../utils/logger';
@@ -25,10 +26,16 @@ export const register = async (req: Request, res: Response): Promise<void> => {
       return;
     }
 
-    // Cria novo usuário (senha será hasheada automaticamente pelo hook)
+    // Hasheia senha manualmente (workaround para hook não funcionando)
+    logger.info('🔐 Hasheando senha manualmente no controller');
+    const salt = await bcrypt.genSalt(12);
+    const hashedPassword = await bcrypt.hash(password, salt);
+    logger.info('✅ Senha hasheada com sucesso');
+
+    // Cria novo usuário com senha já hasheada
     const user = await User.create({
       email,
-      password,
+      password: hashedPassword,
       name,
       university,
       graduationYear,
@@ -91,7 +98,7 @@ export const login = async (req: Request, res: Response): Promise<void> => {
       });
       return;
     }
-
+    
     // Verifica se conta está ativa
     if (!user.isActive) {
       logger.warn('Tentativa de login em conta desativada', { email, userId: user.id, ip });
