@@ -1,4 +1,5 @@
 import { useState, useMemo, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { PromptCard } from '@/components/PromptCard';
 import { CategoryFilter } from '@/components/CategoryFilter';
 import { SearchBar } from '@/components/SearchBar';
@@ -19,11 +20,12 @@ import { TutorialButton } from '@/components/TutorialButton';
 import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { prompts } from '@/data/prompts-data';
-import { BookOpen, Sparkles, Download } from 'lucide-react';
+import { BookOpen, Sparkles, Download, Headphones } from 'lucide-react';
 import { useLogger } from '@/utils/logger';
 
 export default function Index() {
   const logger = useLogger();
+  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showExportModal, setShowExportModal] = useState(false);
@@ -64,7 +66,6 @@ export default function Index() {
     const filtered = prompts.filter((prompt) => {
       const matchesCategory =
         selectedCategory === 'all' || prompt.category === selectedCategory;
-
       const matchesSearch =
         searchQuery === '' ||
         prompt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -97,6 +98,15 @@ export default function Index() {
   const handleExportModalClose = () => {
     logger.info('Modal de export/backup fechado');
     setShowExportModal(false);
+  };
+
+  const handleFocusZone = () => {
+    logger.info('Botão Focus Zone clicado', {
+      component: 'Index',
+      action: 'navigate_to_focus_zone',
+      timestamp: new Date().toISOString(),
+    });
+    navigate('/focus-zone');
   };
 
   return (
@@ -283,6 +293,16 @@ export default function Index() {
           </div>
         </div>
       </footer>
+
+      {/* Botão Flutuante Focus Zone */}
+      <Button
+        onClick={handleFocusZone}
+        size="lg"
+        className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full shadow-2xl hover:scale-110 transition-all duration-300 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
+        aria-label="Ativar modo de concentração"
+      >
+        <Headphones className="w-6 h-6" />
+      </Button>
 
       {/* Modal de Export/Import */}
       <ExportImportModal
