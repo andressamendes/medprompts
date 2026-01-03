@@ -102,7 +102,7 @@ function App() {
               </SelectContent>
             </Select>
 
-            {/* NOVO: Filtro de IA Recomendada */}
+            {/* Filtro de IA Recomendada - CORRIGIDO */}
             <Select value={selectedAI} onValueChange={setSelectedAI}>
               <SelectTrigger className="w-[200px]">
                 <SelectValue placeholder="IA Recomendada" />
@@ -111,12 +111,7 @@ function App() {
                 <SelectItem value="all">Todas as IAs</SelectItem>
                 {availableAIs.map((ai) => (
                   <SelectItem key={ai} value={ai}>
-                    <div className="flex items-center justify-between w-full">
-                      <span>{ai}</span>
-                      <Badge variant="secondary" className="ml-2">
-                        {aiCounts[ai]}
-                      </Badge>
-                    </div>
+                    {ai} ({aiCounts[ai]})
                   </SelectItem>
                 ))}
               </SelectContent>
