@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { PromptCard } from '@/components/PromptCard';
+import { PromptDialog } from '@/components/PromptDialog';
 import { CategoryFilter } from '@/components/CategoryFilter';
 import { SearchBar } from '@/components/SearchBar';
 import { XPBar } from '@/components/XPBar';
@@ -24,6 +25,7 @@ import { Button } from '@/components/ui/button';
 import { prompts } from '@/data/prompts-data';
 import { BookOpen, Sparkles, Download, Headphones } from 'lucide-react';
 import { useLogger } from '@/utils/logger';
+import type { Prompt } from '@/types/prompt';
 
 export default function Index() {
   const logger = useLogger();
@@ -31,6 +33,7 @@ export default function Index() {
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showExportModal, setShowExportModal] = useState(false);
+  const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
 
   // Log quando a página é montada
   useEffect(() => {
@@ -68,6 +71,7 @@ export default function Index() {
     const filtered = prompts.filter((prompt) => {
       const matchesCategory =
         selectedCategory === 'all' || prompt.category === selectedCategory;
+
       const matchesSearch =
         searchQuery === '' ||
         prompt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -276,7 +280,10 @@ export default function Index() {
               >
                 {filteredPrompts.map((prompt) => (
                   <div key={prompt.id} role="listitem">
-                    <PromptCard prompt={prompt} />
+                    <PromptCard 
+                      prompt={prompt}
+                      onClick={() => setSelectedPrompt(prompt)}
+                    />
                   </div>
                 ))}
               </div>
@@ -323,6 +330,15 @@ export default function Index() {
         open={showExportModal}
         onOpenChange={handleExportModalClose}
       />
+
+      {/* Dialog do Prompt Selecionado */}
+      {selectedPrompt && (
+        <PromptDialog
+          prompt={selectedPrompt}
+          open={!!selectedPrompt}
+          onOpenChange={(open) => !open && setSelectedPrompt(null)}
+        />
+      )}
 
       {/* PWA Install Prompt */}
       <InstallPWA />

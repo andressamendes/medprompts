@@ -5,12 +5,14 @@ interface PromptsSectionProps {
   title: string
   prompts: Prompt[]
   emptyMessage?: string
+  onPromptClick: (prompt: Prompt) => void
 }
 
 export const PromptsSection = ({
   title,
   prompts,
   emptyMessage = "Nenhum prompt disponível",
+  onPromptClick,
 }: PromptsSectionProps) => {
   // Proteção: garante que prompts seja sempre um array
   const safePrompts = Array.isArray(prompts) ? prompts : []
@@ -31,7 +33,11 @@ export const PromptsSection = ({
       ) : (
         <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
           {safePrompts.map((prompt) => (
-            <PromptCard key={prompt.id} prompt={prompt} />
+            <PromptCard 
+              key={prompt.id} 
+              prompt={prompt}
+              onClick={() => onPromptClick(prompt)}
+            />
           ))}
         </div>
       )}
