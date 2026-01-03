@@ -50,7 +50,7 @@ export const useSearch = () => {
           ))
 
       const matchesSection = !selectedSection || prompt.category === selectedSection
-      const matchesAI = !selectedAI || prompt.recommendedModel === selectedAI
+      const matchesAI = !selectedAI || prompt.recommendedAI?.primary === selectedAI
 
       return matchesQuery && matchesSection && matchesAI
     })
