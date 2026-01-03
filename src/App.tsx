@@ -5,17 +5,7 @@ import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Prompts from './pages/Prompts';
-
-// Componentes temporários (serão substituídos por páginas reais)
-const StudyPage = () => (
-  <div style={{ padding: '40px', textAlign: 'center' }}>
-    <h1>📚 Sessões de Estudo</h1>
-    <p>✅ Rota protegida ativa!</p>
-    <p style={{ color: '#666', fontSize: '14px' }}>
-      Integração com API de sessões configurada
-    </p>
-  </div>
-);
+import StudySessions from './pages/StudySessions';
 
 const HomePage = () => (
   <div style={{ padding: '40px', textAlign: 'center', minHeight: '100vh', background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', color: '#fff' }}>
@@ -32,22 +22,23 @@ const HomePage = () => (
     </div>
 
     <div style={{ marginTop: '60px', padding: '30px', background: 'rgba(255,255,255,0.1)', borderRadius: '12px', maxWidth: '600px', margin: '60px auto 0' }}>
-      <h2 style={{ fontSize: '24px', marginBottom: '20px' }}>✅ UI Completa Implementada</h2>
+      <h2 style={{ fontSize: '24px', marginBottom: '20px' }}>✅ Plataforma Completa</h2>
       <ul style={{ listStyle: 'none', padding: 0, textAlign: 'left' }}>
-        <li style={{ marginBottom: '10px' }}>✓ Integração com backend configurada</li>
         <li style={{ marginBottom: '10px' }}>✓ Sistema de autenticação completo</li>
-        <li style={{ marginBottom: '10px' }}>✓ Dashboard com estatísticas</li>
-        <li style={{ marginBottom: '10px' }}>✓ Gerenciador de prompts funcional</li>
-        <li style={{ marginBottom: '10px' }}>✓ Criar, editar, deletar prompts</li>
-        <li style={{ marginBottom: '10px' }}>✓ Filtros e busca implementados</li>
-        <li style={{ marginBottom: '10px' }}>✓ Sistema de XP e gamificação</li>
+        <li style={{ marginBottom: '10px' }}>✓ Dashboard com estatísticas e gamificação</li>
+        <li style={{ marginBottom: '10px' }}>✓ Gerenciador de prompts (CRUD completo)</li>
+        <li style={{ marginBottom: '10px' }}>✓ Registro de sessões de estudo</li>
+        <li style={{ marginBottom: '10px' }}>✓ Sistema de XP e níveis</li>
+        <li style={{ marginBottom: '10px' }}>✓ Filtros, busca e favoritos</li>
         <li style={{ marginBottom: '10px' }}>✓ Design responsivo (mobile + desktop)</li>
+        <li style={{ marginBottom: '10px' }}>✓ Integração com backend preparada</li>
+        <li style={{ marginBottom: '10px' }}>✓ TypeScript com tipagem forte</li>
         <li style={{ marginBottom: '10px' }}>✓ Rotas protegidas funcionando</li>
       </ul>
     </div>
 
     <p style={{ marginTop: '40px', fontSize: '14px', opacity: 0.8 }}>
-      Backend API: Pronto para integração
+      UI Completa • Pronta para integração com backend
     </p>
   </div>
 );
@@ -88,7 +79,7 @@ function App() {
             path="/study"
             element={
               <ProtectedRoute>
-                <StudyPage />
+                <StudySessions />
               </ProtectedRoute>
             }
           />
