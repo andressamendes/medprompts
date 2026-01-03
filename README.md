@@ -59,6 +59,47 @@
 - **shadcn/ui** - Componentes UI
 - **Lucide React** - Ícones
 - **LocalStorage** - Persistência de dados
+ Recursos:
+
+5 níveis de severidade (DEBUG, INFO, WARN, ERROR, FATAL)
+
+Persistência local com criptografia
+
+Debug Panel visual para desenvolvimento
+
+Error Boundary automático
+
+🔧 Como Usar:
+
+Hook useLogger() para componentes React
+
+Import direto logger para utilitários
+
+Exemplos práticos de uso
+
+🎛️ Debug Panel:
+
+Visível apenas em localhost
+
+Filtros, busca, exportação e limpeza
+
+Interface visual completa
+
+📈 Produção:
+
+Logs automáticos de WARN+
+
+Envio automático para servidor
+
+Otimizações de performance
+
+🛡️ Segurança:
+
+Armazenamento local apenas
+
+Sem dados sensíveis
+
+Limpeza automática
 
 🤝 Contribuindo
 Contribuições são bem-vindas! Sinta-se à vontade para:
