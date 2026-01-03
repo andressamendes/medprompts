@@ -16,6 +16,7 @@ import { WeeklyChallengeCard } from '@/components/WeeklyChallengeCard';
 import { StatsSection } from '@/components/StatsSection';
 import { InstallPWA } from '@/components/InstallPWA';
 import { TutorialButton } from '@/components/TutorialButton';
+import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { prompts } from '@/data/prompts-data';
 import { BookOpen, Sparkles, Download } from 'lucide-react';
@@ -29,6 +30,7 @@ export default function Index() {
     return prompts.filter((prompt) => {
       const matchesCategory =
         selectedCategory === 'all' || prompt.category === selectedCategory;
+
       const matchesSearch =
         searchQuery === '' ||
         prompt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -64,6 +66,9 @@ export default function Index() {
             </div>
             
             <div className="flex items-center gap-3">
+              {/* Botão de alternância de tema */}
+              <ThemeToggle />
+              
               <Button
                 variant="outline"
                 size="sm"
@@ -74,6 +79,7 @@ export default function Index() {
                 <Download className="w-4 h-4 mr-2" aria-hidden="true" />
                 Backup
               </Button>
+              
               <div className="flex items-center gap-2" role="status" aria-label="Status do sistema">
                 <Sparkles className="w-5 h-5 text-yellow-500" aria-hidden="true" />
                 <span className="text-sm font-medium hidden md:inline">Sistema de Gamificação Ativo</span>
@@ -210,7 +216,7 @@ export default function Index() {
         <div className="container mx-auto px-4 py-6">
           <div className="text-center space-y-2">
             <p className="text-sm text-muted-foreground">
-              MedPrompts © 2026 • Desenvolvido para estudantes de medicina
+              MedPrompts © 2026 • Desenvolvido para estudantes de Medicina
             </p>
             <p className="text-xs text-muted-foreground">
               Desenvolvido por <span className="font-semibold">Andressa Mendes</span> • Estudante de Medicina
