@@ -1,4 +1,4 @@
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { PromptCard } from '@/components/PromptCard';
 import { CategoryFilter } from '@/components/CategoryFilter';
 import { SearchBar } from '@/components/SearchBar';
@@ -20,14 +20,48 @@ import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { prompts } from '@/data/prompts-data';
 import { BookOpen, Sparkles, Download } from 'lucide-react';
+import { useLogger } from '@/utils/logger';
 
 export default function Index() {
+  const logger = useLogger();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
   const [showExportModal, setShowExportModal] = useState(false);
 
+  // Log quando a página é montada
+  useEffect(() => {
+    logger.info('Página Index montada', {
+      totalPrompts: prompts.length,
+      userAgent: navigator.userAgent,
+    });
+
+    return () => {
+      logger.debug('Página Index desmontada');
+    };
+  }, [logger]);
+
+  // Log quando categoria muda
+  useEffect(() => {
+    if (selectedCategory !== 'all') {
+      logger.debug('Categoria alterada', {
+        category: selectedCategory,
+        timestamp: new Date().toISOString(),
+      });
+    }
+  }, [selectedCategory, logger]);
+
+  // Log quando busca é realizada
+  useEffect(() => {
+    if (searchQuery) {
+      logger.debug('Busca realizada', {
+        query: searchQuery,
+        queryLength: searchQuery.length,
+      });
+    }
+  }, [searchQuery, logger]);
+
   const filteredPrompts = useMemo(() => {
-    return prompts.filter((prompt) => {
+    const filtered = prompts.filter((prompt) => {
       const matchesCategory =
         selectedCategory === 'all' || prompt.category === selectedCategory;
 
@@ -41,7 +75,29 @@ export default function Index() {
 
       return matchesCategory && matchesSearch;
     });
-  }, [selectedCategory, searchQuery]);
+
+    // Log resultado da filtragem
+    if (searchQuery || selectedCategory !== 'all') {
+      logger.debug('Prompts filtrados', {
+        totalPrompts: prompts.length,
+        filteredCount: filtered.length,
+        category: selectedCategory,
+        hasSearchQuery: !!searchQuery,
+      });
+    }
+
+    return filtered;
+  }, [selectedCategory, searchQuery, logger]);
+
+  const handleExportModalOpen = () => {
+    logger.info('Modal de export/backup aberto');
+    setShowExportModal(true);
+  };
+
+  const handleExportModalClose = () => {
+    logger.info('Modal de export/backup fechado');
+    setShowExportModal(false);
+  };
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
@@ -72,7 +128,7 @@ export default function Index() {
               <Button
                 variant="outline"
                 size="sm"
-                onClick={() => setShowExportModal(true)}
+                onClick={handleExportModalOpen}
                 className="hidden sm:flex"
                 aria-label="Fazer backup dos dados"
               >
@@ -231,7 +287,7 @@ export default function Index() {
       {/* Modal de Export/Import */}
       <ExportImportModal
         open={showExportModal}
-        onOpenChange={setShowExportModal}
+        onOpenChange={handleExportModalClose}
       />
 
       {/* PWA Install Prompt */}

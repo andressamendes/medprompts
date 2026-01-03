@@ -1,51 +1,98 @@
-import { useState } from 'react'
-import { DynamicField, FieldValues } from '@/types/dynamic-fields'
-import { validateFieldValues } from '@/utils/prompt-parser'
-import { Label } from '@/components/ui/label'
-import { Input } from '@/components/ui/input'
-import { Textarea } from '@/components/ui/textarea'
-import { NativeSelect } from '@/components/ui/select'
-import { Button } from '@/components/ui/button'
+import { useState } from 'react';
+import { DynamicField, FieldValues } from '@/types/dynamic-fields';
+import { validateFieldValues } from '@/utils/prompt-parser';
+import { Label } from '@/components/ui/label';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { NativeSelect } from '@/components/ui/select';
+import { Button } from '@/components/ui/button';
+import { useLogger } from '@/utils/logger';
 
 interface DynamicPromptFormProps {
-  fields: DynamicField[]
-  onGenerate: (values: FieldValues) => void
-  onCancel?: () => void
+  fields: DynamicField[];
+  onGenerate: (values: FieldValues) => void;
+  onCancel?: () => void;
 }
 
 export function DynamicPromptForm({ fields, onGenerate, onCancel }: DynamicPromptFormProps) {
-  const [values, setValues] = useState<FieldValues>({})
-  const [errors, setErrors] = useState<Record<string, string>>({})
+  const logger = useLogger();
+  const [values, setValues] = useState<FieldValues>({});
+  const [errors, setErrors] = useState<Record<string, string>>({});
 
   const handleValueChange = (fieldId: string, value: string) => {
-    setValues((prev) => ({ ...prev, [fieldId]: value }))
+    logger.debug('Campo alterado', {
+      fieldId,
+      valueLength: value.length,
+      hasValue: !!value,
+    });
 
-    // limpar erro do campo quando o usuário começa a digitar
+    setValues((prev) => ({ ...prev, [fieldId]: value }));
+
+    // Limpar erro do campo quando o usuário começa a digitar
     if (errors[fieldId]) {
       setErrors((prev) => {
-        const newErrors = { ...prev }
-        delete newErrors[fieldId]
-        return newErrors
-      })
+        const newErrors = { ...prev };
+        delete newErrors[fieldId];
+        return newErrors;
+      });
     }
-  }
+  };
 
   const handleSubmit = (e: React.FormEvent<HTMLFormElement>) => {
-    e.preventDefault()
+    e.preventDefault();
 
-    const validation = validateFieldValues(fields, values)
+    logger.info('Tentativa de geração de prompt', {
+      fieldsCount: fields.length,
+      filledFieldsCount: Object.keys(values).length,
+      timestamp: new Date().toISOString(),
+    });
+
+    const validation = validateFieldValues(fields, values);
 
     if (!validation.isValid) {
-      setErrors(validation.errors)
-      return
+      const errorCount = Object.keys(validation.errors).length;
+      
+      logger.warn('Validação de formulário falhou', {
+        errorCount,
+        errors: validation.errors,
+        fields: fields.map(f => ({
+          id: f.id,
+          label: f.label,
+          required: f.required,
+          filled: !!values[f.id]
+        })),
+      });
+
+      setErrors(validation.errors);
+      return;
     }
 
-    onGenerate(values)
-  }
+    logger.info('Prompt gerado com sucesso', {
+      fieldsCount: fields.length,
+      values: Object.keys(values).reduce((acc, key) => ({
+        ...acc,
+        [key]: typeof values[key] === 'string' ? values[key].substring(0, 50) : values[key]
+      }), {}),
+      timestamp: new Date().toISOString(),
+    });
+
+    onGenerate(values);
+  };
+
+  const handleCancel = () => {
+    logger.info('Geração de prompt cancelada', {
+      fieldsFilledCount: Object.keys(values).length,
+      totalFields: fields.length,
+    });
+
+    if (onCancel) {
+      onCancel();
+    }
+  };
 
   const renderField = (field: DynamicField) => {
-    const hasError = !!errors[field.id]
-    const fieldValue = values[field.id] || field.defaultValue || ''
+    const hasError = !!errors[field.id];
+    const fieldValue = values[field.id] || field.defaultValue || '';
 
     // textarea
     if (field.type === 'textarea') {
@@ -72,7 +119,7 @@ export function DynamicPromptForm({ fields, onGenerate, onCancel }: DynamicPromp
             </p>
           )}
         </div>
-      )
+      );
     }
 
     // select (nativo)
@@ -107,7 +154,7 @@ export function DynamicPromptForm({ fields, onGenerate, onCancel }: DynamicPromp
             </p>
           )}
         </div>
-      )
+      );
     }
 
     // number
@@ -137,7 +184,7 @@ export function DynamicPromptForm({ fields, onGenerate, onCancel }: DynamicPromp
             </p>
           )}
         </div>
-      )
+      );
     }
 
     // date
@@ -164,7 +211,7 @@ export function DynamicPromptForm({ fields, onGenerate, onCancel }: DynamicPromp
             </p>
           )}
         </div>
-      )
+      );
     }
 
     // default: text
@@ -191,8 +238,8 @@ export function DynamicPromptForm({ fields, onGenerate, onCancel }: DynamicPromp
           </p>
         )}
       </div>
-    )
-  }
+    );
+  };
 
   return (
     <form onSubmit={handleSubmit} className="space-y-6">
@@ -205,7 +252,7 @@ export function DynamicPromptForm({ fields, onGenerate, onCancel }: DynamicPromp
           <Button
             type="button"
             variant="outline"
-            onClick={onCancel}
+            onClick={handleCancel}
             className="flex-1"
           >
             Cancelar
@@ -219,5 +266,5 @@ export function DynamicPromptForm({ fields, onGenerate, onCancel }: DynamicPromp
         </Button>
       </div>
     </form>
-  )
+  );
 }
