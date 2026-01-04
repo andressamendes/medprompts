@@ -1,18 +1,15 @@
-import { useState, useCallback } from 'react';
+import { useState } from 'react';
 import api from '../services/api';
 
-
-// Interfaces de Prompt
+// Interfaces
 export interface Prompt {
   id: string;
-  userId: string;
   title: string;
   content: string;
   category: string;
   tags: string[];
-  isPublic: boolean;
   isFavorite: boolean;
-  usageCount: number;
+  timesUsed: number;
   createdAt: string;
   updatedAt: string;
 }
@@ -22,7 +19,6 @@ export interface CreatePromptData {
   content: string;
   category: string;
   tags?: string[];
-  isPublic?: boolean;
 }
 
 export interface UpdatePromptData {
@@ -30,259 +26,259 @@ export interface UpdatePromptData {
   content?: string;
   category?: string;
   tags?: string[];
-  isPublic?: boolean;
 }
 
 export interface PromptsFilters {
+  search?: string;
   category?: string;
   tags?: string[];
-  search?: string;
-  isPublic?: boolean;
   isFavorite?: boolean;
-  sortBy?: 'createdAt' | 'usageCount' | 'title';
-  sortOrder?: 'asc' | 'desc';
+  sortBy?: 'recent' | 'popular' | 'alphabetical';
 }
 
 /**
- * Hook personalizado para gerenciar prompts
+ * Hook para gerenciar prompts
  */
 export const usePrompts = () => {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
-  const [loading, setLoading] = useState<boolean>(false);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   /**
-   * Lista todos os prompts do usuário
+   * Busca todos os prompts do usuário com filtros opcionais
    */
-  const fetchPrompts = useCallback(async (filters?: PromptsFilters): Promise<void> => {
-    try {
-      setLoading(true);
-      setError(null);
+  const fetchPrompts = async (filters?: PromptsFilters): Promise<Prompt[]> => {
+    setLoading(true);
+    setError(null);
 
+    try {
+      // Construir query string
       const params = new URLSearchParams();
-      
+      if (filters?.search) params.append('search', filters.search);
       if (filters?.category) params.append('category', filters.category);
       if (filters?.tags?.length) params.append('tags', filters.tags.join(','));
-      if (filters?.search) params.append('search', filters.search);
-      if (filters?.isPublic !== undefined) params.append('isPublic', String(filters.isPublic));
       if (filters?.isFavorite !== undefined) params.append('isFavorite', String(filters.isFavorite));
       if (filters?.sortBy) params.append('sortBy', filters.sortBy);
-      if (filters?.sortOrder) params.append('sortOrder', filters.sortOrder);
 
-      const queryString = params.toString();
-      const url = `/prompts${queryString ? `?${queryString}` : ''}`;
+      const url = `/prompts${params.toString() ? `?${params.toString()}` : ''}`;
+      const response = await api.get<{ prompts: Prompt[] }>(url);
 
-      const response = await apiClient.get<{ prompts: Prompt[] }>(url);
       setPrompts(response.data.prompts);
+      return response.data.prompts;
     } catch (err: any) {
-      console.error('Erro ao buscar prompts:', err);
-      setError(err.message || 'Erro ao buscar prompts');
-      setPrompts([]);
+      const errorMsg = err.response?.data?.error || 'Erro ao buscar prompts';
+      setError(errorMsg);
+      throw new Error(errorMsg);
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   /**
    * Busca um prompt específico por ID
    */
-  const getPromptById = useCallback(async (promptId: string): Promise<Prompt | null> => {
-    try {
-      setLoading(true);
-      setError(null);
+  const fetchPromptById = async (promptId: string): Promise<Prompt> => {
+    setLoading(true);
+    setError(null);
 
-      const response = await apiClient.get<{ prompt: Prompt }>(`/prompts/${promptId}`);
+    try {
+      const response = await api.get<{ prompt: Prompt }>(`/prompts/${promptId}`);
       return response.data.prompt;
     } catch (err: any) {
-      console.error('Erro ao buscar prompt:', err);
-      setError(err.message || 'Erro ao buscar prompt');
-      return null;
+      const errorMsg = err.response?.data?.error || 'Erro ao buscar prompt';
+      setError(errorMsg);
+      throw new Error(errorMsg);
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   /**
-   * Cria novo prompt
+   * Cria um novo prompt
    */
-  const createPrompt = useCallback(async (data: CreatePromptData): Promise<Prompt | null> => {
-    try {
-      setLoading(true);
-      setError(null);
+  const createPrompt = async (data: CreatePromptData): Promise<Prompt> => {
+    setLoading(true);
+    setError(null);
 
-      const response = await apiClient.post<{ prompt: Prompt }>('/prompts', data);
+    try {
+      const response = await api.post<{ prompt: Prompt }>('/prompts', data);
       const newPrompt = response.data.prompt;
 
-      // Adiciona prompt à lista local
       setPrompts((prev) => [newPrompt, ...prev]);
-
       return newPrompt;
     } catch (err: any) {
-      console.error('Erro ao criar prompt:', err);
-      setError(err.message || 'Erro ao criar prompt');
-      return null;
+      const errorMsg = err.response?.data?.error || 'Erro ao criar prompt';
+      setError(errorMsg);
+      throw new Error(errorMsg);
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   /**
-   * Atualiza prompt existente
+   * Atualiza um prompt existente
    */
-  const updatePrompt = useCallback(async (promptId: string, data: UpdatePromptData): Promise<Prompt | null> => {
-    try {
-      setLoading(true);
-      setError(null);
+  const updatePrompt = async (promptId: string, data: UpdatePromptData): Promise<Prompt> => {
+    setLoading(true);
+    setError(null);
 
-      const response = await apiClient.put<{ prompt: Prompt }>(`/prompts/${promptId}`, data);
+    try {
+      const response = await api.put<{ prompt: Prompt }>(`/prompts/${promptId}`, data);
       const updatedPrompt = response.data.prompt;
 
-      // Atualiza prompt na lista local
       setPrompts((prev) =>
-        prev.map((prompt) => (prompt.id === promptId ? updatedPrompt : prompt))
+        prev.map((p) => (p.id === promptId ? updatedPrompt : p))
       );
 
       return updatedPrompt;
     } catch (err: any) {
-      console.error('Erro ao atualizar prompt:', err);
-      setError(err.message || 'Erro ao atualizar prompt');
-      return null;
+      const errorMsg = err.response?.data?.error || 'Erro ao atualizar prompt';
+      setError(errorMsg);
+      throw new Error(errorMsg);
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   /**
-   * Deleta prompt
+   * Deleta um prompt
    */
-  const deletePrompt = useCallback(async (promptId: string): Promise<boolean> => {
+  const deletePrompt = async (promptId: string): Promise<void> => {
+    setLoading(true);
+    setError(null);
+
     try {
-      setLoading(true);
-      setError(null);
+      await api.delete(`/prompts/${promptId}`);
 
-      await apiClient.delete(`/prompts/${promptId}`);
-
-      // Remove prompt da lista local
-      setPrompts((prev) => prev.filter((prompt) => prompt.id !== promptId));
-
-      return true;
+      setPrompts((prev) => prev.filter((p) => p.id !== promptId));
     } catch (err: any) {
-      console.error('Erro ao deletar prompt:', err);
-      setError(err.message || 'Erro ao deletar prompt');
-      return false;
+      const errorMsg = err.response?.data?.error || 'Erro ao deletar prompt';
+      setError(errorMsg);
+      throw new Error(errorMsg);
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   /**
-   * Marca/desmarca prompt como favorito
+   * Favorita/desfavorita um prompt
    */
-  const toggleFavorite = useCallback(async (promptId: string): Promise<boolean> => {
-    try {
-      setLoading(true);
-      setError(null);
+  const toggleFavorite = async (promptId: string): Promise<Prompt> => {
+    setLoading(true);
+    setError(null);
 
-      const response = await apiClient.post<{ prompt: Prompt }>(`/prompts/${promptId}/favorite`);
+    try {
+      const response = await api.post<{ prompt: Prompt }>(`/prompts/${promptId}/favorite`);
       const updatedPrompt = response.data.prompt;
 
-      // Atualiza prompt na lista local
       setPrompts((prev) =>
-        prev.map((prompt) => (prompt.id === promptId ? updatedPrompt : prompt))
+        prev.map((p) => (p.id === promptId ? updatedPrompt : p))
       );
 
-      return true;
+      return updatedPrompt;
     } catch (err: any) {
-      console.error('Erro ao favoritar prompt:', err);
-      setError(err.message || 'Erro ao favoritar prompt');
-      return false;
+      const errorMsg = err.response?.data?.error || 'Erro ao favoritar prompt';
+      setError(errorMsg);
+      throw new Error(errorMsg);
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   /**
-   * Incrementa contador de uso do prompt
+   * Registra uso de um prompt (incrementa timesUsed)
    */
-  const incrementUsage = useCallback(async (promptId: string): Promise<boolean> => {
+  const usePrompt = async (promptId: string): Promise<Prompt> => {
     try {
-      const response = await apiClient.post<{ prompt: Prompt }>(`/prompts/${promptId}/use`);
+      const response = await api.post<{ prompt: Prompt }>(`/prompts/${promptId}/use`);
       const updatedPrompt = response.data.prompt;
 
-      // Atualiza prompt na lista local
       setPrompts((prev) =>
-        prev.map((prompt) => (prompt.id === promptId ? updatedPrompt : prompt))
+        prev.map((p) => (p.id === promptId ? updatedPrompt : p))
       );
 
-      return true;
+      return updatedPrompt;
     } catch (err: any) {
-      console.error('Erro ao incrementar uso:', err);
-      return false;
+      const errorMsg = err.response?.data?.error || 'Erro ao registrar uso do prompt';
+      throw new Error(errorMsg);
     }
-  }, []);
+  };
 
   /**
-   * Copia texto do prompt para área de transferência
+   * Busca categorias disponíveis
    */
-  const copyPromptToClipboard = useCallback(async (prompt: Prompt): Promise<boolean> => {
+  const fetchCategories = async (): Promise<string[]> => {
     try {
-      await navigator.clipboard.writeText(prompt.content);
-      
-      // Incrementa contador de uso
-      await incrementUsage(prompt.id);
-      
-      return true;
-    } catch (err) {
-      console.error('Erro ao copiar prompt:', err);
-      return false;
+      const response = await api.get<{ categories: string[] }>('/prompts/categories');
+      return response.data.categories;
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.error || 'Erro ao buscar categorias';
+      throw new Error(errorMsg);
     }
-  }, [incrementUsage]);
+  };
 
   /**
-   * Busca prompts públicos (community)
+   * Busca tags populares
    */
-  const fetchPublicPrompts = useCallback(async (filters?: PromptsFilters): Promise<void> => {
+  const fetchPopularTags = async (): Promise<string[]> => {
     try {
-      setLoading(true);
-      setError(null);
-
-      const params = new URLSearchParams();
-      params.append('isPublic', 'true');
-      
-      if (filters?.category) params.append('category', filters.category);
-      if (filters?.tags?.length) params.append('tags', filters.tags.join(','));
-      if (filters?.search) params.append('search', filters.search);
-      if (filters?.sortBy) params.append('sortBy', filters.sortBy);
-      if (filters?.sortOrder) params.append('sortOrder', filters.sortOrder);
-
-      const queryString = params.toString();
-      const url = `/prompts/public?${queryString}`;
-
-      const response = await apiClient.get<{ prompts: Prompt[] }>(url);
-      setPrompts(response.data.prompts);
+      const response = await api.get<{ tags: string[] }>('/prompts/tags');
+      return response.data.tags;
     } catch (err: any) {
-      console.error('Erro ao buscar prompts públicos:', err);
-      setError(err.message || 'Erro ao buscar prompts públicos');
-      setPrompts([]);
+      const errorMsg = err.response?.data?.error || 'Erro ao buscar tags';
+      throw new Error(errorMsg);
+    }
+  };
+
+  /**
+   * Busca prompts favoritos
+   */
+  const fetchFavoritePrompts = async (): Promise<Prompt[]> => {
+    return fetchPrompts({ isFavorite: true });
+  };
+
+  /**
+   * Busca prompts mais usados
+   */
+  const fetchPopularPrompts = async (): Promise<Prompt[]> => {
+    return fetchPrompts({ sortBy: 'popular' });
+  };
+
+  /**
+   * Busca prompts recentes
+   */
+  const fetchRecentPrompts = async (limit: number = 5): Promise<Prompt[]> => {
+    setLoading(true);
+    setError(null);
+
+    try {
+      const url = `/prompts?sortBy=recent&limit=${limit}`;
+      const response = await api.get<{ prompts: Prompt[] }>(url);
+      return response.data.prompts;
+    } catch (err: any) {
+      const errorMsg = err.response?.data?.error || 'Erro ao buscar prompts recentes';
+      setError(errorMsg);
+      throw new Error(errorMsg);
     } finally {
       setLoading(false);
     }
-  }, []);
+  };
 
   return {
     prompts,
     loading,
     error,
     fetchPrompts,
-    getPromptById,
+    fetchPromptById,
     createPrompt,
     updatePrompt,
     deletePrompt,
     toggleFavorite,
-    incrementUsage,
-    copyPromptToClipboard,
-    fetchPublicPrompts,
+    usePrompt,
+    fetchCategories,
+    fetchPopularTags,
+    fetchFavoritePrompts,
+    fetchPopularPrompts,
+    fetchRecentPrompts,
   };
 };
-
-export default usePrompts;
