@@ -1,7 +1,4 @@
 
-
-# **📄 README.md COMPLETO COM DOCUMENTAÇÃO DE LOGGING**
-
 ```markdown
 # 🩺 MedPrompts - Plataforma de Prompts para Estudantes de Medicina
 
