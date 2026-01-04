@@ -8,7 +8,8 @@ import { logger } from './utils/logger';
 // Importar rotas
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
-import promptRoutes from './routes/prompt.routes';  // ← LINHA NOVA
+import promptRoutes from './routes/prompt.routes';
+import studySessionRoutes from './routes/studySessionRoutes';
 
 // Carregar variáveis de ambiente
 dotenv.config();
@@ -95,7 +96,8 @@ app.get('/health', (req: Request, res: Response) => {
 // Rotas da API
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
-app.use('/api/v1/prompts', promptRoutes);  // ← LINHA NOVA
+app.use('/api/v1/prompts', promptRoutes);
+app.use('/api/v1/study-sessions', studySessionRoutes);
 
 // Rota 404
 app.use((req: Request, res: Response) => {
