@@ -1,55 +1,19 @@
-import { apiClient } from './api';
+import api from './api';
 import { User } from './auth.service';
 
-// Interfaces para operações de usuário
+// Interfaces
 export interface UpdateProfileData {
   name?: string;
   university?: string;
   graduationYear?: number;
-  bio?: string;
-  avatarUrl?: string;
-  studyGoalHours?: number;
-  preferredAI?: 'chatgpt' | 'claude' | 'gemini' | 'perplexity';
-  studyDays?: number[];
-}
-
-export interface ChangePasswordData {
-  currentPassword: string;
-  newPassword: string;
-}
-
-export interface AddXPData {
-  xpAmount: number;
-  reason: string;
-}
-
-export interface XPResponse {
-  previousXP: number;
-  currentXP: number;
-  xpGained: number;
-  previousLevel: number;
-  currentLevel: number;
-  leveledUp: boolean;
-}
-
-export interface AddBadgeData {
-  badgeId: string;
-}
-
-export interface BadgeResponse {
-  badgeId: string;
-  totalBadges: number;
-  badges: string[];
 }
 
 export interface UserStats {
-  xp: number;
-  level: number;
-  badges: number;
-  xpForNextLevel: number;
-  xpNeeded: number;
-  accountAge: number;
-  lastLogin: string | null;
+  totalSessions: number;
+  totalMinutes: number;
+  totalXP: number;
+  averageDuration: number;
+  currentStreak: number;
 }
 
 /**
@@ -61,15 +25,10 @@ class UserService {
    */
   async getProfile(): Promise<User> {
     try {
-      const response = await apiClient.get<{ user: User }>('/users/profile');
-      
-      // Atualiza localStorage
-      localStorage.setItem('user', JSON.stringify(response.data.user));
-      
-      return response.data.user;
+      const response = await api.get('/users/profile');
+      return response.data.data.user;
     } catch (error: any) {
-      console.error('Erro ao obter perfil:', error);
-      throw new Error(error.message || 'Erro ao obter perfil');
+      throw new Error(error.response?.data?.error || 'Erro ao obter perfil');
     }
   }
 
@@ -78,76 +37,15 @@ class UserService {
    */
   async updateProfile(data: UpdateProfileData): Promise<User> {
     try {
-      const response = await apiClient.put<{ user: User }>('/users/profile', data);
+      const response = await api.put('/users/profile', data);
       
       // Atualiza localStorage
-      localStorage.setItem('user', JSON.stringify(response.data.user));
+      const user = response.data.data.user;
+      localStorage.setItem('user', JSON.stringify(user));
       
-      return response.data.user;
+      return user;
     } catch (error: any) {
-      console.error('Erro ao atualizar perfil:', error);
-      throw new Error(error.message || 'Erro ao atualizar perfil');
-    }
-  }
-
-  /**
-   * Altera senha do usuário
-   */
-  async changePassword(data: ChangePasswordData): Promise<void> {
-    try {
-      await apiClient.put('/users/password', data);
-      
-      // Após alterar senha, limpa tokens (usuário precisa fazer login novamente)
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-    } catch (error: any) {
-      console.error('Erro ao alterar senha:', error);
-      throw new Error(error.message || 'Erro ao alterar senha');
-    }
-  }
-
-  /**
-   * Adiciona XP ao usuário
-   */
-  async addXP(data: AddXPData): Promise<XPResponse> {
-    try {
-      const response = await apiClient.post<XPResponse>('/users/xp', data);
-      
-      // Atualiza XP e level no usuário do localStorage
-      const userStr = localStorage.getItem('user');
-      if (userStr) {
-        const user = JSON.parse(userStr);
-        user.xp = response.data.currentXP;
-        user.level = response.data.currentLevel;
-        localStorage.setItem('user', JSON.stringify(user));
-      }
-      
-      return response.data;
-    } catch (error: any) {
-      console.error('Erro ao adicionar XP:', error);
-      throw new Error(error.message || 'Erro ao adicionar XP');
-    }
-  }
-
-  /**
-   * Adiciona badge ao usuário
-   */
-  async addBadge(data: AddBadgeData): Promise<BadgeResponse> {
-    try {
-      const response = await apiClient.post<BadgeResponse>('/users/badges', data);
-      
-      // Atualiza badges no usuário do localStorage
-      const userStr = localStorage.getItem('user');
-      if (userStr) {
-        const user = JSON.parse(userStr);
-        user.badges = response.data.badges;
-        localStorage.setItem('user', JSON.stringify(user));
-      }
-      
-      return response.data;
-    } catch (error: any) {
-      console.error('Erro ao adicionar badge:', error);
-      throw new Error(error.message || 'Erro ao adicionar badge');
+      throw new Error(error.response?.data?.error || 'Erro ao atualizar perfil');
     }
   }
 
@@ -156,80 +54,58 @@ class UserService {
    */
   async getStats(): Promise<UserStats> {
     try {
-      const response = await apiClient.get<UserStats>('/users/stats');
-      return response.data;
+      const response = await api.get('/users/stats');
+      return response.data.data.stats;
     } catch (error: any) {
-      console.error('Erro ao obter estatísticas:', error);
-      throw new Error(error.message || 'Erro ao obter estatísticas');
+      throw new Error(error.response?.data?.error || 'Erro ao obter estatísticas');
     }
   }
 
   /**
-   * Deleta conta do usuário
+   * Adiciona XP ao usuário
    */
-  async deleteAccount(password: string): Promise<void> {
+  async addXP(amount: number): Promise<User> {
     try {
-      await apiClient.delete('/users/account', {
-        data: { password },
-      });
+      const response = await api.post('/users/add-xp', { amount });
       
-      // Remove dados do localStorage
-      localStorage.removeItem('accessToken');
-      localStorage.removeItem('refreshToken');
-      localStorage.removeItem('user');
+      // Atualiza localStorage
+      const user = response.data.data.user;
+      localStorage.setItem('user', JSON.stringify(user));
+      
+      return user;
     } catch (error: any) {
-      console.error('Erro ao deletar conta:', error);
-      throw new Error(error.message || 'Erro ao deletar conta');
+      throw new Error(error.response?.data?.error || 'Erro ao adicionar XP');
     }
   }
 
   /**
-   * Sincroniza dados de gamificação do localStorage com backend
-   * (Migração de dados antigos do localStorage para API)
+   * Sincroniza dados de gamificação antigos do localStorage
+   * (Migração de dados mockados para API)
    */
   async syncGamificationData(): Promise<void> {
     try {
-      // Busca dados antigos do localStorage
-      const oldXP = parseInt(localStorage.getItem('userXP') || '0');
-      // const oldLevel = parseInt(localStorage.getItem('userLevel') || '1');
-      const oldBadges = JSON.parse(localStorage.getItem('unlockedBadges') || '[]');
+      // Verifica se há dados antigos no localStorage
+      const oldXP = localStorage.getItem('userXP');
+      const oldLevel = localStorage.getItem('userLevel');
+      const oldBadges = localStorage.getItem('userBadges');
 
-      // Busca dados atuais do backend
-      const currentUser = await this.getProfile();
-
-      // Se XP antigo for maior, sincroniza
-      if (oldXP > currentUser.xp) {
-        await this.addXP({
-          xpAmount: oldXP - currentUser.xp,
-          reason: 'Migração de dados do localStorage',
+      if (oldXP || oldLevel || oldBadges) {
+        await api.post('/users/sync-data', {
+          xp: oldXP ? parseInt(oldXP) : undefined,
+          level: oldLevel ? parseInt(oldLevel) : undefined,
+          badges: oldBadges ? JSON.parse(oldBadges) : undefined,
         });
-      }
 
-      // Sincroniza badges antigas
-      for (const badgeId of oldBadges) {
-        if (!currentUser.badges.includes(badgeId)) {
-          try {
-            await this.addBadge({ badgeId });
-          } catch (error) {
-            console.warn(`Badge ${badgeId} já existe ou é inválida`);
-          }
-        }
+        // Remove dados antigos após sincronização
+        localStorage.removeItem('userXP');
+        localStorage.removeItem('userLevel');
+        localStorage.removeItem('userBadges');
       }
-
-      // Remove dados antigos do localStorage
-      localStorage.removeItem('userXP');
-      localStorage.removeItem('userLevel');
-      localStorage.removeItem('unlockedBadges');
-      localStorage.removeItem('dailyMissionsCompleted');
-      localStorage.removeItem('weeklyChallenge');
-      
-      console.log('✅ Dados de gamificação sincronizados com sucesso');
     } catch (error) {
-      console.error('Erro ao sincronizar dados de gamificação:', error);
+      // Não lança erro, apenas registra no console
+      console.warn('Erro ao sincronizar dados de gamificação:', error);
     }
   }
 }
 
-// Exporta instância única (singleton)
 export const userService = new UserService();
-export default userService;

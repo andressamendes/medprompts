@@ -12,7 +12,7 @@ const Dashboard = () => {
   });
 
   useEffect(() => {
-    // 🎭 MOCK: Estatísticas simuladas
+    // 🎭 MOCK: Estatísticas simuladas (será substituído por dados reais da API)
     setStats({
       totalHours: 47,
       totalSessions: 23,
@@ -22,11 +22,10 @@ const Dashboard = () => {
 
   const handleLogout = async () => {
     await logout();
-    navigate('/login');
+    navigate('/');
   };
 
   // Calcula XP para próximo nível (fórmula simples: level * 100)
-  // const xpForNextLevel = user ? user.level * 100 : 100; // Será usado quando implementar sistema de level
   const xpProgress = user ? (user.xp % 100) : 0;
   const xpPercentage = (xpProgress / 100) * 100;
 
@@ -105,7 +104,7 @@ const Dashboard = () => {
               <h3 style={styles.cardTitle}>Conquistas</h3>
             </div>
             <div style={styles.cardBody}>
-              <p style={styles.statNumber}>{user?.badges.length || 0}</p>
+              <p style={styles.statNumber}>0</p>
               <p style={styles.statLabel}>badges desbloqueadas</p>
             </div>
           </div>
@@ -148,7 +147,7 @@ const Dashboard = () => {
 
         {/* Mock Warning */}
         <div style={styles.mockWarning}>
-          🎭 <strong>MODO MOCK:</strong> Dados simulados. Quando o backend estiver pronto, os dados reais serão carregados automaticamente.
+          🎭 <strong>MODO MOCK:</strong> Estatísticas simuladas. Quando o backend estiver totalmente integrado, os dados reais serão carregados automaticamente.
         </div>
 
         {/* Recent Activity */}
@@ -165,7 +164,7 @@ const Dashboard = () => {
             <div style={styles.activityItem}>
               <span style={styles.activityIcon}>⚡</span>
               <div style={styles.activityInfo}>
-                <p style={styles.activityTitle}>Subiu para Level 5!</p>
+                <p style={styles.activityTitle}>Subiu para Level {user?.level || 1}!</p>
                 <p style={styles.activityTime}>Ontem</p>
               </div>
             </div>
@@ -175,6 +174,28 @@ const Dashboard = () => {
                 <p style={styles.activityTitle}>Badge desbloqueada: Sequência de 7 dias</p>
                 <p style={styles.activityTime}>Há 3 dias</p>
               </div>
+            </div>
+          </div>
+        </div>
+
+        {/* User Info Card */}
+        <div style={styles.userInfoCard}>
+          <h2 style={styles.sectionTitle}>📋 Suas Informações</h2>
+          <div style={styles.userInfoGrid}>
+            <div style={styles.userInfoItem}>
+              <strong>Nome:</strong> {user?.name}
+            </div>
+            <div style={styles.userInfoItem}>
+              <strong>Email:</strong> {user?.email}
+            </div>
+            <div style={styles.userInfoItem}>
+              <strong>Universidade:</strong> {user?.university || 'Não informado'}
+            </div>
+            <div style={styles.userInfoItem}>
+              <strong>Ano de formatura:</strong> {user?.graduationYear || 'N/A'}
+            </div>
+            <div style={styles.userInfoItem}>
+              <strong>ID:</strong> {user?.id}
             </div>
           </div>
         </div>
@@ -385,6 +406,21 @@ const styles: { [key: string]: React.CSSProperties } = {
     fontSize: '13px',
     color: '#666',
     margin: 0,
+  },
+  userInfoCard: {
+    background: '#fff',
+    borderRadius: '12px',
+    padding: '24px',
+    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
+  },
+  userInfoGrid: {
+    display: 'grid',
+    gridTemplateColumns: 'repeat(auto-fit, minmax(250px, 1fr))',
+    gap: '15px',
+  },
+  userInfoItem: {
+    fontSize: '15px',
+    color: '#555',
   },
 };
 

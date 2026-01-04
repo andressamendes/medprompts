@@ -1,102 +1,21 @@
 import { Router } from 'express';
-import {
-  register,
-  login,
-  refreshAccessToken,
-  logout,
-  verifyToken
-} from '../controllers/authController';
-import {
-  validateRegister,
-  validateLogin,
-  handleValidationErrors
-} from '../middleware/validator';
-import { authLimiter } from '../middleware/rateLimiter';
-import { authenticate } from '../middleware/auth';
-import { body } from 'express-validator';
+import { register, login, logout, refreshToken } from '../controllers/authController';
+import { authenticate } from '../middlewares/auth';
+import { validateRegister, validateLogin } from '../middlewares/validators';
+import { authLimiter, strictAuthLimiter } from '../middlewares/rateLimiter';
 
 const router = Router();
 
-/**
- * @route   POST /api/v1/auth/register
- * @desc    Registra novo usuário
- * @access  Public
- * @rateLimit 5 tentativas / 15 minutos
- */
-router.post(
-  '/register',
-  authLimiter,                    // Proteção contra spam de registros
-  validateRegister,               // Valida email, senha, nome, etc
-  handleValidationErrors,         // Retorna erros de validação
-  register                        // Controller de registro
-);
+// POST /api/v1/auth/register
+router.post('/register', authLimiter, validateRegister, register);
 
-/**
- * @route   POST /api/v1/auth/login
- * @desc    Autentica usuário existente
- * @access  Public
- * @rateLimit 5 tentativas / 15 minutos
- */
-router.post(
-  '/login',
-  authLimiter,                    // Proteção contra força bruta
-  validateLogin,                  // Valida email e senha
-  handleValidationErrors,
-  login                           // Controller de login
-);
+// POST /api/v1/auth/login
+router.post('/login', strictAuthLimiter, validateLogin, login);
 
-/**
- * @route   POST /api/v1/auth/refresh
- * @desc    Renova access token usando refresh token
- * @access  Public
- * @rateLimit 100 tentativas / 15 minutos (rate limit geral)
- */
-router.post(
-  '/refresh',
-  [
-    body('refreshToken')
-      .notEmpty()
-      .withMessage('Refresh token é obrigatório')
-      .isString()
-      .withMessage('Refresh token deve ser uma string')
-  ],
-  handleValidationErrors,
-  refreshAccessToken              // Controller de refresh
-);
+// POST /api/v1/auth/logout
+router.post('/logout', authenticate, logout);
 
-/**
- * @route   POST /api/v1/auth/logout
- * @desc    Faz logout e invalida tokens do usuário
- * @access  Private (requer autenticação)
- */
-router.post(
-  '/logout',
-  authenticate,                   // Requer token válido
-  logout                          // Controller de logout
-);
-
-/**
- * @route   GET /api/v1/auth/verify
- * @desc    Verifica se token é válido e retorna dados do usuário
- * @access  Private (requer autenticação)
- */
-router.get(
-  '/verify',
-  authenticate,                   // Requer token válido
-  verifyToken                     // Controller de verificação
-);
-
-/**
- * @route   GET /api/v1/auth/health
- * @desc    Health check da API de autenticação
- * @access  Public
- */
-router.get('/health', (req, res) => {
-  res.status(200).json({
-    success: true,
-    message: 'Auth API está funcionando',
-    timestamp: new Date().toISOString()
-  });
-});
+// POST /api/v1/auth/refresh
+router.post('/refresh', authLimiter, refreshToken);
 
 export default router;

@@ -1,7 +1,11 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const Login = () => {
+  const navigate = useNavigate();
+  const { login } = useAuth();
+  
   const [formData, setFormData] = useState({
     email: '',
     password: '',
@@ -40,43 +44,14 @@ const Login = () => {
     setLoading(true);
 
     try {
-      // 🎭 MOCK TEMPORÁRIO - Simula login com qualquer email/senha
-      
-      console.log('🎭 MODO MOCK: Login simulado');
-      console.log('Email:', formData.email);
-      
-      // Simula delay de API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Simula usuário mockado
-      const mockUser = {
-        id: 'mock-user-123',
+      // ✅ INTEGRAÇÃO REAL COM API
+      await login({
         email: formData.email,
-        name: formData.email.split('@')[0],
-        university: 'Universidade Mock',
-        graduationYear: 2026,
-        xp: 1250,
-        level: 5,
-        badges: ['first-login', 'study-streak-7'],
-        emailVerified: true,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+        password: formData.password,
+      });
 
-      // Salva no localStorage (mock)
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      localStorage.setItem('accessToken', 'mock-token-' + Date.now());
-      localStorage.setItem('refreshToken', 'mock-refresh-token-' + Date.now());
-
-      console.log('✅ Usuário salvo no localStorage');
-
-      // Força reload para AuthContext recarregar usuário
-      window.location.href = '/dashboard';
-      
-      // ⚠️ QUANDO BACKEND ESTIVER PRONTO, use:
-      // await login({ email: formData.email, password: formData.password });
-      // navigate('/dashboard');
+      // Redireciona para dashboard
+      navigate('/dashboard');
       
     } catch (error: any) {
       setApiError(error.message || 'Erro ao fazer login. Tente novamente.');
@@ -136,11 +111,6 @@ const Login = () => {
               {apiError}
             </div>
           )}
-
-          {/* Mock Warning */}
-          <div style={styles.mockWarning}>
-            🎭 <strong>MODO MOCK:</strong> Use qualquer email e senha para entrar
-          </div>
 
           {/* Botão Submit */}
           <button
@@ -237,15 +207,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: '8px',
     color: '#cc0000',
     fontSize: '14px',
-  },
-  mockWarning: {
-    padding: '12px',
-    background: '#fff3cd',
-    border: '1px solid #ffc107',
-    borderRadius: '8px',
-    color: '#856404',
-    fontSize: '13px',
-    textAlign: 'center',
   },
   button: {
     padding: '14px',

@@ -1,7 +1,11 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
+import { useAuth } from '../contexts/AuthContext';
 
 const Register = () => {
+  const navigate = useNavigate();
+  const { register } = useAuth();
+  
   const [formData, setFormData] = useState({
     name: '',
     email: '',
@@ -70,48 +74,17 @@ const Register = () => {
     setLoading(true);
 
     try {
-      // 🎭 MOCK TEMPORÁRIO - Simula registro
-      console.log('🎭 MODO MOCK: Registro simulado');
-      console.log('Dados:', formData);
-      
-      // Simula delay de API
-      await new Promise(resolve => setTimeout(resolve, 1000));
-      
-      // Simula usuário mockado criado
-      const mockUser = {
-        id: 'mock-user-' + Date.now(),
-        email: formData.email,
+      // ✅ INTEGRAÇÃO REAL COM API
+      await register({
         name: formData.name,
+        email: formData.email,
+        password: formData.password,
         university: formData.university || undefined,
         graduationYear: formData.graduationYear ? parseInt(formData.graduationYear) : undefined,
-        xp: 0,
-        level: 1,
-        badges: ['welcome'],
-        emailVerified: false,
-        isActive: true,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
-      };
+      });
 
-      // Salva no localStorage (mock)
-      localStorage.setItem('user', JSON.stringify(mockUser));
-      localStorage.setItem('accessToken', 'mock-token-' + Date.now());
-      localStorage.setItem('refreshToken', 'mock-refresh-token-' + Date.now());
-
-      console.log('✅ Usuário criado e salvo no localStorage');
-
-      // Força reload para AuthContext recarregar usuário
-      window.location.href = '/dashboard';
-      
-      // ⚠️ QUANDO BACKEND ESTIVER PRONTO, use:
-      // await register({
-      //   name: formData.name,
-      //   email: formData.email,
-      //   password: formData.password,
-      //   university: formData.university || undefined,
-      //   graduationYear: formData.graduationYear ? parseInt(formData.graduationYear) : undefined,
-      // });
-      // navigate('/dashboard');
+      // Redireciona para dashboard
+      navigate('/dashboard');
       
     } catch (error: any) {
       setApiError(error.message || 'Erro ao criar conta. Tente novamente.');
@@ -241,11 +214,6 @@ const Register = () => {
             </div>
           )}
 
-          {/* Mock Warning */}
-          <div style={styles.mockWarning}>
-            🎭 <strong>MODO MOCK:</strong> Preencha o formulário para criar uma conta de teste
-          </div>
-
           {/* Botão Submit */}
           <button
             type="submit"
@@ -346,15 +314,6 @@ const styles: { [key: string]: React.CSSProperties } = {
     borderRadius: '8px',
     color: '#cc0000',
     fontSize: '14px',
-  },
-  mockWarning: {
-    padding: '12px',
-    background: '#fff3cd',
-    border: '1px solid #ffc107',
-    borderRadius: '8px',
-    color: '#856404',
-    fontSize: '13px',
-    textAlign: 'center',
   },
   button: {
     padding: '14px',

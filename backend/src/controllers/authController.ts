@@ -1,335 +1,202 @@
 import { Request, Response } from 'express';
-import bcrypt from 'bcryptjs';
 import User from '../models/User';
-import { generateAccessToken, generateRefreshToken, verifyRefreshToken } from '../config/jwt';
-import { logger, logAudit, logAuthAttempt } from '../utils/logger';
+import { generateTokens, verifyRefreshToken } from '../utils/jwt';
+import { logger } from '../utils/logger';
 
 /**
- * Registra novo usuário no sistema
- * POST /api/v1/auth/register
+ * Registra um novo usuário
  */
-export const register = async (req: Request, res: Response): Promise<void> => {
+export const register = async (req: Request, res: Response): Promise<Response> => {
   try {
-    const { email, password, name, university, graduationYear } = req.body;
-    const ip = req.ip || req.socket.remoteAddress;
+    const { name, email, password, university, graduationYear } = req.body;
 
-    // Verifica se email já existe
+    // Verificar se usuário já existe
     const existingUser = await User.findOne({ where: { email } });
-    
     if (existingUser) {
-      logger.warn('Tentativa de registro com email existente', { email, ip });
-      
-      res.status(409).json({
+      return res.status(400).json({
         success: false,
-        error: 'Email já cadastrado'
+        error: 'Email já cadastrado',
       });
-      return;
     }
 
-    // Hasheia senha manualmente (workaround para hook não funcionando)
-    logger.info('🔐 Hasheando senha manualmente no controller');
-    const salt = await bcrypt.genSalt(12);
-    const hashedPassword = await bcrypt.hash(password, salt);
-    logger.info('✅ Senha hasheada com sucesso');
-
-    // Cria novo usuário com senha já hasheada
+    // Criar usuário (senha será hasheada automaticamente pelo hook beforeCreate)
     const user = await User.create({
-      email,
-      password: hashedPassword,
       name,
+      email,
+      password, // ✅ NÃO hashear aqui - o hook faz isso
       university,
       graduationYear,
-      xp: 0,
-      level: 1,
-      badges: [],
-      emailVerified: false,
-      isActive: true,
-      tokenVersion: 0
     });
 
-    // Gera tokens
-    const accessToken = generateAccessToken(user.id, user.email);
-    const refreshToken = generateRefreshToken(user.id, user.tokenVersion);
+    logger.info('✅ Novo usuário criado', {
+      userId: user.id,
+      email: user.email,
+    });
 
-    // Log de auditoria
-    logAudit('Novo usuário registrado', user.id, { email, ip });
+    // Gerar tokens JWT
+    const { accessToken, refreshToken } = generateTokens(user.id);
 
-    res.status(201).json({
+    // Remover senha da resposta
+    const sanitizedUser = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      university: user.university,
+      graduationYear: user.graduationYear,
+      xp: user.xp,
+      level: user.level,
+      createdAt: user.createdAt,
+    };
+
+    return res.status(201).json({
       success: true,
-      message: 'Usuário registrado com sucesso',
+      message: 'Usuário criado com sucesso',
       data: {
-        user: user.toPublicJSON(),
-        tokens: {
-          accessToken,
-          refreshToken,
-          expiresIn: '7d'
-        }
-      }
+        user: sanitizedUser,
+        accessToken,
+        refreshToken,
+      },
     });
   } catch (error: any) {
-    logger.error('Erro ao registrar usuário:', error);
-    
-    res.status(500).json({
+    logger.error('❌ Erro ao registrar usuário', { error: error.message });
+    return res.status(500).json({
       success: false,
-      error: 'Erro ao registrar usuário',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      error: 'Erro ao criar conta',
     });
   }
 };
 
 /**
- * Autentica usuário existente
- * POST /api/v1/auth/login
+ * Faz login do usuário
  */
-export const login = async (req: Request, res: Response): Promise<void> => {
+export const login = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { email, password } = req.body;
-    const ip = req.ip || req.socket.remoteAddress;
 
-    // Busca usuário por email
+    // Buscar usuário
     const user = await User.findOne({ where: { email } });
-    
     if (!user) {
-      logAuthAttempt(email, false, ip);
-      
-      res.status(401).json({
+      return res.status(401).json({
         success: false,
-        error: 'Email ou senha incorretos'
+        error: 'Email ou senha incorretos',
       });
-      return;
-    }
-    
-    // Verifica se conta está ativa
-    if (!user.isActive) {
-      logger.warn('Tentativa de login em conta desativada', { email, userId: user.id, ip });
-      
-      res.status(403).json({
-        success: false,
-        error: 'Conta desativada. Entre em contato com o suporte.'
-      });
-      return;
     }
 
-    // Verifica senha
+    // Verificar senha
     const isPasswordValid = await user.comparePassword(password);
-    
     if (!isPasswordValid) {
-      logAuthAttempt(email, false, ip);
-      
-      res.status(401).json({
+      return res.status(401).json({
         success: false,
-        error: 'Email ou senha incorretos'
+        error: 'Email ou senha incorretos',
       });
-      return;
     }
 
-    // Atualiza último login
-    await user.updateLastLogin();
+    logger.info('✅ Login bem-sucedido', {
+      userId: user.id,
+      email: user.email,
+    });
 
-    // Gera tokens
-    const accessToken = generateAccessToken(user.id, user.email);
-    const refreshToken = generateRefreshToken(user.id, user.tokenVersion);
+    // Gerar tokens JWT
+    const { accessToken, refreshToken } = generateTokens(user.id);
 
-    // Log de auditoria
-    logAuthAttempt(email, true, ip);
-    logAudit('Login realizado', user.id, { ip });
+    // Remover senha da resposta
+    const sanitizedUser = {
+      id: user.id,
+      name: user.name,
+      email: user.email,
+      university: user.university,
+      graduationYear: user.graduationYear,
+      xp: user.xp,
+      level: user.level,
+      createdAt: user.createdAt,
+    };
 
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Login realizado com sucesso',
       data: {
-        user: user.toPublicJSON(),
-        tokens: {
-          accessToken,
-          refreshToken,
-          expiresIn: '7d'
-        }
-      }
+        user: sanitizedUser,
+        accessToken,
+        refreshToken,
+      },
     });
   } catch (error: any) {
-    logger.error('Erro ao fazer login:', error);
-    
-    res.status(500).json({
+    logger.error('❌ Erro ao fazer login', { error: error.message });
+    return res.status(500).json({
       success: false,
-      error: 'Erro ao processar login',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
+      error: 'Erro ao fazer login',
     });
   }
 };
 
 /**
- * Renova access token usando refresh token
- * POST /api/v1/auth/refresh
+ * Faz logout do usuário
  */
-export const refreshAccessToken = async (req: Request, res: Response): Promise<void> => {
+export const logout = async (req: Request, res: Response): Promise<Response> => {
+  try {
+    // TODO: Implementar blacklist de tokens se necessário
+    
+    return res.status(200).json({
+      success: true,
+      message: 'Logout realizado com sucesso',
+    });
+  } catch (error: any) {
+    logger.error('❌ Erro ao fazer logout', { error: error.message });
+    return res.status(500).json({
+      success: false,
+      error: 'Erro ao fazer logout',
+    });
+  }
+};
+
+/**
+ * Renova o access token usando refresh token
+ */
+export const refreshToken = async (req: Request, res: Response): Promise<Response> => {
   try {
     const { refreshToken } = req.body;
 
     if (!refreshToken) {
-      res.status(400).json({
+      return res.status(400).json({
         success: false,
-        error: 'Refresh token não fornecido'
+        error: 'Refresh token não fornecido',
       });
-      return;
     }
 
-    // Verifica refresh token
-    const decoded = verifyRefreshToken(refreshToken);
-    
-    if (!decoded) {
-      res.status(401).json({
+    // Verificar refresh token
+    const payload = verifyRefreshToken(refreshToken);
+    if (!payload) {
+      return res.status(401).json({
         success: false,
-        error: 'Refresh token inválido ou expirado'
+        error: 'Refresh token inválido ou expirado',
       });
-      return;
     }
 
-    // Busca usuário
-    const user = await User.findByPk(decoded.userId);
-    
+    // Verificar se usuário existe
+    const user = await User.findByPk(payload.userId);
     if (!user) {
-      res.status(401).json({
+      return res.status(401).json({
         success: false,
-        error: 'Usuário não encontrado'
+        error: 'Usuário não encontrado',
       });
-      return;
     }
 
-    // Verifica se token version corresponde (não foi invalidado)
-    if (decoded.tokenVersion !== user.tokenVersion) {
-      logger.warn('Tentativa de uso de refresh token invalidado', {
-        userId: user.id,
-        tokenVersion: decoded.tokenVersion,
-        currentVersion: user.tokenVersion
-      });
-      
-      res.status(401).json({
-        success: false,
-        error: 'Token invalidado. Faça login novamente.'
-      });
-      return;
-    }
+    // Gerar novos tokens
+    const tokens = generateTokens(user.id);
 
-    // Gera novo access token
-    const newAccessToken = generateAccessToken(user.id, user.email);
-
-    logger.info('Access token renovado', { userId: user.id });
-
-    res.status(200).json({
+    return res.status(200).json({
       success: true,
       message: 'Token renovado com sucesso',
       data: {
-        accessToken: newAccessToken,
-        expiresIn: '7d'
-      }
+        accessToken: tokens.accessToken,
+        refreshToken: tokens.refreshToken,
+      },
     });
   } catch (error: any) {
-    logger.error('Erro ao renovar token:', error);
-    
-    res.status(500).json({
+    logger.error('❌ Erro ao renovar token', { error: error.message });
+    return res.status(500).json({
       success: false,
       error: 'Erro ao renovar token',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
     });
   }
-};
-
-/**
- * Faz logout do usuário (invalida todos tokens)
- * POST /api/v1/auth/logout
- */
-export const logout = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.userId;
-
-    if (!userId) {
-      res.status(401).json({
-        success: false,
-        error: 'Usuário não autenticado'
-      });
-      return;
-    }
-
-    // Busca usuário
-    const user = await User.findByPk(userId);
-    
-    if (!user) {
-      res.status(404).json({
-        success: false,
-        error: 'Usuário não encontrado'
-      });
-      return;
-    }
-
-    // Invalida todos os tokens do usuário
-    await user.invalidateTokens();
-
-    // Log de auditoria
-    logAudit('Logout realizado', user.id);
-
-    res.status(200).json({
-      success: true,
-      message: 'Logout realizado com sucesso'
-    });
-  } catch (error: any) {
-    logger.error('Erro ao fazer logout:', error);
-    
-    res.status(500).json({
-      success: false,
-      error: 'Erro ao processar logout',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
-  }
-};
-
-/**
- * Verifica se token é válido
- * GET /api/v1/auth/verify
- */
-export const verifyToken = async (req: Request, res: Response): Promise<void> => {
-  try {
-    const userId = req.user?.userId;
-
-    if (!userId) {
-      res.status(401).json({
-        success: false,
-        error: 'Token inválido'
-      });
-      return;
-    }
-
-    const user = await User.findByPk(userId);
-    
-    if (!user) {
-      res.status(401).json({
-        success: false,
-        error: 'Usuário não encontrado'
-      });
-      return;
-    }
-
-    res.status(200).json({
-      success: true,
-      message: 'Token válido',
-      data: {
-        user: user.toPublicJSON()
-      }
-    });
-  } catch (error: any) {
-    logger.error('Erro ao verificar token:', error);
-    
-    res.status(500).json({
-      success: false,
-      error: 'Erro ao verificar token',
-      details: process.env.NODE_ENV === 'development' ? error.message : undefined
-    });
-  }
-};
-
-export default {
-  register,
-  login,
-  refreshAccessToken,
-  logout,
-  verifyToken
 };
