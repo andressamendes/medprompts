@@ -8,6 +8,7 @@ import { logger } from './utils/logger';
 // Importar rotas
 import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
+import promptRoutes from './routes/prompt.routes';  // ← LINHA NOVA
 
 // Carregar variáveis de ambiente
 dotenv.config();
@@ -94,6 +95,7 @@ app.get('/health', (req: Request, res: Response) => {
 // Rotas da API
 app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
+app.use('/api/v1/prompts', promptRoutes);  // ← LINHA NOVA
 
 // Rota 404
 app.use((req: Request, res: Response) => {
@@ -126,7 +128,7 @@ const startServer = async () => {
     // Iniciar servidor
     app.listen(PORT, () => {
       logger.info('======================================================================');
-      logger.info('🚀 MedPrompts API vv1 iniciada com sucesso!');
+      logger.info('🚀 MedPrompts API v1 iniciada com sucesso!');
       logger.info(`📡 Servidor rodando em: http://localhost:${PORT}`);
       logger.info(`🌍 Ambiente: ${process.env.NODE_ENV || 'development'}`);
       logger.info(`🔐 CORS habilitado para: ${allowedOrigins.join(', ')}`);
