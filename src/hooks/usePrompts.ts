@@ -1,5 +1,6 @@
 import { useState, useCallback } from 'react';
-import { apiClient } from '../services/api';
+import api from '../services/api';
+
 
 // Interfaces de Prompt
 export interface Prompt {
