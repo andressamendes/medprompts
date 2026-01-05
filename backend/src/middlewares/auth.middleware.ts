@@ -2,11 +2,9 @@ import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
 // Extendendo o tipo Request para incluir userId
-declare global {
-  namespace Express {
-    interface Request {
-      userId?: string;
-    }
+declare module 'express-serve-static-core' {
+  interface Request {
+    userId?: string;
   }
 }
 
