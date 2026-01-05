@@ -1,22 +1,34 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { AuthenticatedNavbar } from '@/components/AuthenticatedNavbar';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Calendar, Clock, TrendingUp, Filter, Trash2 } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-// Interfaces
+/**
+ * Interface para Sessão de Estudo
+ */
 interface StudySession {
   id: string;
   subject: string;
   topic: string;
   duration: number; // em minutos
-  notes?: string;
+  notes?:  string;
   date: string;
   xpEarned: number;
 }
 
-const StudySessions = () => {
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
-  
+/**
+ * Página Study Sessions - Gerenciamento de sessões de estudo
+ * Permite:  Registrar, visualizar, filtrar e excluir sessões
+ * Integrada com AuthenticatedNavbar
+ */
+export default function StudySessions() {
   const [sessions, setSessions] = useState<StudySession[]>([]);
   const [filteredSessions, setFilteredSessions] = useState<StudySession[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -27,7 +39,7 @@ const StudySessions = () => {
     topic: '',
     duration: '',
     notes: '',
-    date: new Date().toISOString().split('T')[0], // Data de hoje
+    date: new Date().toISOString().split('T')[0],
   });
 
   const [formErrors, setFormErrors] = useState<{ [key: string]: string }>({});
@@ -41,20 +53,21 @@ const StudySessions = () => {
     'Cirurgia',
     'Pediatria',
     'Ginecologia',
+    'Psiquiatria',
     'Outro',
   ];
 
   // 🎭 MOCK: Carrega sessões simuladas
   useEffect(() => {
-    const mockSessions: StudySession[] = [
+    const mockSessions:  StudySession[] = [
       {
         id: '1',
         subject: 'Anatomia',
         topic: 'Sistema Cardiovascular',
-        duration: 120,
+        duration:  120,
         notes: 'Revisão completa de anatomia cardíaca',
         date: new Date().toISOString(),
-        xpEarned: 60,
+        xpEarned:  60,
       },
       {
         id: '2',
@@ -62,7 +75,7 @@ const StudySessions = () => {
         topic: 'Anti-hipertensivos',
         duration: 90,
         notes: 'Mecanismos de ação dos principais grupos',
-        date: new Date(Date.now() - 86400000).toISOString(), // Ontem
+        date: new Date(Date.now() - 86400000).toISOString(),
         xpEarned: 45,
       },
       {
@@ -71,15 +84,15 @@ const StudySessions = () => {
         topic: 'Sistema Renal',
         duration: 60,
         notes: 'Filtração glomerular e reabsorção tubular',
-        date: new Date(Date.now() - 172800000).toISOString(), // 2 dias atrás
-        xpEarned: 30,
+        date: new Date(Date.now() - 172800000).toISOString(),
+        xpEarned:  30,
       },
       {
         id: '4',
         subject: 'Clínica Médica',
         topic: 'Insuficiência Cardíaca',
         duration: 150,
-        date: new Date(Date.now() - 259200000).toISOString(), // 3 dias atrás
+        date: new Date(Date.now() - 259200000).toISOString(),
         xpEarned: 75,
       },
     ];
@@ -93,7 +106,7 @@ const StudySessions = () => {
 
     if (filterPeriod === 'today') {
       const today = new Date().toDateString();
-      filtered = sessions.filter(s => new Date(s.date).toDateString() === today);
+      filtered = sessions. filter(s => new Date(s.date).toDateString() === today);
     } else if (filterPeriod === 'week') {
       const weekAgo = Date.now() - 7 * 86400000;
       filtered = sessions.filter(s => new Date(s.date).getTime() > weekAgo);
@@ -102,48 +115,30 @@ const StudySessions = () => {
       filtered = sessions.filter(s => new Date(s.date).getTime() > monthAgo);
     }
 
-    // Ordena por data (mais recente primeiro)
-    filtered.sort((a, b) => new Date(b.date).getTime() - new Date(a.date).getTime());
-
     setFilteredSessions(filtered);
   }, [sessions, filterPeriod]);
 
-  // Calcular estatísticas
-  const totalMinutes = filteredSessions.reduce((acc, s) => acc + s.duration, 0);
-  const totalHours = Math.floor(totalMinutes / 60);
-  const remainingMinutes = totalMinutes % 60;
-  const totalXP = filteredSessions.reduce((acc, s) => acc + s.xpEarned, 0);
-  const averageDuration = filteredSessions.length > 0 
-    ? Math.round(totalMinutes / filteredSessions.length) 
-    : 0;
-
   // Validar formulário
   const validateForm = (): boolean => {
-    const errors: { [key: string]: string } = {};
+    const errors: { [key:  string]: string } = {};
 
-    if (!formData.subject) {
-      errors.subject = 'Matéria é obrigatória';
-    }
-    if (!formData.topic.trim()) {
-      errors.topic = 'Tópico é obrigatório';
-    }
+    if (!formData.subject) errors.subject = 'Matéria é obrigatória';
+    if (!formData.topic) errors.topic = 'Tópico é obrigatório';
     if (!formData.duration || parseInt(formData.duration) <= 0) {
-      errors.duration = 'Duração deve ser maior que zero';
+      errors.duration = 'Duração deve ser maior que 0';
     }
-    if (!formData.date) {
-      errors.date = 'Data é obrigatória';
-    }
+    if (!formData. date) errors.date = 'Data é obrigatória';
 
     setFormErrors(errors);
     return Object.keys(errors).length === 0;
   };
 
-  // Abrir modal
-  const handleOpenModal = () => {
+  // Abrir modal para criar
+  const handleCreate = () => {
     setFormData({
       subject: '',
       topic: '',
-      duration: '',
+      duration:  '',
       notes: '',
       date: new Date().toISOString().split('T')[0],
     });
@@ -153,684 +148,330 @@ const StudySessions = () => {
 
   // Salvar sessão
   const handleSave = () => {
-    if (!validateForm()) return;
+    if (! validateForm()) return;
 
     const duration = parseInt(formData.duration);
-    const xpEarned = Math.round(duration / 2); // 1 XP a cada 2 minutos
+    const xpEarned = Math.floor(duration / 2); // 0.5 XP por minuto
 
     const newSession: StudySession = {
-      id: Date.now().toString(),
+      id:  Date.now().toString(),
       subject: formData.subject,
       topic: formData.topic,
       duration,
-      notes: formData.notes || undefined,
+      notes: formData.notes,
       date: new Date(formData.date).toISOString(),
       xpEarned,
     };
 
     setSessions([newSession, ...sessions]);
     setIsModalOpen(false);
-
-    // Feedback visual
-    alert(`✅ Sessão registrada! +${xpEarned} XP`);
   };
 
-  // Deletar sessão
+  // Excluir sessão
   const handleDelete = (id: string) => {
-    if (confirm('Tem certeza que deseja deletar esta sessão?')) {
-      setSessions(sessions.filter(s => s.id !== id));
+    if (confirm('Tem certeza que deseja excluir esta sessão?')) {
+      setSessions(sessions. filter(s => s.id !== id));
     }
   };
 
-  // Formatar duração
-  const formatDuration = (minutes: number): string => {
-    const hours = Math.floor(minutes / 60);
-    const mins = minutes % 60;
-    if (hours === 0) return `${mins}min`;
-    if (mins === 0) return `${hours}h`;
-    return `${hours}h ${mins}min`;
-  };
+  // Calcular estatísticas
+  const totalMinutes = filteredSessions.reduce((acc, s) => acc + s.duration, 0);
+  const totalXP = filteredSessions.reduce((acc, s) => acc + s.xpEarned, 0);
+  const totalHours = Math.floor(totalMinutes / 60);
+  const remainingMinutes = totalMinutes % 60;
 
   // Formatar data
-  const formatDate = (dateStr: string): string => {
-    const date = new Date(dateStr);
-    const today = new Date();
-    const yesterday = new Date(Date.now() - 86400000);
-
-    if (date.toDateString() === today.toDateString()) return 'Hoje';
-    if (date.toDateString() === yesterday.toDateString()) return 'Ontem';
-
-    return date.toLocaleDateString('pt-BR', { day: '2-digit', month: 'short' });
+  const formatDate = (dateString: string) => {
+    const date = new Date(dateString);
+    return date.toLocaleDateString('pt-BR', { day: '2-digit', month:  '2-digit', year: 'numeric' });
   };
 
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
+  // Formatar duração
+  const formatDuration = (minutes: number) => {
+    const hours = Math.floor(minutes / 60);
+    const mins = minutes % 60;
+    if (hours > 0) {
+      return `${hours}h ${mins}min`;
+    }
+    return `${mins}min`;
   };
 
   return (
-    <div style={styles.container}>
-      {/* Header */}
-      <header style={styles.header}>
-        <div style={styles.headerContent}>
-          <h1 style={styles.logo} onClick={() => navigate('/dashboard')}>
-            🎯 MedPrompts
-          </h1>
-          <nav style={styles.nav}>
-            <button onClick={() => navigate('/dashboard')} style={styles.navButton}>
-              Dashboard
-            </button>
-            <button onClick={() => navigate('/prompts')} style={styles.navButton}>
-              Prompts
-            </button>
-            <button onClick={() => navigate('/study')} style={{ ...styles.navButton, ...styles.navButtonActive }}>
-              Estudo
-            </button>
-          </nav>
-          <div style={styles.userInfo}>
-            <span style={styles.userName}>{user?.name}</span>
-            <button onClick={handleLogout} style={styles.logoutButton}>
-              Sair
-            </button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
+      {/* Navbar Autenticada */}
+      <AuthenticatedNavbar />
 
       {/* Main Content */}
-      <main style={styles.main}>
-        {/* Toolbar */}
-        <div style={styles.toolbar}>
-          <h2 style={styles.pageTitle}>Sessões de Estudo</h2>
-          <button onClick={handleOpenModal} style={styles.createButton}>
-            + Registrar Sessão
-          </button>
-        </div>
-
-        {/* Stats Cards */}
-        <div style={styles.statsGrid}>
-          <div style={styles.statCard}>
-            <span style={styles.statIcon}>⏱️</span>
+      <main className="container mx-auto px-4 py-8">
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
-              <p style={styles.statValue}>
-                {totalHours}h {remainingMinutes > 0 && `${remainingMinutes}min`}
+              <h1 className="text-4xl font-bold tracking-tight">Sessões de Estudo</h1>
+              <p className="text-muted-foreground">
+                {filteredSessions.length} {filteredSessions.length === 1 ? 'sessão' : 'sessões'}
               </p>
-              <p style={styles.statLabel}>Tempo total</p>
             </div>
+            <Button onClick={handleCreate} className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Nova Sessão
+            </Button>
           </div>
 
-          <div style={styles.statCard}>
-            <span style={styles.statIcon}>📚</span>
-            <div>
-              <p style={styles.statValue}>{filteredSessions.length}</p>
-              <p style={styles.statLabel}>Sessões registradas</p>
-            </div>
-          </div>
-
-          <div style={styles.statCard}>
-            <span style={styles.statIcon}>⚡</span>
-            <div>
-              <p style={styles.statValue}>{totalXP} XP</p>
-              <p style={styles.statLabel}>Experiência ganha</p>
-            </div>
-          </div>
-
-          <div style={styles.statCard}>
-            <span style={styles.statIcon}>📊</span>
-            <div>
-              <p style={styles.statValue}>{formatDuration(averageDuration)}</p>
-              <p style={styles.statLabel}>Duração média</p>
-            </div>
-          </div>
-        </div>
-
-        {/* Filters */}
-        <div style={styles.filters}>
-          <button
-            onClick={() => setFilterPeriod('all')}
-            style={{
-              ...styles.filterButton,
-              ...(filterPeriod === 'all' ? styles.filterButtonActive : {}),
-            }}
-          >
-            Todas
-          </button>
-          <button
-            onClick={() => setFilterPeriod('today')}
-            style={{
-              ...styles.filterButton,
-              ...(filterPeriod === 'today' ? styles.filterButtonActive : {}),
-            }}
-          >
-            Hoje
-          </button>
-          <button
-            onClick={() => setFilterPeriod('week')}
-            style={{
-              ...styles.filterButton,
-              ...(filterPeriod === 'week' ? styles.filterButtonActive : {}),
-            }}
-          >
-            Esta semana
-          </button>
-          <button
-            onClick={() => setFilterPeriod('month')}
-            style={{
-              ...styles.filterButton,
-              ...(filterPeriod === 'month' ? styles.filterButtonActive : {}),
-            }}
-          >
-            Este mês
-          </button>
-        </div>
-
-        {/* Mock Warning */}
-        <div style={styles.mockWarning}>
-          🎭 <strong>MODO MOCK:</strong> Dados simulados. Backend integrará automaticamente.
-        </div>
-
-        {/* Sessions List */}
-        {filteredSessions.length === 0 ? (
-          <div style={styles.emptyState}>
-            <p style={styles.emptyIcon}>📚</p>
-            <p style={styles.emptyText}>Nenhuma sessão encontrada</p>
-            <button onClick={handleOpenModal} style={styles.createButton}>
-              Registrar primeira sessão
-            </button>
-          </div>
-        ) : (
-          <div style={styles.sessionsList}>
-            {filteredSessions.map(session => (
-              <div key={session.id} style={styles.sessionCard}>
-                <div style={styles.sessionHeader}>
-                  <div>
-                    <span style={styles.subjectBadge}>{session.subject}</span>
-                    <p style={styles.sessionDate}>{formatDate(session.date)}</p>
-                  </div>
-                  <button
-                    onClick={() => handleDelete(session.id)}
-                    style={styles.deleteButton}
-                    title="Deletar sessão"
-                  >
-                    🗑️
-                  </button>
+          {/* Estatísticas */}
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <Card>
+              <CardHeader className="pb-3">
+                <CardDescription>Tempo Total</CardDescription>
+                <CardTitle className="text-3xl">
+                  {totalHours > 0 ? `${totalHours}h ${remainingMinutes}min` : `${remainingMinutes}min`}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Clock className="h-3 w-3" />
+                  {filteredSessions.length} sessões
                 </div>
+              </CardContent>
+            </Card>
 
-                <h3 style={styles.sessionTopic}>{session.topic}</h3>
-
-                {session.notes && (
-                  <p style={styles.sessionNotes}>{session.notes}</p>
-                )}
-
-                <div style={styles.sessionFooter}>
-                  <span style={styles.sessionInfo}>
-                    ⏱️ {formatDuration(session.duration)}
-                  </span>
-                  <span style={styles.sessionInfo}>
-                    ⚡ +{session.xpEarned} XP
-                  </span>
+            <Card>
+              <CardHeader className="pb-3">
+                <CardDescription>XP Ganho</CardDescription>
+                <CardTitle className="text-3xl">{totalXP}</CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <TrendingUp className="h-3 w-3" />
+                  0.5 XP por minuto
                 </div>
-              </div>
-            ))}
+              </CardContent>
+            </Card>
+
+            <Card>
+              <CardHeader className="pb-3">
+                <CardDescription>Média por Sessão</CardDescription>
+                <CardTitle className="text-3xl">
+                  {filteredSessions.length > 0 
+                    ? formatDuration(Math.floor(totalMinutes / filteredSessions.length))
+                    :  '0min'}
+                </CardTitle>
+              </CardHeader>
+              <CardContent>
+                <div className="flex items-center gap-2 text-xs text-muted-foreground">
+                  <Calendar className="h-3 w-3" />
+                  Últimas sessões
+                </div>
+              </CardContent>
+            </Card>
           </div>
-        )}
+
+          {/* Filtro de Período */}
+          <div className="flex items-center gap-2">
+            <Filter className="h-4 w-4 text-muted-foreground" />
+            <Select value={filterPeriod} onValueChange={setFilterPeriod}>
+              <SelectTrigger className="w-[180px]">
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas</SelectItem>
+                <SelectItem value="today">Hoje</SelectItem>
+                <SelectItem value="week">Última semana</SelectItem>
+                <SelectItem value="month">Último mês</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Lista de Sessões */}
+          {filteredSessions.length > 0 ? (
+            <div className="space-y-4">
+              {filteredSessions.map((session) => (
+                <Card key={session.id}>
+                  <CardHeader>
+                    <div className="flex items-start justify-between gap-4">
+                      <div className="flex-1">
+                        <div className="flex items-center gap-2 mb-2">
+                          <CardTitle className="text-lg">{session.subject}</CardTitle>
+                          <Badge variant="secondary">{session.topic}</Badge>
+                        </div>
+                        <CardDescription>
+                          {session.notes || 'Sem anotações'}
+                        </CardDescription>
+                      </div>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => handleDelete(session.id)}
+                      >
+                        <Trash2 className="h-4 w-4" />
+                      </Button>
+                    </div>
+                  </CardHeader>
+                  <CardContent>
+                    <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                      <div className="flex items-center gap-1">
+                        <Calendar className="h-3 w-3" />
+                        {formatDate(session. date)}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <Clock className="h-3 w-3" />
+                        {formatDuration(session.duration)}
+                      </div>
+                      <div className="flex items-center gap-1">
+                        <TrendingUp className="h-3 w-3" />
+                        +{session.xpEarned} XP
+                      </div>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <p className="text-muted-foreground mb-4">
+                  Nenhuma sessão encontrada
+                </p>
+                <Button onClick={handleCreate}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Registrar primeira sessão
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </main>
 
-      {/* Modal */}
-      {isModalOpen && (
-        <div style={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
-          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <h3 style={styles.modalTitle}>Registrar Sessão de Estudo</h3>
+      {/* Modal de Criar Sessão */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-2xl">
+          <DialogHeader>
+            <DialogTitle>Nova Sessão de Estudo</DialogTitle>
+            <DialogDescription>
+              Registre uma nova sessão de estudo e ganhe XP
+            </DialogDescription>
+          </DialogHeader>
 
-            <div style={styles.modalForm}>
-              {/* Matéria */}
-              <div style={styles.inputGroup}>
-                <label style={styles.label}>Matéria *</label>
-                <select
-                  value={formData.subject}
-                  onChange={(e) => setFormData({ ...formData, subject: e.target.value })}
-                  style={{
-                    ...styles.input,
-                    ...(formErrors.subject ? styles.inputError : {}),
-                  }}
-                >
-                  <option value="">Selecione...</option>
+          <div className="space-y-4">
+            {/* Matéria */}
+            <div className="space-y-2">
+              <Label htmlFor="subject">Matéria *</Label>
+              <Select
+                value={formData.subject}
+                onValueChange={(v) => setFormData({ ...formData, subject: v })}
+              >
+                <SelectTrigger>
+                  <SelectValue placeholder="Selecione a matéria" />
+                </SelectTrigger>
+                <SelectContent>
                   {subjects.map(subject => (
-                    <option key={subject} value={subject}>{subject}</option>
+                    <SelectItem key={subject} value={subject}>
+                      {subject}
+                    </SelectItem>
                   ))}
-                </select>
-                {formErrors.subject && <span style={styles.errorText}>{formErrors.subject}</span>}
-              </div>
-
-              {/* Tópico */}
-              <div style={styles.inputGroup}>
-                <label style={styles.label}>Tópico *</label>
-                <input
-                  type="text"
-                  value={formData.topic}
-                  onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
-                  style={{
-                    ...styles.input,
-                    ...(formErrors.topic ? styles.inputError : {}),
-                  }}
-                  placeholder="Ex: Sistema Cardiovascular"
-                />
-                {formErrors.topic && <span style={styles.errorText}>{formErrors.topic}</span>}
-              </div>
-
-              {/* Grid 2 colunas */}
-              <div style={styles.gridRow}>
-                {/* Duração */}
-                <div style={styles.inputGroup}>
-                  <label style={styles.label}>Duração (minutos) *</label>
-                  <input
-                    type="number"
-                    value={formData.duration}
-                    onChange={(e) => setFormData({ ...formData, duration: e.target.value })}
-                    style={{
-                      ...styles.input,
-                      ...(formErrors.duration ? styles.inputError : {}),
-                    }}
-                    placeholder="60"
-                    min="1"
-                  />
-                  {formErrors.duration && <span style={styles.errorText}>{formErrors.duration}</span>}
-                </div>
-
-                {/* Data */}
-                <div style={styles.inputGroup}>
-                  <label style={styles.label}>Data *</label>
-                  <input
-                    type="date"
-                    value={formData.date}
-                    onChange={(e) => setFormData({ ...formData, date: e.target.value })}
-                    style={{
-                      ...styles.input,
-                      ...(formErrors.date ? styles.inputError : {}),
-                    }}
-                    max={new Date().toISOString().split('T')[0]}
-                  />
-                  {formErrors.date && <span style={styles.errorText}>{formErrors.date}</span>}
-                </div>
-              </div>
-
-              {/* Notas */}
-              <div style={styles.inputGroup}>
-                <label style={styles.label}>Notas (opcional)</label>
-                <textarea
-                  value={formData.notes}
-                  onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
-                  style={styles.textarea}
-                  placeholder="O que você estudou nesta sessão?"
-                  rows={3}
-                />
-              </div>
-
-              {/* XP Preview */}
-              {formData.duration && parseInt(formData.duration) > 0 && (
-                <div style={styles.xpPreview}>
-                  ⚡ Você ganhará <strong>{Math.round(parseInt(formData.duration) / 2)} XP</strong> por esta sessão
-                </div>
+                </SelectContent>
+              </Select>
+              {formErrors.subject && (
+                <p className="text-xs text-red-500">{formErrors.subject}</p>
               )}
             </div>
 
-            <div style={styles.modalActions}>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                style={styles.cancelButton}
-              >
-                Cancelar
-              </button>
-              <button
-                onClick={handleSave}
-                style={styles.saveButton}
-              >
-                Registrar
-              </button>
+            {/* Tópico */}
+            <div className="space-y-2">
+              <Label htmlFor="topic">Tópico *</Label>
+              <Input
+                id="topic"
+                value={formData.topic}
+                onChange={(e) => setFormData({ ...formData, topic: e.target.value })}
+                placeholder="Ex: Sistema Cardiovascular"
+              />
+              {formErrors.topic && (
+                <p className="text-xs text-red-500">{formErrors.topic}</p>
+              )}
             </div>
+
+            {/* Duração e Data */}
+            <div className="grid grid-cols-2 gap-4">
+              <div className="space-y-2">
+                <Label htmlFor="duration">Duração (minutos) *</Label>
+                <Input
+                  id="duration"
+                  type="number"
+                  value={formData.duration}
+                  onChange={(e) => setFormData({ ... formData, duration: e.target.value })}
+                  placeholder="60"
+                  min="1"
+                />
+                {formErrors.duration && (
+                  <p className="text-xs text-red-500">{formErrors.duration}</p>
+                )}
+              </div>
+
+              <div className="space-y-2">
+                <Label htmlFor="date">Data *</Label>
+                <Input
+                  id="date"
+                  type="date"
+                  value={formData.date}
+                  onChange={(e) => setFormData({ ...formData, date: e.target.value })}
+                />
+                {formErrors.date && (
+                  <p className="text-xs text-red-500">{formErrors.date}</p>
+                )}
+              </div>
+            </div>
+
+            {/* Anotações */}
+            <div className="space-y-2">
+              <Label htmlFor="notes">Anotações (opcional)</Label>
+              <Textarea
+                id="notes"
+                value={formData.notes}
+                onChange={(e) => setFormData({ ...formData, notes: e.target. value })}
+                placeholder="O que você estudou nesta sessão?"
+                rows={3}
+              />
+            </div>
+
+            {/* Prévia de XP */}
+            {formData.duration && parseInt(formData.duration) > 0 && (
+              <div className="bg-secondary/30 p-3 rounded-lg">
+                <p className="text-sm text-muted-foreground">
+                  Você ganhará <span className="font-semibold text-primary">
+                    {Math.floor(parseInt(formData.duration) / 2)} XP
+                  </span> ao registrar esta sessão
+                </p>
+              </div>
+            )}
+          </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsModalOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSave}>
+              Registrar Sessão
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Footer */}
+      <footer className="border-t mt-16">
+        <div className="container mx-auto px-4 py-6">
+          <div className="text-center space-y-2">
+            <p className="text-sm text-muted-foreground">
+              MedPrompts © 2026 • Desenvolvido para estudantes de Medicina
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Desenvolvido por <span className="font-semibold">Andressa Mendes</span> • Estudante de Medicina
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Afya - Guanambi/BA
+            </p>
           </div>
         </div>
-      )}
+      </footer>
     </div>
   );
-};
-
-// Estilos
-const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    minHeight: '100vh',
-    background: '#f5f7fa',
-  },
-  header: {
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    color: '#fff',
-    padding: '15px 0',
-    boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-  },
-  headerContent: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: '0 20px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: '15px',
-  },
-  logo: {
-    fontSize: '24px',
-    fontWeight: 'bold',
-    margin: 0,
-    cursor: 'pointer',
-  },
-  nav: {
-    display: 'flex',
-    gap: '10px',
-  },
-  navButton: {
-    padding: '8px 16px',
-    background: 'transparent',
-    border: 'none',
-    color: '#fff',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: '500',
-    borderRadius: '6px',
-    transition: 'background 0.3s',
-  },
-  navButtonActive: {
-    background: 'rgba(255,255,255,0.2)',
-  },
-  userInfo: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '15px',
-  },
-  userName: {
-    fontSize: '14px',
-    fontWeight: '500',
-  },
-  logoutButton: {
-    padding: '6px 12px',
-    background: 'rgba(255,255,255,0.2)',
-    border: '1px solid rgba(255,255,255,0.3)',
-    borderRadius: '6px',
-    color: '#fff',
-    cursor: 'pointer',
-    fontSize: '13px',
-    fontWeight: '500',
-  },
-  main: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: '30px 20px',
-  },
-  toolbar: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '25px',
-    flexWrap: 'wrap',
-    gap: '15px',
-  },
-  pageTitle: {
-    fontSize: '28px',
-    fontWeight: 'bold',
-    color: '#333',
-    margin: 0,
-  },
-  createButton: {
-    padding: '12px 24px',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '15px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'transform 0.2s',
-  },
-  statsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))',
-    gap: '15px',
-    marginBottom: '25px',
-  },
-  statCard: {
-    background: '#fff',
-    borderRadius: '12px',
-    padding: '20px',
-    display: 'flex',
-    alignItems: 'center',
-    gap: '15px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-  },
-  statIcon: {
-    fontSize: '32px',
-  },
-  statValue: {
-    fontSize: '24px',
-    fontWeight: 'bold',
-    color: '#333',
-    margin: '0 0 4px 0',
-  },
-  statLabel: {
-    fontSize: '13px',
-    color: '#666',
-    margin: 0,
-  },
-  filters: {
-    display: 'flex',
-    gap: '10px',
-    marginBottom: '25px',
-    flexWrap: 'wrap',
-  },
-  filterButton: {
-    padding: '10px 20px',
-    background: '#fff',
-    border: '2px solid #e0e0e0',
-    borderRadius: '8px',
-    fontSize: '14px',
-    fontWeight: '500',
-    color: '#666',
-    cursor: 'pointer',
-    transition: 'all 0.3s',
-  },
-  filterButtonActive: {
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    color: '#fff',
-    borderColor: 'transparent',
-  },
-  mockWarning: {
-    padding: '12px',
-    background: '#fff3cd',
-    border: '1px solid #ffc107',
-    borderRadius: '8px',
-    color: '#856404',
-    fontSize: '13px',
-    textAlign: 'center',
-    marginBottom: '25px',
-  },
-  sessionsList: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-    gap: '20px',
-  },
-  sessionCard: {
-    background: '#fff',
-    borderRadius: '12px',
-    padding: '20px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-    transition: 'transform 0.2s, box-shadow 0.2s',
-  },
-  sessionHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: '12px',
-  },
-  subjectBadge: {
-    display: 'inline-block',
-    padding: '4px 12px',
-    background: '#e3f2fd',
-    color: '#1976d2',
-    borderRadius: '12px',
-    fontSize: '12px',
-    fontWeight: '600',
-  },
-  sessionDate: {
-    fontSize: '12px',
-    color: '#999',
-    margin: '6px 0 0 0',
-  },
-  deleteButton: {
-    background: 'none',
-    border: 'none',
-    fontSize: '18px',
-    cursor: 'pointer',
-    opacity: 0.6,
-    transition: 'opacity 0.2s',
-  },
-  sessionTopic: {
-    fontSize: '18px',
-    fontWeight: '600',
-    color: '#333',
-    margin: '0 0 10px 0',
-  },
-  sessionNotes: {
-    fontSize: '14px',
-    color: '#666',
-    lineHeight: '1.5',
-    margin: '0 0 12px 0',
-  },
-  sessionFooter: {
-    display: 'flex',
-    gap: '15px',
-    paddingTop: '12px',
-    borderTop: '1px solid #f0f0f0',
-  },
-  sessionInfo: {
-    fontSize: '13px',
-    color: '#666',
-    fontWeight: '500',
-  },
-  emptyState: {
-    textAlign: 'center',
-    padding: '60px 20px',
-  },
-  emptyIcon: {
-    fontSize: '64px',
-    margin: '0 0 20px 0',
-  },
-  emptyText: {
-    fontSize: '18px',
-    color: '#666',
-    marginBottom: '20px',
-  },
-  modalOverlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'rgba(0,0,0,0.5)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1000,
-    padding: '20px',
-  },
-  modal: {
-    background: '#fff',
-    borderRadius: '16px',
-    padding: '30px',
-    width: '100%',
-    maxWidth: '600px',
-    maxHeight: '90vh',
-    overflow: 'auto',
-  },
-  modalTitle: {
-    fontSize: '24px',
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: '20px',
-  },
-  modalForm: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-  },
-  inputGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-  },
-  gridRow: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '15px',
-  },
-  label: {
-    fontSize: '14px',
-    fontWeight: '600',
-    color: '#333',
-  },
-  input: {
-    padding: '12px 16px',
-    fontSize: '15px',
-    border: '2px solid #e0e0e0',
-    borderRadius: '8px',
-    outline: 'none',
-  },
-  inputError: {
-    borderColor: '#ff4444',
-  },
-  errorText: {
-    fontSize: '13px',
-    color: '#ff4444',
-  },
-  textarea: {
-    padding: '12px 16px',
-    fontSize: '15px',
-    border: '2px solid #e0e0e0',
-    borderRadius: '8px',
-    outline: 'none',
-    resize: 'vertical',
-    fontFamily: 'inherit',
-  },
-  xpPreview: {
-    padding: '12px',
-    background: '#e8f5e9',
-    border: '1px solid #4caf50',
-    borderRadius: '8px',
-    color: '#2e7d32',
-    fontSize: '14px',
-    textAlign: 'center',
-  },
-  modalActions: {
-    display: 'flex',
-    gap: '15px',
-    marginTop: '20px',
-    justifyContent: 'flex-end',
-  },
-  cancelButton: {
-    padding: '12px 24px',
-    background: '#f5f7fa',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '15px',
-    fontWeight: '600',
-    cursor: 'pointer',
-  },
-  saveButton: {
-    padding: '12px 24px',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '15px',
-    fontWeight: '600',
-    cursor: 'pointer',
-  },
-};
-
-export default StudySessions;
+}
