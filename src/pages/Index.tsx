@@ -26,6 +26,10 @@ import { prompts } from '@/data/prompts-data';
 import { BookOpen, Sparkles, Download, Headphones } from 'lucide-react';
 import { useLogger } from '@/utils/logger';
 import type { Prompt } from '@/types/prompt';
+import { Hero } from '@/components/sections/Hero';
+import { Features } from '@/components/sections/Features';
+import { Stats } from '@/components/sections/Stats';
+import { CTA } from '@/components/sections/CTA';
 
 export default function Index() {
   const logger = useLogger();
@@ -117,6 +121,15 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
+      {/* New Hero Section */}
+      <Hero />
+
+      {/* New Features Section */}
+      <Features />
+
+      {/* New Stats Section */}
+      <Stats />
+
       {/* Header */}
       <header 
         id="navigation"
@@ -297,6 +310,9 @@ export default function Index() {
           </section>
         </div>
       </main>
+
+      {/* New CTA Section */}
+      <CTA />
 
       {/* Footer */}
       <footer className="border-t mt-16" role="contentinfo">
