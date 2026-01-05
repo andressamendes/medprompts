@@ -48,14 +48,14 @@ const HomePage = () => (
  */
 function App() {
   return (
-    <Router>
+    <Router basename="/medprompts">
       <AuthProvider>
         <Routes>
           {/* Rotas públicas */}
           <Route path="/" element={<HomePage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
-
+          
           {/* Rotas protegidas */}
           <Route
             path="/dashboard"
@@ -65,7 +65,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/prompts"
             element={
@@ -74,7 +73,6 @@ function App() {
               </ProtectedRoute>
             }
           />
-
           <Route
             path="/study"
             element={
@@ -83,7 +81,7 @@ function App() {
               </ProtectedRoute>
             }
           />
-
+          
           {/* Rota padrão: redireciona para home */}
           <Route path="*" element={<Navigate to="/" replace />} />
         </Routes>
