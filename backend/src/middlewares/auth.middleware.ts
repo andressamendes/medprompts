@@ -1,13 +1,6 @@
 import { Request, Response, NextFunction } from 'express';
 import jwt from 'jsonwebtoken';
 
-// Extendendo o tipo Request para incluir userId
-declare module 'express-serve-static-core' {
-  interface Request {
-    userId?: string;
-  }
-}
-
 interface JwtPayload {
   userId: string;
 }

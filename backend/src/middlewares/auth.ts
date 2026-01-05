@@ -2,13 +2,6 @@ import { Request, Response, NextFunction } from 'express';
 import { verifyAccessToken, extractTokenFromHeader } from '../utils/jwt';
 import { logger } from '../utils/logger';
 
-// Estende Request para incluir userId
-declare module 'express-serve-static-core' {
-  interface Request {
-    userId?: string;
-  }
-}
-
 /**
  * Middleware de autenticação
  * Verifica se há um token JWT válido no header Authorization
