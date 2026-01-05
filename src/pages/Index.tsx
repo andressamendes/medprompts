@@ -1,5 +1,6 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { AuthenticatedNavbar } from '@/components/AuthenticatedNavbar';
 import { PromptCard } from '@/components/PromptCard';
 import { PromptDialog } from '@/components/PromptDialog';
 import { CategoryFilter } from '@/components/CategoryFilter';
@@ -20,17 +21,17 @@ import { WeeklyChallengeCard } from '@/components/WeeklyChallengeCard';
 import { StatsSection } from '@/components/StatsSection';
 import { InstallPWA } from '@/components/InstallPWA';
 import { TutorialButton } from '@/components/TutorialButton';
-import { ThemeToggle } from '@/components/ThemeToggle';
 import { Button } from '@/components/ui/button';
 import { prompts } from '@/data/prompts-data';
-import { BookOpen, Sparkles, Download, Headphones } from 'lucide-react';
+import { Headphones } from 'lucide-react';
 import { useLogger } from '@/utils/logger';
 import type { Prompt } from '@/types/prompt';
-import { Hero } from '@/components/sections/Hero';
-import { Features } from '@/components/sections/Features';
-import { Stats } from '@/components/sections/Stats';
-import { CTA } from '@/components/sections/CTA';
 
+/**
+ * Página principal da aplicação autenticada (rota /app)
+ * Contém TODOS os componentes funcionais:  biblioteca de prompts, gamificação, ferramentas
+ * Exibida APENAS para usuários autenticados
+ */
 export default function Index() {
   const logger = useLogger();
   const navigate = useNavigate();
@@ -121,58 +122,8 @@ export default function Index() {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
-      {/* New Hero Section */}
-      <Hero />
-
-      {/* New Features Section */}
-      <Features />
-
-      {/* New Stats Section */}
-      <Stats />
-
-      {/* Header */}
-      <header 
-        id="navigation"
-        role="banner"
-        className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50"
-      >
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex items-center justify-between">
-            <div className="flex items-center gap-3">
-              <div className="flex items-center justify-center w-10 h-10 rounded-lg bg-primary/10">
-                <BookOpen className="w-6 h-6 text-primary" aria-hidden="true" />
-              </div>
-              <div>
-                <h1 className="text-2xl font-bold tracking-tight">MedPrompts</h1>
-                <p className="text-sm text-muted-foreground">
-                  Prompts de IA para Estudantes de Medicina
-                </p>
-              </div>
-            </div>
-            
-            <div className="flex items-center gap-3">
-              {/* Botão de alternância de tema */}
-              <ThemeToggle />
-              
-              <Button
-                variant="outline"
-                size="sm"
-                onClick={handleExportModalOpen}
-                className="hidden sm:flex"
-                aria-label="Fazer backup dos dados"
-              >
-                <Download className="w-4 h-4 mr-2" aria-hidden="true" />
-                Backup
-              </Button>
-              
-              <div className="flex items-center gap-2" role="status" aria-label="Status do sistema">
-                <Sparkles className="w-5 h-5 text-yellow-500" aria-hidden="true" />
-                <span className="text-sm font-medium hidden md:inline">Sistema de Gamificação Ativo</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+      {/* Navbar Autenticada */}
+      <AuthenticatedNavbar />
 
       {/* Main Content */}
       <main 
@@ -311,9 +262,6 @@ export default function Index() {
         </div>
       </main>
 
-      {/* New CTA Section */}
-      <CTA />
-
       {/* Footer */}
       <footer className="border-t mt-16" role="contentinfo">
         <div className="container mx-auto px-4 py-6">
@@ -339,6 +287,19 @@ export default function Index() {
         aria-label="Ativar modo de concentração"
       >
         <Headphones className="w-6 h-6" />
+      </Button>
+
+      {/* Botão Flutuante Backup */}
+      <Button
+        onClick={handleExportModalOpen}
+        size="lg"
+        variant="outline"
+        className="fixed bottom-24 right-6 z-40 h-14 w-14 rounded-full shadow-2xl hover:scale-110 transition-all duration-300 sm:hidden"
+        aria-label="Fazer backup dos dados"
+      >
+        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
+          <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
+        </svg>
       </Button>
 
       {/* Modal de Export/Import */}
