@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { authService, User, LoginCredentials, RegisterData } from '../services/auth. service';
+import { authService, User, LoginCredentials, RegisterData } from '../services/auth.service';
 
 // Interface do contexto de autenticação
 interface AuthContextData {
@@ -8,8 +8,8 @@ interface AuthContextData {
   isAuthenticated: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
-  logout:  () => Promise<void>;
-  updateUser: (user: User) => void;
+  logout: () => Promise<void>;
+  updateUser:  (user: User) => void;
   refreshUserData: () => Promise<void>;
   error: string | null;
 }
@@ -138,7 +138,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   /**
    * Registra novo usuário
    */
-  const register = async (data: RegisterData): Promise<void> => {
+  const register = async (data:  RegisterData): Promise<void> => {
     setLoading(true);
     setError(null);
 
