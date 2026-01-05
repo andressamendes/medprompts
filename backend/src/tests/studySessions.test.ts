@@ -1,22 +1,15 @@
 import request from 'supertest';
 import app from '../app';
+import { createTestUser } from './helpers';
 
 describe('Study Sessions Endpoints', () => {
   let accessToken: string;
-  let userId: string;
-  const testEmail = `study-${Date.now()}@example.com`;
+  let userId:  string;
 
   beforeAll(async () => {
-    const registerRes = await request(app)
-      .post('/api/v1/auth/register')
-      .send({
-        name: 'Study Test',
-        email: testEmail,
-        password: 'senha123',
-      });
-
-    accessToken = registerRes.body.data. accessToken;
-    userId = registerRes.body.data.user. id;
+    const testUser = await createTestUser();
+    accessToken = testUser.accessToken;
+    userId = testUser. userId;
   });
 
   describe('POST /api/v1/study-sessions', () => {
@@ -34,7 +27,8 @@ describe('Study Sessions Endpoints', () => {
       expect(res.status).toBe(201);
       expect(res.body. success).toBe(true);
       expect(res.body.session).toHaveProperty('id');
-      expect(res.body.session. topic).toBe('Anatomia Cardíaca');
+      expect(res.body. session.topic).toBe('Anatomia Cardíaca');
+      expect(res.body.session. status).toBe('pending');
     });
 
     it('deve falhar com duração inválida', async () => {
@@ -53,6 +47,7 @@ describe('Study Sessions Endpoints', () => {
 
   describe('GET /api/v1/study-sessions', () => {
     beforeAll(async () => {
+      // Criar sessão de teste
       await request(app)
         .post('/api/v1/study-sessions')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -81,7 +76,8 @@ describe('Study Sessions Endpoints', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
-      expect(res.body.statistics).toHaveProperty('totalSessions');
+      expect(res.body. statistics).toHaveProperty('totalSessions');
+      expect(res.body.statistics).toHaveProperty('totalMinutes');
     });
   });
 });

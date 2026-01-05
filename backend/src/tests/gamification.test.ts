@@ -1,23 +1,16 @@
 import request from 'supertest';
 import app from '../app';
 import Badge from '../models/Badge';
+import { createTestUser } from './helpers';
 
 describe('Gamification Endpoints', () => {
-  let accessToken:  string;
+  let accessToken: string;
   let userId: string;
-  const testEmail = `gamification-${Date.now()}@example.com`;
 
   beforeAll(async () => {
-    const registerRes = await request(app)
-      .post('/api/v1/auth/register')
-      .send({
-        name: 'Gamification Test',
-        email: testEmail,
-        password: 'senha123',
-      });
-
-    accessToken = registerRes.body.data.accessToken;
-    userId = registerRes. body.data.user.id;
+    const testUser = await createTestUser();
+    accessToken = testUser. accessToken;
+    userId = testUser.userId;
 
     // Criar badge de teste
     await Badge.create({
@@ -40,6 +33,7 @@ describe('Gamification Endpoints', () => {
       expect(res.body.data).toHaveProperty('xp');
       expect(res.body.data).toHaveProperty('streak');
       expect(res.body.data).toHaveProperty('badges');
+      expect(res.body.data).toHaveProperty('dailyMissions');
     });
   });
 
@@ -55,7 +49,8 @@ describe('Gamification Endpoints', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
-      expect(res.body. data.currentXP).toBeGreaterThanOrEqual(0);
+      expect(res.body. data).toHaveProperty('currentXP');
+      expect(res.body.data).toHaveProperty('level');
     });
 
     it('deve fazer level up quando atingir XP necessário', async () => {
@@ -63,12 +58,13 @@ describe('Gamification Endpoints', () => {
         .post('/api/v1/gamification/xp')
         .set('Authorization', `Bearer ${accessToken}`)
         .send({
-          amount: 150,
+          amount: 200,
           source: 'test',
         });
 
       expect(res.status).toBe(200);
-      expect(res.body.data.level).toBeGreaterThanOrEqual(1);
+      expect(res.body.success).toBe(true);
+      expect(res.body. data. level).toBeGreaterThanOrEqual(1);
     });
   });
 
@@ -81,6 +77,7 @@ describe('Gamification Endpoints', () => {
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
       expect(Array.isArray(res.body. data)).toBe(true);
+      expect(res.body.data. length).toBeGreaterThan(0);
     });
   });
 
@@ -93,6 +90,7 @@ describe('Gamification Endpoints', () => {
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
       expect(res.body.data).toHaveProperty('currentStreak');
+      expect(res.body. data).toHaveProperty('longestStreak');
     });
   });
 });

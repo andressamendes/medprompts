@@ -1,22 +1,15 @@
 import request from 'supertest';
 import app from '../app';
+import { createTestUser } from './helpers';
 
 describe('Prompts Endpoints', () => {
   let accessToken: string;
   let userId: string;
-  const testEmail = `prompt-${Date.now()}@example.com`;
 
   beforeAll(async () => {
-    const registerRes = await request(app)
-      .post('/api/v1/auth/register')
-      .send({
-        name: 'Prompt Test',
-        email:  testEmail,
-        password: 'senha123',
-      });
-
-    accessToken = registerRes.body.data.accessToken;
-    userId = registerRes.body.data.user.id;
+    const testUser = await createTestUser();
+    accessToken = testUser. accessToken;
+    userId = testUser.userId;
   });
 
   describe('POST /api/v1/prompts', () => {
@@ -32,8 +25,9 @@ describe('Prompts Endpoints', () => {
         });
 
       expect(res.status).toBe(201);
-      expect(res.body. success).toBe(true);
+      expect(res.body.success).toBe(true);
       expect(res.body.prompt).toHaveProperty('id');
+      expect(res.body.prompt. title).toBe('Anamnese Completa');
     });
 
     it('deve falhar sem autenticação', async () => {
@@ -41,7 +35,7 @@ describe('Prompts Endpoints', () => {
         .post('/api/v1/prompts')
         .send({
           title: 'Test',
-          content: 'Test content',
+          content: 'Test content long enough',
           category: 'Anamnese',
         });
 
@@ -51,12 +45,13 @@ describe('Prompts Endpoints', () => {
 
   describe('GET /api/v1/prompts', () => {
     beforeAll(async () => {
+      // Criar alguns prompts de teste
       await request(app)
         .post('/api/v1/prompts')
         .set('Authorization', `Bearer ${accessToken}`)
         .send({
           title: 'Prompt 1',
-          content: 'Conteúdo do prompt 1',
+          content: 'Conteúdo do prompt 1 com texto suficiente',
           category: 'Anamnese',
           tags: ['teste'],
         });
@@ -66,7 +61,7 @@ describe('Prompts Endpoints', () => {
         .set('Authorization', `Bearer ${accessToken}`)
         .send({
           title: 'Prompt 2',
-          content: 'Conteúdo do prompt 2',
+          content: 'Conteúdo do prompt 2 com texto suficiente',
           category: 'Diagnóstico',
           tags: ['teste'],
         });
@@ -80,6 +75,7 @@ describe('Prompts Endpoints', () => {
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
       expect(Array.isArray(res.body. prompts)).toBe(true);
+      expect(res.body. prompts.length).toBeGreaterThanOrEqual(2);
     });
 
     it('deve filtrar prompts por categoria', async () => {
@@ -88,8 +84,9 @@ describe('Prompts Endpoints', () => {
         .set('Authorization', `Bearer ${accessToken}`);
 
       expect(res.status).toBe(200);
-      if (res.body.prompts.length > 0) {
-        expect(res.body. prompts[0].category).toBe('Anamnese');
+      expect(res.body.success).toBe(true);
+      if (res.body.prompts. length > 0) {
+        expect(res.body.prompts[0].category).toBe('Anamnese');
       }
     });
   });
