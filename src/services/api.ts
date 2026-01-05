@@ -1,9 +1,24 @@
-import axios, { AxiosError } from 'axios';
+import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
 // Base URL da API (vem do .env)
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
 
-console.log('🔗 API URL configurada:', API_URL);
+if (process.env.NODE_ENV === 'development') {
+  console.log('🔗 API URL configurada:', API_URL);
+}
+
+/**
+ * Tipos para respostas da API
+ */
+interface ApiResponse<T> {
+  data: T;
+  status:  number;
+}
+
+interface RefreshTokenResponse {
+  accessToken: string;
+  refreshToken: string;
+}
 
 /**
  * Cliente HTTP configurado
@@ -21,7 +36,7 @@ const api = axios.create({
  * Adiciona token de autenticação automaticamente
  */
 api.interceptors.request.use(
-  (config) => {
+  (config:  InternalAxiosRequestConfig) => {
     try {
       const token = localStorage. getItem('encrypted_accessToken');
       
@@ -31,12 +46,12 @@ api.interceptors.request.use(
       
       return config;
     } catch (error) {
-      console.error('❌ Erro ao adicionar token à requisição:', error);
+      console.error('[API] Erro ao adicionar token:', error);
       return config;
     }
   },
-  (error) => {
-    console.error('❌ Erro na requisição:', error);
+  (error: unknown) => {
+    console.error('[API] Erro na requisição:', error);
     return Promise.reject(error);
   }
 );
@@ -44,14 +59,16 @@ api.interceptors.request.use(
 /**
  * Validação de resposta de refresh token
  */
-function isValidRefreshResponse(response: any): response is { data: { data: { accessToken: string } } } {
+function isValidRefreshResponse(response: unknown): response is AxiosResponse<{ data: RefreshTokenResponse }> {
   return (
-    response &&
-    typeof response === 'object' &&
-    response.data &&
+    response instanceof Object &&
+    'data' in response &&
     typeof response.data === 'object' &&
-    response.data.data &&
-    typeof response.data. data === 'object' &&
+    response.data !== null &&
+    'data' in response.data &&
+    typeof response.data.data === 'object' &&
+    response.data.data !== null &&
+    'accessToken' in response.data.data &&
     typeof response.data.data.accessToken === 'string'
   );
 }
@@ -59,8 +76,15 @@ function isValidRefreshResponse(response: any): response is { data: { data: { ac
 /**
  * Validação de erro de resposta
  */
-function isAxiosError(error: any): error is AxiosError {
-  return error && typeof error === 'object' && 'response' in error;
+function isAxiosError(error: unknown): error is AxiosError {
+  return error instanceof AxiosError;
+}
+
+/**
+ * Tipo para config com retry flag
+ */
+interface RequestConfigWithRetry extends InternalAxiosRequestConfig {
+  _retry?: boolean;
 }
 
 /**
@@ -69,20 +93,20 @@ function isAxiosError(error: any): error is AxiosError {
  * Sincroniza logout entre abas
  */
 api.interceptors.response.use(
-  (response) => response,
-  async (error:  unknown) => {
+  (response: AxiosResponse) => response,
+  async (error: unknown) => {
     try {
-      // Validação de segurança:  verifica se é um AxiosError
+      // Validação de segurança:   verifica se é um AxiosError
       if (! isAxiosError(error)) {
-        console.error('❌ Erro desconhecido na resposta:', error);
+        console.error('[API] Erro desconhecido:', error);
         return Promise.reject(error);
       }
 
-      // Validação:  verifica se error.config existe
-      const originalRequest = error.config as any;
+      // Validação:   verifica se error. config existe
+      const originalRequest = error.config as RequestConfigWithRetry;
       
-      if (! originalRequest) {
-        console.error('❌ Erro:  request config não disponível');
+      if (!originalRequest) {
+        console.error('[API] Config não disponível');
         return Promise.reject(error);
       }
 
@@ -97,81 +121,81 @@ api.interceptors.response.use(
           
           // Validação: refresh token deve existir
           if (!refreshToken || typeof refreshToken !== 'string') {
-            console.warn('⚠️ Refresh token inválido ou não encontrado, fazendo logout');
             handleLogoutSync();
             return Promise.reject(new Error('Refresh token não disponível'));
           }
 
-          // Tenta renovar token com validação
-          let response:  any;
+          // Tenta renovar token
+          let response:  unknown;
           try {
             response = await axios.post(`${API_URL}/auth/refresh`, {
               refreshToken,
             });
           } catch (refreshError) {
-            console.error('❌ Erro ao chamar endpoint refresh:', refreshError);
+            if (process.env.NODE_ENV === 'development') {
+              console. error('[API] Erro ao chamar refresh:', refreshError);
+            }
             handleLogoutSync();
             return Promise.reject(refreshError);
           }
 
           // Validação rigorosa da resposta
           if (!isValidRefreshResponse(response)) {
-            console.error('❌ Resposta inválida do refresh token:', response);
+            if (process.env.NODE_ENV === 'development') {
+              console.error('[API] Resposta refresh inválida');
+            }
             handleLogoutSync();
-            return Promise. reject(new Error('Resposta inválida do servidor'));
+            return Promise.reject(new Error('Resposta inválida do servidor'));
           }
 
           const { accessToken } = response.data.data;
           
           // Validação: token renovado deve ser string não-vazia
           if (! accessToken || typeof accessToken !== 'string') {
-            console. warn('⚠️ Token inválido recebido, fazendo logout');
             handleLogoutSync();
-            return Promise.reject(new Error('Token renovado inválido'));
+            return Promise. reject(new Error('Token renovado inválido'));
           }
 
           // Salva novo token com validação
           try {
             localStorage.setItem('encrypted_accessToken', accessToken);
           } catch (storageError) {
-            console. error('❌ Erro ao salvar token no localStorage:', storageError);
+            console. error('[API] Erro ao salvar token:', storageError);
             return Promise.reject(storageError);
           }
 
-          // Atualiza header da requisição original com validação
+          // Atualiza header da requisição original
           if (originalRequest.headers) {
             originalRequest.headers.Authorization = `Bearer ${accessToken}`;
           }
           
-          console.log('✅ Token renovado com sucesso');
+          if (process.env.NODE_ENV === 'development') {
+            console.log('[API] Token renovado com sucesso');
+          }
           
           // Retry da requisição com novo token
           return api(originalRequest);
         } catch (refreshError) {
-          console.error('❌ Erro inesperado ao renovar token:', refreshError);
+          console.error('[API] Erro inesperado:', refreshError);
           handleLogoutSync();
           return Promise.reject(refreshError);
         }
       }
 
-      // Se erro 403 (proibido) ou 401 sem retry, faz logout
+      // Se erro 403 ou 401 sem retry, faz logout
       if ((statusCode === 403 || statusCode === 401) && originalRequest._retry) {
-        console.warn('⚠️ Acesso proibido ou token permanentemente inválido');
         handleLogoutSync();
-        return Promise.reject(new Error('Sessão expirada ou acesso negado'));
+        return Promise.reject(new Error('Sessão expirada'));
       }
 
-      // Se erro 500+ (erro do servidor), loga com detalhes
+      // Se erro 500+, loga
       if (statusCode && statusCode >= 500) {
-        console.error('❌ Erro do servidor:', {
-          status: statusCode,
-          message: (error. response?.data as any)?.error || 'Erro desconhecido',
-        });
+        console.error('[API] Erro 500+:', statusCode);
       }
 
       return Promise.reject(error);
     } catch (unexpectedError) {
-      console.error('❌ Erro inesperado no interceptor de resposta:', unexpectedError);
+      console.error('[API] Erro no interceptor:', unexpectedError);
       return Promise.reject(unexpectedError);
     }
   }
@@ -179,43 +203,37 @@ api.interceptors.response.use(
 
 /**
  * Faz logout sincronizado entre abas
- * Remove tokens e notifica outras abas
  */
 function handleLogoutSync(): void {
   try {
-    // Remove dados de autenticação
     localStorage.removeItem('encrypted_accessToken');
     localStorage.removeItem('encrypted_refreshToken');
     localStorage.removeItem('encrypted_user');
     
-    // Dispara evento customizado para sincronizar com outras abas
     const logoutEvent = new CustomEvent('auth-logout', {
       detail:  { timestamp: Date.now(), source: 'api-interceptor' }
     });
     
     window.dispatchEvent(logoutEvent);
     
-    console.log('🔄 Logout sincronizado - evento disparado para outras abas');
+    if (process.env.NODE_ENV === 'development') {
+      console.log('[API] Logout sincronizado');
+    }
   } catch (error) {
-    console.error('❌ Erro ao fazer logout sincronizado:', error);
+    console.error('[API] Erro ao fazer logout:', error);
   }
 }
 
 /**
  * Listener para sincronizar logout de outras abas
- * Quando um evento storage é disparado de outra aba
  */
-window.addEventListener('storage', (event) => {
+window.addEventListener('storage', (event:  StorageEvent) => {
   try {
-    // Se tokens foram removidos em outra aba (logout)
     if (
       (event.key === 'encrypted_accessToken' || 
        event.key === 'encrypted_refreshToken') &&
       event.newValue === null
     ) {
-      console.log('🔄 Logout detectado em outra aba via storage event');
-      
-      // Dispara evento customizado para componentes reagirem
       const logoutEvent = new CustomEvent('auth-logout', {
         detail: { source: 'other-tab', timestamp: Date.now() }
       });
@@ -223,17 +241,16 @@ window.addEventListener('storage', (event) => {
       window. dispatchEvent(logoutEvent);
     }
   } catch (error) {
-    console.error('❌ Erro ao processar storage event:', error);
+    console.error('[API] Erro ao processar storage event:', error);
   }
 });
 
 /**
- * Listener global para erros não tratados
- * Ajuda a debug de problemas de rede
+ * Listener global para erros de rede
  */
-window.addEventListener('error', (event) => {
-  if (event.message && event.message.includes('Network')) {
-    console.error('❌ Erro de rede detectado:', event.message);
+window.addEventListener('error', (event: ErrorEvent) => {
+  if (event.message?.includes('Network')) {
+    console.error('[API] Erro de rede:', event.message);
   }
 });
 

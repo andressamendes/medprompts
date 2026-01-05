@@ -5,9 +5,9 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  university?:  string;
+  university?: string;
   graduationYear?: number;
-  xp:  number;
+  xp:   number;
   level: number;
   badges: string[];
   emailVerified: boolean;
@@ -31,18 +31,13 @@ export interface RegisterData {
 
 export interface AuthResponse {
   user: User;
-  accessToken: string;
+  accessToken:  string;
   refreshToken: string;
 }
 
 /**
  * Função de criptografia para tokens
  * Usa Web Crypto API (nativa, sem dependências externas)
- * 
- * NOTA: Para máxima segurança em produção, considere: 
- * 1. Usar IndexedDB com chaves derivadas
- * 2. Implementar token rotation automática
- * 3. Armazenar tokens apenas em memória (sem persistência)
  */
 async function encryptToken(token: string): Promise<string> {
   try {
@@ -73,9 +68,9 @@ async function encryptToken(token: string): Promise<string> {
     
     return btoa(String.fromCharCode. apply(null, Array.from(combined)));
   } catch (error) {
-    console.warn('⚠️ Falha na encriptação de token, usando armazenamento direto:', error);
-    // Fallback:  armazena sem encriptação se API não disponível
-    // (Em navegadores muito antigos que não suportam Web Crypto)
+    if (process.env.NODE_ENV === 'development') {
+      console.warn('⚠️ Falha na encriptação de token, usando armazenamento direto');
+    }
     return token;
   }
 }
@@ -103,6 +98,10 @@ class AuthService {
       // Salva tokens e usuário de forma segura
       await this. saveAuthData(authData);
       
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Registro bem-sucedido');
+      }
+      
       return authData;
     } catch (error:  any) {
       throw new Error(error.response?.data?.error || 'Erro ao registrar');
@@ -121,9 +120,13 @@ class AuthService {
       // Salva tokens e usuário de forma segura
       await this.saveAuthData(authData);
       
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Login bem-sucedido');
+      }
+      
       return authData;
     } catch (error: any) {
-      throw new Error(error.response?. data?.error || 'Erro ao fazer login');
+      throw new Error(error.response?.data?. error || 'Erro ao fazer login');
     }
   }
 
@@ -134,7 +137,9 @@ class AuthService {
     try {
       await api.post('/auth/logout');
     } catch (error) {
-      console.error('❌ Erro ao fazer logout:', error);
+      if (process.env.NODE_ENV === 'development') {
+        console.error('❌ Erro ao fazer logout:', error);
+      }
     } finally {
       // Sempre limpa dados, mesmo com erro
       this.clearAuthData();
@@ -146,7 +151,7 @@ class AuthService {
    */
   async verifyToken(): Promise<User | null> {
     try {
-      const response = await api. get('/auth/verify');
+      const response = await api.  get('/auth/verify');
       return response.data. data. user;
     } catch (error) {
       this.clearAuthData();
@@ -167,7 +172,6 @@ class AuthService {
       }
 
       // Usa o token encriptado diretamente
-      // (Em implementação com descriptografia real, descriptografaria aqui)
       const response = await api.post('/auth/refresh', { 
         refreshToken: refreshTokenEncrypted 
       });
@@ -177,6 +181,10 @@ class AuthService {
       // Encripta e salva novo access token
       const encrypted = await encryptToken(accessToken);
       localStorage.setItem(this.ACCESS_TOKEN_KEY, encrypted);
+      
+      if (process.env.NODE_ENV === 'development') {
+        console.log('✅ Token renovado');
+      }
       
       return accessToken;
     } catch (error:  any) {
@@ -213,14 +221,15 @@ class AuthService {
       const encryptedRefreshToken = await encryptToken(authData.refreshToken);
       
       // Salva no localStorage
-      localStorage.setItem(this.ACCESS_TOKEN_KEY, encryptedAccessToken);
-      localStorage.setItem(this. REFRESH_TOKEN_KEY, encryptedRefreshToken);
+      localStorage. setItem(this.ACCESS_TOKEN_KEY, encryptedAccessToken);
+      localStorage.setItem(this.REFRESH_TOKEN_KEY, encryptedRefreshToken);
       localStorage.setItem(this.USER_KEY, JSON.stringify(authData.user));
 
-      // Log de segurança (sem dados sensíveis)
-      console.log('✅ Dados de autenticação salvos com segurança');
+      if (process.env.NODE_ENV === 'development') {
+        console.log('[AUTH] Dados salvos com segurança');
+      }
     } catch (error) {
-      console.error('❌ Erro ao salvar dados autenticados:', error);
+      console.error('[AUTH] Erro ao salvar dados:', error);
       throw error;
     }
   }
@@ -234,7 +243,9 @@ class AuthService {
     localStorage.removeItem(this.REFRESH_TOKEN_KEY);
     localStorage.removeItem(this.USER_KEY);
     
-    console.log('✅ Dados de autenticação limpos');
+    if (process.env. NODE_ENV === 'development') {
+      console.log('[AUTH] Dados limpos');
+    }
   }
 }
 
