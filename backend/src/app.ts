@@ -9,6 +9,7 @@ import authRoutes from './routes/auth.routes';
 import userRoutes from './routes/user.routes';
 import promptRoutes from './routes/prompt.routes';
 import studySessionRoutes from './routes/studySessionRoutes';
+import gamificationRoutes from './routes/gamification.routes';
 
 // Carregar variáveis de ambiente
 dotenv.config();
@@ -97,6 +98,7 @@ app.use('/api/v1/auth', authRoutes);
 app.use('/api/v1/users', userRoutes);
 app.use('/api/v1/prompts', promptRoutes);
 app.use('/api/v1/study-sessions', studySessionRoutes);
+app.use('/api/v1/gamification', gamificationRoutes);
 
 // Rota 404
 app.use((req: Request, res: Response) => {
