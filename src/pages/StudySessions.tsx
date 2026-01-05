@@ -5,34 +5,24 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Calendar, Clock, TrendingUp, Filter, Trash2 } from 'lucide-react';
+import { Plus, Calendar, Clock, TrendingUp, Filter, Trash2, Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
-/**
- * Interface para Sessão de Estudo
- */
-interface StudySession {
-  id: string;
-  subject: string;
-  topic: string;
-  duration: number; // em minutos
-  notes?:  string;
-  date: string;
-  xpEarned: number;
-}
+import { toast } from '@/hooks/use-toast';
+import studySessionsService, { StudySessionData } from '@/services/api/studySessions';
 
 /**
  * Página Study Sessions - Gerenciamento de sessões de estudo
- * Permite:  Registrar, visualizar, filtrar e excluir sessões
- * Integrada com AuthenticatedNavbar
+ * Integrada com API real do backend
  */
 export default function StudySessions() {
-  const [sessions, setSessions] = useState<StudySession[]>([]);
-  const [filteredSessions, setFilteredSessions] = useState<StudySession[]>([]);
+  const [sessions, setSessions] = useState<StudySessionData[]>([]);
+  const [filteredSessions, setFilteredSessions] = useState<StudySessionData[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [filterPeriod, setFilterPeriod] = useState('all');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   
   const [formData, setFormData] = useState({
     subject: '',
@@ -57,47 +47,9 @@ export default function StudySessions() {
     'Outro',
   ];
 
-  // 🎭 MOCK: Carrega sessões simuladas
+  // 🔗 Carregar sessões da API ao montar o componente
   useEffect(() => {
-    const mockSessions:  StudySession[] = [
-      {
-        id: '1',
-        subject: 'Anatomia',
-        topic: 'Sistema Cardiovascular',
-        duration:  120,
-        notes: 'Revisão completa de anatomia cardíaca',
-        date: new Date().toISOString(),
-        xpEarned:  60,
-      },
-      {
-        id: '2',
-        subject: 'Farmacologia',
-        topic: 'Anti-hipertensivos',
-        duration: 90,
-        notes: 'Mecanismos de ação dos principais grupos',
-        date: new Date(Date.now() - 86400000).toISOString(),
-        xpEarned: 45,
-      },
-      {
-        id: '3',
-        subject: 'Fisiologia',
-        topic: 'Sistema Renal',
-        duration: 60,
-        notes: 'Filtração glomerular e reabsorção tubular',
-        date: new Date(Date.now() - 172800000).toISOString(),
-        xpEarned:  30,
-      },
-      {
-        id: '4',
-        subject: 'Clínica Médica',
-        topic: 'Insuficiência Cardíaca',
-        duration: 150,
-        date: new Date(Date.now() - 259200000).toISOString(),
-        xpEarned: 75,
-      },
-    ];
-    setSessions(mockSessions);
-    setFilteredSessions(mockSessions);
+    loadSessions();
   }, []);
 
   // Filtrar sessões por período
@@ -106,7 +58,7 @@ export default function StudySessions() {
 
     if (filterPeriod === 'today') {
       const today = new Date().toDateString();
-      filtered = sessions. filter(s => new Date(s.date).toDateString() === today);
+      filtered = sessions.filter(s => new Date(s.date).toDateString() === today);
     } else if (filterPeriod === 'week') {
       const weekAgo = Date.now() - 7 * 86400000;
       filtered = sessions.filter(s => new Date(s.date).getTime() > weekAgo);
@@ -118,13 +70,31 @@ export default function StudySessions() {
     setFilteredSessions(filtered);
   }, [sessions, filterPeriod]);
 
+  // 🔗 Carregar sessões da API
+  const loadSessions = async () => {
+    setIsLoading(true);
+    try {
+      const data = await studySessionsService.getAll();
+      setSessions(data);
+      setFilteredSessions(data);
+    } catch (error:  any) {
+      toast({
+        title: 'Erro ao carregar sessões',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Validar formulário
   const validateForm = (): boolean => {
-    const errors: { [key:  string]: string } = {};
+    const errors: { [key: string]: string } = {};
 
     if (!formData.subject) errors.subject = 'Matéria é obrigatória';
     if (!formData.topic) errors.topic = 'Tópico é obrigatório';
-    if (!formData.duration || parseInt(formData.duration) <= 0) {
+    if (!formData. duration || parseInt(formData.duration) <= 0) {
       errors.duration = 'Duração deve ser maior que 0';
     }
     if (!formData. date) errors.date = 'Data é obrigatória';
@@ -146,37 +116,65 @@ export default function StudySessions() {
     setIsModalOpen(true);
   };
 
-  // Salvar sessão
-  const handleSave = () => {
-    if (! validateForm()) return;
+  // 🔗 Salvar sessão via API
+  const handleSave = async () => {
+    if (!validateForm()) return;
 
-    const duration = parseInt(formData.duration);
-    const xpEarned = Math.floor(duration / 2); // 0.5 XP por minuto
+    setIsSaving(true);
+    try {
+      const duration = parseInt(formData.duration);
+      const sessionData:  StudySessionData = {
+        subject: formData.subject,
+        topic: formData.topic,
+        duration,
+        notes:  formData.notes,
+        date: new Date(formData.date).toISOString(),
+      };
 
-    const newSession: StudySession = {
-      id:  Date.now().toString(),
-      subject: formData.subject,
-      topic: formData.topic,
-      duration,
-      notes: formData.notes,
-      date: new Date(formData.date).toISOString(),
-      xpEarned,
-    };
+      await studySessionsService.create(sessionData);
+      
+      const xpEarned = Math.floor(duration / 2);
+      toast({
+        title: 'Sessão registrada!',
+        description: `Você ganhou ${xpEarned} XP`,
+      });
 
-    setSessions([newSession, ...sessions]);
-    setIsModalOpen(false);
+      setIsModalOpen(false);
+      loadSessions(); // Recarregar lista
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao salvar',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
+    }
   };
 
-  // Excluir sessão
-  const handleDelete = (id: string) => {
-    if (confirm('Tem certeza que deseja excluir esta sessão?')) {
-      setSessions(sessions. filter(s => s.id !== id));
+  // 🔗 Excluir sessão via API
+  const handleDelete = async (id: string) => {
+    if (! confirm('Tem certeza que deseja excluir esta sessão?')) return;
+
+    try {
+      await studySessionsService.delete(id);
+      toast({
+        title: 'Sessão excluída',
+        description: 'A sessão foi removida',
+      });
+      loadSessions(); // Recarregar lista
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao excluir',
+        description: error.message,
+        variant: 'destructive',
+      });
     }
   };
 
   // Calcular estatísticas
   const totalMinutes = filteredSessions.reduce((acc, s) => acc + s.duration, 0);
-  const totalXP = filteredSessions.reduce((acc, s) => acc + s.xpEarned, 0);
+  const totalXP = filteredSessions. reduce((acc, s) => acc + (s.xpEarned || 0), 0);
   const totalHours = Math.floor(totalMinutes / 60);
   const remainingMinutes = totalMinutes % 60;
 
@@ -243,7 +241,7 @@ export default function StudySessions() {
               <CardContent>
                 <div className="flex items-center gap-2 text-xs text-muted-foreground">
                   <TrendingUp className="h-3 w-3" />
-                  0.5 XP por minuto
+                  0. 5 XP por minuto
                 </div>
               </CardContent>
             </Card>
@@ -282,62 +280,71 @@ export default function StudySessions() {
             </Select>
           </div>
 
-          {/* Lista de Sessões */}
-          {filteredSessions.length > 0 ? (
-            <div className="space-y-4">
-              {filteredSessions.map((session) => (
-                <Card key={session.id}>
-                  <CardHeader>
-                    <div className="flex items-start justify-between gap-4">
-                      <div className="flex-1">
-                        <div className="flex items-center gap-2 mb-2">
-                          <CardTitle className="text-lg">{session.subject}</CardTitle>
-                          <Badge variant="secondary">{session.topic}</Badge>
-                        </div>
-                        <CardDescription>
-                          {session.notes || 'Sem anotações'}
-                        </CardDescription>
-                      </div>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => handleDelete(session.id)}
-                      >
-                        <Trash2 className="h-4 w-4" />
-                      </Button>
-                    </div>
-                  </CardHeader>
-                  <CardContent>
-                    <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
-                      <div className="flex items-center gap-1">
-                        <Calendar className="h-3 w-3" />
-                        {formatDate(session. date)}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <Clock className="h-3 w-3" />
-                        {formatDuration(session.duration)}
-                      </div>
-                      <div className="flex items-center gap-1">
-                        <TrendingUp className="h-3 w-3" />
-                        +{session.xpEarned} XP
-                      </div>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+          {/* Loading State */}
+          {isLoading ?  (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <p className="text-muted-foreground mb-4">
-                  Nenhuma sessão encontrada
-                </p>
-                <Button onClick={handleCreate}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Registrar primeira sessão
-                </Button>
-              </CardContent>
-            </Card>
+            <>
+              {/* Lista de Sessões */}
+              {filteredSessions.length > 0 ? (
+                <div className="space-y-4">
+                  {filteredSessions.map((session) => (
+                    <Card key={session.id}>
+                      <CardHeader>
+                        <div className="flex items-start justify-between gap-4">
+                          <div className="flex-1">
+                            <div className="flex items-center gap-2 mb-2">
+                              <CardTitle className="text-lg">{session.subject}</CardTitle>
+                              <Badge variant="secondary">{session.topic}</Badge>
+                            </div>
+                            <CardDescription>
+                              {session.notes || 'Sem anotações'}
+                            </CardDescription>
+                          </div>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => session.id && handleDelete(session. id)}
+                          >
+                            <Trash2 className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex flex-wrap items-center gap-4 text-sm text-muted-foreground">
+                          <div className="flex items-center gap-1">
+                            <Calendar className="h-3 w-3" />
+                            {formatDate(session.date)}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <Clock className="h-3 w-3" />
+                            {formatDuration(session.duration)}
+                          </div>
+                          <div className="flex items-center gap-1">
+                            <TrendingUp className="h-3 w-3" />
+                            +{session.xpEarned || Math.floor(session.duration / 2)} XP
+                          </div>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <Card>
+                  <CardContent className="flex flex-col items-center justify-center py-12">
+                    <p className="text-muted-foreground mb-4">
+                      Nenhuma sessão encontrada
+                    </p>
+                    <Button onClick={handleCreate}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Registrar primeira sessão
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+            </>
           )}
         </div>
       </main>
@@ -364,7 +371,7 @@ export default function StudySessions() {
                   <SelectValue placeholder="Selecione a matéria" />
                 </SelectTrigger>
                 <SelectContent>
-                  {subjects.map(subject => (
+                  {subjects. map(subject => (
                     <SelectItem key={subject} value={subject}>
                       {subject}
                     </SelectItem>
@@ -397,8 +404,8 @@ export default function StudySessions() {
                 <Input
                   id="duration"
                   type="number"
-                  value={formData.duration}
-                  onChange={(e) => setFormData({ ... formData, duration: e.target.value })}
+                  value={formData. duration}
+                  onChange={(e) => setFormData({ ...formData, duration: e.target. value })}
                   placeholder="60"
                   min="1"
                 />
@@ -427,7 +434,7 @@ export default function StudySessions() {
               <Textarea
                 id="notes"
                 value={formData.notes}
-                onChange={(e) => setFormData({ ...formData, notes: e.target. value })}
+                onChange={(e) => setFormData({ ...formData, notes: e.target.value })}
                 placeholder="O que você estudou nesta sessão?"
                 rows={3}
               />
@@ -446,11 +453,18 @@ export default function StudySessions() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsModalOpen(false)}>
+            <Button variant="outline" onClick={() => setIsModalOpen(false)} disabled={isSaving}>
               Cancelar
             </Button>
-            <Button onClick={handleSave}>
-              Registrar Sessão
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Salvando... 
+                </>
+              ) : (
+                'Registrar Sessão'
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
