@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import { ThemeProvider } from './contexts/ThemeContext';
 import { FavoritesProvider } from './contexts/FavoritesContext';
@@ -10,13 +10,15 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Prompts from './pages/Prompts';
 import StudySessions from './pages/StudySessions';
+import NotFound from './pages/NotFound';
 
 /**
  * Componente principal da aplicação
  * 
- * Configuração:
+ * Configuração: 
  * - basename="/medprompts/" para GitHub Pages (deve corresponder ao base do vite.config.ts)
  * - Todas as rotas públicas e protegidas definidas aqui
+ * - Rota 404 no final para capturar URLs inválidas
  */
 function App() {
   return (
@@ -57,8 +59,9 @@ function App() {
                   }
                 />
                 
-                {/* Rota padrão:  redireciona para home se rota não existir */}
-                <Route path="*" element={<Navigate to="/" replace />} />
+                {/* Rota 404: Captura qualquer URL que não existe */}
+                {/* Esta rota DEVE ser a última */}
+                <Route path="*" element={<NotFound />} />
               </Routes>
             </PromptHistoryProvider>
           </FavoritesProvider>
