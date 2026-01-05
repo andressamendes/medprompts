@@ -1,6 +1,6 @@
 import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
 
-// Base URL da API (vem do .env)
+// Base URL da API (vem do . env)
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
 
 if (process.env.NODE_ENV === 'development') {
@@ -10,11 +10,6 @@ if (process.env.NODE_ENV === 'development') {
 /**
  * Tipos para respostas da API
  */
-interface ApiResponse<T> {
-  data: T;
-  status:  number;
-}
-
 interface RefreshTokenResponse {
   accessToken: string;
   refreshToken: string;
@@ -36,7 +31,7 @@ const api = axios.create({
  * Adiciona token de autenticação automaticamente
  */
 api.interceptors.request.use(
-  (config:  InternalAxiosRequestConfig) => {
+  (config: InternalAxiosRequestConfig) => {
     try {
       const token = localStorage. getItem('encrypted_accessToken');
       
@@ -96,13 +91,13 @@ api.interceptors.response.use(
   (response: AxiosResponse) => response,
   async (error: unknown) => {
     try {
-      // Validação de segurança:   verifica se é um AxiosError
+      // Validação de segurança:    verifica se é um AxiosError
       if (! isAxiosError(error)) {
         console.error('[API] Erro desconhecido:', error);
         return Promise.reject(error);
       }
 
-      // Validação:   verifica se error. config existe
+      // Validação:    verifica se error.config existe
       const originalRequest = error.config as RequestConfigWithRetry;
       
       if (!originalRequest) {
@@ -140,7 +135,7 @@ api.interceptors.response.use(
           }
 
           // Validação rigorosa da resposta
-          if (!isValidRefreshResponse(response)) {
+          if (! isValidRefreshResponse(response)) {
             if (process.env.NODE_ENV === 'development') {
               console.error('[API] Resposta refresh inválida');
             }
@@ -211,7 +206,7 @@ function handleLogoutSync(): void {
     localStorage.removeItem('encrypted_user');
     
     const logoutEvent = new CustomEvent('auth-logout', {
-      detail:  { timestamp: Date.now(), source: 'api-interceptor' }
+      detail:   { timestamp: Date.now(), source: 'api-interceptor' }
     });
     
     window.dispatchEvent(logoutEvent);
@@ -235,10 +230,10 @@ window.addEventListener('storage', (event:  StorageEvent) => {
       event.newValue === null
     ) {
       const logoutEvent = new CustomEvent('auth-logout', {
-        detail: { source: 'other-tab', timestamp: Date.now() }
+        detail:  { source: 'other-tab', timestamp: Date.now() }
       });
       
-      window. dispatchEvent(logoutEvent);
+      window.dispatchEvent(logoutEvent);
     }
   } catch (error) {
     console.error('[API] Erro ao processar storage event:', error);
