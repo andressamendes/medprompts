@@ -9,7 +9,7 @@ import { StatsSection } from '@/components/StatsSection';
 import { ProfileCard } from '@/components/ProfileCard';
 import { XPChart } from '@/components/XPChart';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
+import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, Trophy, TrendingUp } from 'lucide-react';
 
 /**
