@@ -10,7 +10,7 @@ import { Loader2 } from 'lucide-react';
 
 export default function Register() {
   const navigate = useNavigate();
-  const { register } = useAuth();
+  const { register, refreshAuth } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -22,6 +22,7 @@ export default function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    e.stopPropagation();
     
     if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
       toast({
@@ -29,7 +30,7 @@ export default function Register() {
         description: 'Por favor, preencha todos os campos',
         variant: 'destructive',
       });
-      return;
+      return false;
     }
 
     if (formData.password !== formData.confirmPassword) {
@@ -38,7 +39,7 @@ export default function Register() {
         description: 'As senhas digitadas não são iguais',
         variant: 'destructive',
       });
-      return;
+      return false;
     }
 
     if (formData.password.length < 8) {
@@ -47,26 +48,35 @@ export default function Register() {
         description: 'A senha deve ter pelo menos 8 caracteres',
         variant: 'destructive',
       });
-      return;
+      return false;
     }
 
     setIsLoading(true);
+    
     try {
       await register(formData.name, formData.email, formData.password);
+      
+      // Forçar atualização do AuthContext
+      refreshAuth();
+      
       toast({
         title: 'Conta criada!',
         description: 'Bem-vindo ao MedPrompts!',
       });
-      navigate('/app');
+      
+      // Navegar sem reload
+      navigate('/dashboard', { replace: true });
+      
     } catch (error: any) {
       toast({
         title: 'Erro ao registrar',
         description: error.message || 'Tente novamente mais tarde',
         variant: 'destructive',
       });
-    } finally {
       setIsLoading(false);
     }
+    
+    return false;
   };
 
   return (
@@ -78,7 +88,7 @@ export default function Register() {
             Preencha os dados abaixo para criar sua conta
           </CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} noValidate>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Nome Completo</Label>
@@ -89,7 +99,7 @@ export default function Register() {
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
                 disabled={isLoading}
-                required
+                autoComplete="name"
               />
             </div>
             <div className="space-y-2">
@@ -101,7 +111,7 @@ export default function Register() {
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 disabled={isLoading}
-                required
+                autoComplete="email"
               />
             </div>
             <div className="space-y-2">
@@ -113,7 +123,7 @@ export default function Register() {
                 value={formData.password}
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 disabled={isLoading}
-                required
+                autoComplete="new-password"
               />
             </div>
             <div className="space-y-2">
@@ -125,7 +135,7 @@ export default function Register() {
                 value={formData.confirmPassword}
                 onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
                 disabled={isLoading}
-                required
+                autoComplete="new-password"
               />
             </div>
           </CardContent>

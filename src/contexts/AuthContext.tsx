@@ -8,6 +8,7 @@ interface AuthContextType {
   login: (email: string, password: string) => Promise<void>;
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
+  refreshAuth: () => void;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -16,47 +17,35 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  // Verifica se há usuário logado ao carregar a aplicação
-  useEffect(() => {
-    const checkAuth = async () => {
-      try {
-        const currentUser = await authService.verifyToken();
-        setUser(currentUser);
-      } catch (error) {
-        setUser(null);
-      } finally {
-        setIsLoading(false);
-      }
-    };
+  const refreshAuth = () => {
+    const currentUser = authService.getCurrentUser();
+    const isAuth = authService.isAuthenticated();
+    
+    if (currentUser && isAuth) {
+      setUser(currentUser);
+    } else {
+      setUser(null);
+    }
+  };
 
-    checkAuth();
+  useEffect(() => {
+    refreshAuth();
+    setIsLoading(false);
   }, []);
 
   const login = async (email: string, password: string) => {
-    try {
-      const response = await authService.login({ email, password });
-      setUser(response.user);
-    } catch (error: any) {
-      throw new Error(error.message || 'Erro ao fazer login');
-    }
+    const response = await authService.login({ email, password });
+    setUser(response.user);
   };
 
   const register = async (name: string, email: string, password: string) => {
-    try {
-      const response = await authService.register({ name, email, password });
-      setUser(response.user);
-    } catch (error: any) {
-      throw new Error(error.message || 'Erro ao registrar');
-    }
+    const response = await authService.register({ name, email, password });
+    setUser(response.user);
   };
 
   const logout = async () => {
-    try {
-      await authService.logout();
-      setUser(null);
-    } catch (error) {
-      throw new Error('Erro ao fazer logout');
-    }
+    await authService.logout();
+    setUser(null);
   };
 
   return (
@@ -68,6 +57,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         login,
         register,
         logout,
+        refreshAuth,
       }}
     >
       {children}

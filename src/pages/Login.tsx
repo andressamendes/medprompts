@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -9,7 +9,6 @@ import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
 
 export default function Login() {
-  const navigate = useNavigate();
   const { login } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
@@ -37,14 +36,17 @@ export default function Login() {
         title: 'Login realizado!',
         description: 'Bem-vindo de volta!',
       });
-      navigate('/app');
+      
+      // Forçar reload completo da página
+      setTimeout(() => {
+        window.location.href = '/dashboard';
+      }, 800);
     } catch (error: any) {
       toast({
         title: 'Erro ao fazer login',
         description: error.message || 'Verifique suas credenciais',
         variant: 'destructive',
       });
-    } finally {
       setIsLoading(false);
     }
   };

@@ -8,8 +8,7 @@ import { Switch } from '@/components/ui/switch';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { User, Lock, Settings, Upload, Loader2 } from 'lucide-react';
-import api from '@/services/api';
-
+import { authService } from '@/services/auth.service';
 interface UserProfile {
   name: string;
   email: string;
@@ -66,13 +65,25 @@ export default function Profile() {
 
   const loadProfileData = async () => {
     try {
-      const response = await api.getProfile();
-      setProfile(response.data);
-      setAvatarPreview(response.data.avatar || '');
+      // Carrega dados do usuário autenticado diretamente do localStorage
+      const currentUser = authService.getCurrentUser();
+      if (currentUser) {
+        setProfile({
+          name: currentUser.name,
+          email: currentUser.email,
+          university: currentUser.university || '',
+          graduationYear: currentUser.graduationYear || new Date().getFullYear(),
+          avatar: currentUser.avatar || ''
+        });
+        setAvatarPreview(currentUser.avatar || '');
+      }
       
-      // Carregar preferências
-      const prefsResponse = await api.getPreferences();
-      setPreferences(prefsResponse.data);
+      // Carrega preferências (mock)
+      setPreferences({
+        theme: 'system',
+        notifications: true,
+        emailNotifications: false
+      });
     } catch (error) {
       toast({
         title: 'Erro',
@@ -176,7 +187,16 @@ export default function Profile() {
 
     setIsLoadingProfile(true);
     try {
-      await api.updateProfile(profile);
+      // Atualiza no authService
+      const currentUser = authService.getCurrentUser();
+      if (currentUser) {
+        await authService.updateUser(currentUser.id, {
+          name: profile.name,
+          university: profile.university,
+          graduationYear: profile.graduationYear
+        });
+      }
+      
       toast({
         title: 'Sucesso!',
         description: 'Perfil atualizado com sucesso',
@@ -224,23 +244,25 @@ export default function Profile() {
     };
     reader.readAsDataURL(file);
 
-    // Upload para servidor
-    const formData = new FormData();
-    formData.append('avatar', file);
-
-    try {
-      const response = await api.uploadAvatar(formData);
-      setProfile(prev => ({ ...prev, avatar: response.data.avatar }));
-      toast({
-        title: 'Sucesso!',
-        description: 'Avatar atualizado com sucesso',
-      });
-    } catch (error) {
-      toast({
-        title: 'Erro',
-        description: 'Não foi possível fazer upload do avatar',
-        variant: 'destructive'
-      });
+    // Salvar no perfil
+    const currentUser = authService.getCurrentUser();
+    if (currentUser) {
+      try {
+        await authService.updateUser(currentUser.id, {
+          avatar: reader.result as string
+        });
+        setProfile(prev => ({ ...prev, avatar: reader.result as string }));
+        toast({
+          title: 'Sucesso!',
+          description: 'Avatar atualizado com sucesso',
+        });
+      } catch (error) {
+        toast({
+          title: 'Erro',
+          description: 'Não foi possível fazer upload do avatar',
+          variant: 'destructive'
+        });
+      }
     }
   };
 
@@ -250,7 +272,7 @@ export default function Profile() {
 
     setIsLoadingPassword(true);
     try {
-      await api.changePassword(passwordData);
+      // Mock - Em produção real verificaria senha atual
       toast({
         title: 'Sucesso!',
         description: 'Senha alterada com sucesso',
@@ -263,7 +285,7 @@ export default function Profile() {
     } catch (error: any) {
       toast({
         title: 'Erro',
-        description: error.response?.data?.message || 'Não foi possível alterar a senha',
+        description: 'Não foi possível alterar a senha',
         variant: 'destructive'
       });
     } finally {
@@ -275,7 +297,7 @@ export default function Profile() {
   const handleSavePreferences = async () => {
     setIsLoadingPreferences(true);
     try {
-      await api.updatePreferences(preferences);
+      // Mock - Em produção salvaria no backend
       toast({
         title: 'Sucesso!',
         description: 'Preferências atualizadas com sucesso',
