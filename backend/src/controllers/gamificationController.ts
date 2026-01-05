@@ -9,7 +9,7 @@ import { logger } from '../utils/logger';
 /**
  * Obter todos os dados de gamificação do usuário
  */
-export const getGamificationData = async (req:  Request, res: Response): Promise<void> => {
+export const getGamificationData = async (req:   Request, res: Response): Promise<void> => {
   try {
     const userId = (req as any).userId;
 
@@ -21,11 +21,11 @@ export const getGamificationData = async (req:  Request, res: Response): Promise
       progress = await UserProgress.create({
         userId,
         currentXP: 0,
-        level: 1,
+        level:  1,
         totalXPEarned: 0,
         currentStreak: 0,
         longestStreak: 0,
-        lastActivityDate: new Date(),
+        lastActivityDate:  new Date(),
         xpHistory: [],
       });
     }
@@ -55,13 +55,13 @@ export const getGamificationData = async (req:  Request, res: Response): Promise
         category: badge.category,
         requirement: badge.requirement,
         isUnlocked: !!userBadge,
-        unlockedAt: userBadge?.unlockedAt || null,
+        unlockedAt: userBadge?. unlockedAt || null,
         progress: userBadge?.progress || 0,
       };
     });
 
     // Buscar missões ativas do usuário
-    const userMissions = await UserMission.findAll({
+    const userMissions = await UserMission. findAll({
       where: {
         userId,
         expiresAt: { [Op. gte]: new Date() },
@@ -78,7 +78,7 @@ export const getGamificationData = async (req:  Request, res: Response): Promise
       id: um.id,
       title: um.mission?. title || '',
       description: um.mission?. description || '',
-      xpReward: um.mission?.xpReward || 0,
+      xpReward: um.mission?. xpReward || 0,
       progress: um.progress,
       target: um.mission?.requirement. target || 0,
       isCompleted: um.isCompleted,
@@ -90,7 +90,7 @@ export const getGamificationData = async (req:  Request, res: Response): Promise
       success: true,
       data: {
         xp: {
-          currentXP: progress.currentXP,
+          currentXP: progress. currentXP,
           level: progress.level,
           xpToNextLevel: progress.getXPToNextLevel(),
           totalXPEarned: progress.totalXPEarned,
@@ -104,11 +104,11 @@ export const getGamificationData = async (req:  Request, res: Response): Promise
         dailyMissions,
       },
     });
-  } catch (error:  any) {
-    logger.error('Erro ao buscar dados de gamificação', { error:  error.message });
+  } catch (error: any) {
+    logger.error('Erro ao buscar dados de gamificação', { error: error.message });
     res.status(500).json({
       success: false,
-      error:  'Erro ao buscar dados de gamificação',
+      error: 'Erro ao buscar dados de gamificação',
     });
   }
 };
@@ -116,7 +116,7 @@ export const getGamificationData = async (req:  Request, res: Response): Promise
 /**
  * Obter dados de XP do usuário
  */
-export const getXPData = async (req: Request, res: Response): Promise<void> => {
+export const getXPData = async (req:  Request, res: Response): Promise<void> => {
   try {
     const userId = (req as any).userId;
 
@@ -126,11 +126,11 @@ export const getXPData = async (req: Request, res: Response): Promise<void> => {
       progress = await UserProgress.create({
         userId,
         currentXP: 0,
-        level:  1,
+        level: 1,
         totalXPEarned: 0,
         currentStreak: 0,
-        longestStreak: 0,
-        lastActivityDate:  new Date(),
+        longestStreak:  0,
+        lastActivityDate: new Date(),
         xpHistory: [],
       });
     }
@@ -138,10 +138,10 @@ export const getXPData = async (req: Request, res: Response): Promise<void> => {
     res.status(200).json({
       success: true,
       data: {
-        currentXP: progress.currentXP,
+        currentXP:  progress.currentXP,
         level: progress.level,
-        xpToNextLevel: progress.getXPToNextLevel(),
-        totalXPEarned: progress.totalXPEarned,
+        xpToNextLevel: progress. getXPToNextLevel(),
+        totalXPEarned:  progress.totalXPEarned,
       },
     });
   } catch (error: any) {
@@ -161,6 +161,8 @@ export const addXP = async (req: Request, res:  Response): Promise<void> => {
     const userId = (req as any).userId;
     const { amount, source } = req.body;
 
+    logger.info('📥 addXP chamado', { userId, amount, source });
+
     if (!amount || amount <= 0) {
       res.status(400).json({
         success: false,
@@ -172,45 +174,61 @@ export const addXP = async (req: Request, res:  Response): Promise<void> => {
     let progress = await UserProgress.findOne({ where: { userId } });
 
     if (!progress) {
+      logger.info('📝 Criando novo UserProgress');
       progress = await UserProgress.create({
         userId,
         currentXP: 0,
-        level: 1,
+        level:  1,
         totalXPEarned: 0,
         currentStreak: 0,
-        longestStreak:  0,
-        lastActivityDate: new Date(),
+        longestStreak: 0,
+        lastActivityDate:  new Date(),
         xpHistory: [],
       });
     }
 
+    logger.info('✅ UserProgress encontrado/criado', {
+      progressId: progress.id,
+      currentXP: progress.currentXP,
+      level: progress.level,
+    });
+
     const leveledUp = progress.addXP(amount, source || 'manual');
+
+    logger.info('📊 addXP executado', {
+      leveledUp,
+      newXP: progress.currentXP,
+      newLevel: progress. level,
+      xpHistoryLength: progress.xpHistory. length,
+    });
+
     await progress.save();
 
-    logger.info('XP adicionado', {
-      userId,
-      amount,
-      source,
-      newLevel: progress.level,
-      leveledUp,
-    });
+    logger.info('💾 UserProgress salvo com sucesso');
 
     res.status(200).json({
       success: true,
-      message: leveledUp ? `Parabéns! Você subiu para o nível ${progress.level}! ` : 'XP adicionado com sucesso',
+      message: leveledUp
+        ? `Parabéns!  Você subiu para o nível ${progress.level}! `
+        : 'XP adicionado com sucesso',
       data: {
         currentXP: progress.currentXP,
         level: progress.level,
-        xpToNextLevel: progress.getXPToNextLevel(),
+        xpToNextLevel:  progress.getXPToNextLevel(),
         totalXPEarned: progress.totalXPEarned,
         leveledUp,
       },
     });
   } catch (error: any) {
-    logger.error('Erro ao adicionar XP', { error: error.message });
+    logger.error('❌ Erro ao adicionar XP', {
+      error: error.message,
+      stack: error.stack,
+      name: error.name,
+    });
     res.status(500).json({
       success: false,
       error: 'Erro ao adicionar XP',
+      details: error.message, // DEBUG: remover em produção
     });
   }
 };
@@ -246,7 +264,7 @@ export const getXPHistory = async (req: Request, res: Response): Promise<void> =
       data: filteredHistory,
     });
   } catch (error: any) {
-    logger.error('Erro ao buscar histórico de XP', { error: error. message });
+    logger.error('Erro ao buscar histórico de XP', { error: error.message });
     res.status(500).json({
       success: false,
       error: 'Erro ao buscar histórico de XP',
@@ -279,16 +297,16 @@ export const getStreak = async (req: Request, res: Response): Promise<void> => {
     res.status(200).json({
       success: true,
       data: {
-        currentStreak: progress.currentStreak,
+        currentStreak:  progress.currentStreak,
         longestStreak: progress.longestStreak,
         lastActivityDate: progress.lastActivityDate,
       },
     });
   } catch (error: any) {
-    logger.error('Erro ao buscar streak', { error: error.message });
+    logger.error('Erro ao buscar streak', { error:  error.message });
     res.status(500).json({
       success: false,
-      error: 'Erro ao buscar streak',
+      error:  'Erro ao buscar streak',
     });
   }
 };
@@ -296,13 +314,16 @@ export const getStreak = async (req: Request, res: Response): Promise<void> => {
 /**
  * Atualizar streak do usuário
  */
-export const updateStreak = async (req: Request, res:  Response): Promise<void> => {
+export const updateStreak = async (req: Request, res: Response): Promise<void> => {
   try {
     const userId = (req as any).userId;
 
-    let progress = await UserProgress.findOne({ where: { userId } });
+    logger.info('📥 updateStreak chamado', { userId });
+
+    let progress = await UserProgress. findOne({ where: { userId } });
 
     if (!progress) {
+      logger.info('📝 Criando novo UserProgress para streak');
       progress = await UserProgress.create({
         userId,
         currentXP: 0,
@@ -314,28 +335,41 @@ export const updateStreak = async (req: Request, res:  Response): Promise<void> 
         xpHistory: [],
       });
     } else {
-      progress.updateStreak();
-      await progress.save();
-    }
+      logger.info('✅ UserProgress encontrado, atualizando streak', {
+        currentStreak: progress. currentStreak,
+        lastActivityDate: progress.lastActivityDate,
+      });
 
-    logger.info('Streak atualizado', {
-      userId,
-      currentStreak: progress.currentStreak,
-    });
+      progress.updateStreak();
+
+      logger.info('📊 Streak atualizado', {
+        newCurrentStreak: progress. currentStreak,
+        newLongestStreak: progress.longestStreak,
+      });
+
+      await progress.save();
+
+      logger.info('💾 Streak salvo com sucesso');
+    }
 
     res.status(200).json({
       success: true,
       data: {
-        currentStreak:  progress.currentStreak,
+        currentStreak: progress.currentStreak,
         longestStreak: progress.longestStreak,
         lastActivityDate: progress.lastActivityDate,
       },
     });
   } catch (error: any) {
-    logger.error('Erro ao atualizar streak', { error: error.message });
+    logger.error('❌ Erro ao atualizar streak', {
+      error: error.message,
+      stack: error.stack,
+      name: error.name,
+    });
     res.status(500).json({
       success: false,
       error: 'Erro ao atualizar streak',
+      details:  error.message, // DEBUG: remover em produção
     });
   }
 };
@@ -418,7 +452,7 @@ export const unlockBadge = async (req: Request, res:  Response): Promise<void> =
       userId,
       badgeId,
       unlockedAt: new Date(),
-      progress: badge.requirement. target,
+      progress: badge.requirement.target,
     });
 
     logger.info('Badge desbloqueado', { userId, badgeId, badgeName: badge.name });
@@ -522,10 +556,10 @@ export const completeMission = async (req: Request, res: Response): Promise<void
     }
 
     // Verificar se progresso atingiu o target
-    if (userMission. progress < userMission.mission. requirement.target) {
+    if (userMission.progress < userMission.mission.requirement.target) {
       res.status(400).json({
         success: false,
-        error: 'Missão ainda não foi completada',
+        error:  'Missão ainda não foi completada',
       });
       return;
     }
@@ -556,7 +590,7 @@ export const completeMission = async (req: Request, res: Response): Promise<void
     logger.info('Missão completada', {
       userId,
       missionId,
-      xpReward: userMission.mission.xpReward,
+      xpReward: userMission. mission.xpReward,
       leveledUp,
     });
 
@@ -573,17 +607,17 @@ export const completeMission = async (req: Request, res: Response): Promise<void
         xpData: {
           currentXP:  progress.currentXP,
           level: progress.level,
-          xpToNextLevel: progress. getXPToNextLevel(),
-          totalXPEarned:  progress.totalXPEarned,
+          xpToNextLevel: progress.getXPToNextLevel(),
+          totalXPEarned: progress.totalXPEarned,
           leveledUp,
         },
       },
     });
   } catch (error: any) {
-    logger.error('Erro ao completar missão', { error:  error.message });
+    logger.error('Erro ao completar missão', { error: error.message });
     res.status(500).json({
       success: false,
-      error:  'Erro ao completar missão',
+      error: 'Erro ao completar missão',
     });
   }
 };
@@ -617,10 +651,10 @@ export const getLeaderboard = async (req: Request, res: Response): Promise<void>
       data: leaderboard,
     });
   } catch (error: any) {
-    logger.error('Erro ao buscar leaderboard', { error:  error.message });
+    logger.error('Erro ao buscar leaderboard', { error: error.message });
     res.status(500).json({
       success: false,
-      error:  'Erro ao buscar leaderboard',
+      error: 'Erro ao buscar leaderboard',
     });
   }
 };

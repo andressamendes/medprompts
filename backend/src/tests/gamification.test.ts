@@ -20,7 +20,7 @@ describe('Gamification Endpoints', () => {
       name: 'Primeiro Passo',
       description: 'Seu primeiro badge',
       icon: '🎯',
-      category:  'bronze',
+      category: 'bronze',
       requirement: { type: 'xp', target: 10 },
     });
     badgeId = badge.id;
@@ -51,8 +51,12 @@ describe('Gamification Endpoints', () => {
           source: 'test',
         });
 
-      expect(res.status).toBe(200);
-      expect(res.body. success).toBe(true);
+      // DEBUG
+      console.log('🔍 Status:', res.status);
+      console.log('🔍 Body:', JSON.stringify(res.body, null, 2));
+
+      expect(res. status).toBe(200);
+      expect(res.body.success).toBe(true);
       expect(res.body.data).toHaveProperty('currentXP');
       expect(res.body.data).toHaveProperty('level');
     });
@@ -66,9 +70,13 @@ describe('Gamification Endpoints', () => {
           source: 'test',
         });
 
+      // DEBUG
+      console.log('🔍 Level Up Status:', res.status);
+      console.log('🔍 Level Up Body:', JSON.stringify(res.body, null, 2));
+
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
-      expect(res.body. data.level).toBeGreaterThanOrEqual(1);
+      expect(res.body.data.level).toBeGreaterThanOrEqual(1);
     });
   });
 
@@ -92,10 +100,14 @@ describe('Gamification Endpoints', () => {
         .post('/api/v1/gamification/streak')
         .set('Authorization', `Bearer ${accessToken}`);
 
+      // DEBUG
+      console.log('🔍 Streak Status:', res.status);
+      console.log('🔍 Streak Body:', JSON.stringify(res.body, null, 2));
+
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
       expect(res.body.data).toHaveProperty('currentStreak');
-      expect(res.body. data).toHaveProperty('longestStreak');
+      expect(res.body.data).toHaveProperty('longestStreak');
     });
   });
 });

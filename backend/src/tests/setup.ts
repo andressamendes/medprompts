@@ -2,7 +2,7 @@ import { sequelize } from '../config/database';
 import { logger } from '../utils/logger';
 
 // Silenciar logs durante testes
-logger.transports.forEach((t) => (t. silent = true));
+logger.transports.forEach((t) => (t.silent = true));
 
 beforeAll(async () => {
   try {
@@ -10,14 +10,13 @@ beforeAll(async () => {
     await sequelize.sync({ force: true });
     console.log('✅ Banco de testes configurado');
   } catch (error:  any) {
-    console.error('❌ Erro ao configurar banco de testes:', error. message);
+    console.error('❌ Erro ao configurar banco de testes:', error.message);
     throw error;
   }
 });
 
 afterAll(async () => {
   try {
-    // Apenas fechar conexão, não dropar
     await sequelize.close();
     console.log('✅ Banco de testes limpo');
   } catch (error: any) {
@@ -25,14 +24,20 @@ afterAll(async () => {
   }
 });
 
-// Limpar tabelas entre testes
+// Limpar tabelas entre testes NA ORDEM CORRETA
 afterEach(async () => {
   if (sequelize) {
     try {
-      const models = Object.values(sequelize.models);
-      for (const model of models) {
-        await model.destroy({ where: {}, truncate: true, cascade: true, force: true });
-      }
+      // ORDEM IMPORTANTE: deletar tabelas dependentes ANTES das principais
+      await sequelize.query('DELETE FROM user_progress CASCADE');
+      await sequelize.query('DELETE FROM user_badges CASCADE');
+      await sequelize. query('DELETE FROM user_missions CASCADE');
+      await sequelize. query('DELETE FROM prompts CASCADE');
+      await sequelize.query('DELETE FROM study_sessions CASCADE');
+      await sequelize. query('DELETE FROM badges CASCADE');
+      await sequelize. query('DELETE FROM daily_missions CASCADE');
+      // Users por último (é referenciado por outras tabelas)
+      await sequelize.query('DELETE FROM users CASCADE');
     } catch (error) {
       // Ignorar erros de cleanup
     }
