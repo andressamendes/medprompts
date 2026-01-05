@@ -1,82 +1,34 @@
 import { useState, useMemo, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
 import { AuthenticatedNavbar } from '@/components/AuthenticatedNavbar';
 import { PromptCard } from '@/components/PromptCard';
 import { PromptDialog } from '@/components/PromptDialog';
 import { CategoryFilter } from '@/components/CategoryFilter';
 import { SearchBar } from '@/components/SearchBar';
-import { XPBar } from '@/components/XPBar';
-import { HistorySection } from '@/components/HistorySection';
-import { StreakCounter } from '@/components/StreakCounter';
-import { ProfileCard } from '@/components/ProfileCard';
-import { BadgesDisplay } from '@/components/BadgesDisplay';
-import { DailyMissionsCard } from '@/components/DailyMissionsCard';
-import { PomodoroTimer } from '@/components/PomodoroTimer';
-import { StudyScheduleGenerator } from '@/components/StudyScheduleGenerator';
-import { RecentPromptsSection } from '@/components/RecentPromptsSection';
-import { ExportImportModal } from '@/components/ExportImportModal';
-import { ClinicalCasesSection } from '@/components/ClinicalCasesSection';
-import { MnemonicsSection } from '@/components/MnemonicsSection';
-import { WeeklyChallengeCard } from '@/components/WeeklyChallengeCard';
-import { StatsSection } from '@/components/StatsSection';
-import { InstallPWA } from '@/components/InstallPWA';
-import { TutorialButton } from '@/components/TutorialButton';
-import { Button } from '@/components/ui/button';
 import { prompts } from '@/data/prompts-data';
-import { Headphones } from 'lucide-react';
 import { useLogger } from '@/utils/logger';
 import type { Prompt } from '@/types/prompt';
 
 /**
- * Página principal da aplicação autenticada (rota /app)
- * Contém TODOS os componentes funcionais:  biblioteca de prompts, gamificação, ferramentas
+ * Página da Biblioteca de Prompts (rota /prompts)
+ * APENAS a biblioteca de prompts - limpa e focada
  * Exibida APENAS para usuários autenticados
  */
 export default function Index() {
   const logger = useLogger();
-  const navigate = useNavigate();
   const [selectedCategory, setSelectedCategory] = useState<string>('all');
   const [searchQuery, setSearchQuery] = useState('');
-  const [showExportModal, setShowExportModal] = useState(false);
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
 
-  // Log quando a página é montada
   useEffect(() => {
-    logger.info('Página Index montada', {
+    logger.info('Biblioteca de Prompts acessada', {
       totalPrompts: prompts.length,
-      userAgent: navigator.userAgent,
     });
-
-    return () => {
-      logger.debug('Página Index desmontada');
-    };
   }, [logger]);
-
-  // Log quando categoria muda
-  useEffect(() => {
-    if (selectedCategory !== 'all') {
-      logger.debug('Categoria alterada', {
-        category: selectedCategory,
-        timestamp: new Date().toISOString(),
-      });
-    }
-  }, [selectedCategory, logger]);
-
-  // Log quando busca é realizada
-  useEffect(() => {
-    if (searchQuery) {
-      logger.debug('Busca realizada', {
-        query: searchQuery,
-        queryLength: searchQuery.length,
-      });
-    }
-  }, [searchQuery, logger]);
 
   const filteredPrompts = useMemo(() => {
     const filtered = prompts.filter((prompt) => {
       const matchesCategory =
         selectedCategory === 'all' || prompt.category === selectedCategory;
-
       const matchesSearch =
         searchQuery === '' ||
         prompt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
@@ -84,41 +36,11 @@ export default function Index() {
         prompt.tags.some((tag) =>
           tag.toLowerCase().includes(searchQuery.toLowerCase())
         );
-
       return matchesCategory && matchesSearch;
     });
 
-    // Log resultado da filtragem
-    if (searchQuery || selectedCategory !== 'all') {
-      logger.debug('Prompts filtrados', {
-        totalPrompts: prompts.length,
-        filteredCount: filtered.length,
-        category: selectedCategory,
-        hasSearchQuery: !!searchQuery,
-      });
-    }
-
     return filtered;
-  }, [selectedCategory, searchQuery, logger]);
-
-  const handleExportModalOpen = () => {
-    logger.info('Modal de export/backup aberto');
-    setShowExportModal(true);
-  };
-
-  const handleExportModalClose = () => {
-    logger.info('Modal de export/backup fechado');
-    setShowExportModal(false);
-  };
-
-  const handleFocusZone = () => {
-    logger.info('Botão Focus Zone clicado', {
-      component: 'Index',
-      action: 'navigate_to_focus_zone',
-      timestamp: new Date().toISOString(),
-    });
-    navigate('/focus-zone');
-  };
+  }, [selectedCategory, searchQuery]);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
@@ -133,98 +55,28 @@ export default function Index() {
         tabIndex={-1}
       >
         <div className="space-y-8">
-          {/* Perfil do Estudante */}
-          <section aria-labelledby="profile-heading">
-            <h2 id="profile-heading" className="sr-only">Perfil do Estudante</h2>
-            <ProfileCard />
-          </section>
-
-          {/* Gamificação Section */}
-          <section aria-labelledby="gamification-heading">
-            <h2 id="gamification-heading" className="sr-only">Sistema de Gamificação</h2>
-            <div className="grid grid-cols-1 lg:grid-cols-3 gap-4">
-              <div className="lg:col-span-2">
-                <XPBar />
-              </div>
+          {/* Header */}
+          <section aria-labelledby="prompts-heading">
+            <div className="space-y-4">
               <div>
-                <StreakCounter />
+                <h1 id="prompts-heading" className="text-4xl font-bold tracking-tight mb-2">
+                  Biblioteca de Prompts
+                </h1>
+                <p className="text-lg text-muted-foreground">
+                  Mais de 130 prompts especializados para estudantes de medicina
+                </p>
+              </div>
+
+              <div className="flex items-center justify-between flex-wrap gap-4">
+                <p className="text-muted-foreground" role="status">
+                  {filteredPrompts.length} {filteredPrompts.length === 1 ? 'prompt disponível' : 'prompts disponíveis'}
+                </p>
               </div>
             </div>
           </section>
 
-          {/* Desafio Semanal */}
-          <section aria-labelledby="challenge-heading">
-            <h2 id="challenge-heading" className="sr-only">Desafio Semanal</h2>
-            <WeeklyChallengeCard />
-          </section>
-
-          {/* Timer Pomodoro */}
-          <section aria-labelledby="timer-heading">
-            <h2 id="timer-heading" className="sr-only">Timer Pomodoro</h2>
-            <PomodoroTimer />
-          </section>
-
-          {/* Dashboard de Estatísticas */}
-          <section aria-labelledby="stats-heading">
-            <h2 id="stats-heading" className="sr-only">Estatísticas de Estudo</h2>
-            <StatsSection />
-          </section>
-
-          {/* Missões e Badges */}
-          <section aria-labelledby="missions-heading">
-            <h2 id="missions-heading" className="sr-only">Missões e Conquistas</h2>
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-4">
-              <DailyMissionsCard />
-              <BadgesDisplay />
-            </div>
-          </section>
-
-          {/* Cronograma Inteligente */}
-          <section aria-labelledby="schedule-heading">
-            <h2 id="schedule-heading" className="sr-only">Gerador de Cronograma Inteligente</h2>
-            <StudyScheduleGenerator />
-          </section>
-
-          {/* Prompts Recentes */}
-          <section aria-labelledby="recent-heading">
-            <h2 id="recent-heading" className="sr-only">Prompts Visualizados Recentemente</h2>
-            <RecentPromptsSection />
-          </section>
-
-          {/* Casos Clínicos */}
-          <section aria-labelledby="cases-heading">
-            <h2 id="cases-heading" className="sr-only">Casos Clínicos</h2>
-            <ClinicalCasesSection />
-          </section>
-
-          {/* Mnemônicos */}
-          <section aria-labelledby="mnemonics-heading">
-            <h2 id="mnemonics-heading" className="sr-only">Mnemônicos Médicos</h2>
-            <MnemonicsSection />
-          </section>
-
-          {/* Histórico */}
-          <section aria-labelledby="history-heading">
-            <h2 id="history-heading" className="sr-only">Histórico de Estudos</h2>
-            <HistorySection />
-          </section>
-
-          {/* Biblioteca de Prompts */}
-          <section 
-            aria-labelledby="prompts-heading" 
-            className="space-y-6" 
-            data-tutorial="prompts"
-          >
-            <div>
-              <h2 id="prompts-heading" className="text-3xl font-bold tracking-tight mb-2">
-                Biblioteca de Prompts
-              </h2>
-              <p className="text-muted-foreground" role="status">
-                {filteredPrompts.length} {filteredPrompts.length === 1 ? 'prompt disponível' : 'prompts disponíveis'}
-              </p>
-            </div>
-
-            {/* Filtros */}
+          {/* Filtros */}
+          <section aria-label="Filtros de pesquisa">
             <div id="search" className="flex flex-col sm:flex-row gap-4" role="search">
               <div className="flex-1">
                 <SearchBar value={searchQuery} onChange={setSearchQuery} />
@@ -234,8 +86,10 @@ export default function Index() {
                 onCategoryChange={setSelectedCategory}
               />
             </div>
+          </section>
 
-            {/* Grid de Cards */}
+          {/* Grid de Prompts */}
+          <section aria-label="Lista de prompts">
             {filteredPrompts.length > 0 ? (
               <div 
                 className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6"
@@ -253,7 +107,7 @@ export default function Index() {
               </div>
             ) : (
               <div className="text-center py-12" role="status">
-                <p className="text-muted-foreground">
+                <p className="text-muted-foreground text-lg">
                   Nenhum prompt encontrado com os filtros aplicados.
                 </p>
               </div>
@@ -279,35 +133,6 @@ export default function Index() {
         </div>
       </footer>
 
-      {/* Botão Flutuante Focus Zone */}
-      <Button
-        onClick={handleFocusZone}
-        size="lg"
-        className="fixed bottom-6 right-6 z-40 h-14 w-14 rounded-full shadow-2xl hover:scale-110 transition-all duration-300 bg-gradient-to-r from-purple-600 to-pink-600 hover:from-purple-700 hover:to-pink-700"
-        aria-label="Ativar modo de concentração"
-      >
-        <Headphones className="w-6 h-6" />
-      </Button>
-
-      {/* Botão Flutuante Backup */}
-      <Button
-        onClick={handleExportModalOpen}
-        size="lg"
-        variant="outline"
-        className="fixed bottom-24 right-6 z-40 h-14 w-14 rounded-full shadow-2xl hover:scale-110 transition-all duration-300 sm:hidden"
-        aria-label="Fazer backup dos dados"
-      >
-        <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
-          <path strokeLinecap="round" strokeLinejoin="round" d="M3 16.5v2.25A2.25 2.25 0 005.25 21h13.5A2.25 2.25 0 0021 18.75V16.5M16.5 12L12 16.5m0 0L7.5 12m4.5 4.5V3" />
-        </svg>
-      </Button>
-
-      {/* Modal de Export/Import */}
-      <ExportImportModal
-        open={showExportModal}
-        onOpenChange={handleExportModalClose}
-      />
-
       {/* Dialog do Prompt Selecionado */}
       {selectedPrompt && (
         <PromptDialog
@@ -316,12 +141,6 @@ export default function Index() {
           onOpenChange={(open) => !open && setSelectedPrompt(null)}
         />
       )}
-
-      {/* PWA Install Prompt */}
-      <InstallPWA />
-
-      {/* Tutorial Interativo */}
-      <TutorialButton />
     </div>
   );
 }

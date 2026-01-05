@@ -7,10 +7,8 @@ import {
   Menu, 
   X, 
   LayoutDashboard, 
-  BookText,  
-  Lightbulb, 
+  BookText, 
   Wrench, 
-  Target, 
   User,
   LogOut 
 } from 'lucide-react';
@@ -28,19 +26,15 @@ export function AuthenticatedNavbar() {
       title: 'Logout realizado',
       description: 'Você saiu da sua conta com sucesso',
     });
-    // Redireciona para login em vez de landing page
     navigate('/login');
   };
 
   const navItems = [
-  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-  { path: '/prompts', label: 'Biblioteca', icon: BookText },
-  { path: '/guia-ias', label: 'IAs', icon: Lightbulb },
-  { path: '/ferramentas', label: 'Ferramentas', icon: Wrench },
-  { path: '/focus-zone', label: 'Foco', icon: Target },
-  { path: '/profile', label: 'Perfil', icon: User },
-];
-
+    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/prompts', label: 'Biblioteca', icon: BookText },
+    { path: '/minhas-ferramentas', label: 'Ferramentas', icon: Wrench },
+    { path: '/profile', label: 'Perfil', icon: User },
+  ];
 
   const isActive = (path: string) => location.pathname === path;
 

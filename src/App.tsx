@@ -18,6 +18,7 @@ import NotFound from '@/pages/NotFound';
 // Páginas protegidas (requerem autenticação) - lazy loading
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
 const Index = lazy(() => import('@/pages/Index'));
+const UserTools = lazy(() => import('@/pages/UserTools'));
 const Profile = lazy(() => import('@/pages/Profile'));
 
 // Páginas públicas com conteúdo educacional
@@ -83,6 +84,16 @@ function App() {
                       element={
                         <ProtectedRoute>
                           <Index />
+                        </ProtectedRoute>
+                      } 
+                    />
+
+                    {/* Ferramentas do usuário (protegida) */}
+                    <Route 
+                      path="/minhas-ferramentas" 
+                      element={
+                        <ProtectedRoute>
+                          <UserTools />
                         </ProtectedRoute>
                       } 
                     />
