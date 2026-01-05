@@ -84,7 +84,7 @@ const Register = () => {
       });
 
       // Redireciona para dashboard
-      navigate('/dashboard');
+      navigate('/app');
       
     } catch (error: any) {
       setApiError(error.message || 'Erro ao criar conta. Tente novamente.');
