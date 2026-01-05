@@ -3,9 +3,9 @@ import { authService, User, LoginCredentials, RegisterData } from '../services/a
 
 // Interface do contexto de autenticação
 interface AuthContextData {
-  user: User | null;
-  loading: boolean;
-  isAuthenticated: boolean;
+  user:  User | null;
+  loading:  boolean;
+  isAuthenticated:  boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
   logout: () => Promise<void>;
@@ -76,11 +76,11 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
           if (isMounted) {
             if (userData) {
-              // Token válido:  atualiza estado
+              // Token válido: atualiza estado
               setUser(userData);
               setError(null);
             } else {
-              // Token inválido:  limpa dados
+              // Token inválido: limpa dados
               setUser(null);
               setError('Token expirado, faça login novamente');
             }
@@ -98,7 +98,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
             }
           }
         }
-      } catch (error:  any) {
+      } catch (error: any) {
         if (isMounted) {
           setUser(null);
           setError('Erro ao inicializar autenticação');
@@ -119,14 +119,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   /**
    * Faz login do usuário
+   * ✅ CORREÇÃO: Extrai user de AuthResponse
    */
   const login = async (credentials: LoginCredentials): Promise<void> => {
     setLoading(true);
     setError(null);
 
     try {
-      const userData = await authService. login(credentials);
-      setUser(userData);
+      const response = await authService.login(credentials);
+      
+      // ✅ Extrai apenas o user da resposta
+      const userData = 'user' in response ? response.user : response;
+      setUser(userData as User);
     } catch (error: any) {
       setError(error.message || 'Erro ao fazer login');
       throw error;
@@ -137,14 +141,18 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   /**
    * Registra novo usuário
+   * ✅ CORREÇÃO:  Extrai user de AuthResponse
    */
-  const register = async (data:  RegisterData): Promise<void> => {
+  const register = async (data: RegisterData): Promise<void> => {
     setLoading(true);
     setError(null);
 
     try {
-      const userData = await authService.register(data);
-      setUser(userData);
+      const response = await authService.register(data);
+      
+      // ✅ Extrai apenas o user da resposta
+      const userData = 'user' in response ? response.user : response;
+      setUser(userData as User);
     } catch (error: any) {
       setError(error.message || 'Erro ao registrar usuário');
       throw error;
