@@ -1,350 +1,154 @@
 import { useState } from 'react';
-import { useNavigate, Link } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { Link, useNavigate } from 'react-router-dom';
+import { useAuth } from '@/contexts/AuthContext';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Label } from '@/components/ui/label';
+import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
+import { useToast } from '@/hooks/use-toast';
+import { Loader2 } from 'lucide-react';
 
-const Register = () => {
+export default function Register() {
   const navigate = useNavigate();
   const { register } = useAuth();
-  
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     name: '',
     email: '',
     password: '',
     confirmPassword: '',
-    university: '',
-    graduationYear: '',
   });
-  
-  const [errors, setErrors] = useState<{ [key: string]: string }>({});
-  const [loading, setLoading] = useState(false);
-  const [apiError, setApiError] = useState('');
 
-  // Validação do formulário
-  const validateForm = (): boolean => {
-    const newErrors: { [key: string]: string } = {};
-
-    // Nome
-    if (!formData.name.trim()) {
-      newErrors.name = 'Nome é obrigatório';
-    } else if (formData.name.trim().length < 3) {
-      newErrors.name = 'Nome deve ter no mínimo 3 caracteres';
-    }
-
-    // Email
-    if (!formData.email) {
-      newErrors.email = 'Email é obrigatório';
-    } else if (!/\S+@\S+\.\S+/.test(formData.email)) {
-      newErrors.email = 'Email inválido';
-    }
-
-    // Senha
-    if (!formData.password) {
-      newErrors.password = 'Senha é obrigatória';
-    } else if (formData.password.length < 6) {
-      newErrors.password = 'Senha deve ter no mínimo 6 caracteres';
-    }
-
-    // Confirmação de senha
-    if (!formData.confirmPassword) {
-      newErrors.confirmPassword = 'Confirme sua senha';
-    } else if (formData.password !== formData.confirmPassword) {
-      newErrors.confirmPassword = 'Senhas não coincidem';
-    }
-
-    // Ano de formatura (opcional, mas valida se preenchido)
-    if (formData.graduationYear) {
-      const year = parseInt(formData.graduationYear);
-      const currentYear = new Date().getFullYear();
-      if (isNaN(year) || year < currentYear || year > currentYear + 10) {
-        newErrors.graduationYear = 'Ano inválido';
-      }
-    }
-
-    setErrors(newErrors);
-    return Object.keys(newErrors).length === 0;
-  };
-
-  // Submit do formulário
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    setApiError('');
-
-    if (!validateForm()) return;
-
-    setLoading(true);
-
-    try {
-      // ✅ INTEGRAÇÃO REAL COM API
-      await register({
-        name: formData.name,
-        email: formData.email,
-        password: formData.password,
-        university: formData.university || undefined,
-        graduationYear: formData.graduationYear ? parseInt(formData.graduationYear) : undefined,
+    
+    if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
+      toast({
+        title: 'Campos obrigatórios',
+        description: 'Por favor, preencha todos os campos',
+        variant: 'destructive',
       });
+      return;
+    }
 
-      // Redireciona para dashboard
+    if (formData.password !== formData.confirmPassword) {
+      toast({
+        title: 'Senhas não coincidem',
+        description: 'As senhas digitadas não são iguais',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    if (formData.password.length < 8) {
+      toast({
+        title: 'Senha muito curta',
+        description: 'A senha deve ter pelo menos 8 caracteres',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    setIsLoading(true);
+    try {
+      await register(formData.name, formData.email, formData.password);
+      toast({
+        title: 'Conta criada!',
+        description: 'Bem-vindo ao MedPrompts!',
+      });
       navigate('/app');
-      
     } catch (error: any) {
-      setApiError(error.message || 'Erro ao criar conta. Tente novamente.');
+      toast({
+        title: 'Erro ao registrar',
+        description: error.message || 'Tente novamente mais tarde',
+        variant: 'destructive',
+      });
     } finally {
-      setLoading(false);
+      setIsLoading(false);
     }
   };
 
   return (
-    <div style={styles.container}>
-      <div style={styles.registerBox}>
-        {/* Logo e Título */}
-        <div style={styles.header}>
-          <h1 style={styles.logo}>🎯 MedPrompts</h1>
-          <p style={styles.subtitle}>Crie sua conta gratuitamente</p>
-        </div>
-
-        {/* Formulário */}
-        <form onSubmit={handleSubmit} style={styles.form}>
-          {/* Campo Nome */}
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Nome completo *</label>
-            <input
-              type="text"
-              value={formData.name}
-              onChange={(e) => setFormData({ ...formData, name: e.target.value })}
-              style={{
-                ...styles.input,
-                ...(errors.name ? styles.inputError : {}),
-              }}
-              placeholder="Seu nome"
-              disabled={loading}
-            />
-            {errors.name && <span style={styles.errorText}>{errors.name}</span>}
-          </div>
-
-          {/* Campo Email */}
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Email *</label>
-            <input
-              type="email"
-              value={formData.email}
-              onChange={(e) => setFormData({ ...formData, email: e.target.value })}
-              style={{
-                ...styles.input,
-                ...(errors.email ? styles.inputError : {}),
-              }}
-              placeholder="seu@email.com"
-              disabled={loading}
-            />
-            {errors.email && <span style={styles.errorText}>{errors.email}</span>}
-          </div>
-
-          {/* Grid 2 colunas - Universidade e Ano */}
-          <div style={styles.gridRow}>
-            {/* Campo Universidade */}
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>Universidade</label>
-              <input
+    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
+      <Card className="w-full max-w-md">
+        <CardHeader className="space-y-1">
+          <CardTitle className="text-2xl font-bold">Criar Conta</CardTitle>
+          <CardDescription>
+            Preencha os dados abaixo para criar sua conta
+          </CardDescription>
+        </CardHeader>
+        <form onSubmit={handleSubmit}>
+          <CardContent className="space-y-4">
+            <div className="space-y-2">
+              <Label htmlFor="name">Nome Completo</Label>
+              <Input
+                id="name"
                 type="text"
-                value={formData.university}
-                onChange={(e) => setFormData({ ...formData, university: e.target.value })}
-                style={styles.input}
-                placeholder="Opcional"
-                disabled={loading}
+                placeholder="João Silva"
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                disabled={isLoading}
+                required
               />
             </div>
-
-            {/* Campo Ano de Formatura */}
-            <div style={styles.inputGroup}>
-              <label style={styles.label}>Ano de formatura</label>
-              <input
-                type="number"
-                value={formData.graduationYear}
-                onChange={(e) => setFormData({ ...formData, graduationYear: e.target.value })}
-                style={{
-                  ...styles.input,
-                  ...(errors.graduationYear ? styles.inputError : {}),
-                }}
-                placeholder="2026"
-                disabled={loading}
-                min={new Date().getFullYear()}
-                max={new Date().getFullYear() + 10}
+            <div className="space-y-2">
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                placeholder="seu@email.com"
+                value={formData.email}
+                onChange={(e) => setFormData({ ...formData, email: e.target.value })}
+                disabled={isLoading}
+                required
               />
-              {errors.graduationYear && <span style={styles.errorText}>{errors.graduationYear}</span>}
             </div>
-          </div>
-
-          {/* Campo Senha */}
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Senha *</label>
-            <input
-              type="password"
-              value={formData.password}
-              onChange={(e) => setFormData({ ...formData, password: e.target.value })}
-              style={{
-                ...styles.input,
-                ...(errors.password ? styles.inputError : {}),
-              }}
-              placeholder="Mínimo 6 caracteres"
-              disabled={loading}
-            />
-            {errors.password && <span style={styles.errorText}>{errors.password}</span>}
-          </div>
-
-          {/* Campo Confirmar Senha */}
-          <div style={styles.inputGroup}>
-            <label style={styles.label}>Confirmar senha *</label>
-            <input
-              type="password"
-              value={formData.confirmPassword}
-              onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
-              style={{
-                ...styles.input,
-                ...(errors.confirmPassword ? styles.inputError : {}),
-              }}
-              placeholder="Digite a senha novamente"
-              disabled={loading}
-            />
-            {errors.confirmPassword && <span style={styles.errorText}>{errors.confirmPassword}</span>}
-          </div>
-
-          {/* Erro da API */}
-          {apiError && (
-            <div style={styles.apiError}>
-              {apiError}
+            <div className="space-y-2">
+              <Label htmlFor="password">Senha</Label>
+              <Input
+                id="password"
+                type="password"
+                placeholder="••••••••"
+                value={formData.password}
+                onChange={(e) => setFormData({ ...formData, password: e.target.value })}
+                disabled={isLoading}
+                required
+              />
             </div>
-          )}
-
-          {/* Botão Submit */}
-          <button
-            type="submit"
-            style={{
-              ...styles.button,
-              ...(loading ? styles.buttonDisabled : {}),
-            }}
-            disabled={loading}
-          >
-            {loading ? 'Criando conta...' : 'Criar conta'}
-          </button>
-
-          {/* Link para Login */}
-          <div style={styles.footer}>
-            <span style={styles.footerText}>Já tem uma conta?</span>
-            <Link to="/login" style={styles.link}>
-              Fazer login
-            </Link>
-          </div>
+            <div className="space-y-2">
+              <Label htmlFor="confirmPassword">Confirmar Senha</Label>
+              <Input
+                id="confirmPassword"
+                type="password"
+                placeholder="••••••••"
+                value={formData.confirmPassword}
+                onChange={(e) => setFormData({ ...formData, confirmPassword: e.target.value })}
+                disabled={isLoading}
+                required
+              />
+            </div>
+          </CardContent>
+          <CardFooter className="flex flex-col space-y-4">
+            <Button type="submit" className="w-full" disabled={isLoading}>
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Criando conta...
+                </>
+              ) : (
+                'Criar Conta'
+              )}
+            </Button>
+            <p className="text-sm text-center text-muted-foreground">
+              Já tem uma conta?{' '}
+              <Link to="/login" className="text-primary hover:underline">
+                Faça login
+              </Link>
+            </p>
+          </CardFooter>
         </form>
-      </div>
+      </Card>
     </div>
   );
-};
-
-// Estilos inline (CSS-in-JS)
-const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    minHeight: '100vh',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    padding: '20px',
-  },
-  registerBox: {
-    background: '#fff',
-    borderRadius: '16px',
-    padding: '40px',
-    width: '100%',
-    maxWidth: '520px',
-    boxShadow: '0 20px 60px rgba(0, 0, 0, 0.3)',
-  },
-  header: {
-    textAlign: 'center',
-    marginBottom: '30px',
-  },
-  logo: {
-    fontSize: '32px',
-    fontWeight: 'bold',
-    color: '#667eea',
-    margin: '0 0 10px 0',
-  },
-  subtitle: {
-    fontSize: '16px',
-    color: '#666',
-    margin: 0,
-  },
-  form: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-  },
-  inputGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-  },
-  gridRow: {
-    display: 'grid',
-    gridTemplateColumns: '1fr 1fr',
-    gap: '15px',
-  },
-  label: {
-    fontSize: '14px',
-    fontWeight: '600',
-    color: '#333',
-  },
-  input: {
-    padding: '12px 16px',
-    fontSize: '16px',
-    border: '2px solid #e0e0e0',
-    borderRadius: '8px',
-    outline: 'none',
-    transition: 'border-color 0.3s',
-  },
-  inputError: {
-    borderColor: '#ff4444',
-  },
-  errorText: {
-    fontSize: '13px',
-    color: '#ff4444',
-  },
-  apiError: {
-    padding: '12px',
-    background: '#ffe6e6',
-    border: '1px solid #ff4444',
-    borderRadius: '8px',
-    color: '#cc0000',
-    fontSize: '14px',
-  },
-  button: {
-    padding: '14px',
-    fontSize: '16px',
-    fontWeight: '600',
-    color: '#fff',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    border: 'none',
-    borderRadius: '8px',
-    cursor: 'pointer',
-    transition: 'transform 0.2s, opacity 0.3s',
-  },
-  buttonDisabled: {
-    opacity: 0.6,
-    cursor: 'not-allowed',
-  },
-  footer: {
-    textAlign: 'center',
-    marginTop: '10px',
-  },
-  footerText: {
-    fontSize: '14px',
-    color: '#666',
-    marginRight: '8px',
-  },
-  link: {
-    fontSize: '14px',
-    color: '#667eea',
-    fontWeight: '600',
-    textDecoration: 'none',
-  },
-};
-
-export default Register;
+}
