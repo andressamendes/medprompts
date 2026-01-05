@@ -1,10 +1,13 @@
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
-import { User, GraduationCap, BookOpen } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import { User, GraduationCap, BookOpen, ChevronRight } from 'lucide-react';
 import { loadProfile, type StudentProfile } from '@/lib/profile';
 import { useEffect, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 
 export function ProfileCard() {
   const [profile, setProfile] = useState<StudentProfile>(loadProfile());
+  const navigate = useNavigate();
 
   useEffect(() => {
     const handleProfileUpdate = () => {
@@ -23,7 +26,10 @@ export function ProfileCard() {
         <CardContent className="py-6">
           <div className="text-center text-muted-foreground">
             <User className="w-12 h-12 mx-auto mb-2 opacity-50" />
-            <p>Configure seu perfil para personalizar sua experiência!</p>
+            <p className="mb-4">Configure seu perfil para personalizar sua experiência!</p>
+            <Button onClick={() => navigate('/profile')} variant="default">
+              Configurar Perfil
+            </Button>
           </div>
         </CardContent>
       </Card>
@@ -33,10 +39,21 @@ export function ProfileCard() {
   return (
     <Card data-tutorial="profile" className="border-2 border-indigo-200">
       <CardHeader>
-        <CardTitle className="flex items-center gap-2">
-          <User className="w-5 h-5 text-indigo-500" />
-          Perfil
-        </CardTitle>
+        <div className="flex items-center justify-between">
+          <CardTitle className="flex items-center gap-2">
+            <User className="w-5 h-5 text-indigo-500" />
+            Perfil
+          </CardTitle>
+          <Button 
+            variant="ghost" 
+            size="sm" 
+            onClick={() => navigate('/profile')}
+            className="flex items-center gap-1 text-xs"
+          >
+            Ver Perfil
+            <ChevronRight className="w-4 h-4" />
+          </Button>
+        </div>
       </CardHeader>
       <CardContent className="space-y-3">
         <div>
@@ -80,6 +97,14 @@ export function ProfileCard() {
             <p className="text-sm">{profile.areaOfInterest.join(', ')}</p>
           </div>
         )}
+
+        <Button 
+          onClick={() => navigate('/profile')}
+          variant="outline" 
+          className="w-full mt-4"
+        >
+          Editar Perfil Completo
+        </Button>
       </CardContent>
     </Card>
   );

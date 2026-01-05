@@ -1,194 +1,150 @@
-import { Link, useNavigate } from "react-router-dom";
-import { Button } from "./ui/button";
-import { Moon, Sun, BookOpen, Menu, X, LogOut, User, LayoutDashboard, Sparkles, Calendar } from "lucide-react";
-import { useTheme } from "@/contexts/ThemeContext";
-import { useAuth } from "@/contexts/AuthContext";
-import { useState } from "react";
+import { useState } from 'react';
+import { Link, useNavigate, useLocation } from 'react-router-dom';
+import { Button } from '@/components/ui/button';
+import { useAuth } from '@/contexts/AuthContext';
+import { useToast } from '@/hooks/use-toast';
+import { 
+  Menu, 
+  X, 
+  LayoutDashboard, 
+  BookText, 
+  Clock, 
+  Lightbulb, 
+  Wrench, 
+  Target, 
+  User,
+  LogOut 
+} from 'lucide-react';
 
-/**
- * Navbar autenticada - exibida para usuários LOGADOS
- * Contém:  Logo, Links protegidos, Nome do usuário, Logout, Toggle de tema
- * Totalmente responsiva para desktop e mobile
- */
-export const AuthenticatedNavbar = () => {
-  const { theme, setTheme } = useTheme();
-  const { user, logout } = useAuth();
+export function AuthenticatedNavbar() {
+  const { logout, user } = useAuth();
+  const { toast } = useToast();
   const navigate = useNavigate();
+  const location = useLocation();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
-  const toggleTheme = () => {
-    setTheme(theme === "dark" ? "light" : "dark");
+  const handleLogout = () => {
+    logout();
+    toast({
+      title: 'Logout realizado',
+      description: 'Você saiu da sua conta com sucesso',
+    });
+    navigate('/');
   };
 
-  const toggleMobileMenu = () => {
-    setMobileMenuOpen(!mobileMenuOpen);
-  };
+  const navItems = [
+    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/app', label: 'Biblioteca', icon: BookText },
+    { path: '/study', label: 'Sessões', icon: Clock },
+    { path: '/guia-ias', label: 'IAs', icon: Lightbulb },
+    { path: '/ferramentas', label: 'Ferramentas', icon: Wrench },
+    { path: '/focus-zone', label: 'Foco', icon: Target },
+    { path: '/profile', label: 'Perfil', icon: User },
+  ];
 
-  const handleLogout = async () => {
-    try {
-      await logout();
-      navigate('/');
-    } catch (error) {
-      console.error('Erro ao fazer logout:', error);
-    }
-  };
+  const isActive = (path: string) => location.pathname === path;
 
   return (
-    <nav className="border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 sticky top-0 z-50">
+    <nav className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link to="/app" className="flex items-center space-x-2">
-            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-gradient-to-r from-purple-600 to-pink-600">
-              <BookOpen className="h-5 w-5 text-white" />
+          <Link to="/dashboard" className="flex items-center space-x-2">
+            <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
+              <span className="text-white font-bold text-lg">M</span>
             </div>
-            <span className="text-xl font-bold bg-gradient-to-r from-primary to-blue-600 bg-clip-text text-transparent">
-              MedPrompts
-            </span>
+            <span className="font-bold text-xl hidden sm:inline">MedPrompts</span>
           </Link>
 
-          {/* Links de navegação - Desktop */}
-          <div className="hidden md:flex items-center space-x-6">
-            <Link
-              to="/app"
-              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors flex items-center gap-2"
-            >
-              <Sparkles className="h-4 w-4" />
-              Biblioteca
-            </Link>
-            <Link
-              to="/dashboard"
-              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors flex items-center gap-2"
-            >
-              <LayoutDashboard className="h-4 w-4" />
-              Dashboard
-            </Link>
-            <Link
-              to="/prompts"
-              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors flex items-center gap-2"
-            >
-              <BookOpen className="h-4 w-4" />
-              Meus Prompts
-            </Link>
-            <Link
-              to="/study"
-              className="text-sm font-medium text-muted-foreground hover:text-primary transition-colors flex items-center gap-2"
-            >
-              <Calendar className="h-4 w-4" />
-              Sessões de Estudo
-            </Link>
+          {/* Desktop Navigation */}
+          <div className="hidden md:flex items-center space-x-1">
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link key={item.path} to={item.path}>
+                  <Button
+                    variant={isActive(item.path) ? 'default' : 'ghost'}
+                    size="sm"
+                    className="flex items-center gap-2"
+                  >
+                    <Icon className="h-4 w-4" />
+                    <span className="hidden lg:inline">{item.label}</span>
+                  </Button>
+                </Link>
+              );
+            })}
           </div>
 
-          {/* Ações - Desktop */}
+          {/* User Menu Desktop */}
           <div className="hidden md:flex items-center space-x-3">
-            {/* Nome do usuário */}
-            <div className="flex items-center gap-2 px-3 py-1. 5 bg-secondary/50 rounded-lg">
-              <User className="h-4 w-4 text-primary" />
-              <span className="text-sm font-medium">{user?.name || 'Usuário'}</span>
-            </div>
-
-            {/* Toggle tema */}
-            <Button variant="ghost" size="icon" onClick={toggleTheme}>
-              {theme === "dark" ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
-            </Button>
-
-            {/* Botão Logout */}
-            <Button 
-              variant="outline" 
-              size="sm" 
-              onClick={handleLogout}
-              className="flex items-center gap-2"
-            >
-              <LogOut className="h-4 w-4" />
+            {user && (
+              <div className="flex items-center gap-2 px-3 py-1.5 rounded-md bg-secondary/50">
+                <User className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">{user.name}</span>
+              </div>
+            )}
+            <Button onClick={handleLogout} variant="ghost" size="sm">
+              <LogOut className="h-4 w-4 mr-2" />
               Sair
             </Button>
           </div>
 
-          {/* Menu Mobile - Botão Hamburger */}
-          <div className="flex md:hidden items-center space-x-2">
-            <Button variant="ghost" size="icon" onClick={toggleTheme}>
-              {theme === "dark" ? (
-                <Sun className="h-5 w-5" />
-              ) : (
-                <Moon className="h-5 w-5" />
-              )}
-            </Button>
-            <Button variant="ghost" size="icon" onClick={toggleMobileMenu}>
-              {mobileMenuOpen ? (
-                <X className="h-6 w-6" />
-              ) : (
-                <Menu className="h-6 w-6" />
-              )}
-            </Button>
-          </div>
+          {/* Mobile Menu Button */}
+          <Button
+            variant="ghost"
+            size="sm"
+            className="md:hidden"
+            onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+          >
+            {mobileMenuOpen ? (
+              <X className="h-6 w-6" />
+            ) : (
+              <Menu className="h-6 w-6" />
+            )}
+          </Button>
         </div>
 
-        {/* Menu Mobile - Dropdown */}
+        {/* Mobile Menu */}
         {mobileMenuOpen && (
-          <div className="md:hidden border-t py-4 space-y-3">
-            {/* Nome do usuário - Mobile */}
-            <div className="px-4 pb-3 border-b">
-              <div className="flex items-center gap-2 text-sm font-medium">
-                <User className="h-4 w-4 text-primary" />
-                <span>{user?.name || 'Usuário'}</span>
+          <div className="md:hidden py-4 space-y-2 border-t">
+            {user && (
+              <div className="flex items-center gap-2 px-3 py-2 rounded-md bg-secondary/50 mb-3">
+                <User className="h-4 w-4 text-muted-foreground" />
+                <span className="text-sm font-medium">{user.name}</span>
               </div>
-              {user?. email && (
-                <p className="text-xs text-muted-foreground mt-1 ml-6">{user.email}</p>
-              )}
-            </div>
-
-            <Link
-              to="/app"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-3 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-primary hover:bg-accent rounded-md transition-colors"
+            )}
+            {navItems.map((item) => {
+              const Icon = item.icon;
+              return (
+                <Link
+                  key={item.path}
+                  to={item.path}
+                  onClick={() => setMobileMenuOpen(false)}
+                >
+                  <Button
+                    variant={isActive(item.path) ? 'default' : 'ghost'}
+                    className="w-full justify-start gap-3"
+                  >
+                    <Icon className="h-5 w-5" />
+                    {item.label}
+                  </Button>
+                </Link>
+              );
+            })}
+            <Button
+              onClick={() => {
+                handleLogout();
+                setMobileMenuOpen(false);
+              }}
+              variant="ghost"
+              className="w-full justify-start gap-3 text-red-600 hover:text-red-700 hover:bg-red-50"
             >
-              <Sparkles className="h-4 w-4" />
-              Biblioteca
-            </Link>
-            <Link
-              to="/dashboard"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-3 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-primary hover:bg-accent rounded-md transition-colors"
-            >
-              <LayoutDashboard className="h-4 w-4" />
-              Dashboard
-            </Link>
-            <Link
-              to="/prompts"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-3 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-primary hover:bg-accent rounded-md transition-colors"
-            >
-              <BookOpen className="h-4 w-4" />
-              Meus Prompts
-            </Link>
-            <Link
-              to="/study"
-              onClick={() => setMobileMenuOpen(false)}
-              className="flex items-center gap-3 px-4 py-2 text-sm font-medium text-muted-foreground hover:text-primary hover:bg-accent rounded-md transition-colors"
-            >
-              <Calendar className="h-4 w-4" />
-              Sessões de Estudo
-            </Link>
-
-            {/* Botão Logout - Mobile */}
-            <div className="px-4 pt-3 border-t">
-              <Button 
-                variant="outline" 
-                size="sm" 
-                onClick={handleLogout}
-                className="w-full flex items-center justify-center gap-2"
-              >
-                <LogOut className="h-4 w-4" />
-                Sair
-              </Button>
-            </div>
+              <LogOut className="h-5 w-5" />
+              Sair
+            </Button>
           </div>
         )}
       </div>
     </nav>
   );
-};
+}
