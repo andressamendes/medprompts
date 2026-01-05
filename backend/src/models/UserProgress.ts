@@ -6,7 +6,7 @@ import User from './User';
  * Interface dos atributos do UserProgress
  */
 export interface UserProgressAttributes {
-  id: string;
+  id:  string;
   userId: string;
   currentXP: number;
   level: number;
@@ -41,8 +41,8 @@ export class UserProgress
   public level!: number;
   public totalXPEarned!: number;
   public currentStreak!: number;
-  public longestStreak!:  number;
-  public lastActivityDate!: Date;
+  public longestStreak!: number;
+  public lastActivityDate! : Date;
   public xpHistory!: { date: string; xp: number; source: string }[];
 
   public readonly createdAt!: Date;
@@ -64,27 +64,36 @@ export class UserProgress
 
     // Adicionar ao histórico
     const today = new Date().toISOString().split('T')[0];
-    const existingEntry = this.xpHistory.find((entry) => entry.date === today);
+    
+    // IMPORTANTE: Criar nova array para forçar Sequelize detectar mudança
+    const history = [... this.xpHistory];
+    const existingEntry = history.find((entry) => entry.date === today);
 
     if (existingEntry) {
       existingEntry.xp += amount;
     } else {
-      this.xpHistory.push({ date: today, xp: amount, source });
+      history.push({ date: today, xp:  amount, source });
     }
 
-    // Manter apenas últimos 90 dias de histórico
-    if (this.xpHistory.length > 90) {
-      this.xpHistory = this.xpHistory.slice(-90);
+    // Manter apenas últimos 90 dias
+    if (history.length > 90) {
+      this.xpHistory = history.slice(-90);
+    } else {
+      this.xpHistory = history;
     }
+
+    // Marcar explicitamente como changed
+    this.changed('xpHistory', true);
 
     // Verificar level up
-    const xpNeeded = this.getXPToNextLevel();
+    let xpNeeded = this.getXPToNextLevel();
     let leveledUp = false;
 
     while (this.currentXP >= xpNeeded) {
       this.currentXP -= xpNeeded;
-      this.level += 1;
+      this. level += 1;
       leveledUp = true;
+      xpNeeded = this.getXPToNextLevel();
     }
 
     return leveledUp;
@@ -114,7 +123,7 @@ export class UserProgress
         this.longestStreak = this.currentStreak;
       }
     } else {
-      // Perdeu o streak
+      // Streak quebrado
       this.currentStreak = 1;
     }
 
@@ -130,7 +139,7 @@ UserProgress.init(
     id: {
       type:  DataTypes.UUID,
       defaultValue: DataTypes.UUIDV4,
-      primaryKey:  true,
+      primaryKey: true,
       allowNull: false,
     },
     userId: {
@@ -152,7 +161,7 @@ UserProgress.init(
       validate: {
         min: {
           args: [0],
-          msg: 'XP não pode ser negativo',
+          msg: 'XP atual não pode ser negativo',
         },
       },
       field: 'current_xp',
@@ -166,10 +175,6 @@ UserProgress.init(
           args: [1],
           msg: 'Nível mínimo é 1',
         },
-        max: {
-          args: [100],
-          msg: 'Nível máximo é 100',
-        },
       },
     },
     totalXPEarned: {
@@ -179,7 +184,7 @@ UserProgress.init(
       validate: {
         min: {
           args: [0],
-          msg:  'Total de XP não pode ser negativo',
+          msg:  'XP total não pode ser negativo',
         },
       },
       field: 'total_xp_earned',
@@ -191,34 +196,46 @@ UserProgress.init(
       validate: {
         min: {
           args: [0],
-          msg: 'Streak não pode ser negativo',
+          msg: 'Streak atual não pode ser negativo',
         },
       },
       field: 'current_streak',
     },
     longestStreak: {
-      type:  DataTypes.INTEGER,
+      type: DataTypes.INTEGER,
       allowNull: false,
       defaultValue: 0,
-      validate:  {
+      validate: {
         min: {
-          args: [0],
-          msg: 'Longest streak não pode ser negativo',
+          args:  [0],
+          msg: 'Streak mais longo não pode ser negativo',
         },
       },
       field: 'longest_streak',
     },
-    lastActivityDate:  {
-      type: DataTypes. DATE,
+    lastActivityDate: {
+      type: DataTypes.DATE,
       allowNull: false,
       defaultValue: DataTypes.NOW,
       field: 'last_activity_date',
     },
     xpHistory: {
-      type:  DataTypes.JSONB,
+      type: DataTypes.JSONB,
       allowNull: false,
       defaultValue: [],
-      field: 'xp_history',
+      validate: {
+        isValidHistory(value:  any) {
+          if (!Array.isArray(value)) {
+            throw new Error('XP history deve ser um array');
+          }
+          value.forEach((entry:  any) => {
+            if (! entry.date || !entry.xp || !entry.source) {
+              throw new Error('Cada entrada do histórico deve ter date, xp e source');
+            }
+          });
+        },
+      },
+      field:  'xp_history',
     },
   },
   {
@@ -228,13 +245,17 @@ UserProgress.init(
     underscored: true,
     indexes: [
       {
-        name: 'user_progress_user_id_idx',
-        fields: ['user_id'],
+        name: 'user_progress_user_id_unique',
         unique: true,
+        fields: ['user_id'],
       },
       {
         name: 'user_progress_level_idx',
         fields: ['level'],
+      },
+      {
+        name: 'user_progress_total_xp_idx',
+        fields: ['total_xp_earned'],
       },
     ],
   }
@@ -243,7 +264,7 @@ UserProgress.init(
 /**
  * Relacionamentos
  */
-UserProgress. belongsTo(User, {
+UserProgress.belongsTo(User, {
   foreignKey: 'userId',
   as: 'user',
 });
