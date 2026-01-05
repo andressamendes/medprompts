@@ -5,6 +5,7 @@ import {
   getXPData,
   addXP,
   getXPHistory,
+  getStreak,
   updateStreak,
   getBadges,
   unlockBadge,
@@ -49,6 +50,13 @@ router.post('/xp', addXP);
  * @access  Private
  */
 router.get('/xp/history', getXPHistory);
+
+/**
+ * @route   GET /api/v1/gamification/streak
+ * @desc    Obter dados de streak do usuário
+ * @access  Private
+ */
+router.get('/streak', getStreak);
 
 /**
  * @route   POST /api/v1/gamification/streak
