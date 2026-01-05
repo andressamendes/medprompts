@@ -16,21 +16,21 @@ const LOFI_STATIONS = [
     id: 'study',
     name: 'Lofi Study',
     icon: Coffee,
-    url: 'https://www.youtube.com/embed/jfKfPfyJRdk?autoplay=1&mute=0&controls=0&loop=1&playlist=jfKfPfyJRdk',
+    videoId: 'jfKfPfyJRdk',
     description: 'Beats suaves para estudo',
   },
   {
     id: 'chill',
     name: 'Chill Vibes',
     icon: Cloud,
-    url: 'https://www.youtube.com/embed/5qap5aO4i9A?autoplay=1&mute=0&controls=0&loop=1&playlist=5qap5aO4i9A',
+    videoId: '5qap5aO4i9A',
     description: 'Relaxe e respire',
   },
   {
     id: 'focus',
     name: 'Deep Focus',
     icon: Zap,
-    url: 'https://www.youtube.com/embed/7NOSDKb0HlU?autoplay=1&mute=0&controls=0&loop=1&playlist=7NOSDKb0HlU',
+    videoId: '7NOSDKb0HlU',
     description: 'Concentração máxima',
   },
 ];
@@ -94,6 +94,17 @@ export default function FocusZone() {
       }
     };
   }, [isRunning, timeLeft]);
+
+  // Controlar mute via postMessage
+  useEffect(() => {
+    if (iframeRef.current) {
+      const command = isMuted ? 'mute' : 'unMute';
+      iframeRef.current.contentWindow?.postMessage(
+        JSON.stringify({ event: 'command', func: command }),
+        '*'
+      );
+    }
+  }, [isMuted]);
 
   // Tecla ESC para sair, Espaço para play/pause
   useEffect(() => {
@@ -170,6 +181,9 @@ export default function FocusZone() {
 
   const toggleMute = () => {
     setIsMuted(!isMuted);
+    logger.info(isMuted ? 'Som ativado' : 'Som silenciado', {
+      component: 'FocusZone',
+    });
   };
 
   const formatTime = (seconds: number) => {
@@ -179,9 +193,9 @@ export default function FocusZone() {
   };
 
   const getTimerColor = () => {
-    if (currentMode === 'focus') return 'from-amber-400 to-orange-500';
-    if (currentMode === 'short') return 'from-green-400 to-emerald-500';
-    return 'from-blue-400 to-indigo-500';
+    if (currentMode === 'focus') return 'from-indigo-500 to-purple-600';
+    if (currentMode === 'short') return 'from-green-500 to-emerald-600';
+    return 'from-blue-500 to-cyan-600';
   };
 
   const getModeLabel = () => {
@@ -196,43 +210,74 @@ export default function FocusZone() {
   };
 
   return (
-    <div className="relative w-full min-h-screen overflow-hidden bg-gradient-to-br from-[#2d1b3d] via-[#3d2a4a] to-[#4a2c5a]">
-      {/* Imagem de fundo com overlay - Simulando ambiente de cafeteria/biblioteca */}
-      <div className="absolute inset-0 bg-[url('https://images.unsplash.com/photo-1521017432531-fbd92d768814?w=1920&q=80')] bg-cover bg-center opacity-20" />
-      <div className="absolute inset-0 bg-gradient-to-b from-transparent via-black/40 to-black/60" />
+    <div className="relative w-full min-h-screen overflow-hidden bg-gradient-to-b from-background to-secondary/20">
+      {/* Overlay escuro para modo imersivo */}
+      <div className="absolute inset-0 bg-gradient-to-br from-indigo-950/90 via-purple-950/90 to-pink-950/90" />
 
-      {/* Partículas flutuantes animadas (efeito neve/poeira) */}
+      {/* Ondas animadas de fundo */}
+      <div className="absolute inset-0 opacity-20 pointer-events-none">
+        <div className="absolute w-[200%] h-[200%] -top-1/2 -left-1/2 bg-gradient-to-r from-indigo-500/30 to-transparent rounded-full animate-wave-slow" />
+        <div className="absolute w-[180%] h-[180%] -bottom-1/2 -right-1/2 bg-gradient-to-l from-purple-500/30 to-transparent rounded-full animate-wave-reverse" />
+        <div className="absolute w-[160%] h-[160%] top-1/4 left-1/4 bg-gradient-to-br from-pink-500/20 to-transparent rounded-full animate-pulse-slow" />
+      </div>
+
+      {/* Partículas flutuantes grandes */}
       <div className="absolute inset-0 overflow-hidden pointer-events-none">
-        {[...Array(30)].map((_, i) => (
+        {[...Array(15)].map((_, i) => (
           <div
-            key={i}
-            className="absolute rounded-full bg-white/20"
+            key={`large-${i}`}
+            className="absolute rounded-full bg-primary/10 backdrop-blur-sm animate-float-slow"
             style={{
-              width: Math.random() * 4 + 2 + 'px',
-              height: Math.random() * 4 + 2 + 'px',
+              width: Math.random() * 100 + 50 + 'px',
+              height: Math.random() * 100 + 50 + 'px',
+              left: Math.random() * 100 + '%',
+              top: Math.random() * 100 + '%',
+              animationDelay: Math.random() * 10 + 's',
+              animationDuration: Math.random() * 20 + 20 + 's',
+            }}
+          />
+        ))}
+      </div>
+
+      {/* Partículas pequenas caindo */}
+      <div className="absolute inset-0 overflow-hidden pointer-events-none">
+        {[...Array(40)].map((_, i) => (
+          <div
+            key={`small-${i}`}
+            className="absolute rounded-full bg-foreground/30"
+            style={{
+              width: Math.random() * 3 + 2 + 'px',
+              height: Math.random() * 3 + 2 + 'px',
               left: Math.random() * 100 + '%',
               top: -10 + '%',
-              animation: `fall ${Math.random() * 10 + 15}s linear infinite`,
+              animation: `fall ${Math.random() * 8 + 12}s linear infinite`,
               animationDelay: Math.random() * 10 + 's',
             }}
           />
         ))}
       </div>
 
+      {/* Pulsos de luz radiantes */}
+      <div className="absolute inset-0 pointer-events-none">
+        <div className="absolute top-1/4 left-1/4 w-96 h-96 bg-indigo-500/10 rounded-full blur-3xl animate-pulse-glow" />
+        <div className="absolute bottom-1/3 right-1/4 w-80 h-80 bg-purple-500/10 rounded-full blur-3xl animate-pulse-glow-delayed" />
+        <div className="absolute top-1/2 right-1/3 w-72 h-72 bg-pink-500/10 rounded-full blur-3xl animate-pulse-glow-slow" />
+      </div>
+
       {/* Container principal */}
       <div className="relative z-10 flex flex-col items-center justify-center min-h-screen p-4">
         {/* Header com controles */}
-        <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center bg-gradient-to-b from-black/50 to-transparent backdrop-blur-sm">
+        <div className="absolute top-0 left-0 right-0 p-4 flex justify-between items-center bg-gradient-to-b from-background/80 to-transparent backdrop-blur-sm border-b border-border/50">
           <div className="flex items-center gap-2">
-            <Coffee className="w-5 h-5 text-amber-300" />
-            <h1 className="text-white font-semibold text-lg">Focus Zone</h1>
+            <Coffee className="w-5 h-5 text-primary animate-pulse" />
+            <h1 className="text-foreground font-semibold text-lg">Focus Zone</h1>
           </div>
           
           <Button
             size="sm"
             variant="ghost"
             onClick={handleExit}
-            className="text-white hover:bg-white/20"
+            className="text-foreground hover:bg-secondary transition-all"
           >
             <X className="w-5 h-5" />
             <span className="ml-2 hidden sm:inline">Sair (ESC)</span>
@@ -240,17 +285,17 @@ export default function FocusZone() {
         </div>
 
         {/* Timer Pomodoro - Card Central */}
-        <Card className="w-full max-w-md bg-black/40 backdrop-blur-xl border-white/20 shadow-2xl">
+        <Card className="w-full max-w-md bg-card/50 backdrop-blur-xl border-border shadow-2xl animate-fade-in">
           <div className="p-8 space-y-6">
             {/* Indicador de Pomodoros */}
             <div className="flex items-center justify-center gap-2">
               {[...Array(4)].map((_, i) => (
                 <div
                   key={i}
-                  className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  className={`rounded-full transition-all duration-300 ${
                     i < completedPomodoros % 4
-                      ? 'bg-amber-400 w-3 h-3'
-                      : 'bg-white/30'
+                      ? 'bg-primary w-3 h-3 shadow-lg shadow-primary/50'
+                      : 'bg-muted w-2 h-2'
                   }`}
                 />
               ))}
@@ -258,7 +303,7 @@ export default function FocusZone() {
 
             {/* Modo atual */}
             <div className="text-center">
-              <p className="text-white/70 text-sm uppercase tracking-wider font-medium">
+              <p className="text-muted-foreground text-sm uppercase tracking-wider font-medium">
                 {getModeLabel()}
               </p>
             </div>
@@ -272,7 +317,7 @@ export default function FocusZone() {
                   cy="50"
                   r="45"
                   fill="none"
-                  stroke="rgba(255,255,255,0.1)"
+                  stroke="hsl(var(--muted))"
                   strokeWidth="2"
                 />
                 <circle
@@ -290,14 +335,14 @@ export default function FocusZone() {
                 />
                 <defs>
                   <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                    <stop offset="0%" stopColor="#fbbf24" />
-                    <stop offset="100%" stopColor="#f97316" />
+                    <stop offset="0%" stopColor="#6366f1" />
+                    <stop offset="100%" stopColor="#a855f7" />
                   </linearGradient>
                 </defs>
               </svg>
 
               <div className="relative py-12 text-center">
-                <p className="text-7xl font-bold text-white tabular-nums">
+                <p className="text-7xl font-bold text-foreground tabular-nums drop-shadow-lg">
                   {formatTime(timeLeft)}
                 </p>
               </div>
@@ -321,16 +366,16 @@ export default function FocusZone() {
                 onClick={resetTimer}
                 size="lg"
                 variant="outline"
-                className="bg-white/10 hover:bg-white/20 text-white border-white/30 backdrop-blur-sm"
+                className="backdrop-blur-sm transition-all"
               >
                 <RotateCcw className="w-5 h-5" />
               </Button>
             </div>
 
             {/* Contador de Pomodoros */}
-            <div className="text-center pt-4 border-t border-white/10">
-              <p className="text-white/60 text-sm">
-                🍅 Pomodoros completados hoje: <span className="font-bold text-white">{completedPomodoros}</span>
+            <div className="text-center pt-4 border-t border-border">
+              <p className="text-muted-foreground text-sm">
+                🍅 Pomodoros completados hoje: <span className="font-bold text-foreground">{completedPomodoros}</span>
               </p>
             </div>
           </div>
@@ -345,17 +390,17 @@ export default function FocusZone() {
                 <button
                   key={station.id}
                   onClick={() => changeStation(index)}
-                  className={`p-4 rounded-xl transition-all duration-300 ${
+                  className={`p-4 rounded-xl transition-all duration-300 border ${
                     selectedStation === index
-                      ? 'bg-white/20 backdrop-blur-md border-2 border-white/40 scale-105'
-                      : 'bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10'
+                      ? 'bg-primary/20 backdrop-blur-md border-primary scale-105 shadow-xl'
+                      : 'bg-card/30 backdrop-blur-sm border-border hover:bg-card/50'
                   }`}
                 >
-                  <Icon className={`w-6 h-6 mx-auto mb-2 ${
-                    selectedStation === index ? 'text-amber-300' : 'text-white/60'
+                  <Icon className={`w-6 h-6 mx-auto mb-2 transition-all ${
+                    selectedStation === index ? 'text-primary animate-pulse' : 'text-muted-foreground'
                   }`} />
                   <p className={`text-xs font-medium ${
-                    selectedStation === index ? 'text-white' : 'text-white/60'
+                    selectedStation === index ? 'text-foreground' : 'text-muted-foreground'
                   }`}>
                     {station.name}
                   </p>
@@ -370,37 +415,41 @@ export default function FocusZone() {
               size="sm"
               variant="ghost"
               onClick={toggleMute}
-              className="text-white/70 hover:text-white hover:bg-white/10"
+              className="text-muted-foreground hover:text-foreground transition-all"
             >
               {isMuted ? (
-                <VolumeX className="w-5 h-5 mr-2" />
+                <>
+                  <VolumeX className="w-5 h-5 mr-2" />
+                  <span className="text-sm">Ativar som</span>
+                </>
               ) : (
-                <Volume2 className="w-5 h-5 mr-2" />
+                <>
+                  <Volume2 className="w-5 h-5 mr-2" />
+                  <span className="text-sm">Silenciar</span>
+                </>
               )}
-              <span className="text-sm">{isMuted ? 'Ativar som' : 'Silenciar'}</span>
             </Button>
           </div>
         </div>
 
         {/* Instruções */}
         <div className="mt-8 text-center">
-          <p className="text-white/50 text-sm">
+          <p className="text-muted-foreground text-sm">
             Espaço para Play/Pause • ESC para sair
           </p>
         </div>
       </div>
 
-      {/* Player de música (invisível) */}
-      <div className="absolute -left-[9999px]">
-        <iframe
-          ref={iframeRef}
-          width="1"
-          height="1"
-          src={LOFI_STATIONS[selectedStation].url + (isMuted ? '&mute=1' : '&mute=0')}
-          title="Lofi Music"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-        />
-      </div>
+      {/* Player de música do YouTube */}
+      <iframe
+        ref={iframeRef}
+        className="absolute -left-[9999px]"
+        width="1"
+        height="1"
+        src={`https://www.youtube.com/embed/${LOFI_STATIONS[selectedStation].videoId}?autoplay=1&enablejsapi=1&controls=0&loop=1&playlist=${LOFI_STATIONS[selectedStation].videoId}`}
+        title="Lofi Music"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+      />
 
       {/* CSS Animations */}
       <style>{`
@@ -410,18 +459,131 @@ export default function FocusZone() {
             opacity: 0.8;
           }
           100% {
-            transform: translateY(110vh) translateX(${Math.random() * 20 - 10}vw);
+            transform: translateY(110vh) translateX(20px);
             opacity: 0;
           }
         }
 
-        @keyframes float {
+        @keyframes float-slow {
           0%, 100% {
-            transform: translateY(0);
+            transform: translate(0, 0) scale(1);
+            opacity: 0.3;
           }
           50% {
-            transform: translateY(-10px);
+            transform: translate(20px, -20px) scale(1.1);
+            opacity: 0.5;
           }
+        }
+
+        @keyframes wave-slow {
+          0% {
+            transform: rotate(0deg) scale(1);
+          }
+          50% {
+            transform: rotate(180deg) scale(1.1);
+          }
+          100% {
+            transform: rotate(360deg) scale(1);
+          }
+        }
+
+        @keyframes wave-reverse {
+          0% {
+            transform: rotate(360deg) scale(1);
+          }
+          50% {
+            transform: rotate(180deg) scale(1.1);
+          }
+          100% {
+            transform: rotate(0deg) scale(1);
+          }
+        }
+
+        @keyframes pulse-slow {
+          0%, 100% {
+            transform: scale(1);
+            opacity: 0.3;
+          }
+          50% {
+            transform: scale(1.2);
+            opacity: 0.6;
+          }
+        }
+
+        @keyframes pulse-glow {
+          0%, 100% {
+            transform: scale(1);
+            opacity: 0.2;
+          }
+          50% {
+            transform: scale(1.5);
+            opacity: 0.4;
+          }
+        }
+
+        @keyframes pulse-glow-delayed {
+          0%, 100% {
+            transform: scale(1);
+            opacity: 0.15;
+          }
+          50% {
+            transform: scale(1.6);
+            opacity: 0.35;
+          }
+        }
+
+        @keyframes pulse-glow-slow {
+          0%, 100% {
+            transform: scale(1);
+            opacity: 0.1;
+          }
+          50% {
+            transform: scale(1.4);
+            opacity: 0.3;
+          }
+        }
+
+        @keyframes fade-in {
+          from {
+            opacity: 0;
+            transform: translateY(20px);
+          }
+          to {
+            opacity: 1;
+            transform: translateY(0);
+          }
+        }
+
+        .animate-wave-slow {
+          animation: wave-slow 60s ease-in-out infinite;
+        }
+
+        .animate-wave-reverse {
+          animation: wave-reverse 50s ease-in-out infinite;
+        }
+
+        .animate-pulse-slow {
+          animation: pulse-slow 40s ease-in-out infinite;
+        }
+
+        .animate-float-slow {
+          animation: float-slow 15s ease-in-out infinite;
+        }
+
+        .animate-pulse-glow {
+          animation: pulse-glow 8s ease-in-out infinite;
+        }
+
+        .animate-pulse-glow-delayed {
+          animation: pulse-glow-delayed 10s ease-in-out infinite 2s;
+        }
+
+        .animate-pulse-glow-slow {
+          animation: pulse-glow-slow 12s ease-in-out infinite 4s;
+        }
+
+        .animate-fade-in {
+          animation: fade-in 0.8s ease-out;
         }
       `}</style>
     </div>
