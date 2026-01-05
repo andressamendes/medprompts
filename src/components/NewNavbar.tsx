@@ -99,6 +99,8 @@ export const NewNavbar: React.FC<NavbarProps> = ({
                 variant="ghost"
                 size="icon"
                 onClick={() => setNotificationsOpen(!notificationsOpen)}
+                aria-expanded={notificationsOpen}
+                aria-label="Notificações"
               >
                 <Bell className="h-5 w-5" />
                 {unreadCount > 0 && (
@@ -113,7 +115,11 @@ export const NewNavbar: React.FC<NavbarProps> = ({
 
               {/* Notifications Dropdown */}
               {notificationsOpen && (
-                <div className="absolute right-0 top-12 w-80 rounded-lg border bg-card shadow-lg">
+                <div 
+                  className="absolute right-0 top-12 w-80 rounded-lg border bg-card shadow-lg"
+                  role="menu"
+                  aria-label="Menu de notificações"
+                >
                   <div className="p-4 border-b">
                     <h3 className="font-semibold">Notificações</h3>
                   </div>
@@ -158,6 +164,8 @@ export const NewNavbar: React.FC<NavbarProps> = ({
                 size="icon"
                 onClick={() => setUserMenuOpen(!userMenuOpen)}
                 className="rounded-full"
+                aria-expanded={userMenuOpen}
+                aria-label="Menu do usuário"
               >
                 <div className="flex h-8 w-8 items-center justify-center rounded-full bg-gradient-to-r from-purple-600 to-pink-600">
                   <User className="h-4 w-4 text-white" />
@@ -166,7 +174,11 @@ export const NewNavbar: React.FC<NavbarProps> = ({
 
               {/* User Dropdown */}
               {userMenuOpen && (
-                <div className="absolute right-0 top-12 w-64 rounded-lg border bg-card shadow-lg">
+                <div 
+                  className="absolute right-0 top-12 w-64 rounded-lg border bg-card shadow-lg"
+                  role="menu"
+                  aria-label="Menu do usuário"
+                >
                   <div className="p-4 border-b">
                     <p className="font-semibold">Estudante de Medicina</p>
                     <p className="text-sm text-muted-foreground">Nível 5 - 1250 XP</p>

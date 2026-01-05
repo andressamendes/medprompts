@@ -35,16 +35,17 @@ export interface SpinnerProps
 
 const Spinner = React.forwardRef<HTMLDivElement, SpinnerProps>(
   ({ className, size, variant, label, ...props }, ref) => {
+    const ariaLabel = label || "Loading";
     return (
       <div
         ref={ref}
         role="status"
-        aria-label={label || "Loading"}
+        aria-label={ariaLabel}
         className={cn("inline-flex items-center justify-center", className)}
         {...props}
       >
         <div className={cn(spinnerVariants({ size, variant }))} />
-        <span className="sr-only">{label || "Loading..."}</span>
+        <span className="sr-only">{ariaLabel}</span>
       </div>
     )
   }
