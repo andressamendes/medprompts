@@ -1,106 +1,109 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
-import { AuthProvider } from './contexts/AuthContext';
-import { ThemeProvider } from './contexts/ThemeContext';
-import { FavoritesProvider } from './contexts/FavoritesContext';
-import { PromptHistoryProvider } from './contexts/PromptHistoryContext';
-import ProtectedRoute from './components/ProtectedRoute';
-import NewIndex from './pages/NewIndex';
-import Index from './pages/Index';
-import Login from './pages/Login';
-import Register from './pages/Register';
-import Dashboard from './pages/Dashboard';
-import Prompts from './pages/Prompts';
-import StudySessions from './pages/StudySessions';
-import GuiaIAs from './pages/GuiaIAs';
-import Ferramentas from './pages/Ferramentas';
-import FocusZone from './pages/FocusZone';
-import Profile from './pages/Profile';
-import NotFound from './pages/NotFound';
+import { Toaster } from '@/components/ui/toaster';
+import { AuthProvider } from '@/contexts/AuthContext';
+import { ThemeProvider } from '@/contexts/ThemeContext';
+import ProtectedRoute from '@/components/ProtectedRoute'; // ✅ Default import
+import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { lazy, Suspense, useEffect } from 'react';
+import { logger } from '@/utils/logger';
 
+// Páginas públicas (não requerem autenticação)
+import NewIndex from '@/pages/NewIndex';
+import Login from '@/pages/Login';
+import Register from '@/pages/Register';
+import NotFound from '@/pages/NotFound';
 
-/**
- * Componente principal da aplicação
- * 
- * ARQUITETURA CORRETA:
- * - "/" = Landing page pública (NewIndex) para visitantes
- * - "/app" = Aplicação completa (Index) com TODOS os componentes
- * - "/dashboard" = Dashboard autenticado
- * - Login/Register redirecionam para "/app" após autenticação
- */
+// Páginas protegidas (requerem autenticação) - lazy loading
+const Dashboard = lazy(() => import('@/pages/Dashboard'));
+const Index = lazy(() => import('@/pages/Index'));
+const Profile = lazy(() => import('@/pages/Profile'));
+
+// Páginas públicas com conteúdo educacional
+const GuiaIAs = lazy(() => import('@/pages/GuiaIAs'));
+const Ferramentas = lazy(() => import('@/pages/Ferramentas'));
+const FocusZone = lazy(() => import('@/pages/FocusZone'));
+
+// Loading fallback
+const LoadingScreen = () => (
+  <div className="min-h-screen flex items-center justify-center">
+    <div className="text-center">
+      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+      <p className="text-muted-foreground">Carregando...</p>
+    </div>
+  </div>
+);
+
 function App() {
+  useEffect(() => {
+    logger.info('MedPrompts iniciado', {
+      version: '2.0.0',
+      environment: import.meta.env.MODE,
+      timestamp: new Date().toISOString()
+    });
+  }, []);
+
   return (
-    <Router>
+    <ErrorBoundary>
       <ThemeProvider>
         <AuthProvider>
-          <FavoritesProvider>
-            <PromptHistoryProvider>
+          <Router basename="/medprompts">
+            <Suspense fallback={<LoadingScreen />}>
               <Routes>
-                {/* Landing Page Pública - Para visitantes */}
+                {/* ==================== ROTAS PÚBLICAS ==================== */}
+                {/* Landing page principal */}
                 <Route path="/" element={<NewIndex />} />
                 
-                {/* Rotas públicas - Autenticação */}
+                {/* Autenticação */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
-                
-                {/* Rotas públicas - Conteúdo */}
+
+                {/* Páginas educacionais públicas */}
                 <Route path="/guia-ias" element={<GuiaIAs />} />
                 <Route path="/ferramentas" element={<Ferramentas />} />
                 <Route path="/focus-zone" element={<FocusZone />} />
-                
-                {/* ✅ APLICAÇÃO COMPLETA - Página principal com TODOS os componentes */}
-                <Route
-                  path="/app"
-                  element={
-                    <ProtectedRoute>
-                      <Index />
-                    </ProtectedRoute>
-                  }
-                />
-                
-                {/* Rotas protegidas - Requerem autenticação */}
-                <Route
-                  path="/dashboard"
+
+                {/* ==================== ROTAS PROTEGIDAS ==================== */}
+                {/* Dashboard principal do usuário autenticado */}
+                <Route 
+                  path="/dashboard" 
                   element={
                     <ProtectedRoute>
                       <Dashboard />
                     </ProtectedRoute>
-                  }
+                  } 
                 />
-                <Route
-                  path="/prompts"
+
+                {/* Biblioteca completa de prompts (protegida) */}
+                <Route 
+                  path="/prompts" 
                   element={
                     <ProtectedRoute>
-                      <Prompts />
+                      <Index />
                     </ProtectedRoute>
-                  }
+                  } 
                 />
-                <Route
-                  path="/study"
-                  element={
-                    <ProtectedRoute>
-                      <StudySessions />
-                    </ProtectedRoute>
-                  }
-                />
-                <Route
-                  path="/profile"
+
+                {/* Perfil do usuário */}
+                <Route 
+                  path="/profile" 
                   element={
                     <ProtectedRoute>
                       <Profile />
                     </ProtectedRoute>
-                  }
+                  } 
                 />
-                
-                {/* Rota 404 */}
+
+                {/* ==================== ROTA 404 ==================== */}
+                {/* Qualquer rota não encontrada */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
-            </PromptHistoryProvider>
-          </FavoritesProvider>
+            </Suspense>
+            <Toaster />
+          </Router>
         </AuthProvider>
       </ThemeProvider>
-    </Router>
+    </ErrorBoundary>
   );
 }
-
 
 export default App;

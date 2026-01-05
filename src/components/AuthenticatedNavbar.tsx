@@ -7,8 +7,7 @@ import {
   Menu, 
   X, 
   LayoutDashboard, 
-  BookText, 
-  Clock, 
+  BookText,  
   Lightbulb, 
   Wrench, 
   Target, 
@@ -29,18 +28,19 @@ export function AuthenticatedNavbar() {
       title: 'Logout realizado',
       description: 'Você saiu da sua conta com sucesso',
     });
-    navigate('/');
+    // Redireciona para login em vez de landing page
+    navigate('/login');
   };
 
   const navItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/app', label: 'Biblioteca', icon: BookText },
-    { path: '/study', label: 'Sessões', icon: Clock },
-    { path: '/guia-ias', label: 'IAs', icon: Lightbulb },
-    { path: '/ferramentas', label: 'Ferramentas', icon: Wrench },
-    { path: '/focus-zone', label: 'Foco', icon: Target },
-    { path: '/profile', label: 'Perfil', icon: User },
-  ];
+  { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+  { path: '/prompts', label: 'Biblioteca', icon: BookText },
+  { path: '/guia-ias', label: 'IAs', icon: Lightbulb },
+  { path: '/ferramentas', label: 'Ferramentas', icon: Wrench },
+  { path: '/focus-zone', label: 'Foco', icon: Target },
+  { path: '/profile', label: 'Perfil', icon: User },
+];
+
 
   const isActive = (path: string) => location.pathname === path;
 
