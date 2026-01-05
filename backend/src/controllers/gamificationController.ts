@@ -9,7 +9,7 @@ import { logger } from '../utils/logger';
 /**
  * Obter todos os dados de gamificação do usuário
  */
-export const getGamificationData = async (req: Request, res: Response): Promise<void> => {
+export const getGamificationData = async (req:  Request, res: Response): Promise<void> => {
   try {
     const userId = (req as any).userId;
 
@@ -48,20 +48,20 @@ export const getGamificationData = async (req: Request, res: Response): Promise<
     const badges = allBadges.map((badge) => {
       const userBadge = userBadges.find((ub) => ub.badgeId === badge.id);
       return {
-        id: badge. id,
-        name: badge. name,
+        id: badge.id,
+        name: badge.name,
         description: badge.description,
         icon: badge.icon,
         category: badge.category,
         requirement: badge.requirement,
         isUnlocked: !!userBadge,
-        unlockedAt: userBadge?. unlockedAt || null,
+        unlockedAt: userBadge?.unlockedAt || null,
         progress: userBadge?.progress || 0,
       };
     });
 
     // Buscar missões ativas do usuário
-    const userMissions = await UserMission. findAll({
+    const userMissions = await UserMission.findAll({
       where: {
         userId,
         expiresAt: { [Op. gte]: new Date() },
@@ -76,7 +76,7 @@ export const getGamificationData = async (req: Request, res: Response): Promise<
 
     const dailyMissions = userMissions. map((um) => ({
       id: um.id,
-      title: um.mission?.title || '',
+      title: um.mission?. title || '',
       description: um.mission?. description || '',
       xpReward: um.mission?.xpReward || 0,
       progress: um.progress,
@@ -105,10 +105,10 @@ export const getGamificationData = async (req: Request, res: Response): Promise<
       },
     });
   } catch (error:  any) {
-    logger.error('Erro ao buscar dados de gamificação', { error: error.message });
+    logger.error('Erro ao buscar dados de gamificação', { error:  error.message });
     res.status(500).json({
       success: false,
-      error: 'Erro ao buscar dados de gamificação',
+      error:  'Erro ao buscar dados de gamificação',
     });
   }
 };
@@ -126,11 +126,11 @@ export const getXPData = async (req: Request, res: Response): Promise<void> => {
       progress = await UserProgress.create({
         userId,
         currentXP: 0,
-        level: 1,
+        level:  1,
         totalXPEarned: 0,
         currentStreak: 0,
-        longestStreak:  0,
-        lastActivityDate: new Date(),
+        longestStreak: 0,
+        lastActivityDate:  new Date(),
         xpHistory: [],
       });
     }
@@ -156,7 +156,7 @@ export const getXPData = async (req: Request, res: Response): Promise<void> => {
 /**
  * Adicionar XP ao usuário
  */
-export const addXP = async (req: Request, res: Response): Promise<void> => {
+export const addXP = async (req: Request, res:  Response): Promise<void> => {
   try {
     const userId = (req as any).userId;
     const { amount, source } = req.body;
@@ -255,9 +255,48 @@ export const getXPHistory = async (req: Request, res: Response): Promise<void> =
 };
 
 /**
+ * Obter dados de streak do usuário
+ */
+export const getStreak = async (req: Request, res: Response): Promise<void> => {
+  try {
+    const userId = (req as any).userId;
+
+    let progress = await UserProgress.findOne({ where: { userId } });
+
+    if (!progress) {
+      progress = await UserProgress.create({
+        userId,
+        currentXP: 0,
+        level: 1,
+        totalXPEarned: 0,
+        currentStreak: 0,
+        longestStreak: 0,
+        lastActivityDate: new Date(),
+        xpHistory: [],
+      });
+    }
+
+    res.status(200).json({
+      success: true,
+      data: {
+        currentStreak: progress.currentStreak,
+        longestStreak: progress.longestStreak,
+        lastActivityDate: progress.lastActivityDate,
+      },
+    });
+  } catch (error: any) {
+    logger.error('Erro ao buscar streak', { error: error.message });
+    res.status(500).json({
+      success: false,
+      error: 'Erro ao buscar streak',
+    });
+  }
+};
+
+/**
  * Atualizar streak do usuário
  */
-export const updateStreak = async (req: Request, res: Response): Promise<void> => {
+export const updateStreak = async (req: Request, res:  Response): Promise<void> => {
   try {
     const userId = (req as any).userId;
 
@@ -287,7 +326,7 @@ export const updateStreak = async (req: Request, res: Response): Promise<void> =
     res.status(200).json({
       success: true,
       data: {
-        currentStreak: progress.currentStreak,
+        currentStreak:  progress.currentStreak,
         longestStreak: progress.longestStreak,
         lastActivityDate: progress.lastActivityDate,
       },
@@ -316,14 +355,14 @@ export const getBadges = async (req: Request, res: Response): Promise<void> => {
     const allBadges = await Badge. findAll();
 
     const badges = allBadges.map((badge) => {
-      const userBadge = userBadges. find((ub) => ub.badgeId === badge.id);
+      const userBadge = userBadges.find((ub) => ub.badgeId === badge.id);
       return {
-        id: badge.id,
-        name: badge.name,
-        description: badge.description,
-        icon: badge.icon,
-        category: badge.category,
-        requirement: badge.requirement,
+        id: badge. id,
+        name: badge. name,
+        description: badge. description,
+        icon: badge. icon,
+        category: badge. category,
+        requirement: badge. requirement,
         isUnlocked: !!userBadge,
         unlockedAt: userBadge?.unlockedAt || null,
         progress: userBadge?.progress || 0,
@@ -379,14 +418,14 @@ export const unlockBadge = async (req: Request, res:  Response): Promise<void> =
       userId,
       badgeId,
       unlockedAt: new Date(),
-      progress: badge.requirement.target,
+      progress: badge.requirement. target,
     });
 
     logger.info('Badge desbloqueado', { userId, badgeId, badgeName: badge.name });
 
     res.status(200).json({
       success: true,
-      message: `Parabéns! Você desbloqueou o badge "${badge.name}"! `,
+      message: `Parabéns!  Você desbloqueou o badge "${badge.name}"! `,
       data: {
         id: badge.id,
         name: badge.name,
@@ -483,16 +522,16 @@ export const completeMission = async (req: Request, res: Response): Promise<void
     }
 
     // Verificar se progresso atingiu o target
-    if (userMission.progress < userMission.mission.requirement.target) {
+    if (userMission. progress < userMission.mission. requirement.target) {
       res.status(400).json({
         success: false,
-        error:  'Missão ainda não foi completada',
+        error: 'Missão ainda não foi completada',
       });
       return;
     }
 
     // Marcar como completada
-    userMission. isCompleted = true;
+    userMission.isCompleted = true;
     userMission.completedAt = new Date();
     await userMission.save();
 
@@ -523,7 +562,7 @@ export const completeMission = async (req: Request, res: Response): Promise<void
 
     res.status(200).json({
       success: true,
-      message: `Missão completada! +${userMission.mission.xpReward} XP`,
+      message: `Missão completada!  +${userMission.mission.xpReward} XP`,
       data: {
         mission: {
           id: userMission. id,
