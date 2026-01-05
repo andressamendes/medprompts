@@ -4,7 +4,7 @@ import { ThemeProvider } from './contexts/ThemeContext';
 import { FavoritesProvider } from './contexts/FavoritesContext';
 import { PromptHistoryProvider } from './contexts/PromptHistoryContext';
 import ProtectedRoute from './components/ProtectedRoute';
-import Index from './pages/Index';
+import NewIndex from './pages/NewIndex';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
@@ -18,11 +18,14 @@ import NotFound from './pages/NotFound';
 /**
  * Componente principal da aplicação
  * 
- * Configuração: 
- * - O basename é gerenciado pelo Vite (vite.config.ts: base: '/medprompts/')
- * - Router usa caminhos relativos sem basename para evitar duplicação
- * - Todas as rotas públicas e protegidas definidas aqui
- * - Rota 404 no final para capturar URLs inválidas
+ * Configuração de rotas: 
+ * - Rotas públicas: Landing page, Login, Register, Guia IAs, Ferramentas, Focus Zone
+ * - Rotas protegidas: Dashboard, Prompts (CRUD), Study Sessions
+ * - Rota 404 no final para URLs inválidas
+ * 
+ * MUDANÇA IMPORTANTE: 
+ * - Rota "/" agora usa NewIndex (landing page limpa e pública)
+ * - Index.tsx antiga (confusa) não é mais usada
  */
 function App() {
   return (
@@ -32,15 +35,19 @@ function App() {
           <FavoritesProvider>
             <PromptHistoryProvider>
               <Routes>
-                {/* Rotas públicas */}
-                <Route path="/" element={<Index />} />
+                {/* ✅ ROTA INICIAL - Landing Page Pública */}
+                <Route path="/" element={<NewIndex />} />
+                
+                {/* Rotas públicas - Autenticação */}
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                
+                {/* Rotas públicas - Conteúdo */}
                 <Route path="/guia-ias" element={<GuiaIAs />} />
                 <Route path="/ferramentas" element={<Ferramentas />} />
                 <Route path="/focus-zone" element={<FocusZone />} />
                 
-                {/* Rotas protegidas */}
+                {/* Rotas protegidas - Requerem autenticação */}
                 <Route
                   path="/dashboard"
                   element={
@@ -66,7 +73,7 @@ function App() {
                   }
                 />
                 
-                {/* Rota 404: Captura qualquer URL que não existe */}
+                {/* Rota 404:  Captura qualquer URL que não existe */}
                 {/* Esta rota DEVE ser a última */}
                 <Route path="*" element={<NotFound />} />
               </Routes>
