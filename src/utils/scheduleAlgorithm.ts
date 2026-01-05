@@ -101,7 +101,7 @@ export function interleaveTopics(topics: StudyTopic[]): StudyTopic[] {
   // Intercala tópicos de categorias diferentes
   const interleaved: StudyTopic[] = [];
   const categories = Object.keys(byCategory);
-  let maxLength = Math.max(...Object.values(byCategory).map(arr => arr.length));
+  const maxLength = Math.max(...Object.values(byCategory).map(arr => arr.length));
 
   for (let i = 0; i < maxLength; i++) {
     categories.forEach(category => {
@@ -134,7 +134,7 @@ export function generateWeeklySchedule(
   // Intercala tópicos para evitar fadiga cognitiva
   const interleavedTopics = interleaveTopics(sortedTopics);
 
-  let currentDate = new Date(startDate);
+  const currentDate = new Date(startDate);
   let topicIndex = 0;
 
   // Itera pelos dias da semana

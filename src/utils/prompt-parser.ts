@@ -31,7 +31,7 @@ const NIVEIS: FieldOption[] = [
 ]
 
 // Regex para identificar placeholders: [TEXTO]
-const PLACEHOLDER_REGEX = /\[([A-ZÀÁÃÂÇÉÊÍÓÔÕÚ\s\/\-]+)\]/g
+const PLACEHOLDER_REGEX = /\[([A-ZÀÁÃÂÇÉÊÍÓÔÕÚ\s/-]+)\]/g
 
 /**
  * Identifica o tipo de campo baseado no nome do placeholder
