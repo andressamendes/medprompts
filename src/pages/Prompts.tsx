@@ -5,83 +5,40 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, Star, Trash2, Edit, Copy, Filter } from 'lucide-react';
+import { Plus, Search, Star, Trash2, Edit, Copy, Filter, Loader2 } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-
-/**
- * Interface para Prompt personalizado
- */
-interface Prompt {
-  id: string;
-  title: string;
-  content: string;
-  category: string;
-  tags: string[];
-  isFavorite: boolean;
-  usageCount: number;
-  createdAt: string;
-}
+import { useToast } from '@/hooks/use-toast';
+import promptsService, { PromptData } from '@/services/api/prompts';
 
 /**
  * Página Prompts - CRUD de prompts personalizados
- * Permite:  Criar, editar, excluir, favoritar, copiar prompts
- * Integrada com AuthenticatedNavbar
+ * Integrada com API real do backend
  */
 export default function Prompts() {
-  const [prompts, setPrompts] = useState<Prompt[]>([]);
-  const [filteredPrompts, setFilteredPrompts] = useState<Prompt[]>([]);
+  const { toast } = useToast();
+  const [prompts, setPrompts] = useState<PromptData[]>([]);
+  const [filteredPrompts, setFilteredPrompts] = useState<PromptData[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingPrompt, setEditingPrompt] = useState<Prompt | null>(null);
+  const [editingPrompt, setEditingPrompt] = useState<PromptData | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isSaving, setIsSaving] = useState(false);
   
   const [formData, setFormData] = useState({
     title: '',
     content: '',
-    category:  'geral',
+    category: 'geral',
     tags: '',
   });
 
   const categories = ['all', 'anatomia', 'fisiologia', 'farmacologia', 'clinica', 'cirurgia', 'pediatria', 'geral'];
 
-  // 🎭 MOCK:  Carrega prompts simulados
+  // 🔗 Carregar prompts da API ao montar o componente
   useEffect(() => {
-    const mockPrompts:  Prompt[] = [
-      {
-        id: '1',
-        title: 'Resumo de Anatomia Cardiovascular',
-        content: 'Explique de forma detalhada o sistema cardiovascular humano, incluindo estrutura do coração, circulação sanguínea e principais vasos.',
-        category: 'anatomia',
-        tags: ['cardiovascular', 'coração', 'vasos'],
-        isFavorite: true,
-        usageCount: 15,
-        createdAt: new Date().toISOString(),
-      },
-      {
-        id: '2',
-        title:  'Farmacologia - Anti-hipertensivos',
-        content:  'Liste os principais grupos de medicamentos anti-hipertensivos, seus mecanismos de ação, indicações e contraindicações.',
-        category: 'farmacologia',
-        tags: ['hipertensão', 'medicamentos'],
-        isFavorite: false,
-        usageCount: 8,
-        createdAt:  new Date().toISOString(),
-      },
-      {
-        id: '3',
-        title: 'Diagnóstico diferencial - Dor torácica',
-        content: 'Faça um diagnóstico diferencial completo de dor torácica em paciente de 55 anos, considerando principais causas e exames complementares.',
-        category: 'clinica',
-        tags: ['diagnóstico', 'emergência', 'dor torácica'],
-        isFavorite: true,
-        usageCount: 23,
-        createdAt: new Date().toISOString(),
-      },
-    ];
-    setPrompts(mockPrompts);
-    setFilteredPrompts(mockPrompts);
+    loadPrompts();
   }, []);
 
   // Filtrar prompts
@@ -105,6 +62,24 @@ export default function Prompts() {
     setFilteredPrompts(filtered);
   }, [prompts, selectedCategory, searchTerm]);
 
+  // 🔗 Carregar prompts da API
+  const loadPrompts = async () => {
+    setIsLoading(true);
+    try {
+      const data = await promptsService.getAll();
+      setPrompts(data);
+      setFilteredPrompts(data);
+    } catch (error:  any) {
+      toast({
+        title: 'Erro ao carregar prompts',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Abrir modal para criar
   const handleCreate = () => {
     setEditingPrompt(null);
@@ -113,7 +88,7 @@ export default function Prompts() {
   };
 
   // Abrir modal para editar
-  const handleEdit = (prompt: Prompt) => {
+  const handleEdit = (prompt: PromptData) => {
     setEditingPrompt(prompt);
     setFormData({
       title: prompt.title,
@@ -124,51 +99,113 @@ export default function Prompts() {
     setIsModalOpen(true);
   };
 
-  // Salvar prompt (criar ou editar)
-  const handleSave = () => {
-    const tags = formData.tags.split(',').map(t => t.trim()).filter(t => t);
+  // 🔗 Salvar prompt (criar ou editar) via API
+  const handleSave = async () => {
+    if (!formData.title.trim() || !formData.content.trim()) {
+      toast({
+        title: 'Campos obrigatórios',
+        description: 'Preencha título e conteúdo',
+        variant: 'destructive',
+      });
+      return;
+    }
 
-    if (editingPrompt) {
-      // Editar existente
-      setPrompts(prompts.map(p =>
-        p.id === editingPrompt.id
-          ? { ...p, ... formData, tags }
-          :  p
-      ));
-    } else {
-      // Criar novo
-      const newPrompt:  Prompt = {
-        id: Date.now().toString(),
-        ...formData,
+    setIsSaving(true);
+    try {
+      const tags = formData.tags.split(',').map(t => t.trim()).filter(t => t);
+      const promptData:  PromptData = {
+        title: formData.title,
+        content: formData.content,
+        category: formData.category,
         tags,
-        isFavorite: false,
-        usageCount: 0,
-        createdAt: new Date().toISOString(),
       };
-      setPrompts([newPrompt, ...prompts]);
+
+      if (editingPrompt && editingPrompt.id) {
+        // Editar existente
+        await promptsService. update(editingPrompt.id, promptData);
+        toast({
+          title: 'Prompt atualizado',
+          description: 'Suas alterações foram salvas',
+        });
+      } else {
+        // Criar novo
+        await promptsService. create(promptData);
+        toast({
+          title: 'Prompt criado',
+          description:  'Seu novo prompt foi salvo',
+        });
+      }
+
+      setIsModalOpen(false);
+      loadPrompts(); // Recarregar lista
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao salvar',
+        description: error.message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsSaving(false);
     }
-
-    setIsModalOpen(false);
   };
 
-  // Excluir prompt
-  const handleDelete = (id: string) => {
-    if (confirm('Tem certeza que deseja excluir este prompt?')) {
-      setPrompts(prompts.filter(p => p.id !== id));
+  // 🔗 Excluir prompt via API
+  const handleDelete = async (id: string) => {
+    if (! confirm('Tem certeza que deseja excluir este prompt?')) return;
+
+    try {
+      await promptsService. delete(id);
+      toast({
+        title: 'Prompt excluído',
+        description:  'O prompt foi removido',
+      });
+      loadPrompts(); // Recarregar lista
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao excluir',
+        description: error.message,
+        variant: 'destructive',
+      });
     }
   };
 
-  // Favoritar/desfavoritar
-  const toggleFavorite = (id: string) => {
-    setPrompts(prompts.map(p =>
-      p.id === id ?  { ...p, isFavorite: !p.isFavorite } : p
-    ));
+  // 🔗 Favoritar/desfavoritar via API
+  const toggleFavorite = async (id:  string) => {
+    try {
+      await promptsService.toggleFavorite(id);
+      loadPrompts(); // Recarregar lista
+    } catch (error: any) {
+      toast({
+        title: 'Erro ao favoritar',
+        description: error.message,
+        variant: 'destructive',
+      });
+    }
   };
 
-  // Copiar prompt para clipboard
-  const handleCopy = (content: string) => {
-    navigator.clipboard.writeText(content);
-    alert('Prompt copiado para a área de transferência!');
+  // 🔗 Copiar prompt e incrementar contador de uso
+  const handleCopy = async (prompt: PromptData) => {
+    try {
+      await navigator.clipboard.writeText(prompt. content);
+      
+      // Incrementar contador de uso na API
+      if (prompt.id) {
+        await promptsService.incrementUsage(prompt.id);
+      }
+      
+      toast({
+        title: 'Copiado!',
+        description:  'Prompt copiado para área de transferência',
+      });
+      
+      loadPrompts(); // Recarregar para atualizar contador
+    } catch (error) {
+      toast({
+        title: 'Erro ao copiar',
+        description: 'Não foi possível copiar o prompt',
+        variant: 'destructive',
+      });
+    }
   };
 
   return (
@@ -201,7 +238,7 @@ export default function Prompts() {
               <Input
                 placeholder="Buscar prompts..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => setSearchTerm(e. target.value)}
                 className="pl-10"
               />
             </div>
@@ -214,7 +251,7 @@ export default function Prompts() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas</SelectItem>
-                {categories. filter(c => c !== 'all').map(cat => (
+                {categories.filter(c => c !== 'all').map(cat => (
                   <SelectItem key={cat} value={cat}>
                     {cat.charAt(0).toUpperCase() + cat.slice(1)}
                   </SelectItem>
@@ -223,87 +260,96 @@ export default function Prompts() {
             </Select>
           </div>
 
-          {/* Grid de Prompts */}
-          {filteredPrompts.length > 0 ? (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-              {filteredPrompts.map((prompt) => (
-                <Card key={prompt.id} className="flex flex-col">
-                  <CardHeader>
-                    <div className="flex items-start justify-between gap-2">
-                      <CardTitle className="text-lg">{prompt.title}</CardTitle>
-                      <Button
-                        variant="ghost"
-                        size="icon"
-                        onClick={() => toggleFavorite(prompt.id)}
-                        className="shrink-0"
-                      >
-                        <Star
-                          className={`h-4 w-4 ${prompt.isFavorite ?  'fill-yellow-500 text-yellow-500' :  ''}`}
-                        />
-                      </Button>
-                    </div>
-                    <CardDescription className="line-clamp-3">
-                      {prompt.content}
-                    </CardDescription>
-                  </CardHeader>
-                  <CardContent className="flex-1 flex flex-col gap-4">
-                    {/* Tags */}
-                    <div className="flex flex-wrap gap-2">
-                      {prompt.tags.map((tag, i) => (
-                        <Badge key={i} variant="secondary" className="text-xs">
-                          {tag}
-                        </Badge>
-                      ))}
-                    </div>
-
-                    {/* Estatísticas */}
-                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
-                      <span>Usado {prompt.usageCount}x</span>
-                      <Badge variant="outline">{prompt.category}</Badge>
-                    </div>
-
-                    {/* Ações */}
-                    <div className="flex gap-2">
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleCopy(prompt.content)}
-                        className="flex-1"
-                      >
-                        <Copy className="h-3 w-3 mr-1" />
-                        Copiar
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleEdit(prompt)}
-                      >
-                        <Edit className="h-3 w-3" />
-                      </Button>
-                      <Button
-                        variant="outline"
-                        size="sm"
-                        onClick={() => handleDelete(prompt.id)}
-                      >
-                        <Trash2 className="h-3 w-3" />
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              ))}
+          {/* Loading State */}
+          {isLoading ?  (
+            <div className="flex items-center justify-center py-12">
+              <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
           ) : (
-            <Card>
-              <CardContent className="flex flex-col items-center justify-center py-12">
-                <p className="text-muted-foreground mb-4">
-                  Nenhum prompt encontrado
-                </p>
-                <Button onClick={handleCreate}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  Criar primeiro prompt
-                </Button>
-              </CardContent>
-            </Card>
+            <>
+              {/* Grid de Prompts */}
+              {filteredPrompts.length > 0 ? (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredPrompts.map((prompt) => (
+                    <Card key={prompt.id} className="flex flex-col">
+                      <CardHeader>
+                        <div className="flex items-start justify-between gap-2">
+                          <CardTitle className="text-lg">{prompt.title}</CardTitle>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            onClick={() => prompt.id && toggleFavorite(prompt.id)}
+                            className="shrink-0"
+                          >
+                            <Star
+                              className={`h-4 w-4 ${prompt.isFavorite ? 'fill-yellow-500 text-yellow-500' : ''}`}
+                            />
+                          </Button>
+                        </div>
+                        <CardDescription className="line-clamp-3">
+                          {prompt.content}
+                        </CardDescription>
+                      </CardHeader>
+                      <CardContent className="flex-1 flex flex-col gap-4">
+                        {/* Tags */}
+                        <div className="flex flex-wrap gap-2">
+                          {prompt.tags.map((tag, i) => (
+                            <Badge key={i} variant="secondary" className="text-xs">
+                              {tag}
+                            </Badge>
+                          ))}
+                        </div>
+
+                        {/* Estatísticas */}
+                        <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                          <span>Usado {prompt.usageCount || 0}x</span>
+                          <Badge variant="outline">{prompt.category}</Badge>
+                        </div>
+
+                        {/* Ações */}
+                        <div className="flex gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleCopy(prompt)}
+                            className="flex-1"
+                          >
+                            <Copy className="h-3 w-3 mr-1" />
+                            Copiar
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => handleEdit(prompt)}
+                          >
+                            <Edit className="h-3 w-3" />
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            onClick={() => prompt.id && handleDelete(prompt. id)}
+                          >
+                            <Trash2 className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      </CardContent>
+                    </Card>
+                  ))}
+                </div>
+              ) : (
+                <Card>
+                  <CardContent className="flex flex-col items-center justify-center py-12">
+                    <p className="text-muted-foreground mb-4">
+                      Nenhum prompt encontrado
+                    </p>
+                    <Button onClick={handleCreate}>
+                      <Plus className="h-4 w-4 mr-2" />
+                      Criar primeiro prompt
+                    </Button>
+                  </CardContent>
+                </Card>
+              )}
+            </>
           )}
         </div>
       </main>
@@ -313,7 +359,7 @@ export default function Prompts() {
         <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
           <DialogHeader>
             <DialogTitle>
-              {editingPrompt ?  'Editar Prompt' : 'Novo Prompt'}
+              {editingPrompt ? 'Editar Prompt' : 'Novo Prompt'}
             </DialogTitle>
             <DialogDescription>
               {editingPrompt ? 'Atualize as informações do prompt' : 'Crie um novo prompt personalizado'}
@@ -323,7 +369,7 @@ export default function Prompts() {
           <div className="space-y-4">
             {/* Título */}
             <div className="space-y-2">
-              <Label htmlFor="title">Título</Label>
+              <Label htmlFor="title">Título *</Label>
               <Input
                 id="title"
                 value={formData.title}
@@ -334,10 +380,10 @@ export default function Prompts() {
 
             {/* Conteúdo */}
             <div className="space-y-2">
-              <Label htmlFor="content">Conteúdo do Prompt</Label>
+              <Label htmlFor="content">Conteúdo do Prompt *</Label>
               <Textarea
                 id="content"
-                value={formData.content}
+                value={formData. content}
                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                 placeholder="Descreva o prompt que você deseja usar com a IA..."
                 rows={6}
@@ -377,11 +423,18 @@ export default function Prompts() {
           </div>
 
           <DialogFooter>
-            <Button variant="outline" onClick={() => setIsModalOpen(false)}>
+            <Button variant="outline" onClick={() => setIsModalOpen(false)} disabled={isSaving}>
               Cancelar
             </Button>
-            <Button onClick={handleSave}>
-              {editingPrompt ? 'Salvar' : 'Criar'}
+            <Button onClick={handleSave} disabled={isSaving}>
+              {isSaving ? (
+                <>
+                  <Loader2 className="h-4 w-4 mr-2 animate-spin" />
+                  Salvando... 
+                </>
+              ) : (
+                editingPrompt ? 'Salvar' : 'Criar'
+              )}
             </Button>
           </DialogFooter>
         </DialogContent>
