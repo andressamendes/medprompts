@@ -8,7 +8,7 @@ describe('Prompts Endpoints', () => {
 
   beforeAll(async () => {
     const testUser = await createTestUser();
-    accessToken = testUser. accessToken;
+    accessToken = testUser.accessToken;
     userId = testUser.userId;
   });
 
@@ -25,7 +25,7 @@ describe('Prompts Endpoints', () => {
         });
 
       expect(res.status).toBe(201);
-      expect(res.body.success).toBe(true);
+      expect(res.body. success).toBe(true);
       expect(res.body.prompt).toHaveProperty('id');
       expect(res.body.prompt. title).toBe('Anamnese Completa');
     });
@@ -44,8 +44,8 @@ describe('Prompts Endpoints', () => {
   });
 
   describe('GET /api/v1/prompts', () => {
-    beforeAll(async () => {
-      // Criar alguns prompts de teste
+    // Criar prompts antes de CADA teste (não beforeAll)
+    beforeEach(async () => {
       await request(app)
         .post('/api/v1/prompts')
         .set('Authorization', `Bearer ${accessToken}`)
@@ -74,8 +74,8 @@ describe('Prompts Endpoints', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
-      expect(Array.isArray(res.body. prompts)).toBe(true);
-      expect(res.body. prompts.length).toBeGreaterThanOrEqual(2);
+      expect(Array.isArray(res. body.prompts)).toBe(true);
+      expect(res.body.prompts.length).toBeGreaterThanOrEqual(2);
     });
 
     it('deve filtrar prompts por categoria', async () => {

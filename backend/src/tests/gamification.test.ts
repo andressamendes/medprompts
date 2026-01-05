@@ -6,20 +6,24 @@ import { createTestUser } from './helpers';
 describe('Gamification Endpoints', () => {
   let accessToken: string;
   let userId: string;
+  let badgeId: string;
 
   beforeAll(async () => {
     const testUser = await createTestUser();
-    accessToken = testUser. accessToken;
+    accessToken = testUser.accessToken;
     userId = testUser.userId;
+  });
 
-    // Criar badge de teste
-    await Badge.create({
+  // Criar badge antes de cada teste (pois afterEach limpa)
+  beforeEach(async () => {
+    const badge = await Badge.create({
       name: 'Primeiro Passo',
       description: 'Seu primeiro badge',
       icon: '🎯',
-      category: 'bronze',
+      category:  'bronze',
       requirement: { type: 'xp', target: 10 },
     });
+    badgeId = badge.id;
   });
 
   describe('GET /api/v1/gamification', () => {
@@ -30,7 +34,7 @@ describe('Gamification Endpoints', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
-      expect(res.body.data).toHaveProperty('xp');
+      expect(res.body. data).toHaveProperty('xp');
       expect(res.body.data).toHaveProperty('streak');
       expect(res.body.data).toHaveProperty('badges');
       expect(res.body.data).toHaveProperty('dailyMissions');
@@ -48,8 +52,8 @@ describe('Gamification Endpoints', () => {
         });
 
       expect(res.status).toBe(200);
-      expect(res.body.success).toBe(true);
-      expect(res.body. data).toHaveProperty('currentXP');
+      expect(res.body. success).toBe(true);
+      expect(res.body.data).toHaveProperty('currentXP');
       expect(res.body.data).toHaveProperty('level');
     });
 
@@ -64,7 +68,7 @@ describe('Gamification Endpoints', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
-      expect(res.body. data. level).toBeGreaterThanOrEqual(1);
+      expect(res.body. data.level).toBeGreaterThanOrEqual(1);
     });
   });
 
@@ -77,6 +81,7 @@ describe('Gamification Endpoints', () => {
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
       expect(Array.isArray(res.body. data)).toBe(true);
+      // Badge foi criado no beforeEach
       expect(res.body.data. length).toBeGreaterThan(0);
     });
   });
