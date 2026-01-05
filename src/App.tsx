@@ -13,10 +13,14 @@ import StudySessions from './pages/StudySessions';
 
 /**
  * Componente principal da aplicação
+ * 
+ * Configuração:
+ * - basename="/medprompts/" para GitHub Pages (deve corresponder ao base do vite.config.ts)
+ * - Todas as rotas públicas e protegidas definidas aqui
  */
 function App() {
   return (
-    <Router basename="/medprompts">
+    <Router basename="/medprompts/">
       <ThemeProvider>
         <AuthProvider>
           <FavoritesProvider>
@@ -53,7 +57,7 @@ function App() {
                   }
                 />
                 
-                {/* Rota padrão: redireciona para home */}
+                {/* Rota padrão:  redireciona para home se rota não existir */}
                 <Route path="*" element={<Navigate to="/" replace />} />
               </Routes>
             </PromptHistoryProvider>

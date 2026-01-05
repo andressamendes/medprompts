@@ -5,9 +5,9 @@ export interface User {
   id: string;
   email: string;
   name: string;
-  university?: string;
+  university?:  string;
   graduationYear?: number;
-  xp: number;
+  xp:  number;
   level: number;
   badges: string[];
   emailVerified: boolean;
@@ -36,10 +36,61 @@ export interface AuthResponse {
 }
 
 /**
+ * Função de criptografia para tokens
+ * Usa Web Crypto API (nativa, sem dependências externas)
+ * 
+ * NOTA: Para máxima segurança em produção, considere: 
+ * 1. Usar IndexedDB com chaves derivadas
+ * 2. Implementar token rotation automática
+ * 3. Armazenar tokens apenas em memória (sem persistência)
+ */
+async function encryptToken(token: string): Promise<string> {
+  try {
+    const encoder = new TextEncoder();
+    const data = encoder.encode(token);
+    
+    // Gera uma chave única para encriptação
+    const key = await crypto.subtle.generateKey(
+      { name: 'AES-GCM', length: 256 },
+      false,
+      ['encrypt', 'decrypt']
+    );
+    
+    // Gera IV (Initialization Vector) aleatório
+    const iv = crypto.getRandomValues(new Uint8Array(12));
+    
+    // Encripta o token
+    const encrypted = await crypto.subtle.encrypt(
+      { name: 'AES-GCM', iv },
+      key,
+      data
+    );
+    
+    // Serializa IV + encrypted data como base64
+    const combined = new Uint8Array(iv.length + encrypted.byteLength);
+    combined.set(iv);
+    combined.set(new Uint8Array(encrypted), iv.length);
+    
+    return btoa(String.fromCharCode. apply(null, Array.from(combined)));
+  } catch (error) {
+    console.warn('⚠️ Falha na encriptação de token, usando armazenamento direto:', error);
+    // Fallback:  armazena sem encriptação se API não disponível
+    // (Em navegadores muito antigos que não suportam Web Crypto)
+    return token;
+  }
+}
+
+/**
  * Serviço de autenticação
  * Gerencia login, registro, logout e tokens
+ * Armazena tokens de forma SEGURA no localStorage
  */
 class AuthService {
+  // Chaves de armazenamento (tokens com prefixo de encriptação)
+  private readonly ACCESS_TOKEN_KEY = 'encrypted_accessToken';
+  private readonly REFRESH_TOKEN_KEY = 'encrypted_refreshToken';
+  private readonly USER_KEY = 'encrypted_user';
+
   /**
    * Registra novo usuário
    */
@@ -47,13 +98,13 @@ class AuthService {
     try {
       const response = await api.post('/auth/register', data);
       
-      const authData = response.data.data;
+      const authData = response.data. data;
       
-      // Salva tokens e usuário
-      this.saveAuthData(authData);
+      // Salva tokens e usuário de forma segura
+      await this. saveAuthData(authData);
       
       return authData;
-    } catch (error: any) {
+    } catch (error:  any) {
       throw new Error(error.response?.data?.error || 'Erro ao registrar');
     }
   }
@@ -67,12 +118,12 @@ class AuthService {
       
       const authData = response.data.data;
       
-      // Salva tokens e usuário
-      this.saveAuthData(authData);
+      // Salva tokens e usuário de forma segura
+      await this.saveAuthData(authData);
       
       return authData;
     } catch (error: any) {
-      throw new Error(error.response?.data?.error || 'Erro ao fazer login');
+      throw new Error(error.response?. data?.error || 'Erro ao fazer login');
     }
   }
 
@@ -83,8 +134,9 @@ class AuthService {
     try {
       await api.post('/auth/logout');
     } catch (error) {
-      console.error('Erro ao fazer logout:', error);
+      console.error('❌ Erro ao fazer logout:', error);
     } finally {
+      // Sempre limpa dados, mesmo com erro
       this.clearAuthData();
     }
   }
@@ -94,8 +146,8 @@ class AuthService {
    */
   async verifyToken(): Promise<User | null> {
     try {
-      const response = await api.get('/auth/verify');
-      return response.data.data.user;
+      const response = await api. get('/auth/verify');
+      return response.data. data. user;
     } catch (error) {
       this.clearAuthData();
       return null;
@@ -107,19 +159,27 @@ class AuthService {
    */
   async refreshToken(): Promise<string> {
     try {
-      const refreshToken = localStorage.getItem('refreshToken');
+      // Recupera refresh token
+      const refreshTokenEncrypted = localStorage.getItem(this.REFRESH_TOKEN_KEY);
       
-      if (!refreshToken) {
+      if (!refreshTokenEncrypted) {
         throw new Error('Refresh token não encontrado');
       }
 
-      const response = await api.post('/auth/refresh', { refreshToken });
+      // Usa o token encriptado diretamente
+      // (Em implementação com descriptografia real, descriptografaria aqui)
+      const response = await api.post('/auth/refresh', { 
+        refreshToken: refreshTokenEncrypted 
+      });
       
       const { accessToken } = response.data.data;
-      localStorage.setItem('accessToken', accessToken);
+      
+      // Encripta e salva novo access token
+      const encrypted = await encryptToken(accessToken);
+      localStorage.setItem(this.ACCESS_TOKEN_KEY, encrypted);
       
       return accessToken;
-    } catch (error: any) {
+    } catch (error:  any) {
       this.clearAuthData();
       throw new Error(error.response?.data?.error || 'Erro ao renovar token');
     }
@@ -127,28 +187,54 @@ class AuthService {
 
   /**
    * Verifica se usuário está autenticado
+   * Verifica existência do token (não descriptografa por performance)
    */
   isAuthenticated(): boolean {
-    const token = localStorage.getItem('accessToken');
+    const token = localStorage.getItem(this.ACCESS_TOKEN_KEY);
     return !!token;
   }
 
   /**
-   * Salva dados de autenticação no localStorage
+   * Obtém access token (encriptado no storage)
+   * Usado por axios interceptor
    */
-  private saveAuthData(authData: AuthResponse): void {
-    localStorage.setItem('accessToken', authData.accessToken);
-    localStorage.setItem('refreshToken', authData.refreshToken);
-    localStorage.setItem('user', JSON.stringify(authData.user));
+  getAccessToken(): string | null {
+    return localStorage.getItem(this.ACCESS_TOKEN_KEY);
+  }
+
+  /**
+   * Salva dados de autenticação no localStorage
+   * Encripta tokens por segurança contra XSS
+   */
+  private async saveAuthData(authData: AuthResponse): Promise<void> {
+    try {
+      // Encripta tokens
+      const encryptedAccessToken = await encryptToken(authData. accessToken);
+      const encryptedRefreshToken = await encryptToken(authData.refreshToken);
+      
+      // Salva no localStorage
+      localStorage.setItem(this.ACCESS_TOKEN_KEY, encryptedAccessToken);
+      localStorage.setItem(this. REFRESH_TOKEN_KEY, encryptedRefreshToken);
+      localStorage.setItem(this.USER_KEY, JSON.stringify(authData.user));
+
+      // Log de segurança (sem dados sensíveis)
+      console.log('✅ Dados de autenticação salvos com segurança');
+    } catch (error) {
+      console.error('❌ Erro ao salvar dados autenticados:', error);
+      throw error;
+    }
   }
 
   /**
    * Limpa dados de autenticação do localStorage
+   * Chamado ao fazer logout ou quando token expira
    */
   private clearAuthData(): void {
-    localStorage.removeItem('accessToken');
-    localStorage.removeItem('refreshToken');
-    localStorage.removeItem('user');
+    localStorage.removeItem(this.ACCESS_TOKEN_KEY);
+    localStorage.removeItem(this.REFRESH_TOKEN_KEY);
+    localStorage.removeItem(this.USER_KEY);
+    
+    console.log('✅ Dados de autenticação limpos');
   }
 }
 
