@@ -21,9 +21,9 @@ export interface BadgeData {
   description: string;
   icon: string;
   unlockedAt?: string;
-  isUnlocked: boolean;
+  isUnlocked:  boolean;
   progress?:  number;
-  target?:  number;
+  target?: number;
 }
 
 /**
@@ -53,8 +53,8 @@ export interface DailyMissionData {
  * Interface para dados completos de gamificação
  */
 export interface GamificationData {
-  xp: UserXPData;
-  badges:  BadgeData[];
+  xp:  UserXPData;
+  badges: BadgeData[];
   streak: StreakData;
   dailyMissions: DailyMissionData[];
 }
@@ -75,7 +75,7 @@ class GamificationService {
           Authorization: `Bearer ${token}`,
         },
       });
-      return response. data;
+      return response.data;
     } catch (error:  any) {
       console.error('Erro ao buscar dados de gamificação:', error);
       throw new Error(error.response?.data?.message || 'Erro ao buscar dados de gamificação');
@@ -93,10 +93,10 @@ class GamificationService {
           Authorization: `Bearer ${token}`,
         },
       });
-      return response.data;
+      return response. data;
     } catch (error: any) {
       console.error('Erro ao buscar XP:', error);
-      throw new Error(error.response?. data?.message || 'Erro ao buscar XP');
+      throw new Error(error.response?.data?. message || 'Erro ao buscar XP');
     }
   }
 
@@ -137,7 +137,7 @@ class GamificationService {
       return response.data;
     } catch (error: any) {
       console.error('Erro ao buscar badges:', error);
-      throw new Error(error. response?.data?.message || 'Erro ao buscar badges');
+      throw new Error(error.response?.data?.message || 'Erro ao buscar badges');
     }
   }
 
@@ -151,7 +151,7 @@ class GamificationService {
         `${API_URL}/api/gamification/badges/${badgeId}/unlock`,
         {},
         {
-          headers:  {
+          headers: {
             Authorization: `Bearer ${token}`,
           },
         }
@@ -159,7 +159,7 @@ class GamificationService {
       return response.data;
     } catch (error: any) {
       console.error('Erro ao desbloquear badge:', error);
-      throw new Error(error.response?. data?.message || 'Erro ao desbloquear badge');
+      throw new Error(error.response?.data?.message || 'Erro ao desbloquear badge');
     }
   }
 
@@ -288,7 +288,7 @@ class GamificationService {
   /**
    * Buscar ranking de usuários (leaderboard)
    */
-  async getLeaderboard(limit:  number = 10): Promise<{ userId: string; name: string; level: number; xp: number; rank: number }[]> {
+  async getLeaderboard(limit: number = 10): Promise<{ userId: string; name: string; level: number; xp: number; rank: number }[]> {
     try {
       const token = localStorage.getItem('token');
       const response = await axios.get(`${API_URL}/api/gamification/leaderboard`, {
