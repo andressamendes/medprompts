@@ -14,7 +14,9 @@ import StudySessions from './pages/StudySessions';
 import GuiaIAs from './pages/GuiaIAs';
 import Ferramentas from './pages/Ferramentas';
 import FocusZone from './pages/FocusZone';
+import Profile from './pages/Profile';
 import NotFound from './pages/NotFound';
+
 
 /**
  * Componente principal da aplicação
@@ -80,6 +82,14 @@ function App() {
                     </ProtectedRoute>
                   }
                 />
+                <Route
+                  path="/profile"
+                  element={
+                    <ProtectedRoute>
+                      <Profile />
+                    </ProtectedRoute>
+                  }
+                />
                 
                 {/* Rota 404 */}
                 <Route path="*" element={<NotFound />} />
@@ -91,5 +101,6 @@ function App() {
     </Router>
   );
 }
+
 
 export default App;

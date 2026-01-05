@@ -1,252 +1,151 @@
-import axios, { AxiosError, AxiosResponse, InternalAxiosRequestConfig } from 'axios';
+import axios, { AxiosInstance } from 'axios';
 
-// Base URL da API (vem do . env)
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001/api/v1';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
 
-if (process.env.NODE_ENV === 'development') {
-  console.log('🔗 API URL configurada:', API_URL);
+// Interface estendida do Axios com nossos métodos customizados
+interface CustomAxiosInstance extends AxiosInstance {
+  getProfile: () => ReturnType<typeof profileAPI.getProfile>;
+  updateProfile: typeof profileAPI.updateProfile;
+  uploadAvatar: typeof profileAPI.uploadAvatar;
+  changePassword: typeof profileAPI.changePassword;
+  getPreferences: typeof profileAPI.getPreferences;
+  updatePreferences: typeof profileAPI.updatePreferences;
 }
 
-/**
- * Tipos para respostas da API
- */
-interface RefreshTokenResponse {
-  accessToken: string;
-  refreshToken: string;
-}
-
-/**
- * Cliente HTTP configurado
- */
-const api = axios.create({
+const apiInstance = axios.create({
   baseURL: API_URL,
-  timeout: 30000,
   headers: {
     'Content-Type': 'application/json',
   },
 });
 
-/**
- * Interceptor de requisições
- * Adiciona token de autenticação automaticamente
- */
-api.interceptors.request.use(
-  (config: InternalAxiosRequestConfig) => {
-    try {
-      const token = localStorage. getItem('encrypted_accessToken');
-      
-      if (token && config.headers) {
-        config.headers.Authorization = `Bearer ${token}`;
-      }
-      
-      return config;
-    } catch (error) {
-      console.error('[API] Erro ao adicionar token:', error);
-      return config;
+// Interceptor para adicionar token em todas as requisições
+apiInstance.interceptors.request.use(
+  (config) => {
+    const token = localStorage.getItem('token');
+    if (token) {
+      config.headers.Authorization = `Bearer ${token}`;
     }
+    return config;
   },
-  (error: unknown) => {
-    console.error('[API] Erro na requisição:', error);
+  (error) => {
     return Promise.reject(error);
   }
 );
 
-/**
- * Validação de resposta de refresh token
- */
-function isValidRefreshResponse(response: unknown): response is AxiosResponse<{ data: RefreshTokenResponse }> {
-  return (
-    response instanceof Object &&
-    'data' in response &&
-    typeof response.data === 'object' &&
-    response.data !== null &&
-    'data' in response.data &&
-    typeof response.data.data === 'object' &&
-    response.data.data !== null &&
-    'accessToken' in response.data.data &&
-    typeof response.data.data.accessToken === 'string'
-  );
-}
-
-/**
- * Validação de erro de resposta
- */
-function isAxiosError(error: unknown): error is AxiosError {
-  return error instanceof AxiosError;
-}
-
-/**
- * Tipo para config com retry flag
- */
-interface RequestConfigWithRetry extends InternalAxiosRequestConfig {
-  _retry?: boolean;
-}
-
-/**
- * Interceptor de respostas
- * Trata erros 401 (token expirado) e faz refresh automático
- * Sincroniza logout entre abas
- */
-api.interceptors.response.use(
-  (response: AxiosResponse) => response,
-  async (error: unknown) => {
-    try {
-      // Validação de segurança:    verifica se é um AxiosError
-      if (! isAxiosError(error)) {
-        console.error('[API] Erro desconhecido:', error);
-        return Promise.reject(error);
-      }
-
-      // Validação:    verifica se error.config existe
-      const originalRequest = error.config as RequestConfigWithRetry;
-      
-      if (!originalRequest) {
-        console.error('[API] Config não disponível');
-        return Promise.reject(error);
-      }
-
-      const statusCode = error.response?.status;
-
-      // Se erro 401 (não autorizado) e não é retry
-      if (statusCode === 401 && !originalRequest._retry) {
-        originalRequest._retry = true;
-
-        try {
-          const refreshToken = localStorage.getItem('encrypted_refreshToken');
-          
-          // Validação: refresh token deve existir
-          if (!refreshToken || typeof refreshToken !== 'string') {
-            handleLogoutSync();
-            return Promise.reject(new Error('Refresh token não disponível'));
-          }
-
-          // Tenta renovar token
-          let response:  unknown;
-          try {
-            response = await axios.post(`${API_URL}/auth/refresh`, {
-              refreshToken,
-            });
-          } catch (refreshError) {
-            if (process.env.NODE_ENV === 'development') {
-              console. error('[API] Erro ao chamar refresh:', refreshError);
-            }
-            handleLogoutSync();
-            return Promise.reject(refreshError);
-          }
-
-          // Validação rigorosa da resposta
-          if (! isValidRefreshResponse(response)) {
-            if (process.env.NODE_ENV === 'development') {
-              console.error('[API] Resposta refresh inválida');
-            }
-            handleLogoutSync();
-            return Promise.reject(new Error('Resposta inválida do servidor'));
-          }
-
-          const { accessToken } = response.data.data;
-          
-          // Validação: token renovado deve ser string não-vazia
-          if (! accessToken || typeof accessToken !== 'string') {
-            handleLogoutSync();
-            return Promise. reject(new Error('Token renovado inválido'));
-          }
-
-          // Salva novo token com validação
-          try {
-            localStorage.setItem('encrypted_accessToken', accessToken);
-          } catch (storageError) {
-            console. error('[API] Erro ao salvar token:', storageError);
-            return Promise.reject(storageError);
-          }
-
-          // Atualiza header da requisição original
-          if (originalRequest.headers) {
-            originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-          }
-          
-          if (process.env.NODE_ENV === 'development') {
-            console.log('[API] Token renovado com sucesso');
-          }
-          
-          // Retry da requisição com novo token
-          return api(originalRequest);
-        } catch (refreshError) {
-          console.error('[API] Erro inesperado:', refreshError);
-          handleLogoutSync();
-          return Promise.reject(refreshError);
-        }
-      }
-
-      // Se erro 403 ou 401 sem retry, faz logout
-      if ((statusCode === 403 || statusCode === 401) && originalRequest._retry) {
-        handleLogoutSync();
-        return Promise.reject(new Error('Sessão expirada'));
-      }
-
-      // Se erro 500+, loga
-      if (statusCode && statusCode >= 500) {
-        console.error('[API] Erro 500+:', statusCode);
-      }
-
-      return Promise.reject(error);
-    } catch (unexpectedError) {
-      console.error('[API] Erro no interceptor:', unexpectedError);
-      return Promise.reject(unexpectedError);
+// Interceptor para tratar erros de autenticação
+apiInstance.interceptors.response.use(
+  (response) => response,
+  (error) => {
+    if (error.response?.status === 401) {
+      localStorage.removeItem('token');
+      localStorage.removeItem('user');
+      window.location.href = '/login';
     }
+    return Promise.reject(error);
   }
 );
 
-/**
- * Faz logout sincronizado entre abas
- */
-function handleLogoutSync(): void {
-  try {
-    localStorage.removeItem('encrypted_accessToken');
-    localStorage.removeItem('encrypted_refreshToken');
-    localStorage.removeItem('encrypted_user');
-    
-    const logoutEvent = new CustomEvent('auth-logout', {
-      detail:   { timestamp: Date.now(), source: 'api-interceptor' }
-    });
-    
-    window.dispatchEvent(logoutEvent);
-    
-    if (process.env.NODE_ENV === 'development') {
-      console.log('[API] Logout sincronizado');
-    }
-  } catch (error) {
-    console.error('[API] Erro ao fazer logout:', error);
-  }
-}
+// Métodos de autenticação
+export const authAPI = {
+  login: (email: string, password: string) =>
+    apiInstance.post('/auth/login', { email, password }),
+  
+  register: (name: string, email: string, password: string) =>
+    apiInstance.post('/auth/register', { name, email, password }),
+  
+  logout: () => apiInstance.post('/auth/logout'),
+};
 
-/**
- * Listener para sincronizar logout de outras abas
- */
-window.addEventListener('storage', (event:  StorageEvent) => {
-  try {
-    if (
-      (event.key === 'encrypted_accessToken' || 
-       event.key === 'encrypted_refreshToken') &&
-      event.newValue === null
-    ) {
-      const logoutEvent = new CustomEvent('auth-logout', {
-        detail:  { source: 'other-tab', timestamp: Date.now() }
-      });
-      
-      window.dispatchEvent(logoutEvent);
-    }
-  } catch (error) {
-    console.error('[API] Erro ao processar storage event:', error);
-  }
-});
+// Métodos de perfil de usuário
+export const profileAPI = {
+  getProfile: () => apiInstance.get('/profile'),
+  
+  updateProfile: (data: {
+    name: string;
+    university: string;
+    graduationYear: number;
+  }) => apiInstance.put('/profile', data),
+  
+  uploadAvatar: (formData: FormData) =>
+    apiInstance.post('/profile/avatar', formData, {
+      headers: {
+        'Content-Type': 'multipart/form-data',
+      },
+    }),
+  
+  changePassword: (data: {
+    currentPassword: string;
+    newPassword: string;
+    confirmPassword: string;
+  }) => apiInstance.put('/profile/password', data),
+  
+  getPreferences: () => apiInstance.get('/profile/preferences'),
+  
+  updatePreferences: (data: {
+    theme: 'light' | 'dark' | 'system';
+    notifications: boolean;
+    emailNotifications: boolean;
+  }) => apiInstance.put('/profile/preferences', data),
+};
 
-/**
- * Listener global para erros de rede
- */
-window.addEventListener('error', (event: ErrorEvent) => {
-  if (event.message?.includes('Network')) {
-    console.error('[API] Erro de rede:', event.message);
-  }
-});
+// Métodos de prompts
+export const promptsAPI = {
+  getPrompts: () => apiInstance.get('/prompts'),
+  
+  getPromptById: (id: string) => apiInstance.get(`/prompts/${id}`),
+  
+  createPrompt: (data: {
+    title: string;
+    content: string;
+    specialty: string;
+    tags: string[];
+  }) => apiInstance.post('/prompts', data),
+  
+  updatePrompt: (id: string, data: {
+    title: string;
+    content: string;
+    specialty: string;
+    tags: string[];
+  }) => apiInstance.put(`/prompts/${id}`, data),
+  
+  deletePrompt: (id: string) => apiInstance.delete(`/prompts/${id}`),
+  
+  favoritePrompt: (id: string) => apiInstance.post(`/prompts/${id}/favorite`),
+  
+  unfavoritePrompt: (id: string) => apiInstance.delete(`/prompts/${id}/favorite`),
+};
+
+// Métodos de sessões de estudo
+export const studySessionsAPI = {
+  getSessions: () => apiInstance.get('/study-sessions'),
+  
+  getSessionById: (id: string) => apiInstance.get(`/study-sessions/${id}`),
+  
+  createSession: (data: {
+    title: string;
+    subject: string;
+    notes: string;
+  }) => apiInstance.post('/study-sessions', data),
+  
+  updateSession: (id: string, data: {
+    title: string;
+    subject: string;
+    notes: string;
+  }) => apiInstance.put(`/study-sessions/${id}`, data),
+  
+  deleteSession: (id: string) => apiInstance.delete(`/study-sessions/${id}`),
+};
+
+// Criar instância customizada com métodos adicionais
+const api = apiInstance as CustomAxiosInstance;
+
+// Adicionar métodos de compatibilidade
+api.getProfile = profileAPI.getProfile;
+api.updateProfile = profileAPI.updateProfile;
+api.uploadAvatar = profileAPI.uploadAvatar;
+api.changePassword = profileAPI.changePassword;
+api.getPreferences = profileAPI.getPreferences;
+api.updatePreferences = profileAPI.updatePreferences;
 
 export default api;
