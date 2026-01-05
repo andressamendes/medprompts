@@ -1,4 +1,5 @@
 import { useState, useEffect } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsContent, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Input } from '@/components/ui/input';
@@ -7,8 +8,9 @@ import { Button } from '@/components/ui/button';
 import { Switch } from '@/components/ui/switch';
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
-import { User, Lock, Settings, Upload, Loader2 } from 'lucide-react';
+import { User, Lock, Settings, Upload, Loader2, ArrowLeft } from 'lucide-react';
 import { authService } from '@/services/auth.service';
+
 interface UserProfile {
   name: string;
   email: string;
@@ -31,6 +33,7 @@ interface Preferences {
 
 export default function Profile() {
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   // Estados
   const [profile, setProfile] = useState<UserProfile>({
@@ -67,6 +70,7 @@ export default function Profile() {
     try {
       // Carrega dados do usuário autenticado diretamente do localStorage
       const currentUser = authService.getCurrentUser();
+      
       if (currentUser) {
         setProfile({
           name: currentUser.name,
@@ -157,7 +161,7 @@ export default function Profile() {
     const hasUpperCase = /[A-Z]/.test(passwordData.newPassword);
     const hasLowerCase = /[a-z]/.test(passwordData.newPassword);
     const hasNumber = /[0-9]/.test(passwordData.newPassword);
-
+    
     if (!hasUpperCase || !hasLowerCase || !hasNumber) {
       toast({
         title: 'Senha fraca',
@@ -186,6 +190,7 @@ export default function Profile() {
     if (!validateGraduationYear(profile.graduationYear)) return;
 
     setIsLoadingProfile(true);
+
     try {
       // Atualiza no authService
       const currentUser = authService.getCurrentUser();
@@ -199,8 +204,13 @@ export default function Profile() {
       
       toast({
         title: 'Sucesso!',
-        description: 'Perfil atualizado com sucesso',
+        description: 'Perfil atualizado com sucesso. Redirecionando...',
       });
+
+      // Redireciona para o dashboard após 1 segundo
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1000);
     } catch (error) {
       toast({
         title: 'Erro',
@@ -239,31 +249,33 @@ export default function Profile() {
 
     // Criar preview
     const reader = new FileReader();
-    reader.onloadend = () => {
-      setAvatarPreview(reader.result as string);
+    reader.onloadend = async () => {
+      const avatarData = reader.result as string;
+      setAvatarPreview(avatarData);
+
+      // Salvar no perfil
+      const currentUser = authService.getCurrentUser();
+      if (currentUser) {
+        try {
+          await authService.updateUser(currentUser.id, {
+            avatar: avatarData
+          });
+          setProfile(prev => ({ ...prev, avatar: avatarData }));
+          
+          toast({
+            title: 'Sucesso!',
+            description: 'Avatar atualizado com sucesso',
+          });
+        } catch (error) {
+          toast({
+            title: 'Erro',
+            description: 'Não foi possível fazer upload do avatar',
+            variant: 'destructive'
+          });
+        }
+      }
     };
     reader.readAsDataURL(file);
-
-    // Salvar no perfil
-    const currentUser = authService.getCurrentUser();
-    if (currentUser) {
-      try {
-        await authService.updateUser(currentUser.id, {
-          avatar: reader.result as string
-        });
-        setProfile(prev => ({ ...prev, avatar: reader.result as string }));
-        toast({
-          title: 'Sucesso!',
-          description: 'Avatar atualizado com sucesso',
-        });
-      } catch (error) {
-        toast({
-          title: 'Erro',
-          description: 'Não foi possível fazer upload do avatar',
-          variant: 'destructive'
-        });
-      }
-    }
   };
 
   // Alterar senha
@@ -271,17 +283,24 @@ export default function Profile() {
     if (!validatePassword()) return;
 
     setIsLoadingPassword(true);
+
     try {
       // Mock - Em produção real verificaria senha atual
       toast({
         title: 'Sucesso!',
-        description: 'Senha alterada com sucesso',
+        description: 'Senha alterada com sucesso. Redirecionando...',
       });
+
       setPasswordData({
         currentPassword: '',
         newPassword: '',
         confirmPassword: ''
       });
+
+      // Redireciona para o dashboard após 1 segundo
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1000);
     } catch (error: any) {
       toast({
         title: 'Erro',
@@ -296,12 +315,18 @@ export default function Profile() {
   // Salvar preferências
   const handleSavePreferences = async () => {
     setIsLoadingPreferences(true);
+
     try {
       // Mock - Em produção salvaria no backend
       toast({
         title: 'Sucesso!',
-        description: 'Preferências atualizadas com sucesso',
+        description: 'Preferências atualizadas com sucesso. Redirecionando...',
       });
+
+      // Redireciona para o dashboard após 1 segundo
+      setTimeout(() => {
+        navigate('/dashboard');
+      }, 1000);
     } catch (error) {
       toast({
         title: 'Erro',
@@ -316,6 +341,16 @@ export default function Profile() {
   return (
     <div className="container max-w-4xl mx-auto px-4 py-8 md:py-12">
       <div className="mb-8">
+        <Button 
+          variant="ghost" 
+          size="sm" 
+          onClick={() => navigate('/dashboard')}
+          className="mb-4 flex items-center gap-2"
+        >
+          <ArrowLeft className="h-4 w-4" />
+          Voltar ao Dashboard
+        </Button>
+        
         <h1 className="text-3xl md:text-4xl font-bold mb-2">Meu Perfil</h1>
         <p className="text-muted-foreground">Gerencie suas informações pessoais e preferências</p>
       </div>
