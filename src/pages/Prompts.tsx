@@ -1,8 +1,18 @@
 import { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { useAuth } from '../contexts/AuthContext';
+import { AuthenticatedNavbar } from '@/components/AuthenticatedNavbar';
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
+import { Textarea } from '@/components/ui/textarea';
+import { Badge } from '@/components/ui/badge';
+import { Plus, Search, Star, Trash2, Edit, Copy, Filter } from 'lucide-react';
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 
-// Interfaces
+/**
+ * Interface para Prompt personalizado
+ */
 interface Prompt {
   id: string;
   title: string;
@@ -14,10 +24,12 @@ interface Prompt {
   createdAt: string;
 }
 
-const Prompts = () => {
-  const navigate = useNavigate();
-  const { user, logout } = useAuth();
-  
+/**
+ * Página Prompts - CRUD de prompts personalizados
+ * Permite:  Criar, editar, excluir, favoritar, copiar prompts
+ * Integrada com AuthenticatedNavbar
+ */
+export default function Prompts() {
   const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [filteredPrompts, setFilteredPrompts] = useState<Prompt[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -28,41 +40,41 @@ const Prompts = () => {
   const [formData, setFormData] = useState({
     title: '',
     content: '',
-    category: 'geral',
+    category:  'geral',
     tags: '',
   });
 
-  const categories = ['all', 'anatomia', 'fisiologia', 'farmacologia', 'clinica', 'geral'];
+  const categories = ['all', 'anatomia', 'fisiologia', 'farmacologia', 'clinica', 'cirurgia', 'pediatria', 'geral'];
 
-  // 🎭 MOCK: Carrega prompts simulados
+  // 🎭 MOCK:  Carrega prompts simulados
   useEffect(() => {
-    const mockPrompts: Prompt[] = [
+    const mockPrompts:  Prompt[] = [
       {
         id: '1',
-        title: 'Resumo de Anatomia',
+        title: 'Resumo de Anatomia Cardiovascular',
         content: 'Explique de forma detalhada o sistema cardiovascular humano, incluindo estrutura do coração, circulação sanguínea e principais vasos.',
         category: 'anatomia',
-        tags: ['cardiovascular', 'coração'],
+        tags: ['cardiovascular', 'coração', 'vasos'],
         isFavorite: true,
         usageCount: 15,
         createdAt: new Date().toISOString(),
       },
       {
         id: '2',
-        title: 'Farmacologia - Anti-hipertensivos',
-        content: 'Liste os principais grupos de medicamentos anti-hipertensivos, seus mecanismos de ação, indicações e contraindicações.',
+        title:  'Farmacologia - Anti-hipertensivos',
+        content:  'Liste os principais grupos de medicamentos anti-hipertensivos, seus mecanismos de ação, indicações e contraindicações.',
         category: 'farmacologia',
         tags: ['hipertensão', 'medicamentos'],
         isFavorite: false,
         usageCount: 8,
-        createdAt: new Date().toISOString(),
+        createdAt:  new Date().toISOString(),
       },
       {
         id: '3',
         title: 'Diagnóstico diferencial - Dor torácica',
         content: 'Faça um diagnóstico diferencial completo de dor torácica em paciente de 55 anos, considerando principais causas e exames complementares.',
         category: 'clinica',
-        tags: ['diagnóstico', 'emergência'],
+        tags: ['diagnóstico', 'emergência', 'dor torácica'],
         isFavorite: true,
         usageCount: 23,
         createdAt: new Date().toISOString(),
@@ -83,9 +95,10 @@ const Prompts = () => {
 
     // Filtro por busca
     if (searchTerm) {
-      filtered = filtered.filter(p =>
+      filtered = filtered. filter(p =>
         p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.content.toLowerCase().includes(searchTerm.toLowerCase())
+        p.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
       );
     }
 
@@ -95,7 +108,7 @@ const Prompts = () => {
   // Abrir modal para criar
   const handleCreate = () => {
     setEditingPrompt(null);
-    setFormData({ title: '', content: '', category: 'geral', tags: '' });
+    setFormData({ title: '', content: '', category:  'geral', tags: '' });
     setIsModalOpen(true);
   };
 
@@ -106,34 +119,27 @@ const Prompts = () => {
       title: prompt.title,
       content: prompt.content,
       category: prompt.category,
-      tags: prompt.tags.join(', '),
+      tags: prompt.tags. join(', '),
     });
     setIsModalOpen(true);
   };
 
   // Salvar prompt (criar ou editar)
   const handleSave = () => {
-    if (!formData.title.trim() || !formData.content.trim()) {
-      alert('Preencha título e conteúdo');
-      return;
-    }
-
     const tags = formData.tags.split(',').map(t => t.trim()).filter(t => t);
 
     if (editingPrompt) {
-      // Editar
+      // Editar existente
       setPrompts(prompts.map(p =>
         p.id === editingPrompt.id
-          ? { ...p, ...formData, tags }
-          : p
+          ? { ...p, ... formData, tags }
+          :  p
       ));
     } else {
       // Criar novo
-      const newPrompt: Prompt = {
+      const newPrompt:  Prompt = {
         id: Date.now().toString(),
-        title: formData.title,
-        content: formData.content,
-        category: formData.category,
+        ...formData,
         tags,
         isFavorite: false,
         usageCount: 0,
@@ -145,559 +151,258 @@ const Prompts = () => {
     setIsModalOpen(false);
   };
 
-  // Deletar prompt
+  // Excluir prompt
   const handleDelete = (id: string) => {
-    if (confirm('Tem certeza que deseja deletar este prompt?')) {
+    if (confirm('Tem certeza que deseja excluir este prompt?')) {
       setPrompts(prompts.filter(p => p.id !== id));
     }
   };
 
-  // Toggle favorito
-  const handleToggleFavorite = (id: string) => {
+  // Favoritar/desfavoritar
+  const toggleFavorite = (id: string) => {
     setPrompts(prompts.map(p =>
-      p.id === id ? { ...p, isFavorite: !p.isFavorite } : p
+      p.id === id ?  { ...p, isFavorite: !p.isFavorite } : p
     ));
   };
 
-  // Copiar prompt
-  const handleCopy = async (prompt: Prompt) => {
-    try {
-      await navigator.clipboard.writeText(prompt.content);
-      alert('✅ Prompt copiado!');
-      // Incrementa uso
-      setPrompts(prompts.map(p =>
-        p.id === prompt.id ? { ...p, usageCount: p.usageCount + 1 } : p
-      ));
-    } catch (error) {
-      alert('❌ Erro ao copiar');
-    }
-  };
-
-  const handleLogout = async () => {
-    await logout();
-    navigate('/login');
+  // Copiar prompt para clipboard
+  const handleCopy = (content: string) => {
+    navigator.clipboard.writeText(content);
+    alert('Prompt copiado para a área de transferência!');
   };
 
   return (
-    <div style={styles.container}>
-      {/* Header */}
-      <header style={styles.header}>
-        <div style={styles.headerContent}>
-          <h1 style={styles.logo} onClick={() => navigate('/dashboard')}>
-            🎯 MedPrompts
-          </h1>
-          <nav style={styles.nav}>
-            <button onClick={() => navigate('/dashboard')} style={styles.navButton}>
-              Dashboard
-            </button>
-            <button onClick={() => navigate('/prompts')} style={{ ...styles.navButton, ...styles.navButtonActive }}>
-              Prompts
-            </button>
-            <button onClick={() => navigate('/study')} style={styles.navButton}>
-              Estudo
-            </button>
-          </nav>
-          <div style={styles.userInfo}>
-            <span style={styles.userName}>{user?.name}</span>
-            <button onClick={handleLogout} style={styles.logoutButton}>
-              Sair
-            </button>
-          </div>
-        </div>
-      </header>
+    <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
+      {/* Navbar Autenticada */}
+      <AuthenticatedNavbar />
 
       {/* Main Content */}
-      <main style={styles.main}>
-        {/* Toolbar */}
-        <div style={styles.toolbar}>
-          <h2 style={styles.pageTitle}>Meus Prompts</h2>
-          <button onClick={handleCreate} style={styles.createButton}>
-            + Novo Prompt
-          </button>
-        </div>
-
-        {/* Filters */}
-        <div style={styles.filters}>
-          <input
-            type="text"
-            placeholder="🔍 Buscar prompts..."
-            value={searchTerm}
-            onChange={(e) => setSearchTerm(e.target.value)}
-            style={styles.searchInput}
-          />
-          <select
-            value={selectedCategory}
-            onChange={(e) => setSelectedCategory(e.target.value)}
-            style={styles.categorySelect}
-          >
-            <option value="all">Todas as categorias</option>
-            {categories.filter(c => c !== 'all').map(cat => (
-              <option key={cat} value={cat}>
-                {cat.charAt(0).toUpperCase() + cat.slice(1)}
-              </option>
-            ))}
-          </select>
-        </div>
-
-        {/* Mock Warning */}
-        <div style={styles.mockWarning}>
-          🎭 <strong>MODO MOCK:</strong> Dados simulados. Criar, editar e deletar funcionam localmente. Backend integrará automaticamente.
-        </div>
-
-        {/* Prompts List */}
-        {filteredPrompts.length === 0 ? (
-          <div style={styles.emptyState}>
-            <p style={styles.emptyText}>Nenhum prompt encontrado</p>
-            <button onClick={handleCreate} style={styles.createButton}>
-              Criar primeiro prompt
-            </button>
+      <main className="container mx-auto px-4 py-8">
+        <div className="space-y-6">
+          {/* Header */}
+          <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
+            <div>
+              <h1 className="text-4xl font-bold tracking-tight">Meus Prompts</h1>
+              <p className="text-muted-foreground">
+                {filteredPrompts.length} {filteredPrompts.length === 1 ? 'prompt' :  'prompts'}
+              </p>
+            </div>
+            <Button onClick={handleCreate} className="flex items-center gap-2">
+              <Plus className="h-4 w-4" />
+              Novo Prompt
+            </Button>
           </div>
-        ) : (
-          <div style={styles.promptsGrid}>
-            {filteredPrompts.map(prompt => (
-              <div key={prompt.id} style={styles.promptCard}>
-                <div style={styles.promptHeader}>
-                  <div>
-                    <h3 style={styles.promptTitle}>{prompt.title}</h3>
-                    <div style={styles.promptMeta}>
-                      <span style={styles.categoryBadge}>{prompt.category}</span>
-                      <span style={styles.usageCount}>📊 {prompt.usageCount} usos</span>
+
+          {/* Filtros */}
+          <div className="flex flex-col sm:flex-row gap-4">
+            {/* Busca */}
+            <div className="flex-1 relative">
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              <Input
+                placeholder="Buscar prompts..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+
+            {/* Filtro de categoria */}
+            <Select value={selectedCategory} onValueChange={setSelectedCategory}>
+              <SelectTrigger className="w-full sm:w-[180px]">
+                <Filter className="h-4 w-4 mr-2" />
+                <SelectValue />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="all">Todas</SelectItem>
+                {categories. filter(c => c !== 'all').map(cat => (
+                  <SelectItem key={cat} value={cat}>
+                    {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
+
+          {/* Grid de Prompts */}
+          {filteredPrompts.length > 0 ? (
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+              {filteredPrompts.map((prompt) => (
+                <Card key={prompt.id} className="flex flex-col">
+                  <CardHeader>
+                    <div className="flex items-start justify-between gap-2">
+                      <CardTitle className="text-lg">{prompt.title}</CardTitle>
+                      <Button
+                        variant="ghost"
+                        size="icon"
+                        onClick={() => toggleFavorite(prompt.id)}
+                        className="shrink-0"
+                      >
+                        <Star
+                          className={`h-4 w-4 ${prompt.isFavorite ?  'fill-yellow-500 text-yellow-500' :  ''}`}
+                        />
+                      </Button>
                     </div>
-                  </div>
-                  <button
-                    onClick={() => handleToggleFavorite(prompt.id)}
-                    style={styles.favoriteButton}
-                  >
-                    {prompt.isFavorite ? '⭐' : '☆'}
-                  </button>
-                </div>
+                    <CardDescription className="line-clamp-3">
+                      {prompt.content}
+                    </CardDescription>
+                  </CardHeader>
+                  <CardContent className="flex-1 flex flex-col gap-4">
+                    {/* Tags */}
+                    <div className="flex flex-wrap gap-2">
+                      {prompt.tags.map((tag, i) => (
+                        <Badge key={i} variant="secondary" className="text-xs">
+                          {tag}
+                        </Badge>
+                      ))}
+                    </div>
 
-                <p style={styles.promptContent}>
-                  {prompt.content.length > 150
-                    ? prompt.content.substring(0, 150) + '...'
-                    : prompt.content}
+                    {/* Estatísticas */}
+                    <div className="flex items-center gap-4 text-xs text-muted-foreground">
+                      <span>Usado {prompt.usageCount}x</span>
+                      <Badge variant="outline">{prompt.category}</Badge>
+                    </div>
+
+                    {/* Ações */}
+                    <div className="flex gap-2">
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleCopy(prompt.content)}
+                        className="flex-1"
+                      >
+                        <Copy className="h-3 w-3 mr-1" />
+                        Copiar
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleEdit(prompt)}
+                      >
+                        <Edit className="h-3 w-3" />
+                      </Button>
+                      <Button
+                        variant="outline"
+                        size="sm"
+                        onClick={() => handleDelete(prompt.id)}
+                      >
+                        <Trash2 className="h-3 w-3" />
+                      </Button>
+                    </div>
+                  </CardContent>
+                </Card>
+              ))}
+            </div>
+          ) : (
+            <Card>
+              <CardContent className="flex flex-col items-center justify-center py-12">
+                <p className="text-muted-foreground mb-4">
+                  Nenhum prompt encontrado
                 </p>
-
-                {prompt.tags.length > 0 && (
-                  <div style={styles.tags}>
-                    {prompt.tags.map((tag, i) => (
-                      <span key={i} style={styles.tag}>#{tag}</span>
-                    ))}
-                  </div>
-                )}
-
-                <div style={styles.promptActions}>
-                  <button
-                    onClick={() => handleCopy(prompt)}
-                    style={styles.actionButton}
-                  >
-                    📋 Copiar
-                  </button>
-                  <button
-                    onClick={() => handleEdit(prompt)}
-                    style={styles.actionButton}
-                  >
-                    ✏️ Editar
-                  </button>
-                  <button
-                    onClick={() => handleDelete(prompt.id)}
-                    style={{ ...styles.actionButton, ...styles.deleteButton }}
-                  >
-                    🗑️ Deletar
-                  </button>
-                </div>
-              </div>
-            ))}
-          </div>
-        )}
+                <Button onClick={handleCreate}>
+                  <Plus className="h-4 w-4 mr-2" />
+                  Criar primeiro prompt
+                </Button>
+              </CardContent>
+            </Card>
+          )}
+        </div>
       </main>
 
-      {/* Modal */}
-      {isModalOpen && (
-        <div style={styles.modalOverlay} onClick={() => setIsModalOpen(false)}>
-          <div style={styles.modal} onClick={(e) => e.stopPropagation()}>
-            <h3 style={styles.modalTitle}>
-              {editingPrompt ? 'Editar Prompt' : 'Novo Prompt'}
-            </h3>
+      {/* Modal de Criar/Editar */}
+      <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>
+              {editingPrompt ?  'Editar Prompt' : 'Novo Prompt'}
+            </DialogTitle>
+            <DialogDescription>
+              {editingPrompt ? 'Atualize as informações do prompt' : 'Crie um novo prompt personalizado'}
+            </DialogDescription>
+          </DialogHeader>
 
-            <div style={styles.modalForm}>
-              <div style={styles.inputGroup}>
-                <label style={styles.label}>Título *</label>
-                <input
-                  type="text"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  style={styles.input}
-                  placeholder="Ex: Resumo de Anatomia"
-                />
-              </div>
-
-              <div style={styles.inputGroup}>
-                <label style={styles.label}>Conteúdo *</label>
-                <textarea
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  style={styles.textarea}
-                  placeholder="Escreva seu prompt aqui..."
-                  rows={6}
-                />
-              </div>
-
-              <div style={styles.inputGroup}>
-                <label style={styles.label}>Categoria</label>
-                <select
-                  value={formData.category}
-                  onChange={(e) => setFormData({ ...formData, category: e.target.value })}
-                  style={styles.input}
-                >
-                  {categories.filter(c => c !== 'all').map(cat => (
-                    <option key={cat} value={cat}>
-                      {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                    </option>
-                  ))}
-                </select>
-              </div>
-
-              <div style={styles.inputGroup}>
-                <label style={styles.label}>Tags (separadas por vírgula)</label>
-                <input
-                  type="text"
-                  value={formData.tags}
-                  onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                  style={styles.input}
-                  placeholder="Ex: cardiovascular, coração"
-                />
-              </div>
+          <div className="space-y-4">
+            {/* Título */}
+            <div className="space-y-2">
+              <Label htmlFor="title">Título</Label>
+              <Input
+                id="title"
+                value={formData.title}
+                onChange={(e) => setFormData({ ...formData, title: e. target.value })}
+                placeholder="Ex: Resumo de Anatomia Cardiovascular"
+              />
             </div>
 
-            <div style={styles.modalActions}>
-              <button
-                onClick={() => setIsModalOpen(false)}
-                style={styles.cancelButton}
+            {/* Conteúdo */}
+            <div className="space-y-2">
+              <Label htmlFor="content">Conteúdo do Prompt</Label>
+              <Textarea
+                id="content"
+                value={formData.content}
+                onChange={(e) => setFormData({ ...formData, content: e.target.value })}
+                placeholder="Descreva o prompt que você deseja usar com a IA..."
+                rows={6}
+              />
+            </div>
+
+            {/* Categoria */}
+            <div className="space-y-2">
+              <Label htmlFor="category">Categoria</Label>
+              <Select
+                value={formData.category}
+                onValueChange={(v) => setFormData({ ...formData, category: v })}
               >
-                Cancelar
-              </button>
-              <button
-                onClick={handleSave}
-                style={styles.saveButton}
-              >
-                {editingPrompt ? 'Salvar' : 'Criar'}
-              </button>
+                <SelectTrigger>
+                  <SelectValue />
+                </SelectTrigger>
+                <SelectContent>
+                  {categories.filter(c => c !== 'all').map(cat => (
+                    <SelectItem key={cat} value={cat}>
+                      {cat.charAt(0).toUpperCase() + cat.slice(1)}
+                    </SelectItem>
+                  ))}
+                </SelectContent>
+              </Select>
+            </div>
+
+            {/* Tags */}
+            <div className="space-y-2">
+              <Label htmlFor="tags">Tags (separadas por vírgula)</Label>
+              <Input
+                id="tags"
+                value={formData.tags}
+                onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
+                placeholder="Ex: cardiovascular, coração, anatomia"
+              />
             </div>
           </div>
+
+          <DialogFooter>
+            <Button variant="outline" onClick={() => setIsModalOpen(false)}>
+              Cancelar
+            </Button>
+            <Button onClick={handleSave}>
+              {editingPrompt ? 'Salvar' : 'Criar'}
+            </Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
+
+      {/* Footer */}
+      <footer className="border-t mt-16">
+        <div className="container mx-auto px-4 py-6">
+          <div className="text-center space-y-2">
+            <p className="text-sm text-muted-foreground">
+              MedPrompts © 2026 • Desenvolvido para estudantes de Medicina
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Desenvolvido por <span className="font-semibold">Andressa Mendes</span> • Estudante de Medicina
+            </p>
+            <p className="text-xs text-muted-foreground">
+              Afya - Guanambi/BA
+            </p>
+          </div>
         </div>
-      )}
+      </footer>
     </div>
   );
-};
-
-// Estilos (continuação no próximo bloco)
-const styles: { [key: string]: React.CSSProperties } = {
-  container: {
-    minHeight: '100vh',
-    background: '#f5f7fa',
-  },
-  header: {
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    color: '#fff',
-    padding: '15px 0',
-    boxShadow: '0 2px 10px rgba(0,0,0,0.1)',
-  },
-  headerContent: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: '0 20px',
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    flexWrap: 'wrap',
-    gap: '15px',
-  },
-  logo: {
-    fontSize: '24px',
-    fontWeight: 'bold',
-    margin: 0,
-    cursor: 'pointer',
-  },
-  nav: {
-    display: 'flex',
-    gap: '10px',
-  },
-  navButton: {
-    padding: '8px 16px',
-    background: 'transparent',
-    border: 'none',
-    color: '#fff',
-    cursor: 'pointer',
-    fontSize: '14px',
-    fontWeight: '500',
-    borderRadius: '6px',
-    transition: 'background 0.3s',
-  },
-  navButtonActive: {
-    background: 'rgba(255,255,255,0.2)',
-  },
-  userInfo: {
-    display: 'flex',
-    alignItems: 'center',
-    gap: '15px',
-  },
-  userName: {
-    fontSize: '14px',
-    fontWeight: '500',
-  },
-  logoutButton: {
-    padding: '6px 12px',
-    background: 'rgba(255,255,255,0.2)',
-    border: '1px solid rgba(255,255,255,0.3)',
-    borderRadius: '6px',
-    color: '#fff',
-    cursor: 'pointer',
-    fontSize: '13px',
-    fontWeight: '500',
-  },
-  main: {
-    maxWidth: '1200px',
-    margin: '0 auto',
-    padding: '30px 20px',
-  },
-  toolbar: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'center',
-    marginBottom: '25px',
-    flexWrap: 'wrap',
-    gap: '15px',
-  },
-  pageTitle: {
-    fontSize: '28px',
-    fontWeight: 'bold',
-    color: '#333',
-    margin: 0,
-  },
-  createButton: {
-    padding: '12px 24px',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '15px',
-    fontWeight: '600',
-    cursor: 'pointer',
-    transition: 'transform 0.2s',
-  },
-  filters: {
-    display: 'flex',
-    gap: '15px',
-    marginBottom: '25px',
-    flexWrap: 'wrap',
-  },
-  searchInput: {
-    flex: 1,
-    minWidth: '200px',
-    padding: '12px 16px',
-    fontSize: '15px',
-    border: '2px solid #e0e0e0',
-    borderRadius: '8px',
-    outline: 'none',
-  },
-  categorySelect: {
-    padding: '12px 16px',
-    fontSize: '15px',
-    border: '2px solid #e0e0e0',
-    borderRadius: '8px',
-    outline: 'none',
-    cursor: 'pointer',
-  },
-  mockWarning: {
-    padding: '12px',
-    background: '#fff3cd',
-    border: '1px solid #ffc107',
-    borderRadius: '8px',
-    color: '#856404',
-    fontSize: '13px',
-    textAlign: 'center',
-    marginBottom: '25px',
-  },
-  promptsGrid: {
-    display: 'grid',
-    gridTemplateColumns: 'repeat(auto-fill, minmax(320px, 1fr))',
-    gap: '20px',
-  },
-  promptCard: {
-    background: '#fff',
-    borderRadius: '12px',
-    padding: '20px',
-    boxShadow: '0 2px 8px rgba(0,0,0,0.1)',
-    transition: 'transform 0.2s, box-shadow 0.2s',
-  },
-  promptHeader: {
-    display: 'flex',
-    justifyContent: 'space-between',
-    alignItems: 'flex-start',
-    marginBottom: '12px',
-  },
-  promptTitle: {
-    fontSize: '18px',
-    fontWeight: '600',
-    color: '#333',
-    margin: '0 0 8px 0',
-  },
-  promptMeta: {
-    display: 'flex',
-    gap: '10px',
-    alignItems: 'center',
-  },
-  categoryBadge: {
-    display: 'inline-block',
-    padding: '4px 10px',
-    background: '#e3f2fd',
-    color: '#1976d2',
-    borderRadius: '12px',
-    fontSize: '12px',
-    fontWeight: '600',
-  },
-  usageCount: {
-    fontSize: '12px',
-    color: '#666',
-  },
-  favoriteButton: {
-    background: 'none',
-    border: 'none',
-    fontSize: '20px',
-    cursor: 'pointer',
-  },
-  promptContent: {
-    fontSize: '14px',
-    color: '#555',
-    lineHeight: '1.6',
-    marginBottom: '12px',
-  },
-  tags: {
-    display: 'flex',
-    flexWrap: 'wrap',
-    gap: '8px',
-    marginBottom: '15px',
-  },
-  tag: {
-    padding: '4px 8px',
-    background: '#f0f0f0',
-    color: '#666',
-    borderRadius: '6px',
-    fontSize: '12px',
-  },
-  promptActions: {
-    display: 'flex',
-    gap: '10px',
-    borderTop: '1px solid #f0f0f0',
-    paddingTop: '15px',
-  },
-  actionButton: {
-    flex: 1,
-    padding: '8px',
-    background: '#f5f7fa',
-    border: 'none',
-    borderRadius: '6px',
-    fontSize: '13px',
-    cursor: 'pointer',
-    transition: 'background 0.2s',
-  },
-  deleteButton: {
-    color: '#d32f2f',
-  },
-  emptyState: {
-    textAlign: 'center',
-    padding: '60px 20px',
-  },
-  emptyText: {
-    fontSize: '18px',
-    color: '#666',
-    marginBottom: '20px',
-  },
-  modalOverlay: {
-    position: 'fixed',
-    top: 0,
-    left: 0,
-    right: 0,
-    bottom: 0,
-    background: 'rgba(0,0,0,0.5)',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    zIndex: 1000,
-    padding: '20px',
-  },
-  modal: {
-    background: '#fff',
-    borderRadius: '16px',
-    padding: '30px',
-    width: '100%',
-    maxWidth: '600px',
-    maxHeight: '90vh',
-    overflow: 'auto',
-  },
-  modalTitle: {
-    fontSize: '24px',
-    fontWeight: 'bold',
-    color: '#333',
-    marginBottom: '20px',
-  },
-  modalForm: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '20px',
-  },
-  inputGroup: {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: '8px',
-  },
-  label: {
-    fontSize: '14px',
-    fontWeight: '600',
-    color: '#333',
-  },
-  input: {
-    padding: '12px 16px',
-    fontSize: '15px',
-    border: '2px solid #e0e0e0',
-    borderRadius: '8px',
-    outline: 'none',
-  },
-  textarea: {
-    padding: '12px 16px',
-    fontSize: '15px',
-    border: '2px solid #e0e0e0',
-    borderRadius: '8px',
-    outline: 'none',
-    resize: 'vertical',
-    fontFamily: 'inherit',
-  },
-  modalActions: {
-    display: 'flex',
-    gap: '15px',
-    marginTop: '20px',
-    justifyContent: 'flex-end',
-  },
-  cancelButton: {
-    padding: '12px 24px',
-    background: '#f5f7fa',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '15px',
-    fontWeight: '600',
-    cursor: 'pointer',
-  },
-  saveButton: {
-    padding: '12px 24px',
-    background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-    color: '#fff',
-    border: 'none',
-    borderRadius: '8px',
-    fontSize: '15px',
-    fontWeight: '600',
-    cursor: 'pointer',
-  },
-};
-
-export default Prompts;
+}
