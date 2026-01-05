@@ -1,4 +1,4 @@
-import { BrowserRouter as Router, Routes, Route, Navigate } from 'react-router-dom';
+import { BrowserRouter as Router, Routes, Route, Navigate, Link } from 'react-router-dom';
 import { AuthProvider } from './contexts/AuthContext';
 import ProtectedRoute from './components/ProtectedRoute';
 import Login from './pages/Login';
@@ -13,12 +13,12 @@ const HomePage = () => (
     <p style={{ fontSize: '20px', marginBottom: '40px' }}>Plataforma de estudos médicos com IA</p>
     
     <div style={{ display: 'flex', gap: '20px', justifyContent: 'center', flexWrap: 'wrap' }}>
-      <a href="/login" style={{ padding: '15px 30px', background: '#fff', color: '#667eea', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold' }}>
+      <Link to="/login" style={{ padding: '15px 30px', background: '#fff', color: '#667eea', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold' }}>
         Login
-      </a>
-      <a href="/register" style={{ padding: '15px 30px', background: 'rgba(255,255,255,0.2)', color: '#fff', border: '2px solid #fff', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold' }}>
+      </Link>
+      <Link to="/register" style={{ padding: '15px 30px', background: 'rgba(255,255,255,0.2)', color: '#fff', border: '2px solid #fff', borderRadius: '8px', textDecoration: 'none', fontWeight: 'bold' }}>
         Registrar
-      </a>
+      </Link>
     </div>
 
     <div style={{ marginTop: '60px', padding: '30px', background: 'rgba(255,255,255,0.1)', borderRadius: '12px', maxWidth: '600px', margin: '60px auto 0' }}>
