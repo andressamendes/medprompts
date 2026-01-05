@@ -16,13 +16,14 @@ import NotFound from './pages/NotFound';
  * Componente principal da aplicação
  * 
  * Configuração: 
- * - basename="/medprompts/" para GitHub Pages (deve corresponder ao base do vite.config.ts)
+ * - Base path '/medprompts/' é gerenciado pelo Vite (vite.config.ts)
+ * - Router usa caminhos relativos sem basename para evitar duplicação
  * - Todas as rotas públicas e protegidas definidas aqui
  * - Rota 404 no final para capturar URLs inválidas
  */
 function App() {
   return (
-    <Router basename="/medprompts/">
+    <Router>
       <ThemeProvider>
         <AuthProvider>
           <FavoritesProvider>
