@@ -3,6 +3,11 @@
  * Centralized exports for all theme tokens
  */
 
+import * as colorsModule from './colors';
+import * as typographyModule from './typography';
+import * as shadowsModule from './shadows';
+import * as spacingModule from './spacing';
+
 export { colors, gradients, semantic } from './colors';
 export { fontFamily, fontSize, fontWeight, lineHeight, letterSpacing, typography } from './typography';
 export { shadows, elevation } from './shadows';
@@ -51,19 +56,19 @@ export const breakpoints = {
 
 // Export as default theme object
 const theme = {
-  colors: require('./colors').colors,
-  gradients: require('./colors').gradients,
-  semantic: require('./colors').semantic,
-  typography: require('./typography').typography,
-  fontFamily: require('./typography').fontFamily,
-  fontSize: require('./typography').fontSize,
-  fontWeight: require('./typography').fontWeight,
-  lineHeight: require('./typography').lineHeight,
-  letterSpacing: require('./typography').letterSpacing,
-  shadows: require('./shadows').shadows,
-  elevation: require('./shadows').elevation,
-  spacing: require('./spacing').spacing,
-  semanticSpacing: require('./spacing').semanticSpacing,
+  colors: colorsModule.colors,
+  gradients: colorsModule.gradients,
+  semantic: colorsModule.semantic,
+  typography: typographyModule.typography,
+  fontFamily: typographyModule.fontFamily,
+  fontSize: typographyModule.fontSize,
+  fontWeight: typographyModule.fontWeight,
+  lineHeight: typographyModule.lineHeight,
+  letterSpacing: typographyModule.letterSpacing,
+  shadows: shadowsModule.shadows,
+  elevation: shadowsModule.elevation,
+  spacing: spacingModule.spacing,
+  semanticSpacing: spacingModule.semanticSpacing,
   borderRadius,
   zIndex,
   transition,

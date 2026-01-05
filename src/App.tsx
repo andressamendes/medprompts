@@ -10,6 +10,9 @@ import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
 import Prompts from './pages/Prompts';
 import StudySessions from './pages/StudySessions';
+import GuiaIAs from './pages/GuiaIAs';
+import Ferramentas from './pages/Ferramentas';
+import FocusZone from './pages/FocusZone';
 import NotFound from './pages/NotFound';
 
 /**
@@ -32,6 +35,9 @@ function App() {
                 <Route path="/" element={<Index />} />
                 <Route path="/login" element={<Login />} />
                 <Route path="/register" element={<Register />} />
+                <Route path="/guia-ias" element={<GuiaIAs />} />
+                <Route path="/ferramentas" element={<Ferramentas />} />
+                <Route path="/focus-zone" element={<FocusZone />} />
                 
                 {/* Rotas protegidas */}
                 <Route
