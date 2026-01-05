@@ -1,6 +1,8 @@
 /**
  * Content Security Policy (CSP) Configuration
  * Define políticas de segurança do navegador
+ * 
+ * ⚠️ IMPORTANTE: CSP é diferente para DEV e PRODUÇÃO
  */
 
 /**
@@ -9,50 +11,100 @@
 export function generateNonce(): string {
   const array = new Uint8Array(16);
   window.crypto.getRandomValues(array);
-  return btoa(String.fromCharCode(...Array.from(array)));
+  return btoa(String.fromCharCode(... Array.from(array)));
 }
 
 /**
- * Configuração CSP completa
- * Bloqueia scripts e recursos não autorizados
+ * Detecta se está em modo de desenvolvimento
  */
-export const CSP_CONFIG = {
+const isDevelopment = import.meta.env.DEV;
+
+/**
+ * Configuração CSP para DESENVOLVIMENTO
+ * Permite unsafe-inline e unsafe-eval para Vite HMR
+ */
+const CSP_CONFIG_DEV = {
   'default-src': ["'self'"],
   'script-src': [
     "'self'",
-    "'unsafe-inline'", // Necessário para Vite dev mode
-    "'unsafe-eval'", // Necessário para Vite dev mode
-    'https://vercel.live', // Vercel Analytics (se usar)
+    "'unsafe-inline'", // ⚠️ DEV ONLY:  Necessário para Vite HMR
+    "'unsafe-eval'",   // ⚠️ DEV ONLY: Necessário para Vite HMR
+    'https://vercel.live',
   ],
-  'style-src': [
+  'style-src':  [
     "'self'",
-    "'unsafe-inline'", // Necessário para styled-components/CSS-in-JS
+    "'unsafe-inline'", // Necessário para Tailwind JIT
     'https://fonts.googleapis.com',
   ],
   'font-src': [
     "'self'",
     'https://fonts.gstatic.com',
-    'data:', // Para fontes inline
+    'data:',
   ],
   'img-src': [
     "'self'",
-    'data:', // Para imagens base64
-    'blob:', // Para imagens geradas dinamicamente
-    'https:', // Para imagens externas (CDNs)
+    'data: ',
+    'blob:',
+    'https:',
   ],
   'connect-src': [
     "'self'",
-    'https://api.github.com', // Se usar GitHub API
-    'https://vercel.live', // Vercel Analytics
-    'wss://vercel.live', // Vercel Analytics WebSocket
+    'https://api.github.com',
+    'https://vercel.live',
+    'wss://vercel.live',
+    'ws://localhost:*', // ⚠️ DEV ONLY: Vite WebSocket
   ],
-  'frame-src': ["'none'"], // Bloqueia todos os iframes
-  'object-src': ["'none'"], // Bloqueia <object>, <embed>, <applet>
-  'base-uri': ["'self'"], // Previne alteração do base href
-  'form-action': ["'self'"], // Previne submissão para domínios externos
-  'frame-ancestors': ["'none'"], // Previne clickjacking
-  'upgrade-insecure-requests': [], // Força HTTPS em produção
+  'frame-src': ["'none'"],
+  'object-src': ["'none'"],
+  'base-uri': ["'self'"],
+  'form-action': ["'self'"],
+  'frame-ancestors': ["'none'"],
 };
+
+/**
+ * Configuração CSP para PRODUÇÃO
+ * ✅ SEM unsafe-inline ou unsafe-eval
+ */
+const CSP_CONFIG_PROD = {
+  'default-src':  ["'self'"],
+  'script-src': [
+    "'self'",
+    'https://vercel.live',
+  ],
+  'style-src': [
+    "'self'",
+    "'unsafe-inline'", // Mantido apenas para Tailwind classes geradas
+    'https://fonts.googleapis.com',
+  ],
+  'font-src': [
+    "'self'",
+    'https://fonts.gstatic.com',
+    'data:',
+  ],
+  'img-src': [
+    "'self'",
+    'data:',
+    'blob:',
+    'https:',
+  ],
+  'connect-src': [
+    "'self'",
+    'https://api.github.com',
+    'https://vercel.live',
+    'wss://vercel.live',
+  ],
+  'frame-src':  ["'none'"],
+  'object-src': ["'none'"],
+  'base-uri':  ["'self'"],
+  'form-action': ["'self'"],
+  'frame-ancestors':  ["'none'"],
+  'upgrade-insecure-requests': [], // ✅ Força HTTPS em produção
+};
+
+/**
+ * Seleciona configuração baseada no ambiente
+ */
+export const CSP_CONFIG = isDevelopment ? CSP_CONFIG_DEV : CSP_CONFIG_PROD;
 
 /**
  * Converte objeto CSP para string de meta tag
@@ -79,7 +131,9 @@ export function applyCSP(): void {
   const existingCSP = document.querySelector('meta[http-equiv="Content-Security-Policy"]');
   
   if (existingCSP) {
-    console.warn('CSP já configurado via meta tag');
+    if (isDevelopment) {
+      console.warn('⚠️ CSP já configurado via meta tag');
+    }
     return;
   }
 
@@ -89,7 +143,9 @@ export function applyCSP(): void {
   
   document.head.appendChild(meta);
   
-  console.info('✅ Content Security Policy aplicado');
+  if (isDevelopment) {
+    console.info(`✅ Content Security Policy aplicado (MODO:  ${isDevelopment ? 'DEV' : 'PROD'})`);
+  }
 }
 
 /**
@@ -103,32 +159,7 @@ export function applyCSPReportOnly(): void {
   
   document.head.appendChild(meta);
   
-  console.info('ℹ️ CSP Report-Only mode ativo (apenas logging)');
-}
-
-/**
- * Listener para violações de CSP
- * Registra violações no console
- */
-export function setupCSPReporting(): void {
-  document.addEventListener('securitypolicyviolation', (e) => {
-    console.error('🚨 Violação de CSP detectada:', {
-      blockedURI: e.blockedURI,
-      violatedDirective: e.violatedDirective,
-      originalPolicy: e.originalPolicy,
-      sourceFile: e.sourceFile,
-      lineNumber: e.lineNumber,
-      columnNumber: e.columnNumber,
-    });
-    
-    // Em produção, você pode enviar isso para um serviço de analytics
-    // Example: Sentry.captureException(new Error('CSP Violation'), { extra: { ... } });
-  });
-}
-
-/**
- * Verifica se navegador suporta CSP
- */
-export function isCSPSupported(): boolean {
-  return 'securitypolicyviolation' in document || 'SecurityPolicyViolationEvent' in window;
+  if (isDevelopment) {
+    console.info('📊 CSP Report-Only ativado (apenas logs, sem bloqueio)');
+  }
 }

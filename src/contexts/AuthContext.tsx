@@ -1,5 +1,5 @@
 import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { authService, User, LoginCredentials, RegisterData } from '../services/auth.service';
+import { authService, User, LoginCredentials, RegisterData } from '../services/auth. service';
 
 // Interface do contexto de autenticação
 interface AuthContextData {
@@ -8,7 +8,7 @@ interface AuthContextData {
   isAuthenticated: boolean;
   login: (credentials: LoginCredentials) => Promise<void>;
   register: (data: RegisterData) => Promise<void>;
-  logout: () => Promise<void>;
+  logout:  () => Promise<void>;
   updateUser: (user: User) => void;
   refreshUserData: () => Promise<void>;
   error: string | null;
@@ -32,37 +32,8 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [error, setError] = useState<string | null>(null);
 
   /**
-   * Carrega usuário do localStorage ao montar a aplicação
-   */
-  useEffect(() => {
-    const loadUserFromStorage = (): User | null => {
-      try {
-        const stored = localStorage.getItem('encrypted_user');
-        if (stored) {
-          const parsed = JSON.parse(stored) as User;
-          console.log('✅ Usuário carregado do localStorage');
-          return parsed;
-        }
-      } catch (error) {
-        console.error('❌ Erro ao carregar usuário do storage:', error);
-        // Fallback:  remove dados corrompidos
-        localStorage.removeItem('encrypted_user');
-      }
-      return null;
-    };
-
-    try {
-      const savedUser = loadUserFromStorage();
-      setUser(savedUser);
-    } catch (error) {
-      console.error('❌ Erro ao inicializar usuário:', error);
-      setUser(null);
-    }
-  }, []);
-
-  /**
-   * Verifica se usuário está autenticado ao carregar aplicação
-   * Sincroniza com backend para validar token
+   * ✅ CORREÇÃO: useEffect único com fluxo sequencial
+   * Evita race conditions entre localStorage e verificação de token
    */
   useEffect(() => {
     let isMounted = true;
@@ -72,9 +43,26 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         setLoading(true);
         setError(null);
 
-        // Verifica se há token salvo
+        // ETAPA 1: Tenta carregar usuário do localStorage
+        const loadUserFromStorage = (): User | null => {
+          try {
+            const stored = localStorage.getItem('encrypted_user');
+            if (stored) {
+              const parsed = JSON.parse(stored) as User;
+              return parsed;
+            }
+          } catch (error) {
+            // Fallback:  remove dados corrompidos
+            localStorage.removeItem('encrypted_user');
+          }
+          return null;
+        };
+
+        const cachedUser = loadUserFromStorage();
+
+        // ETAPA 2: Verifica se há token válido
         if (! authService.isAuthenticated()) {
-          console. log('⚠️ Nenhum token encontrado');
+          // Sem token:  usuário não autenticado
           if (isMounted) {
             setUser(null);
             setLoading(false);
@@ -82,36 +70,38 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
           return;
         }
 
+        // ETAPA 3: Token existe, valida com backend
         try {
-          // Verifica se token ainda é válido com o backend
           const userData = await authService.verifyToken();
 
           if (isMounted) {
             if (userData) {
+              // Token válido:  atualiza estado
               setUser(userData);
-              console. log('✅ Usuário autenticado:', userData.email);
               setError(null);
             } else {
-              // Token inválido, limpa dados
+              // Token inválido:  limpa dados
               setUser(null);
-              console.warn('⚠️ Token inválido, limpando dados');
               setError('Token expirado, faça login novamente');
             }
           }
-        } catch (verifyError) {
-          console. error('❌ Erro ao verificar token:', verifyError);
-          
+        } catch (verifyError:  any) {
+          // Erro na verificação:  usa cache se disponível
           if (isMounted) {
-            setUser(null);
-            setError('Erro ao verificar autenticação');
+            if (cachedUser) {
+              // Mantém usuário do cache temporariamente
+              setUser(cachedUser);
+              setError('Erro ao verificar autenticação, usando dados em cache');
+            } else {
+              setUser(null);
+              setError('Erro ao verificar autenticação');
+            }
           }
         }
-      } catch (error) {
-        console.error('❌ Erro ao inicializar autenticação:', error);
-        
+      } catch (error:  any) {
         if (isMounted) {
           setUser(null);
-          setError('Erro na inicialização da autenticação');
+          setError('Erro ao inicializar autenticação');
         }
       } finally {
         if (isMounted) {
@@ -120,59 +110,25 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       }
     };
 
-    // Só executa se houver token
-    if (authService.isAuthenticated()) {
-      initializeAuth();
-    } else {
-      setLoading(false);
-    }
+    initializeAuth();
 
-    // Cleanup function para evitar memory leaks
     return () => {
       isMounted = false;
     };
-  }, []);
+  }, []); // ✅ Executa apenas uma vez na montagem
 
   /**
    * Faz login do usuário
-   * Trata erros adequadamente
    */
   const login = async (credentials: LoginCredentials): Promise<void> => {
+    setLoading(true);
+    setError(null);
+
     try {
-      setLoading(true);
-      setError(null);
-
-      // Validação básica
-      if (!credentials.email || ! credentials.password) {
-        throw new Error('Email e senha são obrigatórios');
-      }
-
-      try {
-        const authResponse = await authService.login(credentials);
-        
-        // Validação da resposta
-        if (!authResponse.user) {
-          throw new Error('Resposta de login inválida');
-        }
-
-        setUser(authResponse.user);
-        console.log('✅ Login bem-sucedido:', authResponse. user.email);
-      } catch (loginError) {
-        const errorMessage = loginError instanceof Error 
-          ? loginError.message 
-          : 'Erro ao fazer login';
-        
-        console.error('❌ Erro no serviço de login:', loginError);
-        setError(errorMessage);
-        throw new Error(errorMessage);
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : 'Erro desconhecido ao fazer login';
-      
-      console.error('❌ Erro ao fazer login:', error);
-      setError(errorMessage);
+      const userData = await authService. login(credentials);
+      setUser(userData);
+    } catch (error: any) {
+      setError(error.message || 'Erro ao fazer login');
       throw error;
     } finally {
       setLoading(false);
@@ -181,44 +137,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   /**
    * Registra novo usuário
-   * Trata erros adequadamente
    */
   const register = async (data: RegisterData): Promise<void> => {
+    setLoading(true);
+    setError(null);
+
     try {
-      setLoading(true);
-      setError(null);
-
-      // Validação básica
-      if (!data.name || !data.email || !data.password) {
-        throw new Error('Nome, email e senha são obrigatórios');
-      }
-
-      try {
-        const authResponse = await authService.register(data);
-        
-        // Validação da resposta
-        if (!authResponse.user) {
-          throw new Error('Resposta de registro inválida');
-        }
-
-        setUser(authResponse.user);
-        console.log('✅ Registro bem-sucedido:', authResponse.user.email);
-      } catch (registerError) {
-        const errorMessage = registerError instanceof Error 
-          ? registerError.message 
-          : 'Erro ao registrar';
-        
-        console.error('❌ Erro no serviço de registro:', registerError);
-        setError(errorMessage);
-        throw new Error(errorMessage);
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error 
-        ?  error.message 
-        : 'Erro desconhecido ao registrar';
-      
-      console.error('❌ Erro ao registrar:', error);
-      setError(errorMessage);
+      const userData = await authService.register(data);
+      setUser(userData);
+    } catch (error: any) {
+      setError(error.message || 'Erro ao registrar usuário');
       throw error;
     } finally {
       setLoading(false);
@@ -227,29 +155,17 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   /**
    * Faz logout do usuário
-   * Trata erros adequadamente
    */
   const logout = async (): Promise<void> => {
-    try {
-      setLoading(true);
-      setError(null);
+    setLoading(true);
+    setError(null);
 
-      try {
-        // Tenta chamar endpoint de logout (pode falhar se offline)
-        await authService.logout();
-        console.log('✅ Logout bem-sucedido');
-      } catch (logoutError) {
-        // Mesmo com erro, continua com limpeza local
-        console.warn('⚠️ Erro ao fazer logout no servidor:', logoutError);
-      } finally {
-        // Sempre limpa dados locais
-        setUser(null);
-      }
-    } catch (error) {
-      console.error('❌ Erro ao fazer logout:', error);
-      // Mesmo com erro, tenta limpar
+    try {
+      await authService.logout();
       setUser(null);
-      setError('Erro ao fazer logout');
+    } catch (error: any) {
+      setError(error.message || 'Erro ao fazer logout');
+      throw error;
     } finally {
       setLoading(false);
     }
@@ -257,143 +173,37 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   /**
    * Atualiza dados do usuário no estado
-   * (Usado após atualizar perfil, adicionar XP, etc)
    */
   const updateUser = (updatedUser: User): void => {
-    try {
-      if (! updatedUser || !updatedUser.id) {
-        throw new Error('Dados de usuário inválidos');
-      }
-
-      setUser(updatedUser);
-      
-      // Atualiza também no localStorage com tratamento de erro
-      try {
-        localStorage.setItem('encrypted_user', JSON.stringify(updatedUser));
-      } catch (storageError) {
-        console.error('❌ Erro ao salvar usuário no localStorage:', storageError);
-        setError('Erro ao salvar dados locais');
-      }
-
-      console.log('✅ Usuário atualizado:', updatedUser.email);
-    } catch (error) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : 'Erro ao atualizar usuário';
-      
-      console.error('❌ Erro ao atualizar usuário:', error);
-      setError(errorMessage);
-    }
+    setUser(updatedUser);
+    // Atualiza localStorage também
+    localStorage.setItem('encrypted_user', JSON.stringify(updatedUser));
   };
 
   /**
    * Recarrega dados do usuário do backend
-   * Sincroniza estado local com servidor
    */
   const refreshUserData = async (): Promise<void> => {
+    if (!authService.isAuthenticated()) {
+      return;
+    }
+
     try {
-      if (!authService.isAuthenticated()) {
-        console.warn('⚠️ Usuário não autenticado, não é possível recarregar dados');
-        setError('Usuário não autenticado');
-        return;
+      const userData = await authService.verifyToken();
+      if (userData) {
+        setUser(userData);
       }
-
-      try {
-        const userData = await authService.verifyToken();
-
-        if (userData) {
-          setUser(userData);
-          
-          // Atualiza localStorage
-          try {
-            localStorage.setItem('encrypted_user', JSON. stringify(userData));
-          } catch (storageError) {
-            console.error('❌ Erro ao salvar usuário no localStorage:', storageError);
-          }
-
-          console.log('✅ Dados do usuário recarregados');
-          setError(null);
-        } else {
-          // Token expirou
-          setUser(null);
-          setError('Sessão expirada, faça login novamente');
-          console.warn('⚠️ Token expirado durante recarregamento');
-        }
-      } catch (verifyError) {
-        const errorMessage = verifyError instanceof Error 
-          ? verifyError. message 
-          : 'Erro ao recarregar dados';
-        
-        console.error('❌ Erro ao recarregar dados do usuário:', verifyError);
-        setError(errorMessage);
-        // Não lança erro, apenas loga
-      }
-    } catch (error) {
-      const errorMessage = error instanceof Error 
-        ? error.message 
-        : 'Erro desconhecido';
-      
-      console.error('❌ Erro inesperado ao recarregar dados:', error);
-      setError(errorMessage);
+    } catch (error: any) {
+      setError('Erro ao atualizar dados do usuário');
     }
   };
-
-  /**
-   * Sincroniza entre abas/janelas
-   * Se usuário faz logout em uma aba, remove de todas
-   */
-  useEffect(() => {
-    const handleStorageChange = (e:  StorageEvent) => {
-      try {
-        // Se tokens foram removidos (logout em outra aba)
-        if (
-          (e.key === 'encrypted_accessToken' ||
-           e.key === 'encrypted_refreshToken') &&
-          e.newValue === null
-        ) {
-          console.log('🔄 Logout detectado em outra aba, sincronizando...');
-          setUser(null);
-          setError('Você foi desconectado em outra aba');
-        }
-
-        // Se usuário foi atualizado em outra aba
-        if (e.key === 'encrypted_user' && e.newValue) {
-          try {
-            const updatedUser = JSON.parse(e.newValue) as User;
-            setUser(updatedUser);
-            console.log('🔄 Dados do usuário sincronizados de outra aba');
-            setError(null);
-          } catch (parseError) {
-            console.error('❌ Erro ao parsear usuário sincronizado:', parseError);
-            setError('Erro ao sincronizar dados');
-          }
-        }
-      } catch (error) {
-        console.error('❌ Erro ao processar mudança de storage:', error);
-      }
-    };
-
-    const handleAuthLogout = () => {
-      console.log('🔄 Evento de logout detectado');
-      setUser(null);
-      setError('Sua sessão foi encerrada');
-    };
-
-    window.addEventListener('storage', handleStorageChange);
-    window.addEventListener('auth-logout', handleAuthLogout as EventListener);
-
-    return () => {
-      window.removeEventListener('storage', handleStorageChange);
-      window.removeEventListener('auth-logout', handleAuthLogout as EventListener);
-    };
-  }, []);
 
   return (
     <AuthContext.Provider
       value={{
         user,
         loading,
-        isAuthenticated:  !!user,
+        isAuthenticated: !!user,
         login,
         register,
         logout,
@@ -408,15 +218,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 };
 
 /**
- * Hook para usar contexto de autenticação
- * Lança erro se usado fora do Provider
+ * Hook para usar o contexto de autenticação
  */
-export function useAuth(): AuthContextData {
+export const useAuth = (): AuthContextData => {
   const context = useContext(AuthContext);
 
-  if (! context) {
-    throw new Error('useAuth deve ser usado dentro de AuthProvider');
+  if (!context) {
+    throw new Error('useAuth deve ser usado dentro de um AuthProvider');
   }
 
   return context;
-}
+};

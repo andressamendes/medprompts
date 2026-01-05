@@ -10,7 +10,7 @@ export function generateShareText(): string {
   const profile = loadProfile();
   const userBadges = loadUserBadges();
   
-  const earnedBadges = userBadges.earned.length;
+  const earnedBadges = userBadges. earned.length;
   
   return `🩺 MedPrompts - Meu Progresso
 
@@ -20,8 +20,8 @@ export function generateShareText(): string {
 🏆 ${earnedBadges} badges conquistados
 💪 ${progress.totalPromptsUsed} prompts utilizados
 
-Estudo medicina com IA de forma gamificada!
-Acesse: https://andressamendes.github.io/medprompts/`;
+Estudo medicina com IA de forma gamificada! 
+Acesse:  https://andressamendes.github.io/medprompts/`;
 }
 
 // Compartilhar via Web Share API (mobile)
@@ -45,15 +45,15 @@ export async function shareProgress(): Promise<boolean> {
   return false;
 }
 
-// Copiar link de convite
+// ✅ CORREÇÃO:  URL corrigida de "medpromps" para "medprompts"
 export function copyInviteLink(): void {
-  const link = 'https://andressamendes.github.io/medpromps/';
-  navigator.clipboard.writeText(link);
+  const link = 'https://andressamendes.github.io/medprompts/';
+  navigator.clipboard. writeText(link);
 }
 
 // Gerar QR Code URL para prompt específico
 export function generatePromptQRCodeURL(promptId: string, promptTitle: string): string {
-  const url = `https://andressamendes.github.io/medprompts/?prompt=${promptId}`;
+  const url = `https://andressamendes.github.io/medprompts/? prompt=${promptId}`;
   // Usar serviço público de QR Code
   return `https://api.qrserver.com/v1/create-qr-code/?size=300x300&data=${encodeURIComponent(url)}&caption=${encodeURIComponent(promptTitle)}`;
 }
@@ -82,7 +82,7 @@ export function downloadStats(): void {
       totalPromptsUsed: progress.totalPromptsUsed,
     },
     badges: {
-      total: BADGES.length,
+      total:  BADGES.length,
       earned: userBadges.earned.length,
       list: earnedBadgesList,
     },
@@ -96,10 +96,8 @@ export function downloadStats(): void {
   const link = document.createElement('a');
   link.href = url;
   link.download = `medprompts-stats-${new Date().toISOString().split('T')[0]}.json`;
-  
   document.body.appendChild(link);
   link.click();
   document.body.removeChild(link);
-  
   URL.revokeObjectURL(url);
 }
