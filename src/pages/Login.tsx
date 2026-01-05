@@ -51,7 +51,7 @@ const Login = () => {
       });
 
       // Redireciona para dashboard
-      navigate('/dashboard');
+      navigate('/app');
       
     } catch (error: any) {
       setApiError(error.message || 'Erro ao fazer login. Tente novamente.');
