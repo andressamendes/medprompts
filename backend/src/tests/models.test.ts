@@ -8,12 +8,12 @@ describe('Models', () => {
     it('deve criar um usuário com senha hasheada', async () => {
       const user = await User.create({
         name: 'Test User',
-        email: 'test@example.com',
-        password: 'senha123',
+        email: `test-${Date.now()}@example.com`,
+        password: 'Senha123',
       });
 
-      expect(user. id).toBeDefined();
-      expect(user. password).not.toBe('senha123'); // Deve estar hasheada
+      expect(user.id).toBeDefined();
+      expect(user. password).not.toBe('Senha123'); // Deve estar hasheada
       expect(user.password. length).toBeGreaterThan(20); // Hash bcrypt
       expect(user.xp).toBe(0);
       expect(user.level).toBe(1);
@@ -24,19 +24,19 @@ describe('Models', () => {
         User.create({
           name: 'Test',
           email: 'email-invalido',
-          password: 'senha123',
+          password:  'Senha123',
         })
       ).rejects.toThrow();
     });
 
     it('deve comparar senha corretamente', async () => {
-      const user = await User.create({
+      const user = await User. create({
         name: 'Test User',
-        email: 'compare@example.com',
-        password: 'senha123',
+        email: `compare-${Date.now()}@example.com`,
+        password: 'Senha123',
       });
 
-      const isValid = await user.comparePassword('senha123');
+      const isValid = await user.comparePassword('Senha123');
       expect(isValid).toBe(true);
 
       const isInvalid = await user.comparePassword('senhaerrada');
@@ -50,8 +50,8 @@ describe('Models', () => {
     beforeEach(async () => {
       user = await User. create({
         name: 'Progress Test',
-        email: 'progress@example.com',
-        password: 'senha123',
+        email: `progress-${Date.now()}-${Math.random()}@example.com`,
+        password: 'Senha123',
       });
     });
 
@@ -89,8 +89,8 @@ describe('Models', () => {
     });
 
     it('deve adicionar XP e fazer level up', async () => {
-      const progress = await UserProgress.create({
-        userId: user.id,
+      const progress = await UserProgress. create({
+        userId: user. id,
         currentXP: 0,
         level: 1,
         totalXPEarned: 0,
@@ -109,8 +109,8 @@ describe('Models', () => {
     });
 
     it('deve manter histórico de XP', async () => {
-      const progress = await UserProgress.create({
-        userId: user.id,
+      const progress = await UserProgress. create({
+        userId: user. id,
         currentXP: 0,
         level: 1,
         totalXPEarned: 0,
@@ -123,9 +123,9 @@ describe('Models', () => {
       progress.addXP(50, 'test1');
       progress.addXP(30, 'test2');
 
-      expect(progress.xpHistory. length).toBeGreaterThan(0);
+      expect(progress.xpHistory.length).toBeGreaterThan(0);
       const today = new Date().toISOString().split('T')[0];
-      const todayEntry = progress.xpHistory.find(e => e.date === today);
+      const todayEntry = progress.xpHistory.find((e) => e.date === today);
       expect(todayEntry).toBeDefined();
       expect(todayEntry?. xp).toBe(80);
     });
@@ -137,8 +137,8 @@ describe('Models', () => {
       const progress = await UserProgress.create({
         userId: user.id,
         currentXP: 0,
-        level:  1,
-        totalXPEarned: 0,
+        level: 1,
+        totalXPEarned:  0,
         currentStreak: 1,
         longestStreak:  1,
         lastActivityDate: yesterday,
@@ -178,8 +178,8 @@ describe('Models', () => {
     beforeEach(async () => {
       user = await User. create({
         name: 'Prompt Test',
-        email: 'prompt-model@example.com',
-        password: 'senha123',
+        email:  `prompt-model-${Date.now()}-${Math.random()}@example.com`,
+        password: 'Senha123',
       });
     });
 
@@ -229,7 +229,19 @@ describe('Models', () => {
           title: 'Título Válido',
           content: 'Conteúdo válido',
           category: 'Anamnese',
-          tags: ['tag1', 'tag2', 'tag3', 'tag4', 'tag5', 'tag6', 'tag7', 'tag8', 'tag9', 'tag10', 'tag11'],
+          tags: [
+            'tag1',
+            'tag2',
+            'tag3',
+            'tag4',
+            'tag5',
+            'tag6',
+            'tag7',
+            'tag8',
+            'tag9',
+            'tag10',
+            'tag11',
+          ],
         })
       ).rejects.toThrow();
     });
@@ -237,7 +249,7 @@ describe('Models', () => {
 
   describe('Badge Model', () => {
     it('deve criar um badge válido', async () => {
-      const badge = await Badge. create({
+      const badge = await Badge.create({
         name: 'Badge Teste',
         description: 'Descrição do badge',
         icon: '🏆',
@@ -247,8 +259,8 @@ describe('Models', () => {
 
       expect(badge.id).toBeDefined();
       expect(badge.category).toBe('bronze');
-      expect(badge.requirement.type).toBe('xp');
-      expect(badge.requirement.target).toBe(100);
+      expect(badge.requirement. type).toBe('xp');
+      expect(badge.requirement. target).toBe(100);
     });
 
     it('deve validar categoria do badge', async () => {
@@ -258,7 +270,7 @@ describe('Models', () => {
           description: 'Descrição',
           icon: '🏆',
           category: 'invalida' as any,
-          requirement: { type:  'xp', target: 100 },
+          requirement: { type: 'xp', target: 100 },
         })
       ).rejects.toThrow();
     });

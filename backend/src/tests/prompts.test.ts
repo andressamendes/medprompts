@@ -21,7 +21,7 @@ describe('Prompts Endpoints', () => {
           title: 'Anamnese Completa',
           content: 'Faça uma anamnese detalhada considerando.. .',
           category: 'Anamnese',
-          tags: ['anamnese', 'básico'],
+          tags:  ['anamnese', 'básico'],
         });
 
       expect(res.status).toBe(201);
@@ -74,19 +74,22 @@ describe('Prompts Endpoints', () => {
 
       expect(res.status).toBe(200);
       expect(res.body.success).toBe(true);
-      expect(Array.isArray(res. body.prompts)).toBe(true);
+      expect(Array.isArray(res.body. prompts)).toBe(true);
       expect(res.body.prompts.length).toBeGreaterThanOrEqual(2);
     });
 
     it('deve filtrar prompts por categoria', async () => {
       const res = await request(app)
-        .get('/api/v1/prompts? category=Anamnese')
+        .get('/api/v1/prompts?category=Anamnese')
         .set('Authorization', `Bearer ${accessToken}`);
 
       expect(res.status).toBe(200);
-      expect(res.body.success).toBe(true);
+      expect(res.body. success).toBe(true);
+      
+      // Verificar que TODOS os prompts retornados são da categoria Anamnese
       if (res.body.prompts. length > 0) {
-        expect(res.body.prompts[0].category).toBe('Anamnese');
+        const allAnamnese = res. body.prompts.every((p: any) => p.category === 'Anamnese');
+        expect(allAnamnese).toBe(true);
       }
     });
   });

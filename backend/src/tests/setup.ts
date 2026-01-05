@@ -24,20 +24,18 @@ afterAll(async () => {
   }
 });
 
-// Limpar tabelas entre testes NA ORDEM CORRETA
+// Limpar apenas tabelas dependentes, MANTER users
 afterEach(async () => {
   if (sequelize) {
     try {
-      // ORDEM IMPORTANTE: deletar tabelas dependentes ANTES das principais
-      await sequelize.query('DELETE FROM user_progress CASCADE');
-      await sequelize.query('DELETE FROM user_badges CASCADE');
-      await sequelize. query('DELETE FROM user_missions CASCADE');
-      await sequelize. query('DELETE FROM prompts CASCADE');
-      await sequelize.query('DELETE FROM study_sessions CASCADE');
-      await sequelize. query('DELETE FROM badges CASCADE');
-      await sequelize. query('DELETE FROM daily_missions CASCADE');
-      // Users por último (é referenciado por outras tabelas)
-      await sequelize.query('DELETE FROM users CASCADE');
+      // NÃO deletar users - deixar para o próximo teste reusar
+      await sequelize.query('DELETE FROM user_progress');
+      await sequelize.query('DELETE FROM user_badges');
+      await sequelize.query('DELETE FROM user_missions');
+      await sequelize.query('DELETE FROM prompts');
+      await sequelize. query('DELETE FROM study_sessions');
+      await sequelize.query('DELETE FROM badges');
+      await sequelize.query('DELETE FROM daily_missions');
     } catch (error) {
       // Ignorar erros de cleanup
     }
