@@ -10,11 +10,13 @@ module.exports = {
     'src/**/*.ts',
     '!src/**/*.d.ts',
     '!src/**/*.test.ts',
+    '!src/**/*.spec.ts',
+    '!src/server.ts',
+    '!src/scripts/**',
   ],
-  moduleFileExtensions: ['ts', 'js', 'json'],
-  globals: {
-    'ts-jest': {
-      isolatedModules: true,
-    },
-  },
+  coverageDirectory: 'coverage',
+  coverageReporters: ['text', 'lcov', 'html'],
+  setupFilesAfterEnv: ['<rootDir>/src/tests/setup.ts'],
+  testTimeout: 10000,
+  verbose: true,
 };
