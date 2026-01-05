@@ -2,7 +2,8 @@ import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
 import { AuthProvider } from '@/contexts/AuthContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
-import ProtectedRoute from '@/components/ProtectedRoute'; // ✅ Default import
+import { FavoritesProvider } from '@/contexts/FavoritesContext';
+import ProtectedRoute from '@/components/ProtectedRoute';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { lazy, Suspense, useEffect } from 'react';
 import { logger } from '@/utils/logger';
@@ -46,60 +47,62 @@ function App() {
     <ErrorBoundary>
       <ThemeProvider>
         <AuthProvider>
-          <Router basename="/medprompts">
-            <Suspense fallback={<LoadingScreen />}>
-              <Routes>
-                {/* ==================== ROTAS PÚBLICAS ==================== */}
-                {/* Landing page principal */}
-                <Route path="/" element={<NewIndex />} />
-                
-                {/* Autenticação */}
-                <Route path="/login" element={<Login />} />
-                <Route path="/register" element={<Register />} />
+          <FavoritesProvider>
+            <Router basename="/medprompts">
+              <Suspense fallback={<LoadingScreen />}>
+                <Routes>
+                  {/* ==================== ROTAS PÚBLICAS ==================== */}
+                  {/* Landing page principal */}
+                  <Route path="/" element={<NewIndex />} />
+                  
+                  {/* Autenticação */}
+                  <Route path="/login" element={<Login />} />
+                  <Route path="/register" element={<Register />} />
 
-                {/* Páginas educacionais públicas */}
-                <Route path="/guia-ias" element={<GuiaIAs />} />
-                <Route path="/ferramentas" element={<Ferramentas />} />
-                <Route path="/focus-zone" element={<FocusZone />} />
+                  {/* Páginas educacionais públicas */}
+                  <Route path="/guia-ias" element={<GuiaIAs />} />
+                  <Route path="/ferramentas" element={<Ferramentas />} />
+                  <Route path="/focus-zone" element={<FocusZone />} />
 
-                {/* ==================== ROTAS PROTEGIDAS ==================== */}
-                {/* Dashboard principal do usuário autenticado */}
-                <Route 
-                  path="/dashboard" 
-                  element={
-                    <ProtectedRoute>
-                      <Dashboard />
-                    </ProtectedRoute>
-                  } 
-                />
+                  {/* ==================== ROTAS PROTEGIDAS ==================== */}
+                  {/* Dashboard principal do usuário autenticado */}
+                  <Route 
+                    path="/dashboard" 
+                    element={
+                      <ProtectedRoute>
+                        <Dashboard />
+                      </ProtectedRoute>
+                    } 
+                  />
 
-                {/* Biblioteca completa de prompts (protegida) */}
-                <Route 
-                  path="/prompts" 
-                  element={
-                    <ProtectedRoute>
-                      <Index />
-                    </ProtectedRoute>
-                  } 
-                />
+                  {/* Biblioteca completa de prompts (protegida) */}
+                  <Route 
+                    path="/prompts" 
+                    element={
+                      <ProtectedRoute>
+                        <Index />
+                      </ProtectedRoute>
+                    } 
+                  />
 
-                {/* Perfil do usuário */}
-                <Route 
-                  path="/profile" 
-                  element={
-                    <ProtectedRoute>
-                      <Profile />
-                    </ProtectedRoute>
-                  } 
-                />
+                  {/* Perfil do usuário */}
+                  <Route 
+                    path="/profile" 
+                    element={
+                      <ProtectedRoute>
+                        <Profile />
+                      </ProtectedRoute>
+                    } 
+                  />
 
-                {/* ==================== ROTA 404 ==================== */}
-                {/* Qualquer rota não encontrada */}
-                <Route path="*" element={<NotFound />} />
-              </Routes>
-            </Suspense>
-            <Toaster />
-          </Router>
+                  {/* ==================== ROTA 404 ==================== */}
+                  {/* Qualquer rota não encontrada */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+              <Toaster />
+            </Router>
+          </FavoritesProvider>
         </AuthProvider>
       </ThemeProvider>
     </ErrorBoundary>
