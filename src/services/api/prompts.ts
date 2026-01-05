@@ -1,6 +1,4 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import api from '../api';
 
 /**
  * Interface para Prompt personalizado
@@ -12,14 +10,14 @@ export interface PromptData {
   category: string;
   tags: string[];
   isFavorite?: boolean;
-  usageCount?: number;
-  createdAt?:  string;
+  timesUsed?: number;
+  createdAt?: string;
   updatedAt?: string;
 }
 
 /**
  * Serviço de API para Prompts Personalizados
- * Realiza operações CRUD com o backend
+ * Usa instância de axios configurada (já tem baseURL e interceptors)
  */
 class PromptsService {
   /**
@@ -27,34 +25,24 @@ class PromptsService {
    */
   async getAll(): Promise<PromptData[]> {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/prompts`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      return response.data;
+      const response = await api.get('/prompts');
+      return response.data. data. prompts || response.data.prompts || [];
     } catch (error:  any) {
-      console.error('Erro ao buscar prompts:', error);
-      throw new Error(error.response?.data?. message || 'Erro ao buscar prompts');
+      console.error('❌ Erro ao buscar prompts:', error);
+      throw new Error(error.response?.data?. error || 'Erro ao buscar prompts');
     }
   }
 
   /**
    * Buscar um prompt específico por ID
    */
-  async getById(id:  string): Promise<PromptData> {
+  async getById(id: string): Promise<PromptData> {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/prompts/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      return response.data;
+      const response = await api.get(`/prompts/${id}`);
+      return response.data.data.prompt || response.data.prompt;
     } catch (error: any) {
-      console.error('Erro ao buscar prompt:', error);
-      throw new Error(error.response?. data?.message || 'Erro ao buscar prompt');
+      console.error('❌ Erro ao buscar prompt:', error);
+      throw new Error(error.response?.data?.error || 'Erro ao buscar prompt');
     }
   }
 
@@ -63,17 +51,11 @@ class PromptsService {
    */
   async create(data: PromptData): Promise<PromptData> {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(`${API_URL}/api/prompts`, data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      return response.data;
+      const response = await api.post('/prompts', data);
+      return response. data.data.prompt || response.data.prompt;
     } catch (error: any) {
-      console.error('Erro ao criar prompt:', error);
-      throw new Error(error. response?.data?.message || 'Erro ao criar prompt');
+      console.error('❌ Erro ao criar prompt:', error);
+      throw new Error(error.response?.data?.error || 'Erro ao criar prompt');
     }
   }
 
@@ -82,17 +64,11 @@ class PromptsService {
    */
   async update(id: string, data:  Partial<PromptData>): Promise<PromptData> {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios. put(`${API_URL}/api/prompts/${id}`, data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      return response.data;
+      const response = await api.put(`/prompts/${id}`, data);
+      return response.data.data. prompt || response.data.prompt;
     } catch (error: any) {
-      console.error('Erro ao atualizar prompt:', error);
-      throw new Error(error.response?.data?.message || 'Erro ao atualizar prompt');
+      console.error('❌ Erro ao atualizar prompt:', error);
+      throw new Error(error.response?.data?.error || 'Erro ao atualizar prompt');
     }
   }
 
@@ -101,15 +77,10 @@ class PromptsService {
    */
   async delete(id: string): Promise<void> {
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`${API_URL}/api/prompts/${id}`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
+      await api.delete(`/prompts/${id}`);
     } catch (error: any) {
-      console.error('Erro ao excluir prompt:', error);
-      throw new Error(error. response?.data?.message || 'Erro ao excluir prompt');
+      console.error('❌ Erro ao excluir prompt:', error);
+      throw new Error(error.response?.data?.error || 'Erro ao excluir prompt');
     }
   }
 
@@ -118,42 +89,24 @@ class PromptsService {
    */
   async toggleFavorite(id: string): Promise<PromptData> {
     try {
-      const token = localStorage. getItem('token');
-      const response = await axios.patch(
-        `${API_URL}/api/prompts/${id}/favorite`,
-        {},
-        {
-          headers: {
-            Authorization:  `Bearer ${token}`,
-          },
-        }
-      );
-      return response.data;
+      const response = await api.post(`/prompts/${id}/favorite`);
+      return response.data.data.prompt || response.data.prompt;
     } catch (error: any) {
-      console.error('Erro ao favoritar prompt:', error);
-      throw new Error(error.response?.data?.message || 'Erro ao favoritar prompt');
+      console.error('❌ Erro ao favoritar prompt:', error);
+      throw new Error(error.response?.data?.error || 'Erro ao favoritar prompt');
     }
   }
 
   /**
-   * Incrementar contador de uso
+   * Registrar uso do prompt
    */
   async incrementUsage(id: string): Promise<PromptData> {
     try {
-      const token = localStorage. getItem('token');
-      const response = await axios.patch(
-        `${API_URL}/api/prompts/${id}/usage`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      return response.data;
+      const response = await api.post(`/prompts/${id}/use`);
+      return response.data.data.prompt || response.data.prompt;
     } catch (error: any) {
-      console.error('Erro ao incrementar uso:', error);
-      throw new Error(error.response?. data?.message || 'Erro ao incrementar uso');
+      console.error('❌ Erro ao registrar uso:', error);
+      throw new Error(error.response?.data?.error || 'Erro ao registrar uso');
     }
   }
 }

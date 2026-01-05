@@ -1,18 +1,17 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import api from '../api';
 
 /**
  * Interface para Sessão de Estudo
  */
 export interface StudySessionData {
   id?:  string;
-  subject: string;
   topic: string;
-  duration: number; // em minutos
+  durationMinutes: number;
   notes?:  string;
-  date: string;
-  xpEarned?:  number;
+  promptsUsed?: string[];
+  status?:  'pending' | 'completed';
+  reviewCount?: number;
+  nextReviewDate?: string;
   createdAt?: string;
   updatedAt?: string;
 }
@@ -21,18 +20,18 @@ export interface StudySessionData {
  * Interface para Estatísticas de Estudo
  */
 export interface StudyStats {
-  totalMinutes: number;
   totalSessions: number;
-  totalXP: number;
+  totalMinutes: number;
+  completedSessions: number;
+  pendingSessions: number;
   averageDuration: number;
-  sessionsBySubject: { [key: string]: number };
-  sessionsThisWeek: number;
-  sessionsThisMonth: number;
+  topTopics: Array<{ topic: string; count: number }>;
+  last7Days: Array<{ date: string; sessions: number; minutes: number }>;
 }
 
 /**
  * Serviço de API para Sessões de Estudo
- * Realiza operações CRUD e busca estatísticas
+ * Usa instância de axios configurada (já tem baseURL e interceptors)
  */
 class StudySessionsService {
   /**
@@ -40,35 +39,11 @@ class StudySessionsService {
    */
   async getAll(): Promise<StudySessionData[]> {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/study-sessions`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      return response.data;
-    } catch (error:  any) {
-      console.error('Erro ao buscar sessões:', error);
-      throw new Error(error.response?.data?.message || 'Erro ao buscar sessões');
-    }
-  }
-
-  /**
-   * Buscar sessões por período
-   */
-  async getByPeriod(period: 'today' | 'week' | 'month' | 'all'): Promise<StudySessionData[]> {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/study-sessions`, {
-        params: { period },
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      return response.data;
+      const response = await api. get('/study-sessions');
+      return response.data.data.sessions || response.data.sessions || [];
     } catch (error: any) {
-      console.error('Erro ao buscar sessões por período:', error);
-      throw new Error(error.response?.data?. message || 'Erro ao buscar sessões');
+      console.error('❌ Erro ao buscar sessões:', error);
+      throw new Error(error.response?.data?.error || 'Erro ao buscar sessões');
     }
   }
 
@@ -77,16 +52,11 @@ class StudySessionsService {
    */
   async getById(id: string): Promise<StudySessionData> {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/study-sessions/${id}`, {
-        headers: {
-          Authorization:  `Bearer ${token}`,
-        },
-      });
-      return response.data;
+      const response = await api.get(`/study-sessions/${id}`);
+      return response.data. data.session || response.data. session;
     } catch (error: any) {
-      console.error('Erro ao buscar sessão:', error);
-      throw new Error(error.response?.data?.message || 'Erro ao buscar sessão');
+      console.error('❌ Erro ao buscar sessão:', error);
+      throw new Error(error.response?.data?.error || 'Erro ao buscar sessão');
     }
   }
 
@@ -95,50 +65,24 @@ class StudySessionsService {
    */
   async create(data: StudySessionData): Promise<StudySessionData> {
     try {
-      const token = localStorage.getItem('token');
-      
-      // Calcular XP:  0.5 XP por minuto
-      const xpEarned = Math.floor(data.duration / 2);
-      
-      const response = await axios.post(
-        `${API_URL}/api/study-sessions`,
-        { ...data, xpEarned },
-        {
-          headers:  {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      return response.data;
+      const response = await api.post('/study-sessions', data);
+      return response.data.data.session || response.data.session;
     } catch (error: any) {
-      console.error('Erro ao criar sessão:', error);
-      throw new Error(error.response?.data?.message || 'Erro ao criar sessão');
+      console.error('❌ Erro ao criar sessão:', error);
+      throw new Error(error.response?.data?.error || 'Erro ao criar sessão');
     }
   }
 
   /**
    * Atualizar sessão existente
    */
-  async update(id: string, data: Partial<StudySessionData>): Promise<StudySessionData> {
+  async update(id: string, data:  Partial<StudySessionData>): Promise<StudySessionData> {
     try {
-      const token = localStorage.getItem('token');
-      
-      // Recalcular XP se duração foi alterada
-      if (data.duration) {
-        data.xpEarned = Math.floor(data.duration / 2);
-      }
-      
-      const response = await axios.put(`${API_URL}/api/study-sessions/${id}`, data, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-          'Content-Type': 'application/json',
-        },
-      });
-      return response. data;
-    } catch (error: any) {
-      console.error('Erro ao atualizar sessão:', error);
-      throw new Error(error.response?.data?.message || 'Erro ao atualizar sessão');
+      const response = await api.put(`/study-sessions/${id}`, data);
+      return response.data.data.session || response.data.session;
+    } catch (error:  any) {
+      console.error('❌ Erro ao atualizar sessão:', error);
+      throw new Error(error.response?.data?.error || 'Erro ao atualizar sessão');
     }
   }
 
@@ -147,52 +91,51 @@ class StudySessionsService {
    */
   async delete(id: string): Promise<void> {
     try {
-      const token = localStorage.getItem('token');
-      await axios.delete(`${API_URL}/api/study-sessions/${id}`, {
-        headers: {
-          Authorization:  `Bearer ${token}`,
-        },
-      });
+      await api.delete(`/study-sessions/${id}`);
     } catch (error: any) {
-      console.error('Erro ao excluir sessão:', error);
-      throw new Error(error.response?.data?.message || 'Erro ao excluir sessão');
+      console.error('❌ Erro ao excluir sessão:', error);
+      throw new Error(error.response?.data?. error || 'Erro ao excluir sessão');
+    }
+  }
+
+  /**
+   * Marcar sessão como completada
+   */
+  async complete(id: string, quality?:  number): Promise<StudySessionData> {
+    try {
+      const response = await api.post(`/study-sessions/${id}/complete`, { quality });
+      return response.data.data. session || response.data.session;
+    } catch (error: any) {
+      console.error('❌ Erro ao completar sessão:', error);
+      throw new Error(error.response?. data?.error || 'Erro ao completar sessão');
     }
   }
 
   /**
    * Buscar estatísticas de estudo
    */
-  async getStats(): Promise<StudyStats> {
+  async getStats(period?:  'week' | 'month' | 'year'): Promise<StudyStats> {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/study-sessions/stats`, {
-        headers: {
-          Authorization:  `Bearer ${token}`,
-        },
+      const response = await api.get('/study-sessions/statistics', {
+        params: { period },
       });
-      return response.data;
+      return response. data.data.statistics || response.data.statistics;
     } catch (error: any) {
-      console.error('Erro ao buscar estatísticas:', error);
-      throw new Error(error.response?. data?.message || 'Erro ao buscar estatísticas');
+      console.error('❌ Erro ao buscar estatísticas:', error);
+      throw new Error(error.response?.data?.error || 'Erro ao buscar estatísticas');
     }
   }
 
   /**
-   * Buscar sessões recentes (últimas 5)
+   * Buscar sessões para revisão
    */
-  async getRecent(limit: number = 5): Promise<StudySessionData[]> {
+  async getForReview(): Promise<StudySessionData[]> {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios. get(`${API_URL}/api/study-sessions/recent`, {
-        params: { limit },
-        headers: {
-          Authorization:  `Bearer ${token}`,
-        },
-      });
-      return response.data;
-    } catch (error: any) {
-      console.error('Erro ao buscar sessões recentes:', error);
-      throw new Error(error.response?.data?.message || 'Erro ao buscar sessões recentes');
+      const response = await api. get('/study-sessions/review');
+      return response.data. data.sessions || response.data. sessions || [];
+    } catch (error:  any) {
+      console.error('❌ Erro ao buscar revisões:', error);
+      throw new Error(error.response?.data?. error || 'Erro ao buscar revisões');
     }
   }
 }

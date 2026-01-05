@@ -1,5 +1,5 @@
 import { Router } from 'express';
-import { authenticateToken } from '../middlewares/auth.middleware';
+import { authenticate } from '../middlewares/auth';
 import {
   getGamificationData,
   getXPData,
@@ -19,7 +19,7 @@ const router = Router();
 /**
  * Todas as rotas de gamificação requerem autenticação
  */
-router.use(authenticateToken);
+router.use(authenticate);
 
 /**
  * @route   GET /api/v1/gamification
@@ -46,10 +46,10 @@ router.post('/xp', addXP);
 /**
  * @route   GET /api/v1/gamification/xp/history
  * @desc    Obter histórico de XP (para gráficos)
- * @query   days (padrão: 30)
+ * @query   days (padrão:  30)
  * @access  Private
  */
-router.get('/xp/history', getXPHistory);
+router. get('/xp/history', getXPHistory);
 
 /**
  * @route   GET /api/v1/gamification/streak
@@ -63,17 +63,17 @@ router.get('/streak', getStreak);
  * @desc    Atualizar streak do usuário (registrar atividade do dia)
  * @access  Private
  */
-router. post('/streak', updateStreak);
+router.post('/streak', updateStreak);
 
 /**
  * @route   GET /api/v1/gamification/badges
  * @desc    Obter todos os badges (desbloqueados e bloqueados)
  * @access  Private
  */
-router. get('/badges', getBadges);
+router.get('/badges', getBadges);
 
 /**
- * @route   POST /api/v1/gamification/badges/: badgeId/unlock
+ * @route   POST /api/v1/gamification/badges/:badgeId/unlock
  * @desc    Desbloquear badge específico
  * @param   badgeId - ID do badge
  * @access  Private

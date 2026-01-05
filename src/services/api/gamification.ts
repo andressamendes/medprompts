@@ -1,6 +1,4 @@
-import axios from 'axios';
-
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
+import api from '../api';
 
 /**
  * Interface para dados de XP do usuário
@@ -20,10 +18,14 @@ export interface BadgeData {
   name: string;
   description: string;
   icon: string;
+  category: string;
+  requirement: {
+    type: string;
+    target: number;
+  };
+  isUnlocked: boolean;
   unlockedAt?: string;
-  isUnlocked:  boolean;
   progress?:  number;
-  target?: number;
 }
 
 /**
@@ -40,28 +42,29 @@ export interface StreakData {
  */
 export interface DailyMissionData {
   id: string;
-  title:  string;
+  title: string;
   description: string;
   xpReward: number;
   progress: number;
   target: number;
   isCompleted: boolean;
   completedAt?: string;
+  expiresAt:  string;
 }
 
 /**
  * Interface para dados completos de gamificação
  */
 export interface GamificationData {
-  xp:  UserXPData;
-  badges: BadgeData[];
+  xp: UserXPData;
   streak: StreakData;
+  badges: BadgeData[];
   dailyMissions: DailyMissionData[];
 }
 
 /**
  * Serviço de API para Sistema de Gamificação
- * Gerencia XP, níveis, badges, streaks e missões
+ * Usa instância de axios configurada (já tem baseURL e interceptors)
  */
 class GamificationService {
   /**
@@ -69,16 +72,11 @@ class GamificationService {
    */
   async getAll(): Promise<GamificationData> {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/gamification`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      return response.data;
-    } catch (error:  any) {
-      console.error('Erro ao buscar dados de gamificação:', error);
-      throw new Error(error.response?.data?.message || 'Erro ao buscar dados de gamificação');
+      const response = await api.get('/gamification');
+      return response.data.data || response.data;
+    } catch (error: any) {
+      console.error('❌ Erro ao buscar dados de gamificação:', error);
+      throw new Error(error.response?.data?.error || 'Erro ao buscar gamificação');
     }
   }
 
@@ -87,16 +85,11 @@ class GamificationService {
    */
   async getXP(): Promise<UserXPData> {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios. get(`${API_URL}/api/gamification/xp`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      return response. data;
-    } catch (error: any) {
-      console.error('Erro ao buscar XP:', error);
-      throw new Error(error.response?.data?. message || 'Erro ao buscar XP');
+      const response = await api.get('/gamification/xp');
+      return response.data.data || response.data;
+    } catch (error:  any) {
+      console.error('❌ Erro ao buscar XP:', error);
+      throw new Error(error.response?. data?.error || 'Erro ao buscar XP');
     }
   }
 
@@ -105,61 +98,26 @@ class GamificationService {
    */
   async addXP(amount: number, source: string): Promise<UserXPData> {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        `${API_URL}/api/gamification/xp`,
-        { amount, source },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      return response.data;
-    } catch (error: any) {
-      console.error('Erro ao adicionar XP:', error);
-      throw new Error(error.response?.data?.message || 'Erro ao adicionar XP');
+      const response = await api.post('/gamification/xp', { amount, source });
+      return response.data.data || response.data;
+    } catch (error:  any) {
+      console.error('❌ Erro ao adicionar XP:', error);
+      throw new Error(error.response?. data?.error || 'Erro ao adicionar XP');
     }
   }
 
   /**
-   * Buscar todos os badges
+   * Buscar histórico de XP
    */
-  async getBadges(): Promise<BadgeData[]> {
+  async getXPHistory(days: number = 30): Promise<Array<{ date: string; xp: number }>> {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/gamification/badges`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
+      const response = await api.get('/gamification/xp/history', {
+        params: { days },
       });
-      return response.data;
-    } catch (error: any) {
-      console.error('Erro ao buscar badges:', error);
-      throw new Error(error.response?.data?.message || 'Erro ao buscar badges');
-    }
-  }
-
-  /**
-   * Desbloquear badge
-   */
-  async unlockBadge(badgeId: string): Promise<BadgeData> {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.post(
-        `${API_URL}/api/gamification/badges/${badgeId}/unlock`,
-        {},
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-          },
-        }
-      );
-      return response.data;
-    } catch (error: any) {
-      console.error('Erro ao desbloquear badge:', error);
-      throw new Error(error.response?.data?.message || 'Erro ao desbloquear badge');
+      return response.data.data || response.data || [];
+    } catch (error:  any) {
+      console.error('❌ Erro ao buscar histórico de XP:', error);
+      throw new Error(error.response?.data?.error || 'Erro ao buscar histórico');
     }
   }
 
@@ -168,16 +126,11 @@ class GamificationService {
    */
   async getStreak(): Promise<StreakData> {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/gamification/streak`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      return response.data;
+      const response = await api.get('/gamification/streak');
+      return response.data.data || response. data;
     } catch (error: any) {
-      console.error('Erro ao buscar streak:', error);
-      throw new Error(error. response?.data?.message || 'Erro ao buscar streak');
+      console.error('❌ Erro ao buscar streak:', error);
+      throw new Error(error.response?. data?.error || 'Erro ao buscar streak');
     }
   }
 
@@ -186,20 +139,37 @@ class GamificationService {
    */
   async updateStreak(): Promise<StreakData> {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios. post(
-        `${API_URL}/api/gamification/streak`,
-        {},
-        {
-          headers: {
-            Authorization:  `Bearer ${token}`,
-          },
-        }
-      );
-      return response.data;
+      const response = await api.post('/gamification/streak');
+      return response.data.data || response.data;
     } catch (error: any) {
-      console.error('Erro ao atualizar streak:', error);
-      throw new Error(error. response?.data?.message || 'Erro ao atualizar streak');
+      console.error('❌ Erro ao atualizar streak:', error);
+      throw new Error(error.response?.data?.error || 'Erro ao atualizar streak');
+    }
+  }
+
+  /**
+   * Buscar todos os badges
+   */
+  async getBadges(): Promise<BadgeData[]> {
+    try {
+      const response = await api.get('/gamification/badges');
+      return response.data.data || response.data || [];
+    } catch (error: any) {
+      console.error('❌ Erro ao buscar badges:', error);
+      throw new Error(error.response?. data?.error || 'Erro ao buscar badges');
+    }
+  }
+
+  /**
+   * Desbloquear badge
+   */
+  async unlockBadge(badgeId: string): Promise<BadgeData> {
+    try {
+      const response = await api. post(`/gamification/badges/${badgeId}/unlock`);
+      return response.data.data || response.data;
+    } catch (error: any) {
+      console.error('❌ Erro ao desbloquear badge:', error);
+      throw new Error(error.response?.data?.error || 'Erro ao desbloquear badge');
     }
   }
 
@@ -208,99 +178,39 @@ class GamificationService {
    */
   async getDailyMissions(): Promise<DailyMissionData[]> {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/gamification/daily-missions`, {
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      return response.data;
-    } catch (error: any) {
-      console.error('Erro ao buscar missões diárias:', error);
-      throw new Error(error.response?.data?.message || 'Erro ao buscar missões diárias');
+      const response = await api.get('/gamification/daily-missions');
+      return response. data.data || response.data || [];
+    } catch (error:  any) {
+      console.error('❌ Erro ao buscar missões:', error);
+      throw new Error(error.response?.data?.error || 'Erro ao buscar missões');
     }
   }
 
   /**
-   * Atualizar progresso de missão
+   * Completar missão
    */
-  async updateMissionProgress(missionId: string, progress: number): Promise<DailyMissionData> {
+  async completeMission(missionId: string): Promise<DailyMissionData> {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios.patch(
-        `${API_URL}/api/gamification/daily-missions/${missionId}`,
-        { progress },
-        {
-          headers: {
-            Authorization: `Bearer ${token}`,
-            'Content-Type': 'application/json',
-          },
-        }
-      );
-      return response.data;
+      const response = await api.post(`/gamification/daily-missions/${missionId}/complete`);
+      return response.data.data || response.data;
     } catch (error: any) {
-      console.error('Erro ao atualizar missão:', error);
-      throw new Error(error.response?.data?. message || 'Erro ao atualizar missão');
+      console.error('❌ Erro ao completar missão:', error);
+      throw new Error(error. response?.data?.error || 'Erro ao completar missão');
     }
   }
 
   /**
-   * Completar missão e resgatar recompensa
+   * Buscar leaderboard
    */
-  async completeMission(missionId:  string): Promise<{ mission: DailyMissionData; xpData: UserXPData }> {
+  async getLeaderboard(limit: number = 10): Promise<Array<{ rank: number; name: string; level: number; xp: number }>> {
     try {
-      const token = localStorage.getItem('token');
-      const response = await axios. post(
-        `${API_URL}/api/gamification/daily-missions/${missionId}/complete`,
-        {},
-        {
-          headers: {
-            Authorization:  `Bearer ${token}`,
-          },
-        }
-      );
-      return response.data;
-    } catch (error: any) {
-      console.error('Erro ao completar missão:', error);
-      throw new Error(error. response?.data?.message || 'Erro ao completar missão');
-    }
-  }
-
-  /**
-   * Buscar histórico de XP (para gráficos)
-   */
-  async getXPHistory(days: number = 30): Promise<{ date: string; xp: number }[]> {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/gamification/xp/history`, {
-        params: { days },
-        headers:  {
-          Authorization: `Bearer ${token}`,
-        },
-      });
-      return response.data;
-    } catch (error: any) {
-      console.error('Erro ao buscar histórico de XP:', error);
-      throw new Error(error.response?.data?.message || 'Erro ao buscar histórico de XP');
-    }
-  }
-
-  /**
-   * Buscar ranking de usuários (leaderboard)
-   */
-  async getLeaderboard(limit: number = 10): Promise<{ userId: string; name: string; level: number; xp: number; rank: number }[]> {
-    try {
-      const token = localStorage.getItem('token');
-      const response = await axios.get(`${API_URL}/api/gamification/leaderboard`, {
+      const response = await api.get('/gamification/leaderboard', {
         params: { limit },
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
       });
-      return response. data;
+      return response.data.data || response.data || [];
     } catch (error: any) {
-      console.error('Erro ao buscar leaderboard:', error);
-      throw new Error(error.response?.data?.message || 'Erro ao buscar leaderboard');
+      console.error('❌ Erro ao buscar leaderboard:', error);
+      throw new Error(error.response?.data?.error || 'Erro ao buscar leaderboard');
     }
   }
 }
