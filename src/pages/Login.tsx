@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { useAuth } from '@/contexts/AuthContext';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -11,6 +11,7 @@ import { Loader2 } from 'lucide-react';
 export default function Login() {
   const { login } = useAuth();
   const { toast } = useToast();
+  const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
     email: '',
@@ -30,16 +31,18 @@ export default function Login() {
     }
 
     setIsLoading(true);
+
     try {
       await login(formData.email, formData.password);
+      
       toast({
         title: 'Login realizado!',
         description: 'Bem-vindo de volta!',
       });
       
-      // Forçar reload completo da página
+      // Usar navigate do React Router para redirecionar corretamente
       setTimeout(() => {
-        window.location.href = '/dashboard';
+        navigate('/dashboard');
       }, 800);
     } catch (error: any) {
       toast({
