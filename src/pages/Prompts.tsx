@@ -9,7 +9,7 @@ import { Plus, Search, Star, Trash2, Edit, Copy, Filter, Loader2 } from 'lucide-
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { useToast } from '@/hooks/use-toast';
+import { toast } from '@/hooks/use-toast';
 import promptsService, { PromptData } from '@/services/api/prompts';
 
 /**
@@ -17,7 +17,6 @@ import promptsService, { PromptData } from '@/services/api/prompts';
  * Integrada com API real do backend
  */
 export default function Prompts() {
-  const { toast } = useToast();
   const [prompts, setPrompts] = useState<PromptData[]>([]);
   const [filteredPrompts, setFilteredPrompts] = useState<PromptData[]>([]);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -129,10 +128,10 @@ export default function Prompts() {
         });
       } else {
         // Criar novo
-        await promptsService. create(promptData);
+        await promptsService.create(promptData);
         toast({
-          title: 'Prompt criado',
-          description:  'Seu novo prompt foi salvo',
+          title:  'Prompt criado',
+          description: 'Seu novo prompt foi salvo',
         });
       }
 
@@ -177,7 +176,7 @@ export default function Prompts() {
     } catch (error: any) {
       toast({
         title: 'Erro ao favoritar',
-        description: error.message,
+        description:  error.message,
         variant: 'destructive',
       });
     }
@@ -238,7 +237,7 @@ export default function Prompts() {
               <Input
                 placeholder="Buscar prompts..."
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e. target.value)}
+                onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-10"
               />
             </div>
@@ -251,7 +250,7 @@ export default function Prompts() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas</SelectItem>
-                {categories.filter(c => c !== 'all').map(cat => (
+                {categories. filter(c => c !== 'all').map(cat => (
                   <SelectItem key={cat} value={cat}>
                     {cat.charAt(0).toUpperCase() + cat.slice(1)}
                   </SelectItem>
@@ -282,7 +281,7 @@ export default function Prompts() {
                             className="shrink-0"
                           >
                             <Star
-                              className={`h-4 w-4 ${prompt.isFavorite ? 'fill-yellow-500 text-yellow-500' : ''}`}
+                              className={`h-4 w-4 ${prompt.isFavorite ? 'fill-yellow-500 text-yellow-500' :  ''}`}
                             />
                           </Button>
                         </div>
