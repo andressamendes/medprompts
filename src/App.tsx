@@ -9,28 +9,26 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { lazy, Suspense, useEffect } from 'react';
 import { logger } from '@/utils/logger';
 
-// Páginas públicas (não requerem autenticação)
+// Páginas públicas
 import NewIndex from '@/pages/NewIndex';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import NotFound from '@/pages/NotFound';
-
-// ✅ Dashboard sem lazy loading (fix para dynamic import)
 import Dashboard from '@/pages/Dashboard';
 
-// Páginas protegidas (requerem autenticação) - lazy loading
+// Páginas com lazy loading
 const Prompts = lazy(() => import('@/pages/Prompts'));
 const UserTools = lazy(() => import('@/pages/UserTools'));
 const Profile = lazy(() => import('@/pages/Profile'));
 const Library = lazy(() => import('@/pages/Library'));
 const ToolsHub = lazy(() => import('@/pages/ToolsHub'));
+const StudySchedule = lazy(() => import('@/pages/StudySchedule'));
 
-// Páginas públicas com conteúdo educacional
+// Páginas educacionais
 const GuiaIAs = lazy(() => import('@/pages/GuiaIAs'));
 const Ferramentas = lazy(() => import('@/pages/Ferramentas'));
 const FocusZone = lazy(() => import('@/pages/FocusZone'));
 
-// Loading fallback
 const LoadingScreen = () => (
   <div className="min-h-screen flex items-center justify-center">
     <div className="text-center">
@@ -58,27 +56,20 @@ function App() {
               <Router basename="/medprompts">
                 <Suspense fallback={<LoadingScreen />}>
                   <Routes>
-                    {/* ==================== ROTAS PÚBLICAS ==================== */}
-                    {/* Landing page principal */}
+                    {/* Rotas públicas */}
                     <Route path="/" element={<NewIndex />} />
-                    
-                    {/* Autenticação */}
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
-
-                    {/* Páginas educacionais públicas */}
                     <Route path="/guia-ias" element={<GuiaIAs />} />
                     <Route path="/ferramentas" element={<Ferramentas />} />
                     <Route path="/focus-zone" element={<FocusZone />} />
                     
-                    {/* Hub de ferramentas úteis */}
+                    {/* Hub de ferramentas e ferramentas públicas */}
                     <Route path="/tools" element={<ToolsHub />} />
-                    
-                    {/* Biblioteca médica (PÚBLICA - acesso livre) */}
                     <Route path="/library" element={<Library />} />
+                    <Route path="/study-schedule" element={<StudySchedule />} />
 
-                    {/* ==================== ROTAS PROTEGIDAS ==================== */}
-                    {/* Dashboard principal do usuário autenticado */}
+                    {/* Rotas protegidas */}
                     <Route 
                       path="/dashboard" 
                       element={
@@ -87,16 +78,7 @@ function App() {
                         </ProtectedRoute>
                       } 
                     />
-
-                    {/* Biblioteca completa de prompts (PÚBLICA - acesso livre para todos) */}
-                    <Route 
-                      path="/prompts" 
-                      element={
-                        <Prompts />
-                      } 
-                    />
-
-                    {/* Ferramentas do usuário (protegida) */}
+                    <Route path="/prompts" element={<Prompts />} />
                     <Route 
                       path="/minhas-ferramentas" 
                       element={
@@ -105,8 +87,6 @@ function App() {
                         </ProtectedRoute>
                       } 
                     />
-
-                    {/* Perfil do usuário */}
                     <Route 
                       path="/profile" 
                       element={
@@ -116,8 +96,7 @@ function App() {
                       } 
                     />
 
-                    {/* ==================== ROTA 404 ==================== */}
-                    {/* Qualquer rota não encontrada */}
+                    {/* Rota 404 */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>
