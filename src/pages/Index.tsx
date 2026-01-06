@@ -4,7 +4,7 @@ import { useLogger } from '@/utils/logger';
 
 /**
  * Landing page principal do MedPrompts
- * Plataforma 100% gratuita de recursos de IA para estudantes de medicina
+ * Plataforma 100% gratuita de recursos de IA para estudantes de medicina 2026
  */
 export default function Index() {
   const logger = useLogger();
@@ -324,3 +324,4 @@ export default function Index() {
     </div>
   );
 }
+
