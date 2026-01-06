@@ -4,6 +4,7 @@ import { AuthProvider } from '@/contexts/AuthContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { FavoritesProvider } from '@/contexts/FavoritesContext';
 import { PromptHistoryProvider } from '@/contexts/PromptHistoryContext';
+import { CalendarProvider } from '@/contexts/CalendarContext';
 import ProtectedRoute from '@/components/ProtectedRoute';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { lazy, Suspense, useEffect } from 'react';
@@ -51,91 +52,93 @@ function App() {
     <ErrorBoundary>
       <ThemeProvider>
         <AuthProvider>
-          <FavoritesProvider>
-            <PromptHistoryProvider>
-              <Router basename="/medprompts">
-                <Suspense fallback={<LoadingScreen />}>
-                  <Routes>
-                    {/* ==================== ROTAS PÚBLICAS ==================== */}
-                    <Route path="/" element={<NewIndex />} />
-                    <Route path="/login" element={<Login />} />
-                    <Route path="/register" element={<Register />} />
-                    <Route path="/guia-ias" element={<GuiaIAs />} />
-                    <Route path="/ferramentas" element={<Ferramentas />} />
-                    <Route path="/focus-zone" element={<FocusZone />} />
-                    
-                    {/* Biblioteca de prompts (pública) */}
-                    <Route path="/prompts" element={<Prompts />} />
+          <CalendarProvider>
+            <FavoritesProvider>
+              <PromptHistoryProvider>
+                <Router basename="/medprompts">
+                  <Suspense fallback={<LoadingScreen />}>
+                    <Routes>
+                      {/* ==================== ROTAS PÚBLICAS ==================== */}
+                      <Route path="/" element={<NewIndex />} />
+                      <Route path="/login" element={<Login />} />
+                      <Route path="/register" element={<Register />} />
+                      <Route path="/guia-ias" element={<GuiaIAs />} />
+                      <Route path="/ferramentas" element={<Ferramentas />} />
+                      <Route path="/focus-zone" element={<FocusZone />} />
+                      
+                      {/* Biblioteca de prompts (pública) */}
+                      <Route path="/prompts" element={<Prompts />} />
 
-                    {/* ==================== ROTAS PROTEGIDAS ==================== */}
-                    {/* Dashboard */}
-                    <Route 
-                      path="/dashboard" 
-                      element={
-                        <ProtectedRoute>
-                          <Dashboard />
-                        </ProtectedRoute>
-                      } 
-                    />
+                      {/* ==================== ROTAS PROTEGIDAS ==================== */}
+                      {/* Dashboard */}
+                      <Route 
+                        path="/dashboard" 
+                        element={
+                          <ProtectedRoute>
+                            <Dashboard />
+                          </ProtectedRoute>
+                        } 
+                      />
 
-                    {/* Hub de ferramentas (PROTEGIDO) */}
-                    <Route 
-                      path="/tools" 
-                      element={
-                        <ProtectedRoute>
-                          <ToolsHub />
-                        </ProtectedRoute>
-                      } 
-                    />
-                    
-                    {/* Biblioteca médica (PROTEGIDO) */}
-                    <Route 
-                      path="/library" 
-                      element={
-                        <ProtectedRoute>
-                          <Library />
-                        </ProtectedRoute>
-                      } 
-                    />
-                    
-                    {/* Cronograma de estudos (PROTEGIDO) */}
-                    <Route 
-                      path="/study-schedule" 
-                      element={
-                        <ProtectedRoute>
-                          <StudySchedule />
-                        </ProtectedRoute>
-                      } 
-                    />
+                      {/* Hub de ferramentas (PROTEGIDO) */}
+                      <Route 
+                        path="/tools" 
+                        element={
+                          <ProtectedRoute>
+                            <ToolsHub />
+                          </ProtectedRoute>
+                        } 
+                      />
+                      
+                      {/* Biblioteca médica (PROTEGIDO) */}
+                      <Route 
+                        path="/library" 
+                        element={
+                          <ProtectedRoute>
+                            <Library />
+                          </ProtectedRoute>
+                        } 
+                      />
+                      
+                      {/* Cronograma de estudos (PROTEGIDO) */}
+                      <Route 
+                        path="/study-schedule" 
+                        element={
+                          <ProtectedRoute>
+                            <StudySchedule />
+                          </ProtectedRoute>
+                        } 
+                      />
 
-                    {/* Ferramentas do usuário */}
-                    <Route 
-                      path="/minhas-ferramentas" 
-                      element={
-                        <ProtectedRoute>
-                          <UserTools />
-                        </ProtectedRoute>
-                      } 
-                    />
+                      {/* Ferramentas do usuário */}
+                      <Route 
+                        path="/minhas-ferramentas" 
+                        element={
+                          <ProtectedRoute>
+                            <UserTools />
+                          </ProtectedRoute>
+                        } 
+                      />
 
-                    {/* Perfil do usuário */}
-                    <Route 
-                      path="/profile" 
-                      element={
-                        <ProtectedRoute>
-                          <Profile />
-                        </ProtectedRoute>
-                      } 
-                    />
+                      {/* Perfil do usuário */}
+                      <Route 
+                        path="/profile" 
+                        element={
+                          <ProtectedRoute>
+                            <Profile />
+                          </ProtectedRoute>
+                        } 
+                      />
 
-                    {/* ==================== ROTA 404 ==================== */}
-                    <Route path="*" element={<NotFound />} />
-                  </Routes>
-                </Suspense>
-                <Toaster />
-              </Router>
-            </PromptHistoryProvider>
-          </FavoritesProvider>
+                      {/* ==================== ROTA 404 ==================== */}
+                      <Route path="*" element={<NotFound />} />
+                    </Routes>
+                  </Suspense>
+                  <Toaster />
+                </Router>
+              </PromptHistoryProvider>
+            </FavoritesProvider>
+          </CalendarProvider>
         </AuthProvider>
       </ThemeProvider>
     </ErrorBoundary>

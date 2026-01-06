@@ -10,10 +10,11 @@ import { Calendar, Clock, Plus, Trash2, ArrowLeft, Sparkles, Loader2, LogIn, Log
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
+import { useCalendar } from '@/contexts/CalendarContext';
 import calendarService, { CalendarEvent } from '@/services/api/calendar';
 
 export default function StudySchedule() {
-  const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const { isCalendarAuthenticated, isCalendarLoading, connectCalendar, disconnectCalendar } = useCalendar();
   const [events, setEvents] = useState<CalendarEvent[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
@@ -29,42 +30,14 @@ export default function StudySchedule() {
   });
 
   useEffect(() => {
-    initializeGoogleApi();
-  }, []);
-
-  const initializeGoogleApi = async () => {
-    try {
-      const script1 = document.createElement('script');
-      script1.src = 'https://apis.google.com/js/api.js';
-      script1.async = true;
-      script1.defer = true;
-      document.body.appendChild(script1);
-
-      const script2 = document.createElement('script');
-      script2.src = 'https://accounts.google.com/gsi/client';
-      script2.async = true;
-      script2.defer = true;
-      document.body.appendChild(script2);
-
-      script1.onload = async () => {
-        await calendarService.initGoogleApi();
-      };
-
-      script2.onload = () => {
-        calendarService.initGoogleIdentity(() => {
-          setIsAuthenticated(true);
-          loadEvents();
-        });
-      };
-    } catch (error) {
-      console.error('Erro ao inicializar Google API:', error);
+    if (isCalendarAuthenticated && !isCalendarLoading) {
+      loadEvents();
     }
-  };
+  }, [isCalendarAuthenticated, isCalendarLoading]);
 
   const handleLogin = async () => {
     try {
-      await calendarService.login();
-      setIsAuthenticated(true);
+      await connectCalendar();
       toast({ title: 'Login realizado', description: 'Conectado ao Google Calendar' });
       loadEvents();
     } catch (error: any) {
@@ -73,8 +46,7 @@ export default function StudySchedule() {
   };
 
   const handleLogout = () => {
-    calendarService.logout();
-    setIsAuthenticated(false);
+    disconnectCalendar();
     setEvents([]);
     toast({ title: 'Logout realizado', description: 'Desconectado do Google Calendar' });
   };
@@ -120,7 +92,8 @@ export default function StudySchedule() {
           startDateTime,
           parseInt(formData.duration)
         );
-        toast({ title: 'Evento criado com revisões', description: 'Evento e 5 revisões espaçadas foram agendados' });
+        toast({ title
+: 'Evento criado com revisões', description: 'Evento e 5 revisões espaçadas foram agendados' });
       } else {
         toast({ title: 'Evento criado', description: 'Seu evento foi adicionado ao calendário' });
       }
@@ -156,6 +129,18 @@ export default function StudySchedule() {
     return date.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
   };
 
+  if (isCalendarLoading) {
+    return (
+      <div className="min-h-screen bg-background">
+        <AuthenticatedNavbar />
+        <div className="flex flex-col items-center justify-center py-24 gap-4">
+          <Loader2 className="h-12 w-12 animate-spin text-blue-600" />
+          <p className="text-sm text-muted-foreground">Inicializando Google Calendar...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <AuthenticatedNavbar />
@@ -178,11 +163,11 @@ export default function StudySchedule() {
             <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
               Integre com seu Google Calendar e crie sessões de estudo com revisão espaçada automática
             </p>
-            {!isAuthenticated ? (
+            {!isCalendarAuthenticated ? (
               <Button onClick={handleLogin} size="lg" className="gap-2"><LogIn className="h-5 w-5" />Conectar com Google Calendar</Button>
             ) : (
               <div className="flex items-center justify-center gap-4">
-                <Badge variant="secondary" className="text-sm px-4 py-2">✓ Conectado</Badge>
+                <Badge variant="secondary" className="text-sm px-4 py-2">✓ Conectado Automaticamente</Badge>
                 <Button onClick={handleLogout} variant="outline" size="sm" className="gap-2"><LogOut className="h-4 w-4" />Desconectar</Button>
               </div>
             )}
@@ -192,7 +177,7 @@ export default function StudySchedule() {
         <div className="absolute top-0 right-1/4 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
       </section>
       <main className="container mx-auto px-4 py-8 sm:py-12">
-        {isAuthenticated ? (
+        {isCalendarAuthenticated ? (
           <div className="space-y-8">
             <div className="flex items-center justify-between">
               <h2 className="text-2xl font-bold">Próximas Sessões</h2>
@@ -265,8 +250,7 @@ export default function StudySchedule() {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Nova Sessão de Estudos</DialogTitle>
-            <DialogDescription>Crie uma sessão
- de estudos no seu calendário. Opcionalmente, ative revisões espaçadas.</DialogDescription>
+            <DialogDescription>Crie uma sessão de estudos no seu calendário. Opcionalmente, ative revisões espaçadas.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
