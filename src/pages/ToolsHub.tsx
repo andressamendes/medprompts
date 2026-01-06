@@ -1,5 +1,5 @@
 import { useNavigate } from 'react-router-dom';
-import { Navbar } from '@/components/Navbar';
+import { AuthenticatedNavbar } from '@/components/AuthenticatedNavbar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Library, Calculator, Clock, FileText, Brain, Sparkles, ArrowRight, Calendar } from 'lucide-react';
@@ -72,7 +72,7 @@ export default function ToolsHub() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      <AuthenticatedNavbar />
 
       <section className="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-indigo-950 py-16 sm:py-24">
         <div className="container mx-auto px-4">

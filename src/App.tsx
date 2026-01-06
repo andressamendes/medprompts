@@ -24,7 +24,7 @@ const Library = lazy(() => import('@/pages/Library'));
 const ToolsHub = lazy(() => import('@/pages/ToolsHub'));
 const StudySchedule = lazy(() => import('@/pages/StudySchedule'));
 
-// Páginas educacionais
+// Páginas educacionais públicas
 const GuiaIAs = lazy(() => import('@/pages/GuiaIAs'));
 const Ferramentas = lazy(() => import('@/pages/Ferramentas'));
 const FocusZone = lazy(() => import('@/pages/FocusZone'));
@@ -56,7 +56,7 @@ function App() {
               <Router basename="/medprompts">
                 <Suspense fallback={<LoadingScreen />}>
                   <Routes>
-                    {/* Rotas públicas */}
+                    {/* ==================== ROTAS PÚBLICAS ==================== */}
                     <Route path="/" element={<NewIndex />} />
                     <Route path="/login" element={<Login />} />
                     <Route path="/register" element={<Register />} />
@@ -64,12 +64,11 @@ function App() {
                     <Route path="/ferramentas" element={<Ferramentas />} />
                     <Route path="/focus-zone" element={<FocusZone />} />
                     
-                    {/* Hub de ferramentas e ferramentas públicas */}
-                    <Route path="/tools" element={<ToolsHub />} />
-                    <Route path="/library" element={<Library />} />
-                    <Route path="/study-schedule" element={<StudySchedule />} />
+                    {/* Biblioteca de prompts (pública) */}
+                    <Route path="/prompts" element={<Prompts />} />
 
-                    {/* Rotas protegidas */}
+                    {/* ==================== ROTAS PROTEGIDAS ==================== */}
+                    {/* Dashboard */}
                     <Route 
                       path="/dashboard" 
                       element={
@@ -78,7 +77,38 @@ function App() {
                         </ProtectedRoute>
                       } 
                     />
-                    <Route path="/prompts" element={<Prompts />} />
+
+                    {/* Hub de ferramentas (PROTEGIDO) */}
+                    <Route 
+                      path="/tools" 
+                      element={
+                        <ProtectedRoute>
+                          <ToolsHub />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    
+                    {/* Biblioteca médica (PROTEGIDO) */}
+                    <Route 
+                      path="/library" 
+                      element={
+                        <ProtectedRoute>
+                          <Library />
+                        </ProtectedRoute>
+                      } 
+                    />
+                    
+                    {/* Cronograma de estudos (PROTEGIDO) */}
+                    <Route 
+                      path="/study-schedule" 
+                      element={
+                        <ProtectedRoute>
+                          <StudySchedule />
+                        </ProtectedRoute>
+                      } 
+                    />
+
+                    {/* Ferramentas do usuário */}
                     <Route 
                       path="/minhas-ferramentas" 
                       element={
@@ -87,6 +117,8 @@ function App() {
                         </ProtectedRoute>
                       } 
                     />
+
+                    {/* Perfil do usuário */}
                     <Route 
                       path="/profile" 
                       element={
@@ -96,7 +128,7 @@ function App() {
                       } 
                     />
 
-                    {/* Rota 404 */}
+                    {/* ==================== ROTA 404 ==================== */}
                     <Route path="*" element={<NotFound />} />
                   </Routes>
                 </Suspense>

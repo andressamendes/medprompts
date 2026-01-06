@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
-import { Navbar } from '@/components/Navbar';
+import { AuthenticatedNavbar } from '@/components/AuthenticatedNavbar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -158,7 +158,7 @@ export default function StudySchedule() {
 
   return (
     <div className="min-h-screen bg-background">
-      <Navbar />
+      <AuthenticatedNavbar />
       <section className="relative overflow-hidden bg-gradient-to-br from-blue-50 via-white to-indigo-50 dark:from-gray-950 dark:via-gray-900 dark:to-blue-950 py-16 sm:py-24">
         <div className="container mx-auto px-4">
           <Link to="/tools">
@@ -265,7 +265,8 @@ export default function StudySchedule() {
         <DialogContent className="max-w-2xl">
           <DialogHeader>
             <DialogTitle>Nova Sessão de Estudos</DialogTitle>
-                        <DialogDescription>Crie uma sessão de estudos no seu calendário. Opcionalmente, ative revisões espaçadas.</DialogDescription>
+            <DialogDescription>Crie uma sessão
+ de estudos no seu calendário. Opcionalmente, ative revisões espaçadas.</DialogDescription>
           </DialogHeader>
           <div className="space-y-4">
             <div className="space-y-2">
@@ -315,4 +316,3 @@ export default function StudySchedule() {
     </div>
   );
 }
-

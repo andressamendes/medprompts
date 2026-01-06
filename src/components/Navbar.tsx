@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Menu, X, Wrench } from 'lucide-react';
+import { Menu, X } from 'lucide-react';
 
 export function Navbar() {
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -20,11 +20,8 @@ export function Navbar() {
 
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-4">
-            <Link to="/tools">
-              <Button variant="ghost" className="gap-2">
-                <Wrench className="h-4 w-4" />
-                Ferramentas
-              </Button>
+            <Link to="/prompts">
+              <Button variant="ghost">Biblioteca</Button>
             </Link>
             <Link to="/guia-ias">
               <Button variant="ghost">Guia de IAs</Button>
@@ -61,10 +58,9 @@ export function Navbar() {
         {/* Mobile Menu */}
         {mobileMenuOpen && (
           <div className="md:hidden py-4 space-y-2 border-t">
-            <Link to="/tools" onClick={() => setMobileMenuOpen(false)}>
-              <Button variant="ghost" className="w-full justify-start gap-2">
-                <Wrench className="h-5 w-5" />
-                Ferramentas
+            <Link to="/prompts" onClick={() => setMobileMenuOpen(false)}>
+              <Button variant="ghost" className="w-full justify-start">
+                Biblioteca
               </Button>
             </Link>
             <Link to="/guia-ias" onClick={() => setMobileMenuOpen(false)}>

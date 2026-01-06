@@ -32,7 +32,7 @@ export function AuthenticatedNavbar() {
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/prompts', label: 'Biblioteca', icon: BookText },
-    { path: '/minhas-ferramentas', label: 'Ferramentas', icon: Wrench },
+    { path: '/tools', label: 'Ferramentas', icon: Wrench },
     { path: '/profile', label: 'Perfil', icon: User },
   ];
 
