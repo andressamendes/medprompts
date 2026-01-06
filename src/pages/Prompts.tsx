@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
-import { Plus, Search, Star, Trash2, Edit, Copy, Filter, Loader2 } from 'lucide-react';
+import { Plus, Search, Star, Trash2, Edit, Copy, Filter, Loader2, Lock } from 'lucide-react';
 import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -16,6 +16,8 @@ import promptsService, { PromptData } from '@/services/api/prompts';
 /**
  * Página Prompts - CRUD de prompts personalizados
  * Integrada com API real do backend
+ * 
+ * REGRA: Prompts do sistema (isSystem: true) são FIXOS e NÃO podem ser editados ou excluídos
  */
 export default function Prompts() {
   const [prompts, setPrompts] = useState<PromptData[]>([]);
@@ -34,7 +36,7 @@ export default function Prompts() {
     tags: '',
   });
 
-  const categories = ['all', 'anatomia', 'fisiologia', 'farmacologia', 'clinica', 'cirurgia', 'pediatria', 'geral'];
+  const categories = ['all', 'anatomia', 'fisiologia', 'farmacologia', 'clinica', 'cirurgia', 'pediatria', 'estudos', 'geral'];
 
   // 🔗 Carregar prompts ao montar o componente
   useEffect(() => {
@@ -57,8 +59,7 @@ export default function Prompts() {
         (p) =>
           p.title.toLowerCase().includes(term) ||
           p.content.toLowerCase().includes(term) ||
-          p.tags.some((tag) => tag.toLowerCase().includes(term),
-        ),
+          p.tags.some((tag) => tag.toLowerCase().includes(term)),
       );
     }
 
@@ -69,6 +70,7 @@ export default function Prompts() {
   const loadPrompts = async () => {
     setIsLoading(true);
     try {
+      // Marcar todos os prompts estáticos como prompts do sistema (isSystem: true)
       const data: PromptData[] = staticPrompts.map((p, index) => ({
         id: p.id || `prompt-${index}`,
         title: p.title,
@@ -77,6 +79,7 @@ export default function Prompts() {
         tags: p.tags,
         usageCount: 0,
         isFavorite: false,
+        isSystem: true, // ✅ MARCA COMO PROMPT DO SISTEMA (NÃO PODE SER EDITADO/EXCLUÍDO)
       }));
       setPrompts(data);
       setFilteredPrompts(data);
@@ -102,8 +105,18 @@ export default function Prompts() {
     setIsModalOpen(true);
   };
 
-  // Abrir modal para editar
+  // Abrir modal para editar (APENAS SE NÃO FOR PROMPT DO SISTEMA)
   const handleEdit = (prompt: PromptData) => {
+    // 🛡️ PROTEÇÃO: Não permite editar prompts do sistema
+    if (prompt.isSystem) {
+      toast({
+        title: 'Ação não permitida',
+        description: 'Prompts do sistema não podem ser editados',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     setEditingPrompt(prompt);
     setFormData({
       title: prompt.title,
@@ -137,6 +150,7 @@ export default function Prompts() {
         content: formData.content,
         category: formData.category,
         tags,
+        isSystem: false, // ✅ Novos prompts criados pelo usuário NÃO são do sistema
       };
 
       if (editingPrompt && editingPrompt.id) {
@@ -172,8 +186,18 @@ export default function Prompts() {
     }
   };
 
-  // 🔗 Excluir prompt via API
-  const handleDelete = async (id: string) => {
+  // 🔗 Excluir prompt via API (APENAS SE NÃO FOR PROMPT DO SISTEMA)
+  const handleDelete = async (id: string, isSystem?: boolean) => {
+    // 🛡️ PROTEÇÃO: Não permite excluir prompts do sistema
+    if (isSystem) {
+      toast({
+        title: 'Ação não permitida',
+        description: 'Prompts do sistema não podem ser excluídos',
+        variant: 'destructive',
+      });
+      return;
+    }
+
     if (!confirm('Tem certeza que deseja excluir este prompt?')) return;
 
     try {
@@ -309,7 +333,13 @@ export default function Prompts() {
                     <Card key={prompt.id} className="flex flex-col">
                       <CardHeader>
                         <div className="flex items-start justify-between gap-2">
-                          <CardTitle className="text-lg">{prompt.title}</CardTitle>
+                          <div className="flex items-center gap-2 flex-1">
+                            <CardTitle className="text-lg">{prompt.title}</CardTitle>
+                            {/* 🔒 Ícone de cadeado para prompts do sistema */}
+                            {prompt.isSystem && (
+                              <Lock className="h-4 w-4 text-muted-foreground shrink-0" />
+                            )}
+                          </div>
                           <Button
                             variant="ghost"
                             size="icon"
@@ -354,17 +384,23 @@ export default function Prompts() {
                             <Copy className="h-3 w-3 mr-1" />
                             Copiar
                           </Button>
+                          
+                          {/* ✅ BOTÃO DE EDITAR: Desabilitado para prompts do sistema */}
                           <Button
                             variant="outline"
                             size="sm"
                             onClick={() => handleEdit(prompt)}
+                            disabled={prompt.isSystem}
                           >
                             <Edit className="h-3 w-3" />
                           </Button>
+
+                          {/* ✅ BOTÃO DE EXCLUIR: Desabilitado para prompts do sistema */}
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => prompt.id && handleDelete(prompt.id)}
+                            onClick={() => prompt.id && handleDelete(prompt.id, prompt.isSystem)}
+                            disabled={prompt.isSystem}
                           >
                             <Trash2 className="h-3 w-3" />
                           </Button>

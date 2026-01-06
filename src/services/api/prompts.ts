@@ -6,13 +6,14 @@ const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3001';
  * Interface para Prompt personalizado
  */
 export interface PromptData {
-  id?:  string;
+  id?: string;
   title: string;
   content: string;
   category: string;
-  tags:  string[];
-  isFavorite?:  boolean;
-  usageCount?:  number; // ✅ ADICIONADO para evitar erro de tipagem
+  tags: string[];
+  isFavorite?: boolean;
+  usageCount?: number;
+  isSystem?: boolean; // ✅ ADICIONADO: Marca se o prompt é do sistema (protegido contra edição/exclusão)
   createdAt?: string;
   updatedAt?: string;
 }
@@ -28,13 +29,13 @@ class PromptsService {
   async getAll(): Promise<PromptData[]> {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios. get(`${API_URL}/api/prompts`, {
+      const response = await axios.get(`${API_URL}/api/prompts`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
       });
       return response.data;
-    } catch (error:  any) {
+    } catch (error: any) {
       console.error('Erro ao buscar prompts:', error);
       throw new Error(error.response?.data?.message || 'Erro ao buscar prompts');
     }
@@ -51,7 +52,7 @@ class PromptsService {
           Authorization: `Bearer ${token}`,
         },
       });
-      return response. data;
+      return response.data;
     } catch (error: any) {
       console.error('Erro ao buscar prompt:', error);
       throw new Error(error.response?.data?.message || 'Erro ao buscar prompt');
@@ -64,26 +65,26 @@ class PromptsService {
   async create(data: PromptData): Promise<PromptData> {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios. post(`${API_URL}/api/prompts`, data, {
+      const response = await axios.post(`${API_URL}/api/prompts`, data, {
         headers: {
-          Authorization:  `Bearer ${token}`,
+          Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
         },
       });
       return response.data;
     } catch (error: any) {
       console.error('Erro ao criar prompt:', error);
-      throw new Error(error. response?.data?.message || 'Erro ao criar prompt');
+      throw new Error(error.response?.data?.message || 'Erro ao criar prompt');
     }
   }
 
   /**
    * Atualizar prompt existente
    */
-  async update(id: string, data:  Partial<PromptData>): Promise<PromptData> {
+  async update(id: string, data: Partial<PromptData>): Promise<PromptData> {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios. put(`${API_URL}/api/prompts/${id}`, data, {
+      const response = await axios.put(`${API_URL}/api/prompts/${id}`, data, {
         headers: {
           Authorization: `Bearer ${token}`,
           'Content-Type': 'application/json',
@@ -109,7 +110,7 @@ class PromptsService {
       });
     } catch (error: any) {
       console.error('Erro ao excluir prompt:', error);
-      throw new Error(error. response?.data?.message || 'Erro ao excluir prompt');
+      throw new Error(error.response?.data?.message || 'Erro ao excluir prompt');
     }
   }
 
@@ -118,13 +119,13 @@ class PromptsService {
    */
   async toggleFavorite(id: string): Promise<PromptData> {
     try {
-      const token = localStorage. getItem('token');
+      const token = localStorage.getItem('token');
       const response = await axios.patch(
         `${API_URL}/api/prompts/${id}/favorite`,
         {},
         {
           headers: {
-            Authorization:  `Bearer ${token}`,
+            Authorization: `Bearer ${token}`,
           },
         }
       );
@@ -141,7 +142,7 @@ class PromptsService {
   async incrementUsage(id: string): Promise<PromptData> {
     try {
       const token = localStorage.getItem('token');
-      const response = await axios. patch(
+      const response = await axios.patch(
         `${API_URL}/api/prompts/${id}/usage`,
         {},
         {
