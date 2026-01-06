@@ -1,11 +1,13 @@
 import { useState, useEffect } from 'react';
+import { Link } from 'react-router-dom';
+import { Navbar } from '@/components/Navbar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Search, Star, ExternalLink, Loader2, BookOpen, Filter, Library as LibraryIcon } from 'lucide-react';
+import { Search, Star, ExternalLink, Loader2, BookOpen, Filter, ArrowLeft, Sparkles } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
 import booksService, { BookData } from '@/services/api/books';
@@ -138,41 +140,66 @@ export default function Library() {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+      <div className="min-h-screen bg-background">
+        <Navbar />
+
+        {/* Hero Section */}
+        <section className="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-indigo-950 py-16 sm:py-24">
+          <div className="container mx-auto px-4">
+            {/* Botão Voltar */}
+            <Link to="/tools">
+              <Button variant="ghost" className="mb-6 gap-2 hover:gap-3 transition-all">
+                <ArrowLeft className="h-4 w-4" />
+                Voltar para Ferramentas
+              </Button>
+            </Link>
+
+            <div className="text-center max-w-4xl mx-auto space-y-6">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-sm font-medium mb-4">
+                <Sparkles className="h-4 w-4" />
+                <span>Livros Médicos Mais Populares do Brasil</span>
+              </div>
+              
+              <h1 className="text-4xl sm:text-5xl lg:text-6xl font-bold tracking-tight">
+                <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
+                  Biblioteca Médica
+                </span>
+              </h1>
+              
+              <p className="text-lg sm:text-xl text-muted-foreground max-w-2xl mx-auto">
+                Guyton, Netter, Sobotta, Harrison e muito mais. Acesse os principais livros de referência.
+              </p>
+
+              <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
+                <BookOpen className="h-5 w-5" />
+                <span>{filteredBooks.length} livros disponíveis</span>
+              </div>
+            </div>
+          </div>
+          
+          {/* Decorative gradient blobs */}
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob"></div>
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000"></div>
+        </section>
+
+        {/* Main Content */}
         <main className="container mx-auto px-4 py-8 sm:py-12">
           <div className="space-y-8">
-            {/* Header */}
-            <div className="flex flex-col gap-4">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="space-y-2">
-                  <div className="flex items-center gap-3">
-                    <LibraryIcon className="h-8 w-8 text-primary" />
-                    <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
-                      Biblioteca Médica
-                    </h1>
-                  </div>
-                  <p className="text-sm sm:text-base text-muted-foreground">
-                    {filteredBooks.length} {filteredBooks.length === 1 ? 'livro encontrado' : 'livros encontrados'}
-                  </p>
-                </div>
-              </div>
-
-              {/* Tabs de Filtro */}
-              <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-2 h-auto">
-                  <TabsTrigger value="all" className="gap-2">
-                    <BookOpen className="h-4 w-4" />
-                    <span className="hidden sm:inline">Todos os Livros</span>
-                    <span className="sm:hidden">Todos</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="favorites" className="gap-2">
-                    <Star className="h-4 w-4" />
-                    <span className="hidden sm:inline">Meus Favoritos</span>
-                    <span className="sm:hidden">Favoritos</span>
-                  </TabsTrigger>
-                </TabsList>
-              </Tabs>
-            </div>
+            {/* Tabs de Filtro */}
+            <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
+              <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 h-auto">
+                <TabsTrigger value="all" className="gap-2">
+                  <BookOpen className="h-4 w-4" />
+                  <span className="hidden sm:inline">Todos os Livros</span>
+                  <span className="sm:hidden">Todos</span>
+                </TabsTrigger>
+                <TabsTrigger value="favorites" className="gap-2">
+                  <Star className="h-4 w-4" />
+                  <span className="hidden sm:inline">Meus Favoritos</span>
+                  <span className="sm:hidden">Favoritos</span>
+                </TabsTrigger>
+              </TabsList>
+            </Tabs>
 
             {/* Filtros e Busca */}
             <div className="flex flex-col sm:flex-row gap-3">
@@ -208,18 +235,18 @@ export default function Library() {
             {/* Loading State */}
             {isLoading ? (
               <div className="flex flex-col items-center justify-center py-16 sm:py-24 gap-4">
-                <Loader2 className="h-12 w-12 animate-spin text-primary" />
-                <p className="text-sm text-muted-foreground">Buscando livros...</p>
+                <Loader2 className="h-12 w-12 animate-spin text-indigo-600" />
+                <p className="text-sm text-muted-foreground">Buscando livros populares...</p>
               </div>
             ) : (
               <>
                 {/* Grid de Livros */}
                 {filteredBooks.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
                     {filteredBooks.map((book) => (
                       <Card 
                         key={book.id} 
-                        className="group flex flex-col hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-2 hover:border-primary/20"
+                        className="group flex flex-col hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-2 hover:border-indigo-200 dark:hover:border-indigo-800"
                       >
                         <CardHeader className="pb-3">
                           <div className="flex gap-3">
@@ -227,7 +254,7 @@ export default function Library() {
                               <img
                                 src={book.thumbnail}
                                 alt={book.title}
-                                className="w-20 h-28 object-cover rounded shadow-md"
+                                className="w-20 h-28 object-cover rounded-lg shadow-md"
                               />
                             )}
                             <div className="flex-1 min-w-0">
@@ -343,7 +370,7 @@ export default function Library() {
         </main>
 
         {/* Footer */}
-        <footer className="border-t mt-16 bg-muted/30">
+        <footer className="border-t mt-16">
           <div className="container mx-auto px-4 py-8">
             <div className="text-center space-y-2">
               <p className="text-sm text-muted-foreground">

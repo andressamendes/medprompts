@@ -23,6 +23,7 @@ const Prompts = lazy(() => import('@/pages/Prompts'));
 const UserTools = lazy(() => import('@/pages/UserTools'));
 const Profile = lazy(() => import('@/pages/Profile'));
 const Library = lazy(() => import('@/pages/Library'));
+const ToolsHub = lazy(() => import('@/pages/ToolsHub'));
 
 // Páginas públicas com conteúdo educacional
 const GuiaIAs = lazy(() => import('@/pages/GuiaIAs'));
@@ -69,6 +70,9 @@ function App() {
                     <Route path="/guia-ias" element={<GuiaIAs />} />
                     <Route path="/ferramentas" element={<Ferramentas />} />
                     <Route path="/focus-zone" element={<FocusZone />} />
+                    
+                    {/* Hub de ferramentas úteis */}
+                    <Route path="/tools" element={<ToolsHub />} />
                     
                     {/* Biblioteca médica (PÚBLICA - acesso livre) */}
                     <Route path="/library" element={<Library />} />

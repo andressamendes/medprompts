@@ -4,6 +4,24 @@ const GOOGLE_BOOKS_API_URL = 'https://www.googleapis.com/books/v1/volumes';
 const API_KEY = import.meta.env.VITE_GOOGLE_BOOKS_API_KEY;
 
 /**
+ * Livros médicos mais populares no Brasil
+ */
+const POPULAR_BRAZILIAN_BOOKS = [
+  'Guyton Fisiologia',
+  'Tratado de Fisiologia Médica Guyton',
+  'Sobotta Atlas de Anatomia Humana',
+  'Netter Atlas de Anatomia Humana',
+  'Gray Anatomia',
+  'Harrison Medicina Interna',
+  'Robbins Patologia',
+  'Goodman Gilman Farmacologia',
+  'Nelson Tratado de Pediatria',
+  'Williams Obstetrícia',
+  'Sabiston Tratado de Cirurgia',
+  'Cecil Medicina',
+];
+
+/**
  * Interface para dados de um livro
  */
 export interface BookData {
@@ -63,7 +81,7 @@ class BooksService {
           q: query,
           maxResults,
           key: API_KEY,
-          langRestrict: 'pt', // Priorizar livros em português
+          orderBy: 'relevance',
         },
       });
 
@@ -82,22 +100,17 @@ class BooksService {
   }
 
   /**
-   * Buscar livros médicos por categoria
+   * Buscar livros médicos por categoria (priorizando livros brasileiros populares)
    */
   async searchMedical(category: string, maxResults: number = 20): Promise<BookData[]> {
     try {
+      // Se for primeira busca, retornar livros populares
+      if (category === 'medicina geral') {
+        return await this.getPopularBooks();
+      }
+
       // Adicionar termos médicos específicos à busca
-      const medicalTerms = [
-        'medicina',
-        'medical',
-        'saúde',
-        'health',
-        'anatomia',
-        'anatomy',
-        'fisiologia',
-        'physiology',
-      ];
-      
+      const medicalTerms = ['medicina', 'medical'];
       const searchQuery = `${category} ${medicalTerms.join(' OR ')}`;
       
       const response = await axios.get<GoogleBooksResponse>(GOOGLE_BOOKS_API_URL, {
@@ -119,6 +132,43 @@ class BooksService {
         typeof error === 'object' && error && 'message' in error
           ? String((error as { message?: unknown }).message)
           : 'Erro ao buscar livros médicos';
+      throw new Error(message);
+    }
+  }
+
+  /**
+   * Buscar livros populares brasileiros
+   */
+  async getPopularBooks(): Promise<BookData[]> {
+    try {
+      const allBooks: BookData[] = [];
+
+      // Buscar cada livro popular
+      for (const bookTitle of POPULAR_BRAZILIAN_BOOKS.slice(0, 6)) {
+        try {
+          const response = await axios.get<GoogleBooksResponse>(GOOGLE_BOOKS_API_URL, {
+            params: {
+              q: bookTitle,
+              maxResults: 1,
+              key: API_KEY,
+              orderBy: 'relevance',
+            },
+          });
+
+          if (response.data.items && response.data.items.length > 0) {
+            allBooks.push(this.formatBook(response.data.items[0]));
+          }
+        } catch (error) {
+          console.error(`Erro ao buscar ${bookTitle}:`, error);
+        }
+      }
+
+      return allBooks;
+    } catch (error: unknown) {
+      const message =
+        typeof error === 'object' && error && 'message' in error
+          ? String((error as { message?: unknown }).message)
+          : 'Erro ao buscar livros populares';
       throw new Error(message);
     }
   }
@@ -158,7 +208,7 @@ class BooksService {
       title: volumeInfo.title || 'Título não disponível',
       authors: volumeInfo.authors || ['Autor desconhecido'],
       description: volumeInfo.description || 'Descrição não disponível',
-      thumbnail: volumeInfo.imageLinks?.thumbnail || volumeInfo.imageLinks?.smallThumbnail || '',
+      thumbnail: volumeInfo.imageLinks?.thumbnail?.replace('http:', 'https:') || volumeInfo.imageLinks?.smallThumbnail?.replace('http:', 'https:') || '',
       categories: volumeInfo.categories || [],
       publishedDate: volumeInfo.publishedDate || '',
       pageCount: volumeInfo.pageCount || 0,
@@ -171,3 +221,4 @@ class BooksService {
 }
 
 export default new BooksService();
+
