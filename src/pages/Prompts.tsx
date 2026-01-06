@@ -85,8 +85,6 @@ const loadPrompts = async () => {
     } finally {
       setIsLoading(false);
     }
-  };  };
-
   // Abrir modal para criar
   const handleCreate = () => {
     setEditingPrompt(null);
