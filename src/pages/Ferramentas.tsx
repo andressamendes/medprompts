@@ -1,5 +1,5 @@
 import { Navbar } from "@/components/Navbar";
-import { ExternalLink, BookOpen, Calculator, FileText, Search, Brain, Image, Sparkles } from "lucide-react";
+import { ExternalLink } from "lucide-react";
 
 const Ferramentas = () => {
   const categorias = [
@@ -260,3 +260,4 @@ const Ferramentas = () => {
 };
 
 export default Ferramentas;
+
