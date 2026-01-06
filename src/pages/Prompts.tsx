@@ -1,5 +1,6 @@
 import { useState, useEffect } from 'react';
-import { AuthenticatedNavbar } from '@/components/AuthenticatedNavbar';
+// import { AuthenticatedNavbar } from '@/components/AuthenticatedNavbar';
+import prompts from '@/data/prompts-data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -62,13 +63,20 @@ export default function Prompts() {
   }, [prompts, selectedCategory, searchTerm]);
 
   // 🔗 Carregar prompts da API
-  const loadPrompts = async () => {
+  // 🔗 Carregar prompts dos dados estáticos (sem autenticação necessária)
+const loadPrompts = async () => {
     setIsLoading(true);
     try {
-      const data = await promptsService.getAll();
-      setPrompts(data);
-      setFilteredPrompts(data);
-    } catch (error:  any) {
+      // Usar dados estáticos importados ao invés de API
+      const data = prompts.map((p, index) => ({
+        ...p,
+        id: p.id || `prompt-${index}`,
+        usageCount: 0,
+        isFavorite: false
+      }));
+      setPrompts(data as any);
+      setFilteredPrompts(data as any);
+    } catch (error: any) {
       toast({
         title: 'Erro ao carregar prompts',
         description: error.message,
@@ -77,7 +85,7 @@ export default function Prompts() {
     } finally {
       setIsLoading(false);
     }
-  };
+  };  };
 
   // Abrir modal para criar
   const handleCreate = () => {
@@ -210,11 +218,11 @@ export default function Prompts() {
   return (
     <div className="min-h-screen bg-gradient-to-b from-background to-secondary/20">
       {/* Navbar Autenticada */}
-      <AuthenticatedNavbar />
+      {/* <AuthenticatedNavbar /> - Removido para acesso público */}
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        <div className="space-y-6">
+        
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
