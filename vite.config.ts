@@ -20,6 +20,28 @@ export default defineConfig(({ command }) => {
       outDir: 'dist',
       assetsDir: 'assets',
       emptyOutDir: true,
+      // ✅ Configurações para resolver problema de dynamic imports
+      rollupOptions: {
+        output: {
+          // Mantém chunks separados mas com nomes consistentes
+          manualChunks: {
+            'react-vendor': ['react', 'react-dom', 'react-router-dom'],
+            'ui-vendor': ['lucide-react'],
+          },
+          // Garante que os chunks usem caminhos relativos corretos
+          chunkFileNames: 'assets/[name]-[hash].js',
+          entryFileNames: 'assets/[name]-[hash].js',
+          assetFileNames: 'assets/[name]-[hash].[ext]'
+        }
+      },
+      // Aumenta o limite de aviso de chunk size
+      chunkSizeWarningLimit: 1000,
     },
+    // ✅ Garante que assets sejam servidos corretamente
+    server: {
+      fs: {
+        strict: false
+      }
+    }
   }
 })
