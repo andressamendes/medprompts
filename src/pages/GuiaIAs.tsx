@@ -125,6 +125,15 @@ const GuiaIAs = () => {
 
   const filteredIAs = (category: string) => ias.filter(ia => ia.category === category);
 
+  // Função segura para abrir links externos
+  const openExternalLink = (url: string) => {
+    const link = document.createElement('a');
+    link.href = url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.click();
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/20">
       <Navbar />
@@ -138,6 +147,7 @@ const GuiaIAs = () => {
               size="sm"
               onClick={() => navigate(-1)}
               className="hover:bg-white/50"
+              aria-label="Voltar para página anterior"
             >
               <ArrowLeft className="h-4 w-4 mr-2" />
               Voltar
@@ -177,7 +187,8 @@ const GuiaIAs = () => {
                   <Button
                     variant="secondary"
                     className="bg-white text-indigo-600 hover:bg-gray-100 font-semibold"
-                    onClick={() => window.open("https://chat.openai.com", "_blank")}
+                    onClick={() => openExternalLink("https://chat.openai.com")}
+                    aria-label="Experimentar ChatGPT o3-mini"
                   >
                     <ExternalLink className="h-4 w-4 mr-2" />
                     Experimentar Agora
@@ -250,7 +261,8 @@ const GuiaIAs = () => {
                         <Button
                           variant="default"
                           className={`w-full bg-gradient-to-r ${ia.color} hover:opacity-90 text-white font-semibold shadow-lg`}
-                          onClick={() => window.open(ia.url, "_blank")}
+                          onClick={() => openExternalLink(ia.url)}
+                          aria-label={`Acessar ${ia.name}`}
                         >
                           <ExternalLink className="h-4 w-4 mr-2" />
                           Acessar {ia.name.split(" ")[0]}
@@ -417,4 +429,3 @@ const GuiaIAs = () => {
 };
 
 export default GuiaIAs;
-

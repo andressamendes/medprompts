@@ -89,3 +89,76 @@
     @apply bg-background text-foreground;
   }
 }
+
+/* ===================================
+   ACESSIBILIDADE - FOCUS STYLES
+   =================================== */
+
+/* Outline visível para navegação por teclado */
+*:focus-visible {
+  outline: 3px solid #6366f1;
+  outline-offset: 2px;
+  border-radius: 4px;
+}
+
+/* Focus específico para botões */
+button:focus-visible,
+a:focus-visible {
+  outline: 3px solid #6366f1;
+  outline-offset: 3px;
+  box-shadow: 0 0 0 3px rgba(99, 102, 241, 0.2);
+}
+
+/* Focus para inputs */
+input:focus-visible,
+textarea:focus-visible,
+select:focus-visible {
+  outline: 2px solid #6366f1;
+  outline-offset: 0;
+  border-color: #6366f1;
+}
+
+/* Skip to content link (acessibilidade) */
+.skip-to-content {
+  position: absolute;
+  top: -40px;
+  left: 0;
+  background: #6366f1;
+  color: white;
+  padding: 8px 16px;
+  text-decoration: none;
+  z-index: 100;
+  border-radius: 0 0 4px 0;
+}
+
+.skip-to-content:focus {
+  top: 0;
+}
+
+/* Melhor contraste para textos secundários */
+.text-muted-foreground {
+  color: hsl(215 16% 45%); /* Aumenta contraste de 47% para 45% */
+}
+
+/* Reduz animações para usuários com preferência de movimento reduzido */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
+
+/* Dark mode support (futuro) */
+@media (prefers-color-scheme: dark) {
+  :root {
+    --focus-color: #818cf8;
+  }
+  
+  *:focus-visible {
+    outline-color: var(--focus-color);
+  }
+}
