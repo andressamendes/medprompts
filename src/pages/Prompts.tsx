@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 // import { AuthenticatedNavbar } from '@/components/AuthenticatedNavbar';
-import { prompts } from '@/data/prompts-data';
+import { prompts as staticPrompts } from '@/data/prompts-data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -36,7 +36,7 @@ export default function Prompts() {
 
   const categories = ['all', 'anatomia', 'fisiologia', 'farmacologia', 'clinica', 'cirurgia', 'pediatria', 'geral'];
 
-  // 🔗 Carregar prompts da API ao montar o componente
+  // 🔗 Carregar prompts ao montar o componente
   useEffect(() => {
     loadPrompts();
   }, []);
@@ -47,38 +47,47 @@ export default function Prompts() {
 
     // Filtro por categoria
     if (selectedCategory !== 'all') {
-      filtered = filtered.filter(p => p.category === selectedCategory);
+      filtered = filtered.filter((p) => p.category === selectedCategory);
     }
 
     // Filtro por busca
     if (searchTerm) {
-      filtered = filtered.filter(p =>
-        p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        p.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
+      const term = searchTerm.toLowerCase();
+      filtered = filtered.filter(
+        (p) =>
+          p.title.toLowerCase().includes(term) ||
+          p.content.toLowerCase().includes(term) ||
+          p.tags.some((tag) => tag.toLowerCase().includes(term),
+        ),
       );
     }
 
     setFilteredPrompts(filtered);
   }, [prompts, selectedCategory, searchTerm]);
 
-  // 🔗 Carregar prompts dos dados estáticos (sem autenticação necessária)
+  // 🔗 Carregar prompts dos dados estáticos
   const loadPrompts = async () => {
     setIsLoading(true);
     try {
-      // Usar dados estáticos importados ao invés de API
-      const data = prompts.map((p, index) => ({
-        ...p,
+      const data: PromptData[] = staticPrompts.map((p, index) => ({
         id: p.id || `prompt-${index}`,
+        title: p.title,
+        content: p.content,
+        category: p.category,
+        tags: p.tags,
         usageCount: 0,
-        isFavorite: false
+        isFavorite: false,
       }));
-      setPrompts(data as any);
-      setFilteredPrompts(data as any);
-    } catch (error: any) {
+      setPrompts(data);
+      setFilteredPrompts(data);
+    } catch (error: unknown) {
+      const message =
+        typeof error === 'object' && error && 'message' in error
+          ? String((error as { message?: unknown }).message)
+          : 'Erro desconhecido ao carregar prompts';
       toast({
         title: 'Erro ao carregar prompts',
-        description: error.message,
+        description: message,
         variant: 'destructive',
       });
     } finally {
@@ -118,7 +127,11 @@ export default function Prompts() {
 
     setIsSaving(true);
     try {
-      const tags = formData.tags.split(',').map(t => t.trim()).filter(t => t);
+      const tags = formData.tags
+        .split(',')
+        .map((t) => t.trim())
+        .filter((t) => t);
+
       const promptData: PromptData = {
         title: formData.title,
         content: formData.content,
@@ -144,10 +157,14 @@ export default function Prompts() {
 
       setIsModalOpen(false);
       loadPrompts(); // Recarregar lista
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message =
+        typeof error === 'object' && error && 'message' in error
+          ? String((error as { message?: unknown }).message)
+          : 'Erro desconhecido ao salvar';
       toast({
         title: 'Erro ao salvar',
-        description: error.message,
+        description: message,
         variant: 'destructive',
       });
     } finally {
@@ -166,10 +183,14 @@ export default function Prompts() {
         description: 'O prompt foi removido',
       });
       loadPrompts(); // Recarregar lista
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message =
+        typeof error === 'object' && error && 'message' in error
+          ? String((error as { message?: unknown }).message)
+          : 'Erro desconhecido ao excluir';
       toast({
         title: 'Erro ao excluir',
-        description: error.message,
+        description: message,
         variant: 'destructive',
       });
     }
@@ -180,10 +201,14 @@ export default function Prompts() {
     try {
       await promptsService.toggleFavorite(id);
       loadPrompts(); // Recarregar lista
-    } catch (error: any) {
+    } catch (error: unknown) {
+      const message =
+        typeof error === 'object' && error && 'message' in error
+          ? String((error as { message?: unknown }).message)
+          : 'Erro desconhecido ao favoritar';
       toast({
         title: 'Erro ao favoritar',
-        description: error.message,
+        description: message,
         variant: 'destructive',
       });
     }
@@ -205,10 +230,14 @@ export default function Prompts() {
       });
       
       loadPrompts(); // Recarregar para atualizar contador
-    } catch (error) {
+    } catch (error: unknown) {
+      const message =
+        typeof error === 'object' && error && 'message' in error
+          ? String((error as { message?: unknown }).message)
+          : 'Erro desconhecido ao copiar';
       toast({
         title: 'Erro ao copiar',
-        description: 'Não foi possível copiar o prompt',
+        description: message,
         variant: 'destructive',
       });
     }
@@ -257,7 +286,7 @@ export default function Prompts() {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas</SelectItem>
-                {categories.filter(c => c !== 'all').map(cat => (
+                {categories.filter((c) => c !== 'all').map((cat) => (
                   <SelectItem key={cat} value={cat}>
                     {cat.charAt(0).toUpperCase() + cat.slice(1)}
                   </SelectItem>
@@ -288,7 +317,9 @@ export default function Prompts() {
                             className="shrink-0"
                           >
                             <Star
-                              className={`h-4 w-4 ${prompt.isFavorite ? 'fill-yellow-500 text-yellow-500' : ''}`}
+                              className={`h-4 w-4 ${
+                                prompt.isFavorite ? 'fill-yellow-500 text-yellow-500' : ''
+                              }`}
                             />
                           </Button>
                         </div>
@@ -407,7 +438,7 @@ export default function Prompts() {
                   <SelectValue />
                 </SelectTrigger>
                 <SelectContent>
-                  {categories.filter(c => c !== 'all').map(cat => (
+                  {categories.filter((c) => c !== 'all').map((cat) => (
                     <SelectItem key={cat} value={cat}>
                       {cat.charAt(0).toUpperCase() + cat.slice(1)}
                     </SelectItem>
