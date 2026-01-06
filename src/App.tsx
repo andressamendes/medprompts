@@ -17,8 +17,7 @@ import NotFound from '@/pages/NotFound';
 
 // Páginas protegidas (requerem autenticação) - lazy loading
 const Dashboard = lazy(() => import('@/pages/Dashboard'));
-const Index = lazy(() => import('@/pages/Index'));
-const Prompts = lazy(() => import('@/pages/Prompts')); // ✅ ADICIONADO
+const Prompts = lazy(() => import('@/pages/Prompts'));
 const UserTools = lazy(() => import('@/pages/UserTools'));
 const Profile = lazy(() => import('@/pages/Profile'));
 
@@ -84,7 +83,7 @@ function App() {
                       path="/prompts" 
                       element={
                         <ProtectedRoute>
-                          <Prompts /> {/* ✅ CORRIGIDO: era <Index /> */}
+                          <Prompts />
                         </ProtectedRoute>
                       } 
                     />
