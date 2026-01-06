@@ -52,7 +52,7 @@ export default function Prompts() {
 
     // Filtro por busca
     if (searchTerm) {
-      filtered = filtered. filter(p =>
+      filtered = filtered.filter(p =>
         p.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.content.toLowerCase().includes(searchTerm.toLowerCase()) ||
         p.tags.some(tag => tag.toLowerCase().includes(searchTerm.toLowerCase()))
@@ -62,9 +62,8 @@ export default function Prompts() {
     setFilteredPrompts(filtered);
   }, [prompts, selectedCategory, searchTerm]);
 
-  // 🔗 Carregar prompts da API
   // 🔗 Carregar prompts dos dados estáticos (sem autenticação necessária)
-const loadPrompts = async () => {
+  const loadPrompts = async () => {
     setIsLoading(true);
     try {
       // Usar dados estáticos importados ao invés de API
@@ -85,10 +84,12 @@ const loadPrompts = async () => {
     } finally {
       setIsLoading(false);
     }
+  };
+
   // Abrir modal para criar
   const handleCreate = () => {
     setEditingPrompt(null);
-    setFormData({ title: '', content: '', category:  'geral', tags: '' });
+    setFormData({ title: '', content: '', category: 'geral', tags: '' });
     setIsModalOpen(true);
   };
 
@@ -99,7 +100,7 @@ const loadPrompts = async () => {
       title: prompt.title,
       content: prompt.content,
       category: prompt.category,
-      tags: prompt.tags. join(', '),
+      tags: prompt.tags.join(', '),
     });
     setIsModalOpen(true);
   };
@@ -118,7 +119,7 @@ const loadPrompts = async () => {
     setIsSaving(true);
     try {
       const tags = formData.tags.split(',').map(t => t.trim()).filter(t => t);
-      const promptData:  PromptData = {
+      const promptData: PromptData = {
         title: formData.title,
         content: formData.content,
         category: formData.category,
@@ -127,7 +128,7 @@ const loadPrompts = async () => {
 
       if (editingPrompt && editingPrompt.id) {
         // Editar existente
-        await promptsService. update(editingPrompt.id, promptData);
+        await promptsService.update(editingPrompt.id, promptData);
         toast({
           title: 'Prompt atualizado',
           description: 'Suas alterações foram salvas',
@@ -136,7 +137,7 @@ const loadPrompts = async () => {
         // Criar novo
         await promptsService.create(promptData);
         toast({
-          title:  'Prompt criado',
+          title: 'Prompt criado',
           description: 'Seu novo prompt foi salvo',
         });
       }
@@ -156,13 +157,13 @@ const loadPrompts = async () => {
 
   // 🔗 Excluir prompt via API
   const handleDelete = async (id: string) => {
-    if (! confirm('Tem certeza que deseja excluir este prompt?')) return;
+    if (!confirm('Tem certeza que deseja excluir este prompt?')) return;
 
     try {
-      await promptsService. delete(id);
+      await promptsService.delete(id);
       toast({
         title: 'Prompt excluído',
-        description:  'O prompt foi removido',
+        description: 'O prompt foi removido',
       });
       loadPrompts(); // Recarregar lista
     } catch (error: any) {
@@ -175,14 +176,14 @@ const loadPrompts = async () => {
   };
 
   // 🔗 Favoritar/desfavoritar via API
-  const toggleFavorite = async (id:  string) => {
+  const toggleFavorite = async (id: string) => {
     try {
       await promptsService.toggleFavorite(id);
       loadPrompts(); // Recarregar lista
     } catch (error: any) {
       toast({
         title: 'Erro ao favoritar',
-        description:  error.message,
+        description: error.message,
         variant: 'destructive',
       });
     }
@@ -191,7 +192,7 @@ const loadPrompts = async () => {
   // 🔗 Copiar prompt e incrementar contador de uso
   const handleCopy = async (prompt: PromptData) => {
     try {
-      await navigator.clipboard.writeText(prompt. content);
+      await navigator.clipboard.writeText(prompt.content);
       
       // Incrementar contador de uso na API
       if (prompt.id) {
@@ -200,7 +201,7 @@ const loadPrompts = async () => {
       
       toast({
         title: 'Copiado!',
-        description:  'Prompt copiado para área de transferência',
+        description: 'Prompt copiado para área de transferência',
       });
       
       loadPrompts(); // Recarregar para atualizar contador
@@ -220,13 +221,13 @@ const loadPrompts = async () => {
 
       {/* Main Content */}
       <main className="container mx-auto px-4 py-8">
-        
+        <div className="mt-8 space-y-8">
           {/* Header */}
           <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
             <div>
               <h1 className="text-4xl font-bold tracking-tight">Meus Prompts</h1>
               <p className="text-muted-foreground">
-                {filteredPrompts.length} {filteredPrompts.length === 1 ? 'prompt' :  'prompts'}
+                {filteredPrompts.length} {filteredPrompts.length === 1 ? 'prompt' : 'prompts'}
               </p>
             </div>
             <Button onClick={handleCreate} className="flex items-center gap-2">
@@ -256,7 +257,7 @@ const loadPrompts = async () => {
               </SelectTrigger>
               <SelectContent>
                 <SelectItem value="all">Todas</SelectItem>
-                {categories. filter(c => c !== 'all').map(cat => (
+                {categories.filter(c => c !== 'all').map(cat => (
                   <SelectItem key={cat} value={cat}>
                     {cat.charAt(0).toUpperCase() + cat.slice(1)}
                   </SelectItem>
@@ -266,7 +267,7 @@ const loadPrompts = async () => {
           </div>
 
           {/* Loading State */}
-          {isLoading ?  (
+          {isLoading ? (
             <div className="flex items-center justify-center py-12">
               <Loader2 className="h-8 w-8 animate-spin text-primary" />
             </div>
@@ -287,7 +288,7 @@ const loadPrompts = async () => {
                             className="shrink-0"
                           >
                             <Star
-                              className={`h-4 w-4 ${prompt.isFavorite ? 'fill-yellow-500 text-yellow-500' :  ''}`}
+                              className={`h-4 w-4 ${prompt.isFavorite ? 'fill-yellow-500 text-yellow-500' : ''}`}
                             />
                           </Button>
                         </div>
@@ -332,7 +333,7 @@ const loadPrompts = async () => {
                           <Button
                             variant="outline"
                             size="sm"
-                            onClick={() => prompt.id && handleDelete(prompt. id)}
+                            onClick={() => prompt.id && handleDelete(prompt.id)}
                           >
                             <Trash2 className="h-3 w-3" />
                           </Button>
@@ -378,7 +379,7 @@ const loadPrompts = async () => {
               <Input
                 id="title"
                 value={formData.title}
-                onChange={(e) => setFormData({ ...formData, title: e. target.value })}
+                onChange={(e) => setFormData({ ...formData, title: e.target.value })}
                 placeholder="Ex: Resumo de Anatomia Cardiovascular"
               />
             </div>
@@ -388,7 +389,7 @@ const loadPrompts = async () => {
               <Label htmlFor="content">Conteúdo do Prompt *</Label>
               <Textarea
                 id="content"
-                value={formData. content}
+                value={formData.content}
                 onChange={(e) => setFormData({ ...formData, content: e.target.value })}
                 placeholder="Descreva o prompt que você deseja usar com a IA..."
                 rows={6}
@@ -435,7 +436,7 @@ const loadPrompts = async () => {
               {isSaving ? (
                 <>
                   <Loader2 className="h-4 w-4 mr-2 animate-spin" />
-                  Salvando... 
+                  Salvando...
                 </>
               ) : (
                 editingPrompt ? 'Salvar' : 'Criar'
