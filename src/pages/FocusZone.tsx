@@ -22,36 +22,40 @@ const POMODORO_DURATION = 50 * 60; // 50 minutos
 const SHORT_BREAK = 5 * 60; // 5 minutos
 const LONG_BREAK = 15 * 60; // 15 minutos
 
-// Playlists Lofi do YouTube
+// Playlists Lofi - Áudio direto
 const LOFI_STATIONS = [
   {
     id: 'study',
     name: 'Lofi Study',
     icon: Coffee,
-    embedUrl: 'https://www.youtube.com/embed/jfKfPfyJRdk',
+    audioUrl: 'https://stream.zeno.fm/f3wvbbqmdg8uv',
     description: 'Beats suaves para estudo',
   },
   {
     id: 'chill',
     name: 'Chill Vibes',
     icon: Cloud,
-    embedUrl: 'https://www.youtube.com/embed/5qap5aO4i9A',
+    audioUrl: 'https://stream.zeno.fm/0r0xa792kwzuv',
     description: 'Relaxe e respire',
   },
   {
     id: 'focus',
     name: 'Deep Focus',
     icon: Zap,
-    embedUrl: 'https://www.youtube.com/embed/7NOSDKb0HlU',
+    audioUrl: 'https://stream.zeno.fm/f6vhq8qqtg8uv',
     description: 'Concentração máxima',
   },
 ];
+
+// GIF animado de fundo (Lofi aesthetic)
+const BACKGROUND_GIF = 'https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGxvdGt5bWFyN3B6OGE2ZjVvYTRtdXpqMzN5eGo2ZGQyZjBrOHVhbiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0EoBe2t3Cy7a9xDi/giphy.gif';
 
 export default function FocusZone() {
   const navigate = useNavigate();
   const [sessionStartTime] = useState(Date.now());
   const [selectedStation, setSelectedStation] = useState(0);
   const [volume, setVolume] = useState(50);
+  const [isPlaying, setIsPlaying] = useState(false);
   const [showControls, setShowControls] = useState(true);
   
   // Estados do Pomodoro
@@ -72,11 +76,6 @@ export default function FocusZone() {
       station: LOFI_STATIONS[selectedStation].name,
     });
 
-    // Inicializar audio
-    audioRef.current = new Audio();
-    audioRef.current.loop = true;
-    audioRef.current.volume = volume / 100;
-
     return () => {
       const sessionDuration = Date.now() - sessionStartTime;
       logger.info('Focus Zone encerrado', {
@@ -87,12 +86,34 @@ export default function FocusZone() {
         completedPomodoros,
       });
       
+      // Limpar áudio ao sair
       if (audioRef.current) {
         audioRef.current.pause();
-        audioRef.current = null;
+        audioRef.current.src = '';
       }
     };
   }, []);
+
+  // Inicializar áudio
+  useEffect(() => {
+    if (!audioRef.current) {
+      audioRef.current = new Audio();
+      audioRef.current.loop = false; // Stream não precisa de loop
+      audioRef.current.volume = volume / 100;
+    }
+    
+    // Carregar estação atual
+    audioRef.current.src = LOFI_STATIONS[selectedStation].audioUrl;
+    audioRef.current.volume = volume / 100;
+    
+    // Auto-play quando trocar estação
+    if (isPlaying) {
+      audioRef.current.play().catch((error) => {
+        logger.warn('Erro ao reproduzir áudio', { error: String(error) });
+        setIsPlaying(false);
+      });
+    }
+  }, [selectedStation]);
 
   // Timer do Pomodoro
   useEffect(() => {
@@ -139,8 +160,11 @@ export default function FocusZone() {
     };
 
     window.addEventListener('mousemove', handleMouseMove);
+    window.addEventListener('touchstart', handleMouseMove);
+    
     return () => {
       window.removeEventListener('mousemove', handleMouseMove);
+      window.removeEventListener('touchstart', handleMouseMove);
       if (hideControlsTimeout.current) {
         clearTimeout(hideControlsTimeout.current);
       }
@@ -160,11 +184,14 @@ export default function FocusZone() {
       if (e.key.toLowerCase() === 'm') {
         toggleMute();
       }
+      if (e.key.toLowerCase() === 'p') {
+        toggleAudio();
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [isRunning, volume]);
+  }, [isRunning, volume, isPlaying]);
 
   const handleTimerComplete = () => {
     setIsRunning(false);
@@ -172,6 +199,7 @@ export default function FocusZone() {
     // Som de notificação
     try {
       const notif = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIGGe87');
+      notif.volume = 0.5;
       notif.play().catch(() => {});
     } catch {}
 
@@ -199,10 +227,6 @@ export default function FocusZone() {
 
   const toggleTimer = () => {
     setIsRunning(!isRunning);
-    logger.info(isRunning ? 'Timer pausado' : 'Timer iniciado', {
-      mode: currentMode,
-      timeLeft,
-    });
   };
 
   const resetTimer = () => {
@@ -212,6 +236,9 @@ export default function FocusZone() {
   };
 
   const handleExit = () => {
+    if (audioRef.current) {
+      audioRef.current.pause();
+    }
     navigate(-1);
   };
 
@@ -224,9 +251,20 @@ export default function FocusZone() {
 
   const toggleMute = () => {
     setVolume(volume > 0 ? 0 : 50);
-    logger.info(volume > 0 ? 'Som silenciado' : 'Som ativado', {
-      component: 'FocusZone',
-    });
+  };
+
+  const toggleAudio = () => {
+    if (!audioRef.current) return;
+    
+    if (isPlaying) {
+      audioRef.current.pause();
+      setIsPlaying(false);
+    } else {
+      audioRef.current.play().catch((error) => {
+        logger.warn('Erro ao reproduzir áudio', { error: String(error) });
+      });
+      setIsPlaying(true);
+    }
   };
 
   const formatTime = (seconds: number) => {
@@ -253,39 +291,33 @@ export default function FocusZone() {
   };
 
   return (
-    <div className="relative w-full h-screen overflow-hidden bg-black">
-      {/* YouTube Player - Fullscreen Background */}
-      <div className="absolute inset-0 pointer-events-none">
-        <iframe
-          className="absolute inset-0 w-full h-full"
-          src={`${LOFI_STATIONS[selectedStation].embedUrl}?autoplay=1&mute=0&controls=0&loop=1&playlist=${LOFI_STATIONS[selectedStation].embedUrl.split('/').pop()}&modestbranding=1&showinfo=0&rel=0&iv_load_policy=3`}
-          title="Lofi Music"
-          allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-          allowFullScreen
-          style={{
-            pointerEvents: 'none',
-            width: '100vw',
-            height: '100vh',
-            objectFit: 'cover',
-          }}
-        />
-      </div>
+    <div className="relative w-full h-screen overflow-hidden">
+      {/* GIF Animado de Fundo */}
+      <div 
+        className="absolute inset-0 bg-cover bg-center bg-no-repeat"
+        style={{
+          backgroundImage: `url(${BACKGROUND_GIF})`,
+          filter: 'brightness(0.4) blur(1px)',
+        }}
+      />
 
       {/* Overlay escuro para legibilidade */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/50 to-black/70 backdrop-blur-[2px]" />
+      <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/80" />
 
       {/* Controles - aparecem ao mover o mouse */}
       <div
         className={`absolute inset-0 z-20 transition-opacity duration-500 ${
-          showControls ? 'opacity-100' : 'opacity-0'
+          showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
-        {/* Header com botão sair */}
-        <div className="absolute top-0 left-0 right-0 p-6 flex justify-between items-center bg-gradient-to-b from-black/80 to-transparent">
+        {/* Header */}
+        <div className="absolute top-0 left-0 right-0 p-4 sm:p-6 flex justify-between items-center bg-gradient-to-b from-black/90 to-transparent">
           <div className="flex items-center gap-3">
-            <Music2 className="w-6 h-6 text-white/90 animate-pulse" />
+            <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg">
+              <Music2 className="w-5 h-5 text-white" />
+            </div>
             <div>
-              <h1 className="text-white font-bold text-xl">Focus Zone</h1>
+              <h1 className="text-white font-bold text-lg sm:text-xl">Focus Zone</h1>
               <p className="text-white/60 text-xs">{LOFI_STATIONS[selectedStation].name}</p>
             </div>
           </div>
@@ -294,18 +326,18 @@ export default function FocusZone() {
             size="sm"
             variant="ghost"
             onClick={handleExit}
-            className="text-white/90 hover:text-white hover:bg-white/10 transition-all"
+            className="text-white/90 hover:text-white hover:bg-white/10"
           >
             <X className="w-5 h-5" />
             <span className="ml-2 hidden sm:inline">Sair</span>
           </Button>
         </div>
 
-        {/* Timer Pomodoro - Centro */}
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-          <Card className="bg-black/40 backdrop-blur-xl border-white/10 shadow-2xl animate-fade-in">
-            <div className="p-6 sm:p-8 space-y-4 sm:space-y-6 min-w-[280px] sm:min-w-[320px]">
-              {/* Indicador de Pomodoros */}
+        {/* Timer Central */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full px-4">
+          <Card className="max-w-sm mx-auto bg-black/60 backdrop-blur-2xl border-white/10 shadow-2xl">
+            <div className="p-6 sm:p-8 space-y-4 sm:space-y-6">
+              {/* Indicadores */}
               <div className="flex items-center justify-center gap-2">
                 {[...Array(4)].map((_, i) => (
                   <div
@@ -318,18 +350,17 @@ export default function FocusZone() {
                   />
                 ))}
               </div>
-
-              {/* Modo atual */}
+              {/* Modo */}
               <div className="text-center">
                 <p className="text-white/70 text-xs uppercase tracking-widest font-medium">
                   {getModeLabel()}
                 </p>
               </div>
 
-              {/* Timer */}
+              {/* Timer com progresso circular */}
               <div className="relative">
                 <svg className="w-full h-full absolute inset-0" viewBox="0 0 100 100">
-                  <circle
+                  ircle
                     cx="50"
                     cy="50"
                     r="45"
@@ -337,7 +368,7 @@ export default function FocusZone() {
                     stroke="rgba(255,255,255,0.1)"
                     strokeWidth="1.5"
                   />
-                  <circle
+                  ircle
                     cx="50"
                     cy="50"
                     r="45"
@@ -365,7 +396,7 @@ export default function FocusZone() {
                 </div>
               </div>
 
-              {/* Controles */}
+              {/* Controles Timer */}
               <div className="flex items-center justify-center gap-3">
                 <Button
                   onClick={toggleTimer}
@@ -383,7 +414,7 @@ export default function FocusZone() {
                   onClick={resetTimer}
                   size="lg"
                   variant="ghost"
-                  className="bg-white/5 hover:bg-white/10 text-white border border-white/20 transition-all"
+                  className="bg-white/5 hover:bg-white/10 text-white border border-white/20"
                 >
                   <RotateCcw className="w-4 h-4" />
                 </Button>
@@ -400,15 +431,40 @@ export default function FocusZone() {
         </div>
 
         {/* Bottom Controls */}
-        <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-black/80 to-transparent">
+        <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 bg-gradient-to-t from-black/90 to-transparent">
           <div className="max-w-4xl mx-auto space-y-4">
+            {/* Music Controls */}
+            <div className="flex items-center justify-center mb-4">
+              <Button
+                onClick={toggleAudio}
+                size="lg"
+                className={`${
+                  isPlaying
+                    ? 'bg-gradient-to-r from-green-500 to-emerald-600'
+                    : 'bg-white/10 hover:bg-white/20'
+                } text-white shadow-lg transition-all`}
+              >
+                {isPlaying ? (
+                  <>
+                    <Pause className="w-5 h-5 mr-2" />
+                    <span>Pausar Música</span>
+                  </>
+                ) : (
+                  <>
+                    <Play className="w-5 h-5 mr-2 ml-0.5" />
+                    <span>Tocar Música</span>
+                  </>
+                )}
+              </Button>
+            </div>
+
             {/* Volume Control */}
-            <div className="flex items-center gap-4 bg-black/40 backdrop-blur-md rounded-full px-6 py-3 border border-white/10">
+            <div className="flex items-center gap-4 bg-black/60 backdrop-blur-md rounded-full px-6 py-3 border border-white/10">
               <Button
                 size="sm"
                 variant="ghost"
                 onClick={toggleMute}
-                className="text-white/90 hover:text-white hover:bg-white/10 p-2 h-auto"
+                className="text-white/90 hover:text-white hover:bg-white/10 p-2 h-auto flex-shrink-0"
               >
                 {volume === 0 ? (
                   <VolumeX className="w-5 h-5" />
@@ -427,29 +483,29 @@ export default function FocusZone() {
                 />
               </div>
 
-              <span className="text-white/70 text-sm font-medium min-w-[3ch] text-right">
+              <span className="text-white/70 text-sm font-medium min-w-[3ch] text-right flex-shrink-0">
                 {volume}%
               </span>
             </div>
 
             {/* Station Selector */}
-            <div className="flex items-center justify-center gap-3">
+            <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
               {LOFI_STATIONS.map((station, index) => {
                 const Icon = station.icon;
                 return (
                   <button
                     key={station.id}
                     onClick={() => changeStation(index)}
-                    className={`group flex items-center gap-2 px-4 py-2 rounded-full transition-all duration-300 ${
+                    className={`group flex items-center gap-2 px-3 sm:px-4 py-2 rounded-full transition-all duration-300 ${
                       selectedStation === index
-                        ? 'bg-white/20 backdrop-blur-md border border-white/30'
+                        ? 'bg-white/20 backdrop-blur-md border border-white/30 scale-105'
                         : 'bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/10'
                     }`}
                   >
                     <Icon className={`w-4 h-4 transition-all ${
                       selectedStation === index ? 'text-white' : 'text-white/60 group-hover:text-white/80'
                     }`} />
-                    <span className={`text-xs font-medium hidden sm:inline ${
+                    <span className={`text-xs font-medium ${
                       selectedStation === index ? 'text-white' : 'text-white/60 group-hover:text-white/80'
                     }`}>
                       {station.name}
@@ -460,9 +516,9 @@ export default function FocusZone() {
             </div>
 
             {/* Instruções */}
-            <div className="text-center">
+            <div className="text-center pt-2">
               <p className="text-white/40 text-xs">
-                Espaço: Play/Pause • M: Mute • ESC: Sair
+                Espaço: Timer • P: Play/Pause • M: Mute • ESC: Sair
               </p>
             </div>
           </div>
