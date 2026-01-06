@@ -15,8 +15,10 @@ import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import NotFound from '@/pages/NotFound';
 
+// ✅ Dashboard sem lazy loading (fix para dynamic import)
+import Dashboard from '@/pages/Dashboard';
+
 // Páginas protegidas (requerem autenticação) - lazy loading
-const Dashboard = lazy(() => import('@/pages/Dashboard'));
 const Prompts = lazy(() => import('@/pages/Prompts'));
 const UserTools = lazy(() => import('@/pages/UserTools'));
 const Profile = lazy(() => import('@/pages/Profile'));
