@@ -1,10 +1,12 @@
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Navbar } from '@/components/Navbar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Library, Calculator, Clock, FileText, Brain, Sparkles, ArrowRight, Calendar } from 'lucide-react';
 
 export default function ToolsHub() {
+  const navigate = useNavigate();
+
   const tools = [
     {
       id: 'library',
@@ -62,6 +64,12 @@ export default function ToolsHub() {
     },
   ];
 
+  const handleToolClick = (path: string, available: boolean) => {
+    if (available) {
+      navigate(path);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-background">
       <Navbar />
@@ -97,7 +105,8 @@ export default function ToolsHub() {
             return (
               <Card 
                 key={tool.id}
-                className="group relative overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-2"
+                className="group relative overflow-hidden hover:shadow-xl transition-all duration-300 hover:-translate-y-1 border-2 cursor-pointer"
+                onClick={() => handleToolClick(tool.path, tool.available)}
               >
                 <div className={`absolute inset-0 bg-gradient-to-br ${tool.color} opacity-0 group-hover:opacity-5 transition-opacity`}></div>
                 
@@ -113,12 +122,13 @@ export default function ToolsHub() {
                 
                 <CardContent>
                   {tool.available ? (
-                    <Link to={tool.path}>
-                      <Button className="w-full gap-2 group-hover:gap-3 transition-all">
-                        Acessar
-                        <ArrowRight className="h-4 w-4" />
-                      </Button>
-                    </Link>
+                    <Button className="w-full gap-2 group-hover:gap-3 transition-all" onClick={(e) => {
+                      e.stopPropagation();
+                      navigate(tool.path);
+                    }}>
+                      Acessar
+                      <ArrowRight className="h-4 w-4" />
+                    </Button>
                   ) : (
                     <Button disabled className="w-full">
                       Em Breve
