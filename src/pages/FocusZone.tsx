@@ -258,12 +258,6 @@ export default function FocusZone() {
     return `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
   };
 
-  const getTimerColor = () => {
-    if (currentMode === 'focus') return 'from-indigo-500 to-purple-600';
-    if (currentMode === 'short') return 'from-green-500 to-emerald-600';
-    return 'from-blue-500 to-cyan-600';
-  };
-
   const getModeLabel = () => {
     if (currentMode === 'focus') return 'Foco Profundo';
     if (currentMode === 'short') return 'Pausa Curta';
@@ -275,7 +269,10 @@ export default function FocusZone() {
     return ((total - timeLeft) / total) * 100;
   };
 
-  const timerColor = getTimerColor();
+  // Calcular valores do círculo de progresso ANTES do JSX
+  const circleRadius = 45;
+  const circleCircumference = 2 * Math.PI * circleRadius;
+  const circleProgressOffset = circleCircumference * (1 - getProgress() / 100);
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
@@ -343,28 +340,27 @@ export default function FocusZone() {
                   ircle
                     cx="50"
                     cy="50"
-                    r="45"
+                    r={circleRadius}
                     fill="none"
                     stroke="rgba(255,255,255,0.1)"
                     strokeWidth="1.5"
-                  />
+                  /
                   ircle
                     cx="50"
                     cy="50"
-                    r="45"
+                    r={circleRadius}
                     fill="none"
                     stroke="url(#gradient)"
                     strokeWidth="1.5"
                     strokeLinecap="round"
-                    strokeDasharray={`${2 * Math.PI * 45}`}
-                    strokeDashoffset={`${2 * Math.PI * 45 * (1 - getProgress() / 100)}`}
+                    strokeDasharray={circleCircumference}
+                    strokeDashoffset={circleProgressOffset}
                     transform="rotate(-90 50 50)"
                     className="transition-all duration-1000"
-                  />
+                  /
                   <defs>
                     <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#ffffff" />
-                      <stop offset="100%" stopColor="#ffffff" stopOpacity="0.5" />
+                      <stop offset="0%" stopColor="#ffffff" />                      <stop offset="100%" stopColor="#ffffff" stopOpacity="0.5" />
                     </linearGradient>
                   </defs>
                 </svg>
@@ -381,7 +377,7 @@ export default function FocusZone() {
                   <Button
                     onClick={toggleTimer}
                     size="lg"
-                    className={`bg-gradient-to-r ${timerColor} hover:scale-105 transition-transform text-white shadow-xl`}
+                    className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:scale-105 transition-transform text-white shadow-xl"
                   >
                     <Pause className="w-5 h-5" />
                   </Button>
@@ -389,7 +385,7 @@ export default function FocusZone() {
                   <Button
                     onClick={toggleTimer}
                     size="lg"
-                    className={`bg-gradient-to-r ${timerColor} hover:scale-105 transition-transform text-white shadow-xl`}
+                    className="bg-gradient-to-r from-indigo-500 to-purple-600 hover:scale-105 transition-transform text-white shadow-xl"
                   >
                     <Play className="w-5 h-5 ml-0.5" />
                   </Button>
@@ -521,3 +517,4 @@ export default function FocusZone() {
     </div>
   );
 }
+
