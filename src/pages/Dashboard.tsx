@@ -10,7 +10,6 @@ import { ProfileCard } from '@/components/ProfileCard';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Calendar, Trophy, TrendingUp, Loader2 } from 'lucide-react';
-import { toast } from '@/hooks/use-toast';
 import gamificationService, { GamificationData } from '@/services/api/gamification';
 import studySessionsService, { StudyStats } from '@/services/api/studySessions';
 
