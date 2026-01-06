@@ -45,8 +45,6 @@ const LOFI_STATIONS = [
   },
 ];
 
-const BACKGROUND_IMAGE = 'https://wallpapers.com/images/high/lifeline-medical-symbol-95t6567ro0fpww7i.webp';
-
 export default function FocusZone() {
   const navigate = useNavigate();
   const [sessionStartTime] = useState(Date.now());
@@ -275,24 +273,34 @@ export default function FocusZone() {
 
   return (
     <div className="relative w-full h-screen overflow-hidden">
+      {/* Fundo gradiente médico profissional */}
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900" />
+      
+      {/* Overlay com padrão de grade médica sutil */}
       <div 
-        className="absolute inset-0 bg-cover bg-center bg-no-repeat bg-fixed"
+        className="absolute inset-0 opacity-10"
         style={{
-          backgroundImage: `url(${BACKGROUND_IMAGE})`,
-          filter: 'brightness(0.25)',
+          backgroundImage: `
+            linear-gradient(rgba(99, 102, 241, 0.1) 1px, transparent 1px),
+            linear-gradient(90deg, rgba(99, 102, 241, 0.1) 1px, transparent 1px)
+          `,
+          backgroundSize: '50px 50px'
         }}
       />
 
-      <div className="absolute inset-0 bg-gradient-to-b from-black/85 via-black/75 to-black/90" />
+      {/* Gradiente de overlay para melhor contraste */}
+      <div className="absolute inset-0 bg-gradient-to-b from-black/60 via-black/40 to-black/70" />
 
+      {/* Container de controles com z-index correto */}
       <div
-        className={`absolute inset-0 z-20 transition-opacity duration-700 ${
+        className={`absolute inset-0 z-10 transition-opacity duration-700 ${
           showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
-        <div className="absolute top-0 left-0 right-0 p-3 sm:p-6 flex justify-between items-center bg-gradient-to-b from-black/95 to-transparent">
+        {/* Header - z-index 30 */}
+        <div className="absolute top-0 left-0 right-0 z-30 p-3 sm:p-6 flex justify-between items-center bg-gradient-to-b from-black/95 to-transparent">
           <div className="flex items-center gap-2 sm:gap-3">
-            <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-blue-500 to-cyan-600 rounded-lg shadow-lg">
+            <div className="flex items-center justify-center w-9 h-9 sm:w-10 sm:h-10 bg-gradient-to-br from-indigo-600 to-purple-600 rounded-lg shadow-lg">
               <Music2 className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             </div>
             <div>
@@ -313,7 +321,8 @@ export default function FocusZone() {
           </Button>
         </div>
 
-        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full px-3 sm:px-4">
+        {/* Timer central - z-index 40 (MAIOR que os controles inferiores) */}
+        <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full px-3 sm:px-4 z-40">
           <Card className="max-w-xs sm:max-w-sm mx-auto bg-black/70 backdrop-blur-2xl border-white/20 shadow-2xl">
             <div className="p-4 sm:p-8 space-y-3 sm:space-y-6">
               <div className="flex items-center justify-center gap-2">
@@ -322,7 +331,7 @@ export default function FocusZone() {
                     key={i}
                     className={`rounded-full transition-all duration-300 ${
                       i < completedPomodoros % 4
-                        ? 'bg-blue-400 w-2.5 h-2.5 shadow-lg shadow-blue-400/50'
+                        ? 'bg-indigo-400 w-2.5 h-2.5 shadow-lg shadow-indigo-400/50'
                         : 'bg-white/30 w-1.5 h-1.5'
                     }`}
                   />
@@ -360,8 +369,8 @@ export default function FocusZone() {
                   />
                   <defs>
                     <linearGradient id="gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                      <stop offset="0%" stopColor="#60a5fa" />
-                      <stop offset="100%" stopColor="#06b6d4" stopOpacity="0.8" />
+                      <stop offset="0%" stopColor="#818cf8" />
+                      <stop offset="100%" stopColor="#a78bfa" stopOpacity="0.8" />
                     </linearGradient>
                   </defs>
                 </svg>
@@ -378,7 +387,7 @@ export default function FocusZone() {
                   <Button
                     onClick={toggleTimer}
                     size="lg"
-                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 hover:scale-105 transition-all text-white shadow-xl"
+                    className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 hover:scale-105 transition-all text-white shadow-xl"
                     aria-label="Pausar timer"
                   >
                     <Pause className="w-5 h-5" />
@@ -387,7 +396,7 @@ export default function FocusZone() {
                   <Button
                     onClick={toggleTimer}
                     size="lg"
-                    className="bg-gradient-to-r from-blue-500 to-cyan-600 hover:from-blue-600 hover:to-cyan-700 hover:scale-105 transition-all text-white shadow-xl"
+                    className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 hover:scale-105 transition-all text-white shadow-xl"
                     aria-label="Iniciar timer"
                   >
                     <Play className="w-5 h-5 ml-0.5" />
@@ -414,9 +423,11 @@ export default function FocusZone() {
           </Card>
         </div>
 
-        <div className="absolute bottom-0 left-0 right-0 p-3 sm:p-6 bg-gradient-to-t from-black/95 to-transparent">
+        {/* Controles de música - z-index 20 (MENOR que o timer central) */}
+        <div className="absolute bottom-0 left-0 right-0 z-20 p-3 sm:p-6 bg-gradient-to-t from-black/95 to-transparent">
           <div className="max-w-4xl mx-auto space-y-3 sm:space-y-4">
-            <div className="flex items-center justify-center">
+            {/* Botão Play/Pause da Música */}
+            <div className="flex items-center justify-center mb-2">
               {isPlaying ? (
                 <Button
                   onClick={toggleAudio}
@@ -440,6 +451,7 @@ export default function FocusZone() {
               )}
             </div>
 
+            {/* Controle de Volume */}
             <div className="flex items-center gap-3 sm:gap-4 bg-black/70 backdrop-blur-md rounded-full px-4 sm:px-6 py-2.5 sm:py-3 border border-white/20">
               <Button
                 size="sm"
@@ -471,6 +483,7 @@ export default function FocusZone() {
               </span>
             </div>
 
+            {/* Seletor de Estações */}
             <div className="flex items-center justify-center gap-1.5 sm:gap-2 flex-wrap">
               {LOFI_STATIONS.map((station, index) => {
                 const Icon = station.icon;
@@ -480,16 +493,16 @@ export default function FocusZone() {
                     onClick={() => changeStation(index)}
                     className={`group flex items-center gap-1.5 sm:gap-2 px-2.5 sm:px-4 py-1.5 sm:py-2 rounded-full transition-all duration-300 ${
                       selectedStation === index
-                        ? 'bg-white/20 backdrop-blur-md border border-white/40 scale-105 shadow-lg'
+                        ? 'bg-indigo-600/30 backdrop-blur-md border border-indigo-400/50 scale-105 shadow-lg shadow-indigo-500/20'
                         : 'bg-white/5 backdrop-blur-sm border border-white/10 hover:bg-white/15 hover:border-white/20'
                     }`}
                     aria-label={`Selecionar estação ${station.name}`}
                   >
                     <Icon className={`w-3 h-3 sm:w-4 sm:h-4 transition-all ${
-                      selectedStation === index ? 'text-white' : 'text-white/60 group-hover:text-white/80'
+                      selectedStation === index ? 'text-indigo-200' : 'text-white/60 group-hover:text-white/80'
                     }`} />
                     <span className={`text-xs font-medium ${
-                      selectedStation === index ? 'text-white' : 'text-white/60 group-hover:text-white/80'
+                      selectedStation === index ? 'text-indigo-100' : 'text-white/60 group-hover:text-white/80'
                     }`}>
                       {station.name}
                     </span>
@@ -498,6 +511,7 @@ export default function FocusZone() {
               })}
             </div>
 
+            {/* Instruções de Atalhos */}
             <div className="text-center pt-1 sm:pt-2">
               <p className="text-white/40 text-xs">
                 Espaço: Timer • P: Play/Pause • M: Mute • ESC: Sair
@@ -506,23 +520,6 @@ export default function FocusZone() {
           </div>
         </div>
       </div>
-
-      <style>{`
-        @keyframes fade-in {
-          from {
-            opacity: 0;
-            transform: translateY(10px) scale(0.95);
-          }
-          to {
-            opacity: 1;
-            transform: translateY(0) scale(1);
-          }
-        }
-
-        .animate-fade-in {
-          animation: fade-in 0.5s ease-out;
-        }
-      `}</style>
     </div>
   );
 }
