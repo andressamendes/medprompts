@@ -80,14 +80,12 @@ function App() {
                       } 
                     />
 
-                    {/* Biblioteca completa de prompts (protegida) */}
+                    {/* Biblioteca completa de prompts (PÚBLICA - acesso livre para todos) */}
                     <Route 
                       path="/prompts" 
                       element={
-                        <ProtectedRoute>
-                          <Prompts />
-                        </ProtectedRoute>
-                      } 
+                                                  <Prompts />
+                                              } 
                     />
 
                     {/* Ferramentas do usuário (protegida) */}
@@ -126,3 +124,4 @@ function App() {
 }
 
 export default App;
+
