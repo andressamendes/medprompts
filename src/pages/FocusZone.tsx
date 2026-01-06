@@ -17,12 +17,10 @@ import {
 } from 'lucide-react';
 import { logger } from '@/utils/logger';
 
-// Duração dos timers (em segundos)
-const POMODORO_DURATION = 50 * 60; // 50 minutos
-const SHORT_BREAK = 5 * 60; // 5 minutos
-const LONG_BREAK = 15 * 60; // 15 minutos
+const POMODORO_DURATION = 50 * 60;
+const SHORT_BREAK = 5 * 60;
+const LONG_BREAK = 15 * 60;
 
-// Playlists Lofi - Áudio direto
 const LOFI_STATIONS = [
   {
     id: 'study',
@@ -47,7 +45,6 @@ const LOFI_STATIONS = [
   },
 ];
 
-// GIF animado de fundo (Lofi aesthetic)
 const BACKGROUND_GIF = 'https://i.giphy.com/media/v1.Y2lkPTc5MGI3NjExcGxvdGt5bWFyN3B6OGE2ZjVvYTRtdXpqMzN5eGo2ZGQyZjBrOHVhbiZlcD12MV9pbnRlcm5hbF9naWZfYnlfaWQmY3Q9Zw/l0EoBe2t3Cy7a9xDi/giphy.gif';
 
 export default function FocusZone() {
@@ -57,8 +54,6 @@ export default function FocusZone() {
   const [volume, setVolume] = useState(50);
   const [isPlaying, setIsPlaying] = useState(false);
   const [showControls, setShowControls] = useState(true);
-  
-  // Estados do Pomodoro
   const [timeLeft, setTimeLeft] = useState(POMODORO_DURATION);
   const [isRunning, setIsRunning] = useState(false);
   const [currentMode, setCurrentMode] = useState<'focus' | 'short' | 'long'>('focus');
@@ -68,7 +63,6 @@ export default function FocusZone() {
   const hideControlsTimeout = useRef<NodeJS.Timeout | null>(null);
   const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  // Log entrada
   useEffect(() => {
     logger.info('Focus Zone ativado', {
       component: 'FocusZone',
@@ -86,7 +80,6 @@ export default function FocusZone() {
         completedPomodoros,
       });
       
-      // Limpar áudio ao sair
       if (audioRef.current) {
         audioRef.current.pause();
         audioRef.current.src = '';
@@ -94,19 +87,16 @@ export default function FocusZone() {
     };
   }, []);
 
-  // Inicializar áudio
   useEffect(() => {
     if (!audioRef.current) {
       audioRef.current = new Audio();
-      audioRef.current.loop = false; // Stream não precisa de loop
+      audioRef.current.loop = false;
       audioRef.current.volume = volume / 100;
     }
     
-    // Carregar estação atual
     audioRef.current.src = LOFI_STATIONS[selectedStation].audioUrl;
     audioRef.current.volume = volume / 100;
     
-    // Auto-play quando trocar estação
     if (isPlaying) {
       audioRef.current.play().catch((error) => {
         logger.warn('Erro ao reproduzir áudio', { error: String(error) });
@@ -115,7 +105,6 @@ export default function FocusZone() {
     }
   }, [selectedStation]);
 
-  // Timer do Pomodoro
   useEffect(() => {
     if (isRunning && timeLeft > 0) {
       timerIntervalRef.current = setInterval(() => {
@@ -140,14 +129,12 @@ export default function FocusZone() {
     };
   }, [isRunning, timeLeft]);
 
-  // Controlar volume
   useEffect(() => {
     if (audioRef.current) {
       audioRef.current.volume = volume / 100;
     }
   }, [volume]);
 
-  // Ocultar controles após inatividade
   useEffect(() => {
     const handleMouseMove = () => {
       setShowControls(true);
@@ -171,7 +158,6 @@ export default function FocusZone() {
     };
   }, []);
 
-  // Teclas de atalho
   useEffect(() => {
     const handleKeyDown = (e: KeyboardEvent) => {
       if (e.key === 'Escape') {
@@ -196,7 +182,6 @@ export default function FocusZone() {
   const handleTimerComplete = () => {
     setIsRunning(false);
     
-    // Som de notificação
     try {
       const notif = new Audio('data:audio/wav;base64,UklGRnoGAABXQVZFZm10IBAAAAABAAEAQB8AAEAfAAABAAgAZGF0YQoGAACBhYqFbF1fdJivrJBhNjVgodDbq2EcBj+a2/LDciUFLIHO8tiJNwgZaLvt559NEAxQp+PwtmMcBjiR1/LMeSwFJHfH8N2QQAoUXrTp66hVFApGn+DyvmwhBSuBzvLZiTYIGGe87');
       notif.volume = 0.5;
@@ -290,9 +275,10 @@ export default function FocusZone() {
     return ((total - timeLeft) / total) * 100;
   };
 
+  const timerColor = getTimerColor();
+
   return (
     <div className="relative w-full h-screen overflow-hidden">
-      {/* GIF Animado de Fundo */}
       <div 
         className="absolute inset-0 bg-cover bg-center bg-no-repeat"
         style={{
@@ -301,16 +287,13 @@ export default function FocusZone() {
         }}
       />
 
-      {/* Overlay escuro para legibilidade */}
       <div className="absolute inset-0 bg-gradient-to-b from-black/70 via-black/60 to-black/80" />
 
-      {/* Controles - aparecem ao mover o mouse */}
       <div
         className={`absolute inset-0 z-20 transition-opacity duration-500 ${
           showControls ? 'opacity-100' : 'opacity-0 pointer-events-none'
         }`}
       >
-        {/* Header */}
         <div className="absolute top-0 left-0 right-0 p-4 sm:p-6 flex justify-between items-center bg-gradient-to-b from-black/90 to-transparent">
           <div className="flex items-center gap-3">
             <div className="flex items-center justify-center w-10 h-10 bg-gradient-to-br from-indigo-500 to-purple-600 rounded-lg">
@@ -333,11 +316,9 @@ export default function FocusZone() {
           </Button>
         </div>
 
-        {/* Timer Central */}
         <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2 w-full px-4">
           <Card className="max-w-sm mx-auto bg-black/60 backdrop-blur-2xl border-white/10 shadow-2xl">
             <div className="p-6 sm:p-8 space-y-4 sm:space-y-6">
-              {/* Indicadores */}
               <div className="flex items-center justify-center gap-2">
                 {[...Array(4)].map((_, i) => (
                   <div
@@ -350,14 +331,13 @@ export default function FocusZone() {
                   />
                 ))}
               </div>
-              {/* Modo */}
+
               <div className="text-center">
                 <p className="text-white/70 text-xs uppercase tracking-widest font-medium">
                   {getModeLabel()}
                 </p>
               </div>
 
-              {/* Timer com progresso circular */}
               <div className="relative">
                 <svg className="w-full h-full absolute inset-0" viewBox="0 0 100 100">
                   ircle
@@ -396,19 +376,24 @@ export default function FocusZone() {
                 </div>
               </div>
 
-              {/* Controles Timer */}
               <div className="flex items-center justify-center gap-3">
-                <Button
-                  onClick={toggleTimer}
-                  size="lg"
-                  className={`bg-gradient-to-r ${getTimerColor()} hover:scale-105 transition-transform text-white shadow-xl`}
-                >
-                  {isRunning ? (
+                {isRunning ? (
+                  <Button
+                    onClick={toggleTimer}
+                    size="lg"
+                    className={`bg-gradient-to-r ${timerColor} hover:scale-105 transition-transform text-white shadow-xl`}
+                  >
                     <Pause className="w-5 h-5" />
-                  ) : (
+                  </Button>
+                ) : (
+                  <Button
+                    onClick={toggleTimer}
+                    size="lg"
+                    className={`bg-gradient-to-r ${timerColor} hover:scale-105 transition-transform text-white shadow-xl`}
+                  >
                     <Play className="w-5 h-5 ml-0.5" />
-                  )}
-                </Button>
+                  </Button>
+                )}
 
                 <Button
                   onClick={resetTimer}
@@ -420,7 +405,6 @@ export default function FocusZone() {
                 </Button>
               </div>
 
-              {/* Contador */}
               <div className="text-center pt-3 border-t border-white/10">
                 <p className="text-white/60 text-xs">
                   Pomodoros: <span className="font-bold text-white">{completedPomodoros}</span>
@@ -430,35 +414,30 @@ export default function FocusZone() {
           </Card>
         </div>
 
-        {/* Bottom Controls */}
         <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-6 bg-gradient-to-t from-black/90 to-transparent">
           <div className="max-w-4xl mx-auto space-y-4">
-            {/* Music Controls */}
             <div className="flex items-center justify-center mb-4">
-              <Button
-                onClick={toggleAudio}
-                size="lg"
-                className={`${
-                  isPlaying
-                    ? 'bg-gradient-to-r from-green-500 to-emerald-600'
-                    : 'bg-white/10 hover:bg-white/20'
-                } text-white shadow-lg transition-all`}
-              >
-                {isPlaying ? (
-                  <>
-                    <Pause className="w-5 h-5 mr-2" />
-                    <span>Pausar Música</span>
-                  </>
-                ) : (
-                  <>
-                    <Play className="w-5 h-5 mr-2 ml-0.5" />
-                    <span>Tocar Música</span>
-                  </>
-                )}
-              </Button>
+              {isPlaying ? (
+                <Button
+                  onClick={toggleAudio}
+                  size="lg"
+                  className="flex items-center gap-2 bg-gradient-to-r from-green-500 to-emerald-600 text-white shadow-lg transition-all"
+                >
+                  <Pause className="w-5 h-5" />
+                  <span>Pausar Música</span>
+                </Button>
+              ) : (
+                <Button
+                  onClick={toggleAudio}
+                  size="lg"
+                  className="flex items-center gap-2 bg-white/10 hover:bg-white/20 text-white shadow-lg transition-all"
+                >
+                  <Play className="w-5 h-5 ml-0.5" />
+                  <span>Tocar Música</span>
+                </Button>
+              )}
             </div>
 
-            {/* Volume Control */}
             <div className="flex items-center gap-4 bg-black/60 backdrop-blur-md rounded-full px-6 py-3 border border-white/10">
               <Button
                 size="sm"
@@ -488,7 +467,6 @@ export default function FocusZone() {
               </span>
             </div>
 
-            {/* Station Selector */}
             <div className="flex items-center justify-center gap-2 sm:gap-3 flex-wrap">
               {LOFI_STATIONS.map((station, index) => {
                 const Icon = station.icon;
@@ -515,7 +493,6 @@ export default function FocusZone() {
               })}
             </div>
 
-            {/* Instruções */}
             <div className="text-center pt-2">
               <p className="text-white/40 text-xs">
                 Espaço: Timer • P: Play/Pause • M: Mute • ESC: Sair
@@ -525,7 +502,6 @@ export default function FocusZone() {
         </div>
       </div>
 
-      {/* CSS Animations */}
       <style>{`
         @keyframes fade-in {
           from {
