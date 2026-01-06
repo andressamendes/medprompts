@@ -11,7 +11,7 @@ export default function Index() {
 
   // Log page view
   useEffect(() => {
-    logger('page_view', { page: 'home' });
+        logger.info('page_view', { page: 'home' });
   }, []);
 
   return (
@@ -218,3 +218,4 @@ export default function Index() {
     </div>
   );
 }
+
