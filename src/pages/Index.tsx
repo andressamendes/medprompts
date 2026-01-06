@@ -1,38 +1,18 @@
-import { useState, useMemo, useEffect } from 'react';
+import { useEffect } from 'react';
 import { AuthenticatedNavbar } from '@/components/AuthenticatedNavbar';
-import { PromptCard } from '@/components/PromptCard';
-import { PromptDialog } from '@/components/PromptDialog';
-import { CategoryFilter } from '@/components/CategoryFilter';
-import { SearchBar } from '@/components/SearchBar';
-import { prompts } from '@/data/prompts-data';
 import { useLogger } from '@/utils/logger';
-import type { Prompt } from '@/types/prompt';
 
 /**
- * Página da Biblioteca de Prompts (rota /prompts)
- * APENAS a biblioteca de prompts - limpa e focada
- * Exibida APENAS para usuários autenticados
+ * Landing page principal do MedPrompts
+ * Página inicial com apresentação da plataforma
  */
 export default function Index() {
   const logger = useLogger();
-  const [selectedCategory, setSelectedCategory] = useState<string>('all');
-  const [searchQuery, setSearchQuery] = useState('');
-  const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
 
   // Log page view
   useEffect(() => {
     logger('page_view', { page: 'home' });
   }, []);
-
-  // Filtrar prompts com base na categoria e busca
-  const filteredPrompts = useMemo(() => {
-    return prompts.filter((prompt) => {
-      const matchesCategory = selectedCategory === 'all' || prompt.category === selectedCategory;
-      const matchesSearch = prompt.title.toLowerCase().includes(searchQuery.toLowerCase()) ||
-                           prompt.description.toLowerCase().includes(searchQuery.toLowerCase());
-      return matchesCategory && matchesSearch;
-    });
-  }, [selectedCategory, searchQuery]);
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
@@ -235,13 +215,6 @@ export default function Index() {
           </div>
         </div>
       </footer>
-
-      {selectedPrompt && (
-        <PromptDialog 
-          prompt={selectedPrompt} 
-          onClose={() => setSelectedPrompt(null)}
-        />
-      )}
     </div>
   );
 }
