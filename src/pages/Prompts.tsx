@@ -16,7 +16,6 @@ import {
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
-import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
@@ -29,15 +28,40 @@ interface PromptExtended extends Prompt {
 
 
 /**
- * Página Prompts - Biblioteca Pública de Prompts Médicos v2.4
+ * Função auxiliar para renderizar Markdown básico como HTML
+ */
+function renderMarkdown(markdown: string): string {
+  let html = markdown;
+  
+  // Títulos (** no início da linha)
+  html = html.replace(/^\*\*(.+?)\*\*$/gm, '<h3 class="font-bold text-lg mt-4 mb-2 text-gray-900 dark:text-white">$1</h3>');
+  
+  // Negrito inline
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-gray-900 dark:text-white">$1</strong>');
+  
+  // Quebras de linha duplas = parágrafo
+  html = html.replace(/\n\n/g, '</p><p class="mb-3 text-gray-700 dark:text-gray-300">');
+  
+  // Quebras de linha simples = <br>
+  html = html.replace(/\n/g, '<br>');
+  
+  // Envolver tudo em parágrafo inicial
+  html = '<p class="mb-3 text-gray-700 dark:text-gray-300">' + html + '</p>';
+  
+  return html;
+}
+
+
+/**
+ * Página Prompts - Biblioteca Pública de Prompts Médicos v2.5
  *
  * ✅ PÁGINA PÚBLICA - Acessível sem login
  * 
- * Implementa FASE 1 completa:
+ * Implementa FASE 1 completa + FIX:
  * - ✅ Melhoria 1.1: Responsividade Mobile Completa
  * - ✅ Melhoria 1.2: Acessibilidade WCAG 2.1 AA
  * - ✅ Melhoria 1.3: Estados de Carregamento e Feedback
- * - ✅ NOVA: Navbar pública + CTA para login opcional
+ * - ✅ FIX: Renderização de Markdown formatado no modal
  */
 export default function Prompts() {
   const navigate = useNavigate();
@@ -663,7 +687,7 @@ export default function Prompts() {
         </main>
 
 
-        {/* Modal - Responsivo (MELHORIA 1.1 + 1.2) */}
+        {/* ✅ MODAL COM MARKDOWN RENDERIZADO */}
         {selectedPrompt && (
           <Dialog open={!!selectedPrompt} onOpenChange={() => setSelectedPrompt(null)}>
             <DialogContent 
@@ -721,7 +745,7 @@ export default function Prompts() {
                 </div>
 
 
-                {/* Prompt completo */}
+                {/* ✅ PROMPT COMPLETO COM MARKDOWN RENDERIZADO */}
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="font-semibold text-base md:text-lg flex items-center gap-2">
@@ -749,14 +773,12 @@ export default function Prompts() {
                     </Button>
                   </div>
                   
-                  <div className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 md:p-6 border border-gray-200 dark:border-gray-800">
-                    <Textarea
-                      readOnly
-                      value={selectedPrompt.content}
-                      className="min-h-[300px] md:min-h-[400px] text-xs md:text-sm font-mono leading-relaxed resize-none bg-transparent border-0 focus-visible:ring-0"
-                      aria-label="Conteúdo completo do prompt"
-                    />
-                  </div>
+                  {/* ✅ DIV COM HTML RENDERIZADO */}
+                  <div 
+                    className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 md:p-6 border border-gray-200 dark:border-gray-800 prose prose-sm md:prose-base dark:prose-invert max-w-none"
+                    dangerouslySetInnerHTML={{ __html: renderMarkdown(selectedPrompt.content) }}
+                    aria-label="Conteúdo completo do prompt"
+                  />
                 </div>
 
 
