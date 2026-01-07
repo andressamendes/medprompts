@@ -32,8 +32,6 @@ import { PromptData } from '@/services/api/prompts';
 const FAVORITES_STORAGE_KEY = 'medprompts_favorites';
 const USAGE_STORAGE_KEY = 'medprompts_usage';
 
-// Tipos de IA disponíveis
-type AIType = 'chatgpt' | 'claude' | 'gemini' | 'perplexity' | 'notebooklm' | 'any';
 
 // Interface estendida para incluir recommendedAI
 interface ExtendedPromptData extends PromptData {
