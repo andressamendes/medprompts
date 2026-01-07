@@ -45,4 +45,8 @@ export interface Prompt {
   prerequisites?: string[]
   tips?: string[]
   recommendedAI?: AIRecommendation
+  
+  // Propriedades opcionais extras (compatibilidade UI)
+  icon?: string
+  usageCount?: number
 }
