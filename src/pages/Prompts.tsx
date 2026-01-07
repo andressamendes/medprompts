@@ -11,7 +11,7 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Search, Star, Copy, Filter, Loader2, ArrowUpDown, Check,
-  Sparkles, BookOpen, ArrowLeft, X, Wand2, ExternalLink
+  Sparkles, BookOpen, ArrowLeft, X, ExternalLink
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
@@ -20,85 +20,61 @@ import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 
 
-// Interface estendida para campos extras não presentes na interface oficial
 interface PromptExtended extends Prompt {
   icon?: string;
   usageCount?: number;
 }
 
 
-/**
- * Função auxiliar para renderizar Markdown básico como HTML
- */
 function renderMarkdown(markdown: string): string {
   let html = markdown;
-  
-  // Títulos (** no início da linha)
   html = html.replace(/^\*\*(.+?)\*\*$/gm, '<h3 class="font-bold text-lg mt-4 mb-2 text-gray-900 dark:text-white">$1</h3>');
-  
-  // Negrito inline
   html = html.replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-gray-900 dark:text-white">$1</strong>');
-  
-  // Quebras de linha duplas = parágrafo
   html = html.replace(/\n\n/g, '</p><p class="mb-3 text-gray-700 dark:text-gray-300">');
-  
-  // Quebras de linha simples = <br>
   html = html.replace(/\n/g, '<br>');
-  
-  // Envolver tudo em parágrafo inicial
   html = '<p class="mb-3 text-gray-700 dark:text-gray-300">' + html + '</p>';
-  
   return html;
 }
 
 
 /**
- * Página Prompts - Biblioteca Pública de Prompts Médicos v2.5
- *
- * ✅ PÁGINA PÚBLICA - Acessível sem login
+ * ✨ Página Prompts v3.0 - Design Minimalista
  * 
- * Implementa FASE 1 completa + FIX:
- * - ✅ Melhoria 1.1: Responsividade Mobile Completa
- * - ✅ Melhoria 1.2: Acessibilidade WCAG 2.1 AA
- * - ✅ Melhoria 1.3: Estados de Carregamento e Feedback
- * - ✅ FIX: Renderização de Markdown formatado no modal
+ * Melhorias:
+ * - Cards compactos e elegantes
+ * - Animações suaves em todos os elementos
+ * - Paleta de cores da Home (indigo/purple)
+ * - Remoção de informações redundantes
+ * - Foco na experiência visual clean
  */
 export default function Prompts() {
   const navigate = useNavigate();
   const { user } = useAuth();
   
-  // Estados principais
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedTab, setSelectedTab] = useState('all');
   const [sortOrder, setSortOrder] = useState('a-z');
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [selectedPrompt, setSelectedPrompt] = useState<PromptExtended | null>(null);
-  
-  // Estados de loading e feedback (MELHORIA 1.3)
   const [isLoading, setIsLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [showLoginBanner, setShowLoginBanner] = useState(true);
 
 
-  // Carregar favoritos do localStorage
   useEffect(() => {
     try {
       const stored = localStorage.getItem('medprompts-favorites');
-      if (stored) {
-        setFavorites(new Set(JSON.parse(stored)));
-      }
+      if (stored) setFavorites(new Set(JSON.parse(stored)));
     } catch (error) {
       console.error('Erro ao carregar favoritos:', error);
     } finally {
-      // Simula carregamento inicial (MELHORIA 1.3)
-      setTimeout(() => setIsLoading(false), 800);
+      setTimeout(() => setIsLoading(false), 500);
     }
   }, []);
 
 
-  // Salvar favoritos no localStorage
   useEffect(() => {
     try {
       localStorage.setItem('medprompts-favorites', JSON.stringify(Array.from(favorites)));
@@ -108,7 +84,6 @@ export default function Prompts() {
   }, [favorites]);
 
 
-  // Toggle favorito com feedback (MELHORIA 1.3)
   const toggleFavorite = useCallback((promptId: string) => {
     setFavorites((prev) => {
       const newFavorites = new Set(prev);
@@ -116,16 +91,10 @@ export default function Prompts() {
       
       if (isFavorite) {
         newFavorites.delete(promptId);
-        toast({
-          title: '✨ Removido dos favoritos',
-          description: 'O prompt foi removido da sua lista.',
-        });
+        toast({ title: '✨ Removido dos favoritos' });
       } else {
         newFavorites.add(promptId);
-        toast({
-          title: '⭐ Adicionado aos favoritos',
-          description: 'O prompt foi salvo na sua lista!',
-        });
+        toast({ title: '⭐ Adicionado aos favoritos' });
       }
       
       return newFavorites;
@@ -133,24 +102,14 @@ export default function Prompts() {
   }, []);
 
 
-  // Copiar prompt com feedback visual (MELHORIA 1.3)
   const copyPrompt = useCallback((prompt: PromptExtended) => {
     navigator.clipboard.writeText(prompt.content);
     setCopiedId(prompt.id);
-    
-    const aiName = prompt.recommendedAI?.primary || 'IA recomendada';
-    
-    toast({
-      title: '✅ Prompt copiado!',
-      description: `Cole direto no ${aiName} e comece a usar.`,
-    });
-    
-    // Reset do estado de copiado
+    toast({ title: '✅ Prompt copiado!' });
     setTimeout(() => setCopiedId(null), 2000);
   }, []);
 
 
-  // Abrir IA recomendada
   const openAI = useCallback((aiName: string) => {
     const urls: Record<string, string> = {
       ChatGPT: 'https://chat.openai.com',
@@ -160,92 +119,65 @@ export default function Prompts() {
       Gemini: 'https://gemini.google.com',
       Anki: 'https://apps.ankiweb.net',
     };
-    
     const url = urls[aiName];
-    if (url) {
-      window.open(url, '_blank', 'noopener,noreferrer');
-    }
+    if (url) window.open(url, '_blank', 'noopener,noreferrer');
   }, []);
 
 
-  // Filtrar e ordenar prompts (com debounce simulado)
   const filteredPrompts = useMemo(() => {
     setIsSearching(true);
-    
-    // Simula delay de busca para feedback visual
-    setTimeout(() => setIsSearching(false), 300);
+    setTimeout(() => setIsSearching(false), 200);
     
     let filtered = [...(staticPrompts as PromptExtended[])];
 
-
-    // Filtro por aba (Todos / Favoritos)
     if (selectedTab === 'favorites') {
       filtered = filtered.filter((p) => favorites.has(p.id));
     }
 
-
-    // Filtro por categoria
     if (selectedCategory !== 'all') {
       filtered = filtered.filter((p) => p.category === selectedCategory);
     }
 
-
-    // Busca por termo
     if (searchTerm.trim()) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(
         (p) =>
           p.title.toLowerCase().includes(term) ||
           p.description.toLowerCase().includes(term) ||
-          (p.content && p.content.toLowerCase().includes(term)) ||
           p.tags.some((tag) => tag.toLowerCase().includes(term))
       );
     }
 
-
-    // Ordenação
     filtered.sort((a, b) => {
       switch (sortOrder) {
-        case 'a-z':
-          return a.title.localeCompare(b.title);
-        case 'z-a':
-          return b.title.localeCompare(a.title);
-        case 'most-used':
-          return (b.usageCount || 0) - (a.usageCount || 0);
-        default:
-          return 0;
+        case 'a-z': return a.title.localeCompare(b.title);
+        case 'z-a': return b.title.localeCompare(a.title);
+        default: return 0;
       }
     });
-
 
     return filtered;
   }, [selectedTab, selectedCategory, searchTerm, sortOrder, favorites]);
 
 
-  // Limpar filtros
   const clearFilters = useCallback(() => {
     setSearchTerm('');
     setSelectedCategory('all');
     setSortOrder('a-z');
-    
-    toast({
-      title: 'Filtros limpos',
-      description: 'Todos os filtros foram removidos.',
-    });
+    toast({ title: 'Filtros limpos' });
   }, []);
 
 
-  // Loading inicial skeleton (MELHORIA 1.3)
   if (isLoading) {
     return (
-      <div className="min-h-screen bg-background">
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-indigo-50 to-purple-50 dark:from-gray-950 dark:via-indigo-950 dark:to-purple-950">
         <Navbar />
-        <div className="container mx-auto px-4 py-8 md:py-12">
+        <div className="container mx-auto px-4 py-12">
           <div className="animate-pulse space-y-8">
-            <div className="h-32 bg-gray-200 rounded-xl" />
+            <div className="h-24 bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl" />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-64 bg-gray-200 rounded-xl" />
+                <div key={i} className="h-48 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/10 dark:to-purple-900/10 rounded-xl" />
               ))}
             </div>
           </div>
@@ -257,82 +189,74 @@ export default function Prompts() {
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-950 dark:to-blue-950">
-        {/* ✅ NAVBAR PÚBLICA */}
+      <div className="min-h-screen bg-gradient-to-br from-gray-50 via-indigo-50 to-purple-50 dark:from-gray-950 dark:via-indigo-950 dark:to-purple-950">
         <Navbar />
 
 
-        {/* Hero Section - Responsivo (MELHORIA 1.1) */}
-        <section className="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-indigo-950 py-12 sm:py-16 md:py-24">
+        {/* ✨ Hero Section Minimalista */}
+        <section className="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-indigo-950 py-16 md:py-20">
           <div className="container mx-auto px-4 sm:px-6">
-            {/* ✅ BOTÃO VOLTAR PARA HOME */}
             <Button
               variant="ghost"
               onClick={() => navigate('/')}
-              className="mb-6 gap-2 hover:gap-3 transition-all touch-manipulation min-h-[44px]"
+              className="mb-8 gap-2 hover:gap-3 transition-all duration-300 group"
               aria-label="Voltar para página inicial"
             >
-              <ArrowLeft className="h-4 w-4 md:h-5 md:w-5" />
-              <span className="text-sm md:text-base">Voltar para Início</span>
+              <ArrowLeft className="h-5 w-5 group-hover:scale-110 transition-transform" />
+              <span>Voltar</span>
             </Button>
 
 
-            <div className="text-center max-w-4xl mx-auto space-y-4 md:space-y-6">
-              {/* Badge */}
-              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-indigo-100 dark:bg-indigo-900/30 text-indigo-700 dark:text-indigo-300 text-xs sm:text-sm font-medium">
+            <div className="text-center max-w-3xl mx-auto space-y-6 animate-in fade-in slide-in-from-bottom-4 duration-700">
+              <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 text-indigo-700 dark:text-indigo-300 text-sm font-medium backdrop-blur-sm">
                 <Sparkles className="h-4 w-4" />
-                <span>26 Prompts Especializados para Medicina</span>
+                <span>Biblioteca de Prompts Especializados</span>
               </div>
 
 
-              {/* Título - Responsivo (MELHORIA 1.1) */}
-              <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
-                <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
-                  Biblioteca de Prompts
+              <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
+                <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent animate-gradient">
+                  Prompts Médicos
                 </span>
               </h1>
 
 
-              {/* Descrição */}
-              <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto px-4">
-                ChatGPT, Claude, Perplexity e NotebookLM otimizados para estudos médicos.
+              <p className="text-lg md:text-xl text-muted-foreground">
+                Otimizados para ChatGPT, Claude, Perplexity e NotebookLM
               </p>
 
 
-              {/* Contador */}
               <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground">
                 <BookOpen className="h-5 w-5" />
-                <span role="status" aria-live="polite">
-                  {filteredPrompts.length} {filteredPrompts.length === 1 ? 'prompt disponível' : 'prompts disponíveis'}
-                </span>
+                <span>{filteredPrompts.length} prompts disponíveis</span>
               </div>
             </div>
           </div>
 
 
           {/* Blobs animados */}
-          <div className="absolute top-0 left-1/4 w-72 h-72 md:w-96 md:h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
-          <div className="absolute top-0 right-1/4 w-72 h-72 md:w-96 md:h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000" />
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000" />
         </section>
 
 
         {/* Main Content */}
-        <main className="container mx-auto px-4 sm:px-6 py-6 md:py-12">
-          <div className="space-y-6 md:space-y-8">
-            {/* ✅ BANNER DE LOGIN (Apenas para usuários não logados com favoritos) */}
+        <main className="container mx-auto px-4 sm:px-6 py-8 md:py-12">
+          <div className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
+            {/* Banner Login */}
             {!user && favorites.size > 0 && showLoginBanner && (
-              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 border-2 border-indigo-200 dark:border-indigo-800 rounded-xl p-4 md:p-5 shadow-lg">
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 border border-indigo-200 dark:border-indigo-800 rounded-2xl p-5 shadow-lg backdrop-blur-sm animate-in fade-in slide-in-from-top-4 duration-500">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3 flex-1">
-                    <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                    <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
                       <Star className="h-6 w-6 text-white fill-white" />
                     </div>
-                    <div className="flex-1 min-w-0">
-                      <p className="font-semibold text-sm md:text-base text-gray-900 dark:text-white mb-1">
-                        Você tem {favorites.size} {favorites.size === 1 ? 'prompt favorito' : 'prompts favoritos'}!
+                    <div className="flex-1">
+                      <p className="font-semibold text-gray-900 dark:text-white mb-1">
+                        {favorites.size} {favorites.size === 1 ? 'prompt favorito' : 'prompts favoritos'}
                       </p>
-                      <p className="text-xs md:text-sm text-muted-foreground">
-                        Crie uma conta grátis para sincronizar seus favoritos em todos os dispositivos e ter acesso a ferramentas exclusivas.
+                      <p className="text-sm text-muted-foreground">
+                        Crie uma conta para sincronizar em todos os dispositivos
                       </p>
                     </div>
                   </div>
@@ -340,16 +264,15 @@ export default function Prompts() {
                     <Button
                       size="sm"
                       onClick={() => navigate('/register')}
-                      className="whitespace-nowrap bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                      className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300"
                     >
-                      Criar Conta Grátis
+                      Criar Conta
                     </Button>
                     <button
                       onClick={() => setShowLoginBanner(false)}
                       className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
-                      aria-label="Fechar banner"
                     >
-                      <X className="h-4 w-4 text-gray-500" />
+                      <X className="h-4 w-4" />
                     </button>
                   </div>
                 </div>
@@ -357,26 +280,18 @@ export default function Prompts() {
             )}
 
 
-            {/* Tabs - Responsivo (MELHORIA 1.1) */}
-            <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-              <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 h-12 md:h-14">
-                <TabsTrigger 
-                  value="all" 
-                  className="text-sm md:text-base gap-2"
-                  aria-label="Mostrar todos os prompts"
-                >
+            {/* Tabs Minimalistas */}
+            <Tabs value={selectedTab} onValueChange={setSelectedTab}>
+              <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 h-14 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border border-gray-200 dark:border-gray-800">
+                <TabsTrigger value="all" className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white transition-all duration-300">
                   <Sparkles className="h-4 w-4" />
                   <span>Todos</span>
                 </TabsTrigger>
-                <TabsTrigger 
-                  value="favorites" 
-                  className="text-sm md:text-base gap-2"
-                  aria-label="Mostrar apenas prompts favoritos"
-                >
+                <TabsTrigger value="favorites" className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white transition-all duration-300">
                   <Star className="h-4 w-4" />
                   <span>Favoritos</span>
                   {favorites.size > 0 && (
-                    <Badge variant="secondary" className="ml-1 text-xs">
+                    <Badge className="ml-1 bg-white text-indigo-600 hover:bg-white">
                       {favorites.size}
                     </Badge>
                   )}
@@ -385,57 +300,40 @@ export default function Prompts() {
             </Tabs>
 
 
-            {/* Filtros - Stack vertical no mobile (MELHORIA 1.1) */}
-            <div className="flex flex-col md:flex-row gap-3 md:gap-4">
-              {/* Campo de busca - Full width no mobile */}
+            {/* Filtros Compactos */}
+            <div className="flex flex-col md:flex-row gap-3">
               <div className="relative flex-1">
-                <Label htmlFor="search-prompts" className="sr-only">
-                  Buscar prompts por título, conteúdo ou tags
-                </Label>
-                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 w-4 h-4 md:w-5 md:h-5 pointer-events-none" />
+                <Label htmlFor="search" className="sr-only">Buscar prompts</Label>
+                <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-5 h-5 pointer-events-none" />
                 <Input
-                  id="search-prompts"
-                  type="search"
-                  placeholder="Buscar por título, conteúdo ou tags..."
+                  id="search"
+                  placeholder="Buscar prompts..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10 md:pl-12 h-11 md:h-12 text-sm md:text-base w-full"
-                  aria-label="Buscar prompts por título, conteúdo ou tags"
-                  autoComplete="off"
+                  className="pl-10 h-12 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-gray-200 dark:border-gray-800 focus:ring-2 focus:ring-indigo-500 transition-all duration-300"
                 />
-                
-                {/* Botão limpar busca */}
                 {searchTerm && (
                   <button
                     onClick={() => setSearchTerm('')}
-                    className="absolute right-3 top-1/2 transform -translate-y-1/2 p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors touch-manipulation"
-                    aria-label="Limpar busca"
+                    className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
                   >
-                    <X className="h-4 w-4 text-gray-400" />
+                    <X className="h-4 w-4" />
                   </button>
                 )}
-                
-                {/* Indicador de busca ativa (MELHORIA 1.3) */}
                 {isSearching && (
-                  <div className="absolute right-10 top-1/2 transform -translate-y-1/2">
-                    <Loader2 className="h-4 w-4 animate-spin text-indigo-600" />
-                  </div>
+                  <Loader2 className="absolute right-10 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-indigo-600" />
                 )}
               </div>
 
 
-              {/* Filtros lado a lado no mobile (MELHORIA 1.1) */}
-              <div className="flex gap-2 md:gap-3">
+              <div className="flex gap-2">
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger 
-                    className="w-full md:w-[180px] h-11 md:h-12 text-sm md:text-base"
-                    aria-label="Filtrar por categoria"
-                  >
+                  <SelectTrigger className="w-full md:w-[180px] h-12 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-gray-200 dark:border-gray-800">
                     <Filter className="h-4 w-4 mr-2" />
-                    <SelectValue placeholder="Categoria" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todas categorias</SelectItem>
+                    <SelectItem value="all">Todas</SelectItem>
                     <SelectItem value="estudos">Estudos</SelectItem>
                     <SelectItem value="clinica">Clínica</SelectItem>
                   </SelectContent>
@@ -443,33 +341,22 @@ export default function Prompts() {
 
 
                 <Select value={sortOrder} onValueChange={setSortOrder}>
-                  <SelectTrigger 
-                    className="w-full md:w-[160px] h-11 md:h-12 text-sm md:text-base"
-                    aria-label="Ordenar prompts"
-                  >
+                  <SelectTrigger className="w-full md:w-[140px] h-12 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-gray-200 dark:border-gray-800">
                     <ArrowUpDown className="h-4 w-4 mr-2" />
-                    <SelectValue placeholder="Ordenar" />
+                    <SelectValue />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="a-z">Ordem A-Z</SelectItem>
-                    <SelectItem value="z-a">Ordem Z-A</SelectItem>
-                    <SelectItem value="most-used">Mais usados</SelectItem>
+                    <SelectItem value="a-z">A-Z</SelectItem>
+                    <SelectItem value="z-a">Z-A</SelectItem>
                   </SelectContent>
                 </Select>
               </div>
             </div>
 
 
-            {/* Botão limpar filtros - visível quando há filtros ativos (MELHORIA 1.3) */}
             {(searchTerm || selectedCategory !== 'all' || sortOrder !== 'a-z') && (
-              <div className="flex justify-center">
-                <Button
-                  variant="outline"
-                  size="sm"
-                  onClick={clearFilters}
-                  className="gap-2 text-sm"
-                  aria-label="Limpar todos os filtros"
-                >
+              <div className="flex justify-center animate-in fade-in duration-300">
+                <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-2">
                   <X className="h-4 w-4" />
                   Limpar filtros
                 </Button>
@@ -477,206 +364,146 @@ export default function Prompts() {
             )}
 
 
-            {/* Grid de Cards - Responsivo (MELHORIA 1.1) */}
+            {/* ✨ Grid de Cards Minimalista */}
             {filteredPrompts.length === 0 ? (
-              // Estado vazio (MELHORIA 1.3)
-              <div 
-                className="text-center py-12 md:py-20 px-4" 
-                role="status" 
-                aria-live="polite"
-              >
-                <div className="w-16 h-16 md:w-24 md:h-24 mx-auto mb-6 md:mb-8 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 flex items-center justify-center">
-                  <Search className="w-8 h-8 md:w-12 md:h-12 text-gray-400" />
+              <div className="text-center py-20 animate-in fade-in duration-500">
+                <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 flex items-center justify-center">
+                  <Search className="w-10 h-10 text-gray-400" />
                 </div>
-                <h3 className="text-xl md:text-2xl font-bold text-gray-900 dark:text-white mb-3">
-                  Nenhum prompt encontrado
-                </h3>
-                <p className="text-sm md:text-base text-gray-600 dark:text-gray-400 max-w-md mx-auto mb-6">
+                <h3 className="text-2xl font-bold mb-3">Nenhum prompt encontrado</h3>
+                <p className="text-muted-foreground mb-6">
                   {selectedTab === 'favorites' 
-                    ? 'Você ainda não tem prompts favoritos. Clique na estrela para adicionar!'
-                    : 'Tente ajustar os filtros ou buscar por outros termos.'}
+                    ? 'Adicione prompts aos favoritos clicando na estrela'
+                    : 'Tente ajustar os filtros'}
                 </p>
-                <Button
-                  variant="outline"
-                  onClick={clearFilters}
-                  className="gap-2"
-                >
-                  <X className="h-4 w-4" />
+                <Button variant="outline" onClick={clearFilters}>
                   Limpar filtros
                 </Button>
               </div>
             ) : (
-              <div 
-                className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 md:gap-6"
-                role="list"
-                aria-label="Lista de prompts médicos"
-              >
-                {filteredPrompts.map((prompt) => {
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
+                {filteredPrompts.map((prompt, index) => {
                   const aiName = prompt.recommendedAI?.primary || 'IA';
-                  const promptIcon = prompt.icon || '📝';
                   
                   return (
                     <Card
                       key={prompt.id}
-                      className="group hover:shadow-xl transition-all duration-300 hover:-translate-y-1 flex flex-col h-full border-2 hover:border-indigo-200 dark:hover:border-indigo-800"
-                      role="listitem"
+                      className="group relative overflow-hidden bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-gray-200 dark:border-gray-800 hover:border-indigo-300 dark:hover:border-indigo-700 hover:shadow-2xl hover:shadow-indigo-500/10 transition-all duration-500 hover:-translate-y-2 animate-in fade-in slide-in-from-bottom-8"
+                      style={{ animationDelay: `${index * 50}ms` }}
                     >
-                      <CardHeader className="pb-3 md:pb-4">
+                      {/* Gradient overlay on hover */}
+                      <div className="absolute inset-0 bg-gradient-to-br from-indigo-500/5 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
+                      
+                      <CardHeader className="pb-3 relative z-10">
                         <div className="flex items-start justify-between gap-3 mb-3">
-                          <div className="flex items-center gap-2 md:gap-3 flex-1 min-w-0">
-                            <span 
-                              className="text-2xl md:text-3xl flex-shrink-0" 
-                              role="img" 
-                              aria-label="Ícone do prompt"
-                            >
-                              {promptIcon}
-                            </span>
-                            <Badge 
-                              variant="outline" 
-                              className="text-xs md:text-sm whitespace-nowrap"
-                            >
-                              {aiName}
-                            </Badge>
-                          </div>
+                          <Badge 
+                            variant="outline"
+                            className="text-xs font-medium bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300"
+                          >
+                            {aiName}
+                          </Badge>
                           
-                          {/* Botão favoritar com área de toque adequada (MELHORIA 1.1 + 1.2) */}
                           <Tooltip>
                             <TooltipTrigger>
                               <button
                                 onClick={() => toggleFavorite(prompt.id)}
-                                className="flex-shrink-0 p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors touch-manipulation min-w-[44px] min-h-[44px] flex items-center justify-center"
-                                aria-label={
-                                  favorites.has(prompt.id)
-                                    ? `Remover ${prompt.title} dos favoritos`
-                                    : `Adicionar ${prompt.title} aos favoritos`
-                                }
-                                aria-pressed={favorites.has(prompt.id)}
+                                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all duration-300 group/star"
+                                aria-label={favorites.has(prompt.id) ? 'Remover' : 'Favoritar'}
                               >
                                 <Star
-                                  className={`w-5 h-5 md:w-6 md:h-6 transition-all duration-300 ${
+                                  className={`w-5 h-5 transition-all duration-300 ${
                                     favorites.has(prompt.id)
                                       ? 'fill-yellow-400 text-yellow-400 scale-110'
-                                      : 'text-gray-400 group-hover:text-yellow-400/50'
+                                      : 'text-gray-400 group-hover/star:text-yellow-400 group-hover/star:scale-110'
                                   }`}
                                 />
                               </button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              {favorites.has(prompt.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                              {favorites.has(prompt.id) ? 'Remover' : 'Favoritar'}
                             </TooltipContent>
                           </Tooltip>
                         </div>
 
 
-                        <CardTitle className="text-lg md:text-xl leading-tight line-clamp-2 mb-2">
+                        <CardTitle className="text-lg leading-tight line-clamp-2 group-hover:text-indigo-600 dark:group-hover:text-indigo-400 transition-colors duration-300">
                           {prompt.title}
                         </CardTitle>
 
 
-                        <CardDescription className="text-sm md:text-base mt-2 line-clamp-3">
+                        <CardDescription className="text-sm mt-2 line-clamp-2">
                           {prompt.description}
                         </CardDescription>
                       </CardHeader>
 
 
-                      <CardContent className="space-y-3 md:space-y-4 flex-grow flex flex-col">
-                        {/* Tags */}
-                        <div className="flex flex-wrap gap-1.5 md:gap-2">
-                          {prompt.tags.slice(0, 3).map((tag) => (
-                            <Badge
-                              key={tag}
-                              variant="secondary"
-                              className="text-xs px-2 py-0.5"
-                            >
+                      <CardContent className="space-y-3 relative z-10">
+                        {/* Tags compactas */}
+                        <div className="flex flex-wrap gap-1.5">
+                          {prompt.tags.slice(0, 2).map((tag) => (
+                            <Badge key={tag} variant="secondary" className="text-xs px-2 py-0.5">
                               {tag}
                             </Badge>
                           ))}
-                          {prompt.tags.length > 3 && (
+                          {prompt.tags.length > 2 && (
                             <Badge variant="secondary" className="text-xs px-2 py-0.5">
-                              +{prompt.tags.length - 3}
+                              +{prompt.tags.length - 2}
                             </Badge>
                           )}
                         </div>
 
 
-                        {/* Metadados */}
-                        <div className="flex items-center justify-between pt-2 border-t dark:border-gray-800">
-                          <div className="flex items-center gap-2 text-gray-600 dark:text-gray-400">
-                            <Wand2 className="w-4 h-4" />
-                            <span className="text-xs md:text-sm font-medium">
-                              {prompt.usageCount || 0}x usado
-                            </span>
-                          </div>
-                          <Badge 
-                            className="text-xs capitalize"
-                            variant={prompt.category === 'clinica' ? 'default' : 'secondary'}
-                          >
-                            {prompt.category}
-                          </Badge>
-                        </div>
-
-
-                        {/* Ações - Botões com área de toque adequada (MELHORIA 1.1 + 1.2) */}
-                        <div className="flex flex-col gap-2 mt-auto pt-4 border-t dark:border-gray-800">
-                          <div className="grid grid-cols-2 gap-2">
-                            <Tooltip>
-                              <TooltipTrigger>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => copyPrompt(prompt)}
-                                  className="text-xs md:text-sm h-10 md:h-11 touch-manipulation gap-2 w-full"
-                                  aria-label={`Copiar prompt ${prompt.title}`}
-                                >
-                                  {copiedId === prompt.id ? (
-                                    <>
-                                      <Check className="w-4 h-4 text-green-600" />
-                                      <span className="text-green-600">Copiado!</span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Copy className="w-4 h-4" />
-                                      <span>Copiar</span>
-                                    </>
-                                  )}
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Copiar prompt completo</TooltipContent>
-                            </Tooltip>
-
-
-                            <Tooltip>
-                              <TooltipTrigger>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => setSelectedPrompt(prompt)}
-                                  className="text-xs md:text-sm h-10 md:h-11 touch-manipulation gap-2 w-full"
-                                  aria-label={`Ver detalhes de ${prompt.title}`}
-                                >
-                                  <BookOpen className="w-4 h-4" />
-                                  <span>Ver mais</span>
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Ver prompt completo</TooltipContent>
-                            </Tooltip>
-                          </div>
+                        {/* Ações minimalistas */}
+                        <div className="flex gap-2 pt-3 border-t dark:border-gray-800">
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => copyPrompt(prompt)}
+                                className="flex-1 h-9 gap-2 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 dark:hover:from-indigo-900/30 dark:hover:to-purple-900/30 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300"
+                              >
+                                {copiedId === prompt.id ? (
+                                  <>
+                                    <Check className="w-4 h-4 text-green-600" />
+                                    <span className="text-xs">Copiado!</span>
+                                  </>
+                                ) : (
+                                  <>
+                                    <Copy className="w-4 h-4" />
+                                    <span className="text-xs">Copiar</span>
+                                  </>
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Copiar prompt</TooltipContent>
+                          </Tooltip>
 
 
                           <Tooltip>
                             <TooltipTrigger>
                               <Button
-                                onClick={() => openAI(aiName)}
-                                className="w-full text-xs md:text-sm h-10 md:h-11 touch-manipulation gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
-                                aria-label={`Abrir ${aiName} em nova aba`}
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSelectedPrompt(prompt)}
+                                className="flex-1 h-9 gap-2 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 dark:hover:from-indigo-900/30 dark:hover:to-purple-900/30 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300"
                               >
-                                <ExternalLink className="w-4 h-4" />
-                                <span>Abrir {aiName}</span>
+                                <BookOpen className="w-4 h-4" />
+                                <span className="text-xs">Ver</span>
                               </Button>
                             </TooltipTrigger>
-                            <TooltipContent>Abre {aiName} em nova aba</TooltipContent>
+                            <TooltipContent>Ver detalhes</TooltipContent>
                           </Tooltip>
                         </div>
+
+
+                        <Button
+                          onClick={() => openAI(aiName)}
+                          className="w-full h-9 text-xs gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl hover:shadow-indigo-500/30 transition-all duration-300"
+                        >
+                          <ExternalLink className="w-4 h-4" />
+                          Abrir {aiName}
+                        </Button>
                       </CardContent>
                     </Card>
                   );
@@ -687,68 +514,40 @@ export default function Prompts() {
         </main>
 
 
-        {/* ✅ MODAL COM MARKDOWN RENDERIZADO */}
+        {/* Modal */}
         {selectedPrompt && (
           <Dialog open={!!selectedPrompt} onOpenChange={() => setSelectedPrompt(null)}>
-            <DialogContent 
-              className="max-w-4xl max-h-[90vh] overflow-y-auto mx-4 sm:mx-auto"
-              aria-describedby="prompt-description"
-            >
+            <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto bg-white/95 dark:bg-gray-900/95 backdrop-blur-xl border-gray-200 dark:border-gray-800">
               <DialogHeader>
-                <div className="flex items-start gap-3 md:gap-4 mb-4">
-                  <span 
-                    className="text-3xl md:text-4xl flex-shrink-0" 
-                    role="img" 
-                    aria-label="Ícone do prompt"
-                  >
-                    {selectedPrompt.icon || '📝'}
-                  </span>
-                  <div className="flex-1 min-w-0">
-                    <DialogTitle className="text-xl md:text-2xl mb-3 leading-tight">
-                      {selectedPrompt.title}
-                    </DialogTitle>
+                <div className="flex items-start gap-4 mb-4">
+                  <div className="flex-1">
+                    <DialogTitle className="text-2xl mb-3">{selectedPrompt.title}</DialogTitle>
                     <div className="flex flex-wrap gap-2">
-                      <Badge variant="outline" className="text-sm">
-                        {selectedPrompt.recommendedAI?.primary || 'IA'}
+                      <Badge className="bg-gradient-to-r from-indigo-600 to-purple-600">
+                        {selectedPrompt.recommendedAI?.primary}
                       </Badge>
-                      <Badge className="text-sm capitalize">
-                        {selectedPrompt.category}
-                      </Badge>
-                      <Badge variant="secondary" className="text-sm">
-                        {selectedPrompt.usageCount || 0}x usado
-                      </Badge>
+                      <Badge variant="outline">{selectedPrompt.category}</Badge>
                     </div>
                   </div>
                 </div>
-                <DialogDescription 
-                  id="prompt-description" 
-                  className="text-base md:text-lg"
-                >
-                  {selectedPrompt.description}
-                </DialogDescription>
+                <DialogDescription className="text-base">{selectedPrompt.description}</DialogDescription>
               </DialogHeader>
 
 
-              <div className="space-y-4 md:space-y-6 mt-4 md:mt-6">
-                {/* Tags do prompt */}
+              <div className="space-y-6 mt-6">
                 <div>
-                  <h4 className="font-semibold text-sm md:text-base mb-3 text-gray-700 dark:text-gray-300">
-                    Tags relacionadas
-                  </h4>
+                  <h4 className="font-semibold mb-3">Tags</h4>
                   <div className="flex flex-wrap gap-2">
                     {selectedPrompt.tags.map((tag) => (
-                      <Badge key={tag} variant="secondary" className="text-sm">
-                        {tag}
-                      </Badge>
+                      <Badge key={tag} variant="secondary">{tag}</Badge>
                     ))}
                   </div>
                 </div>
 
 
-                {/* ✅ PROMPT COMPLETO COM MARKDOWN RENDERIZADO */}
                 <div>
                   <div className="flex items-center justify-between mb-3">
-                    <h4 className="font-semibold text-base md:text-lg flex items-center gap-2">
+                    <h4 className="font-semibold flex items-center gap-2">
                       <Sparkles className="w-5 h-5 text-indigo-600" />
                       Prompt Completo
                     </h4>
@@ -757,87 +556,51 @@ export default function Prompts() {
                       size="sm"
                       onClick={() => copyPrompt(selectedPrompt)}
                       className="gap-2"
-                      aria-label="Copiar prompt completo"
                     >
                       {copiedId === selectedPrompt.id ? (
                         <>
                           <Check className="w-4 h-4 text-green-600" />
-                          <span className="text-green-600">Copiado!</span>
+                          Copiado!
                         </>
                       ) : (
                         <>
                           <Copy className="w-4 h-4" />
-                          <span>Copiar</span>
+                          Copiar
                         </>
                       )}
                     </Button>
                   </div>
                   
-                  {/* ✅ DIV COM HTML RENDERIZADO */}
                   <div 
-                    className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 md:p-6 border border-gray-200 dark:border-gray-800 prose prose-sm md:prose-base dark:prose-invert max-w-none"
+                    className="bg-gradient-to-br from-gray-50 to-indigo-50/30 dark:from-gray-900 dark:to-indigo-950/30 rounded-xl p-6 border border-gray-200 dark:border-gray-800 prose prose-sm dark:prose-invert max-w-none"
                     dangerouslySetInnerHTML={{ __html: renderMarkdown(selectedPrompt.content) }}
-                    aria-label="Conteúdo completo do prompt"
                   />
                 </div>
 
 
-                {/* Instruções de uso */}
-                <div className="bg-blue-50 dark:bg-blue-950/30 border border-blue-200 dark:border-blue-800 rounded-lg p-4 md:p-5">
-                  <div className="flex items-start gap-3">
-                    <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" />
-                    <div className="space-y-2">
-                      <p className="text-sm md:text-base font-semibold text-blue-900 dark:text-blue-100">
-                        Como usar este prompt:
-                      </p>
-                      <ol className="text-xs md:text-sm text-blue-800 dark:text-blue-200 space-y-1 list-decimal list-inside">
-                        <li>Copie o prompt completo acima</li>
-                        <li>Abra o {selectedPrompt.recommendedAI?.primary || 'IA recomendada'} (botão abaixo)</li>
-                        <li>Cole o prompt e adapte conforme necessário</li>
-                        <li>Obtenha resultados otimizados para medicina!</li>
-                      </ol>
-                    </div>
-                  </div>
-                </div>
-
-
-                {/* Botões de ação */}
-                <div className="flex flex-col sm:flex-row gap-3 pt-4 border-t dark:border-gray-800">
+                <div className="flex gap-3 pt-4 border-t dark:border-gray-800">
                   <Button
                     onClick={() => copyPrompt(selectedPrompt)}
                     variant="outline"
-                    className="flex-1 h-11 md:h-12 gap-2 touch-manipulation"
-                    aria-label="Copiar prompt completo"
+                    className="flex-1 h-11 gap-2"
                   >
                     <Copy className="w-4 h-4" />
-                    Copiar Prompt
+                    Copiar
                   </Button>
                   <Button
                     onClick={() => toggleFavorite(selectedPrompt.id)}
                     variant="outline"
-                    className="flex-1 h-11 md:h-12 gap-2 touch-manipulation"
-                    aria-label={
-                      favorites.has(selectedPrompt.id)
-                        ? 'Remover dos favoritos'
-                        : 'Adicionar aos favoritos'
-                    }
+                    className="flex-1 h-11 gap-2"
                   >
-                    <Star
-                      className={`w-4 h-4 ${
-                        favorites.has(selectedPrompt.id)
-                          ? 'fill-yellow-400 text-yellow-400'
-                          : ''
-                      }`}
-                    />
+                    <Star className={favorites.has(selectedPrompt.id) ? 'fill-yellow-400 text-yellow-400' : ''} />
                     {favorites.has(selectedPrompt.id) ? 'Favoritado' : 'Favoritar'}
                   </Button>
                   <Button
                     onClick={() => openAI(selectedPrompt.recommendedAI?.primary || 'ChatGPT')}
-                    className="flex-1 h-11 md:h-12 gap-2 touch-manipulation bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
-                    aria-label={`Abrir ${selectedPrompt.recommendedAI?.primary || 'IA'} em nova aba`}
+                    className="flex-1 h-11 gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
                   >
                     <ExternalLink className="w-4 h-4" />
-                    Abrir {selectedPrompt.recommendedAI?.primary || 'IA'}
+                    Abrir IA
                   </Button>
                 </div>
               </div>
@@ -847,25 +610,22 @@ export default function Prompts() {
 
 
         {/* Footer */}
-        <footer className="border-t dark:border-gray-800 mt-16 bg-white dark:bg-gray-950">
-          <div className="container mx-auto px-4 py-8 md:py-12">
+        <footer className="border-t dark:border-gray-800 mt-16 bg-white/50 dark:bg-gray-950/50 backdrop-blur-sm">
+          <div className="container mx-auto px-4 py-12">
             <div className="text-center space-y-3">
-              <p className="text-sm md:text-base text-muted-foreground">
+              <p className="text-sm text-muted-foreground">
                 MedPrompts © 2026 • Desenvolvido para estudantes de Medicina
               </p>
-              <p className="text-xs md:text-sm text-muted-foreground">
-                Desenvolvido por <span className="font-semibold text-indigo-600">Andressa Mendes</span> • Estudante de Medicina
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Afya - Guanambi/BA
+              <p className="text-sm text-muted-foreground">
+                Por <span className="font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Andressa Mendes</span>
               </p>
               <div className="flex items-center justify-center gap-4 pt-4">
-                <Badge variant="outline" className="text-xs">
-                  <Sparkles className="w-3 h-3 mr-1" />
+                <Badge variant="outline" className="gap-1">
+                  <Sparkles className="w-3 h-3" />
                   {staticPrompts.length} prompts
                 </Badge>
-                <Badge variant="outline" className="text-xs">
-                  <Star className="w-3 h-3 mr-1" />
+                <Badge variant="outline" className="gap-1">
+                  <Star className="w-3 h-3" />
                   {favorites.size} favoritos
                 </Badge>
               </div>
