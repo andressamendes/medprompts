@@ -33,15 +33,19 @@ const FAVORITES_STORAGE_KEY = 'medprompts_favorites';
 const USAGE_STORAGE_KEY = 'medprompts_usage';
 
 // Tipos de IA disponíveis
-type AIType = 'chatgpt' | 'claude' | 'gemini' | 'perplexity' | 'any';
+type AIType = 'chatgpt' | 'claude' | 'gemini' | 'perplexity' | 'notebooklm' | 'any';
 
 // Interface estendida para incluir recommendedAI
 interface ExtendedPromptData extends PromptData {
-  recommendedAI?: AIType;
+  recommendedAI?: string | {
+    primary?: string;
+    reason?: string;
+    alternatives?: string[];
+  };
 }
 
 // Mapeamento de IAs recomendadas
-const AI_RECOMMENDATIONS: Record<AIType, { name: string; icon: string; url: string; color: string }> = {
+const AI_RECOMMENDATIONS: Record<string, { name: string; icon: string; url: string; color: string }> = {
   chatgpt: {
     name: 'ChatGPT',
     icon: '🤖',
@@ -66,12 +70,28 @@ const AI_RECOMMENDATIONS: Record<AIType, { name: string; icon: string; url: stri
     url: 'https://www.perplexity.ai/',
     color: 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-400',
   },
+  notebooklm: {
+    name: 'NotebookLM',
+    icon: '📔',
+    url: 'https://notebooklm.google/',
+    color: 'bg-orange-500/10 text-orange-700 dark:text-orange-400',
+  },
   any: {
     name: 'Qualquer IA',
     icon: '🌐',
     url: '',
     color: 'bg-gray-500/10 text-gray-700 dark:text-gray-400',
   },
+};
+
+// Função auxiliar para extrair a IA primária
+const getAIKey = (recommendedAI: ExtendedPromptData['recommendedAI']): string => {
+  if (!recommendedAI) return 'any';
+  if (typeof recommendedAI === 'string') return recommendedAI.toLowerCase().replace(/\s+/g, '');
+  if (typeof recommendedAI === 'object' && recommendedAI.primary) {
+    return recommendedAI.primary.toLowerCase().replace(/\s+/g, '');
+  }
+  return 'any';
 };
 
 interface PromptVariable {
@@ -174,7 +194,7 @@ export default function Prompts() {
         usageCount: usageCounts[p.id || `prompt-${index}`] || 0,
         isFavorite: favorites.has(p.id || `prompt-${index}`),
         isSystem: true,
-        recommendedAI: (p as ExtendedPromptData).recommendedAI || 'any',
+        recommendedAI: (p as ExtendedPromptData).recommendedAI,
       }));
 
       setPrompts(data);
@@ -310,7 +330,7 @@ export default function Prompts() {
   }, [customizingPrompt, variableValues, replaceVariables, handleCopy]);
 
   // Abrir IA recomendada
-  const openRecommendedAI = useCallback((aiKey: AIType) => {
+  const openRecommendedAI = useCallback((aiKey: string) => {
     const ai = AI_RECOMMENDATIONS[aiKey];
     if (ai && ai.url) {
       window.open(ai.url, '_blank');
@@ -442,8 +462,8 @@ export default function Prompts() {
                 {filteredPrompts.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
                     {filteredPrompts.map((prompt) => {
-                      const aiKey = prompt.recommendedAI || 'any';
-                      const ai = AI_RECOMMENDATIONS[aiKey];
+                      const aiKey = getAIKey(prompt.recommendedAI);
+                      const ai = AI_RECOMMENDATIONS[aiKey] || AI_RECOMMENDATIONS.any;
                       const hasVariables = extractVariables(prompt.content).length > 0;
 
                       return (
@@ -630,12 +650,16 @@ export default function Prompts() {
                       {tag}
                     </Badge>
                   ))}
-                  {viewingPrompt && (
-                    <Badge className={`text-xs gap-1 ${AI_RECOMMENDATIONS[viewingPrompt.recommendedAI || 'any'].color}`}>
-                      <span>{AI_RECOMMENDATIONS[viewingPrompt.recommendedAI || 'any'].icon}</span>
-                      <span>{AI_RECOMMENDATIONS[viewingPrompt.recommendedAI || 'any'].name}</span>
-                    </Badge>
-                  )}
+                  {viewingPrompt && (() => {
+                    const aiKey = getAIKey(viewingPrompt.recommendedAI);
+                    const ai = AI_RECOMMENDATIONS[aiKey] || AI_RECOMMENDATIONS.any;
+                    return (
+                      <Badge className={`text-xs gap-1 ${ai.color}`}>
+                        <span>{ai.icon}</span>
+                        <span>{ai.name}</span>
+                      </Badge>
+                    );
+                  })()}
                 </div>
               </DialogDescription>
             </DialogHeader>
@@ -699,12 +723,16 @@ export default function Prompts() {
               <DialogDescription>
                 <div className="space-y-2">
                   <p>Preencha os campos abaixo para personalizar seu prompt</p>
-                  {customizingPrompt && (
-                    <Badge className={`text-xs gap-1 ${AI_RECOMMENDATIONS[customizingPrompt.recommendedAI || 'any'].color}`}>
-                      <span>{AI_RECOMMENDATIONS[customizingPrompt.recommendedAI || 'any'].icon}</span>
-                      <span>Recomendado: {AI_RECOMMENDATIONS[customizingPrompt.recommendedAI || 'any'].name}</span>
-                    </Badge>
-                  )}
+                  {customizingPrompt && (() => {
+                    const aiKey = getAIKey(customizingPrompt.recommendedAI);
+                    const ai = AI_RECOMMENDATIONS[aiKey] || AI_RECOMMENDATIONS.any;
+                    return (
+                      <Badge className={`text-xs gap-1 ${ai.color}`}>
+                        <span>{ai.icon}</span>
+                        <span>Recomendado: {ai.name}</span>
+                      </Badge>
+                    );
+                  })()}
                 </div>
               </DialogDescription>
             </DialogHeader>
@@ -752,19 +780,23 @@ export default function Prompts() {
                 <Copy className="h-4 w-4" />
                 Copiar Prompt Personalizado
               </Button>
-              {customizingPrompt && AI_RECOMMENDATIONS[customizingPrompt.recommendedAI || 'any'].url && (
-                <Button
-                  variant="outline"
-                  className="gap-2"
-                  onClick={() => {
-                    handleCopyCustomized();
-                    openRecommendedAI(customizingPrompt.recommendedAI || 'any');
-                  }}
-                >
-                  <ExternalLink className="h-4 w-4" />
-                  Copiar e Abrir IA
-                </Button>
-              )}
+              {customizingPrompt && (() => {
+                const aiKey = getAIKey(customizingPrompt.recommendedAI);
+                const ai = AI_RECOMMENDATIONS[aiKey];
+                return ai?.url ? (
+                  <Button
+                    variant="outline"
+                    className="gap-2"
+                    onClick={() => {
+                      handleCopyCustomized();
+                      openRecommendedAI(aiKey);
+                    }}
+                  >
+                    <ExternalLink className="h-4 w-4" />
+                    Copiar e Abrir IA
+                  </Button>
+                ) : null;
+              })()}
             </div>
           </DialogContent>
         </Dialog>
