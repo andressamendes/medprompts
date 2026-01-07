@@ -1,50 +1,114 @@
-import { useState, useEffect } from 'react';
-// import { AuthenticatedNavbar } from '@/components/AuthenticatedNavbar';
+import { useState, useEffect, useCallback } from 'react';
 import { prompts as staticPrompts } from '@/data/prompts-data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Textarea } from '@/components/ui/textarea';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Plus, Search, Star, Trash2, Edit, Copy, Filter, Loader2, Lock, ArrowUpDown, Check, Sparkles } from 'lucide-react';
-import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Label } from '@/components/ui/label';
+import { Search, Star, Copy, Filter, Loader2, ArrowUpDown, Check, Sparkles, BookOpen } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { toast } from '@/hooks/use-toast';
-import promptsService, { PromptData } from '@/services/api/prompts';
+import { PromptData } from '@/services/api/prompts';
 
 /**
- * Página Prompts - Biblioteca de Prompts Médicos
- * Design moderno com melhorias de usabilidade e responsividade
+ * Página Prompts - Biblioteca Pública de Prompts Médicos
+ * Refatorada para funcionar como biblioteca de consulta (somente leitura)
+ * Sistema de favoritos gerenciado via localStorage
  */
+
+const FAVORITES_STORAGE_KEY = 'medprompts_favorites';
+const USAGE_STORAGE_KEY = 'medprompts_usage';
+
 export default function Prompts() {
   const [prompts, setPrompts] = useState<PromptData[]>([]);
   const [filteredPrompts, setFilteredPrompts] = useState<PromptData[]>([]);
-  const [isModalOpen, setIsModalOpen] = useState(false);
-  const [editingPrompt, setEditingPrompt] = useState<PromptData | null>(null);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedTab, setSelectedTab] = useState('all');
   const [sortBy, setSortBy] = useState<'name' | 'usage' | 'favorites'>('name');
   const [isLoading, setIsLoading] = useState(false);
-  const [isSaving, setIsSaving] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  
-  const [formData, setFormData] = useState({
-    title: '',
-    content: '',
-    category: 'geral',
-    tags: '',
-  });
 
   const categories = ['all', 'anatomia', 'fisiologia', 'farmacologia', 'clinica', 'cirurgia', 'pediatria', 'estudos', 'geral'];
+
+  // Carregar favoritos do localStorage
+  const loadFavorites = (): Set<string> => {
+    try {
+      const stored = localStorage.getItem(FAVORITES_STORAGE_KEY);
+      return stored ? new Set(JSON.parse(stored)) : new Set();
+    } catch {
+      return new Set();
+    }
+  };
+
+  // Salvar favoritos no localStorage
+  const saveFavorites = (favorites: Set<string>) => {
+    try {
+      localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify([...favorites]));
+    } catch (error) {
+      console.error('Erro ao salvar favoritos:', error);
+    }
+  };
+
+  // Carregar contadores de uso do localStorage
+  const loadUsageCounts = (): Record<string, number> => {
+    try {
+      const stored = localStorage.getItem(USAGE_STORAGE_KEY);
+      return stored ? JSON.parse(stored) : {};
+    } catch {
+      return {};
+    }
+  };
+
+  // Salvar contadores de uso no localStorage
+  const saveUsageCounts = (counts: Record<string, number>) => {
+    try {
+      localStorage.setItem(USAGE_STORAGE_KEY, JSON.stringify(counts));
+    } catch (error) {
+      console.error('Erro ao salvar contadores:', error);
+    }
+  };
+
+  // Carregar prompts dos dados estáticos com informações do localStorage
+  const loadPrompts = useCallback(async () => {
+    setIsLoading(true);
+    try {
+      const favorites = loadFavorites();
+      const usageCounts = loadUsageCounts();
+
+      const data: PromptData[] = staticPrompts.map((p, index) => ({
+        id: p.id || `prompt-${index}`,
+        title: p.title,
+        content: p.content,
+        category: p.category,
+        tags: p.tags,
+        usageCount: usageCounts[p.id || `prompt-${index}`] || 0,
+        isFavorite: favorites.has(p.id || `prompt-${index}`),
+        isSystem: true,
+      }));
+
+      setPrompts(data);
+      setFilteredPrompts(data);
+    } catch (error: unknown) {
+      const message =
+        typeof error === 'object' && error && 'message' in error
+          ? String((error as { message?: unknown }).message)
+          : 'Erro ao carregar prompts';
+      toast({
+        title: 'Erro ao carregar prompts',
+        description: message,
+        variant: 'destructive',
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  }, []);
 
   // Carregar prompts ao montar
   useEffect(() => {
     loadPrompts();
-  }, []);
+  }, [loadPrompts]);
 
   // Filtrar e ordenar prompts
   useEffect(() => {
@@ -53,10 +117,6 @@ export default function Prompts() {
     // Filtro por tab
     if (selectedTab === 'favorites') {
       filtered = filtered.filter((p) => p.isFavorite);
-    } else if (selectedTab === 'system') {
-      filtered = filtered.filter((p) => p.isSystem);
-    } else if (selectedTab === 'custom') {
-      filtered = filtered.filter((p) => !p.isSystem);
     }
 
     // Filtro por categoria
@@ -87,176 +147,42 @@ export default function Prompts() {
     setFilteredPrompts(filtered);
   }, [prompts, selectedCategory, selectedTab, searchTerm, sortBy]);
 
-  // Carregar prompts dos dados estáticos
-  const loadPrompts = async () => {
-    setIsLoading(true);
-    try {
-      const data: PromptData[] = staticPrompts.map((p, index) => ({
-        id: p.id || `prompt-${index}`,
-        title: p.title,
-        content: p.content,
-        category: p.category,
-        tags: p.tags,
-        usageCount: 0,
-        isFavorite: false,
-        isSystem: true,
-      }));
-      setPrompts(data);
-      setFilteredPrompts(data);
-    } catch (error: unknown) {
-      const message =
-        typeof error === 'object' && error && 'message' in error
-          ? String((error as { message?: unknown }).message)
-          : 'Erro ao carregar prompts';
+  // Alternar favorito
+  const toggleFavorite = (id: string) => {
+    const favorites = loadFavorites();
+    
+    if (favorites.has(id)) {
+      favorites.delete(id);
       toast({
-        title: 'Erro ao carregar prompts',
-        description: message,
-        variant: 'destructive',
+        title: 'Removido dos favoritos',
+        description: 'O prompt foi removido da sua lista de favoritos',
       });
-    } finally {
-      setIsLoading(false);
+    } else {
+      favorites.add(id);
+      toast({
+        title: 'Adicionado aos favoritos',
+        description: 'O prompt foi adicionado à sua lista de favoritos',
+      });
     }
+
+    saveFavorites(favorites);
+    loadPrompts();
   };
 
-  const handleCreate = () => {
-    setEditingPrompt(null);
-    setFormData({ title: '', content: '', category: 'geral', tags: '' });
-    setIsModalOpen(true);
-  };
-
-  const handleEdit = (prompt: PromptData) => {
-    if (prompt.isSystem) {
-      toast({
-        title: 'Ação não permitida',
-        description: 'Prompts do sistema não podem ser editados',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setEditingPrompt(prompt);
-    setFormData({
-      title: prompt.title,
-      content: prompt.content,
-      category: prompt.category,
-      tags: prompt.tags.join(', '),
-    });
-    setIsModalOpen(true);
-  };
-
-  const handleSave = async () => {
-    if (!formData.title.trim() || !formData.content.trim()) {
-      toast({
-        title: 'Campos obrigatórios',
-        description: 'Preencha título e conteúdo',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    setIsSaving(true);
-    try {
-      const tags = formData.tags
-        .split(',')
-        .map((t) => t.trim())
-        .filter((t) => t);
-
-      const promptData: PromptData = {
-        title: formData.title,
-        content: formData.content,
-        category: formData.category,
-        tags,
-        isSystem: false,
-      };
-
-      if (editingPrompt && editingPrompt.id) {
-        await promptsService.update(editingPrompt.id, promptData);
-        toast({
-          title: 'Prompt atualizado',
-          description: 'Suas alterações foram salvas',
-        });
-      } else {
-        await promptsService.create(promptData);
-        toast({
-          title: 'Prompt criado',
-          description: 'Seu novo prompt foi salvo',
-        });
-      }
-
-      setIsModalOpen(false);
-      loadPrompts();
-    } catch (error: unknown) {
-      const message =
-        typeof error === 'object' && error && 'message' in error
-          ? String((error as { message?: unknown }).message)
-          : 'Erro ao salvar';
-      toast({
-        title: 'Erro ao salvar',
-        description: message,
-        variant: 'destructive',
-      });
-    } finally {
-      setIsSaving(false);
-    }
-  };
-
-  const handleDelete = async (id: string, isSystem?: boolean) => {
-    if (isSystem) {
-      toast({
-        title: 'Ação não permitida',
-        description: 'Prompts do sistema não podem ser excluídos',
-        variant: 'destructive',
-      });
-      return;
-    }
-
-    if (!confirm('Tem certeza que deseja excluir este prompt?')) return;
-
-    try {
-      await promptsService.delete(id);
-      toast({
-        title: 'Prompt excluído',
-        description: 'O prompt foi removido',
-      });
-      loadPrompts();
-    } catch (error: unknown) {
-      const message =
-        typeof error === 'object' && error && 'message' in error
-          ? String((error as { message?: unknown }).message)
-          : 'Erro ao excluir';
-      toast({
-        title: 'Erro ao excluir',
-        description: message,
-        variant: 'destructive',
-      });
-    }
-  };
-
-  const toggleFavorite = async (id: string) => {
-    try {
-      await promptsService.toggleFavorite(id);
-      loadPrompts();
-    } catch (error: unknown) {
-      const message =
-        typeof error === 'object' && error && 'message' in error
-          ? String((error as { message?: unknown }).message)
-          : 'Erro ao favoritar';
-      toast({
-        title: 'Erro ao favoritar',
-        description: message,
-        variant: 'destructive',
-      });
-    }
-  };
-
+  // Copiar prompt e incrementar contador
   const handleCopy = async (prompt: PromptData) => {
     try {
       await navigator.clipboard.writeText(prompt.content);
       
       if (prompt.id) {
+        // Feedback visual
         setCopiedId(prompt.id);
         setTimeout(() => setCopiedId(null), 2000);
-        await promptsService.incrementUsage(prompt.id);
+
+        // Incrementar contador de uso
+        const usageCounts = loadUsageCounts();
+        usageCounts[prompt.id] = (usageCounts[prompt.id] || 0) + 1;
+        saveUsageCounts(usageCounts);
       }
       
       toast({
@@ -278,6 +204,27 @@ export default function Prompts() {
     }
   };
 
+  // Visualizar prompt completo
+  const handleView = (prompt: PromptData) => {
+    toast({
+      title: prompt.title,
+      description: (
+        <div className="mt-2 space-y-2">
+          <p className="text-sm whitespace-pre-wrap max-h-[300px] overflow-y-auto">
+            {prompt.content}
+          </p>
+          <div className="flex flex-wrap gap-1 mt-2">
+            {prompt.tags.map((tag, i) => (
+              <Badge key={i} variant="outline" className="text-xs">
+                {tag}
+              </Badge>
+            ))}
+          </div>
+        </div>
+      ),
+    });
+  };
+
   return (
     <TooltipProvider>
       <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
@@ -286,40 +233,40 @@ export default function Prompts() {
           <div className="space-y-8">
             {/* Header */}
             <div className="flex flex-col gap-4">
-              <div className="flex flex-col sm:flex-row sm:items-center sm:justify-between gap-4">
-                <div className="space-y-2">
-                  <h1 className="text-3xl sm:text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
-                    Biblioteca de Prompts
-                  </h1>
-                  <p className="text-sm sm:text-base text-muted-foreground">
-                    {filteredPrompts.length} {filteredPrompts.length === 1 ? 'prompt disponível' : 'prompts disponíveis'}
-                  </p>
+              <div className="space-y-3">
+                <div className="flex items-center gap-3">
+                  <div className="p-3 rounded-xl bg-primary/10">
+                    <BookOpen className="h-8 w-8 text-primary" />
+                  </div>
+                  <div>
+                    <h1 className="text-3xl sm:text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
+                      Biblioteca de Prompts
+                    </h1>
+                    <p className="text-sm sm:text-base text-muted-foreground mt-1">
+                      {filteredPrompts.length} {filteredPrompts.length === 1 ? 'prompt disponível' : 'prompts disponíveis'}
+                    </p>
+                  </div>
                 </div>
-                <Button onClick={handleCreate} size="lg" className="gap-2 shadow-lg hover:shadow-xl transition-shadow">
-                  <Plus className="h-5 w-5" />
-                  <span className="hidden sm:inline">Novo Prompt</span>
-                  <span className="sm:hidden">Novo</span>
-                </Button>
+                
+                <div className="flex items-start gap-2 p-4 rounded-lg bg-muted/50 border border-muted">
+                  <Sparkles className="h-5 w-5 text-primary shrink-0 mt-0.5" />
+                  <div className="text-sm text-muted-foreground">
+                    <p className="font-medium text-foreground mb-1">Biblioteca pública de prompts médicos</p>
+                    <p>Explore, copie e favorite os prompts mais úteis para seus estudos. Todos os prompts são de uso livre.</p>
+                  </div>
+                </div>
               </div>
 
               {/* Tabs de Filtro Rápido */}
               <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
-                <TabsList className="grid w-full grid-cols-4 h-auto">
+                <TabsList className="grid w-full grid-cols-2 h-auto">
                   <TabsTrigger value="all" className="gap-2">
                     <Sparkles className="h-4 w-4" />
-                    <span className="hidden sm:inline">Todos</span>
+                    <span>Todos</span>
                   </TabsTrigger>
                   <TabsTrigger value="favorites" className="gap-2">
                     <Star className="h-4 w-4" />
-                    <span className="hidden sm:inline">Favoritos</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="system" className="gap-2">
-                    <Lock className="h-4 w-4" />
-                    <span className="hidden sm:inline">Sistema</span>
-                  </TabsTrigger>
-                  <TabsTrigger value="custom" className="gap-2">
-                    <Edit className="h-4 w-4" />
-                    <span className="hidden sm:inline">Meus</span>
+                    <span>Favoritos</span>
                   </TabsTrigger>
                 </TabsList>
               </Tabs>
@@ -387,21 +334,9 @@ export default function Prompts() {
                       >
                         <CardHeader className="pb-3">
                           <div className="flex items-start justify-between gap-2 mb-2">
-                            <div className="flex items-center gap-2 flex-1 min-w-0">
-                              <CardTitle className="text-base sm:text-lg line-clamp-2 leading-tight">
-                                {prompt.title}
-                              </CardTitle>
-                              {prompt.isSystem && (
-                                <Tooltip>
-                                  <TooltipTrigger>
-                                    <Badge variant="secondary" className="shrink-0 gap-1">
-                                      <Lock className="h-3 w-3" />
-                                    </Badge>
-                                  </TooltipTrigger>
-                                  <TooltipContent>Prompt do sistema</TooltipContent>
-                                </Tooltip>
-                              )}
-                            </div>
+                            <CardTitle className="text-base sm:text-lg line-clamp-2 leading-tight flex-1">
+                              {prompt.title}
+                            </CardTitle>
                             <Tooltip>
                               <TooltipTrigger>
                                 <Button
@@ -448,7 +383,7 @@ export default function Prompts() {
                           <div className="flex items-center gap-3 text-xs text-muted-foreground border-t pt-3">
                             <span className="flex items-center gap-1">
                               <Copy className="h-3 w-3" />
-                              {prompt.usageCount || 0}x
+                              {prompt.usageCount || 0}x copiado
                             </span>
                             <Badge variant="secondary" className="text-xs">
                               {prompt.category}
@@ -456,7 +391,7 @@ export default function Prompts() {
                           </div>
 
                           {/* Ações */}
-                          <div className="grid grid-cols-3 gap-2">
+                          <div className="grid grid-cols-2 gap-2">
                             <Tooltip>
                               <TooltipTrigger>
                                 <Button
@@ -468,17 +403,17 @@ export default function Prompts() {
                                   {copiedId === prompt.id ? (
                                     <>
                                       <Check className="h-3 w-3" />
-                                      <span className="hidden sm:inline">Ok</span>
+                                      <span>Copiado!</span>
                                     </>
                                   ) : (
                                     <>
                                       <Copy className="h-3 w-3" />
-                                      <span className="hidden sm:inline">Copiar</span>
+                                      <span>Copiar</span>
                                     </>
                                   )}
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>Copiar prompt</TooltipContent>
+                              <TooltipContent>Copiar prompt para área de transferência</TooltipContent>
                             </Tooltip>
                             
                             <Tooltip>
@@ -486,31 +421,14 @@ export default function Prompts() {
                                 <Button
                                   variant="outline"
                                   size="sm"
-                                  onClick={() => handleEdit(prompt)}
-                                  disabled={prompt.isSystem}
+                                  onClick={() => handleView(prompt)}
+                                  className="gap-1.5"
                                 >
-                                  <Edit className="h-3 w-3" />
+                                  <BookOpen className="h-3 w-3" />
+                                  <span>Ver</span>
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>
-                                {prompt.isSystem ? 'Prompts do sistema não podem ser editados' : 'Editar prompt'}
-                              </TooltipContent>
-                            </Tooltip>
-
-                            <Tooltip>
-                              <TooltipTrigger>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => prompt.id && handleDelete(prompt.id, prompt.isSystem)}
-                                  disabled={prompt.isSystem}
-                                >
-                                  <Trash2 className="h-3 w-3" />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                {prompt.isSystem ? 'Prompts do sistema não podem ser excluídos' : 'Excluir prompt'}
-                              </TooltipContent>
+                              <TooltipContent>Visualizar prompt completo</TooltipContent>
                             </Tooltip>
                           </div>
                         </CardContent>
@@ -526,13 +444,12 @@ export default function Prompts() {
                       <div className="text-center space-y-2">
                         <p className="font-medium">Nenhum prompt encontrado</p>
                         <p className="text-sm text-muted-foreground">
-                          Tente ajustar os filtros ou criar um novo prompt
+                          {selectedTab === 'favorites' 
+                            ? 'Você ainda não tem prompts favoritos. Clique na estrela para adicionar!' 
+                            : 'Tente ajustar os filtros de busca'
+                          }
                         </p>
                       </div>
-                      <Button onClick={handleCreate} className="gap-2">
-                        <Plus className="h-4 w-4" />
-                        Criar primeiro prompt
-                      </Button>
                     </CardContent>
                   </Card>
                 )}
@@ -540,111 +457,6 @@ export default function Prompts() {
             )}
           </div>
         </main>
-
-        {/* Modal de Criar/Editar */}
-        <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-          <DialogContent className="max-w-3xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle className="text-2xl">
-                {editingPrompt ? 'Editar Prompt' : 'Novo Prompt'}
-              </DialogTitle>
-              <DialogDescription>
-                {editingPrompt ? 'Atualize as informações do seu prompt' : 'Crie um novo prompt personalizado para sua biblioteca'}
-              </DialogDescription>
-            </DialogHeader>
-
-            <div className="space-y-5">
-              {/* Título */}
-              <div className="space-y-2">
-                <Label htmlFor="title" className="text-sm font-medium">
-                  Título <span className="text-destructive">*</span>
-                </Label>
-                <Input
-                  id="title"
-                  value={formData.title}
-                  onChange={(e) => setFormData({ ...formData, title: e.target.value })}
-                  placeholder="Ex: Flashcards Otimizados para Anki"
-                  className="text-base"
-                />
-                <p className="text-xs text-muted-foreground">
-                  {formData.title.length} caracteres
-                </p>
-              </div>
-
-              {/* Conteúdo */}
-              <div className="space-y-2">
-                <Label htmlFor="content" className="text-sm font-medium">
-                  Conteúdo do Prompt <span className="text-destructive">*</span>
-                </Label>
-                <Textarea
-                  id="content"
-                  value={formData.content}
-                  onChange={(e) => setFormData({ ...formData, content: e.target.value })}
-                  placeholder="Descreva o prompt que você deseja usar com a IA. Seja específico sobre o papel da IA, objetivo, processo e formato de saída esperado..."
-                  rows={10}
-                  className="text-sm font-mono resize-none"
-                />
-                <p className="text-xs text-muted-foreground">
-                  {formData.content.length} caracteres
-                </p>
-              </div>
-
-              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                {/* Categoria */}
-                <div className="space-y-2">
-                  <Label htmlFor="category" className="text-sm font-medium">Categoria</Label>
-                  <Select
-                    value={formData.category}
-                    onValueChange={(v) => setFormData({ ...formData, category: v })}
-                  >
-                    <SelectTrigger>
-                      <SelectValue />
-                    </SelectTrigger>
-                    <SelectContent>
-                      {categories.filter((c) => c !== 'all').map((cat) => (
-                        <SelectItem key={cat} value={cat}>
-                          {cat.charAt(0).toUpperCase() + cat.slice(1)}
-                        </SelectItem>
-                      ))}
-                    </SelectContent>
-                  </Select>
-                </div>
-
-                {/* Tags */}
-                <div className="space-y-2">
-                  <Label htmlFor="tags" className="text-sm font-medium">Tags</Label>
-                  <Input
-                    id="tags"
-                    value={formData.tags}
-                    onChange={(e) => setFormData({ ...formData, tags: e.target.value })}
-                    placeholder="anki, memorização, flashcards"
-                  />
-                  <p className="text-xs text-muted-foreground">
-                    Separe com vírgulas
-                  </p>
-                </div>
-              </div>
-            </div>
-
-            <DialogFooter className="gap-2 sm:gap-0">
-              <Button variant="outline" onClick={() => setIsModalOpen(false)} disabled={isSaving}>
-                Cancelar
-              </Button>
-              <Button onClick={handleSave} disabled={isSaving} className="gap-2">
-                {isSaving ? (
-                  <>
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    Salvando...
-                  </>
-                ) : (
-                  <>
-                    {editingPrompt ? 'Salvar Alterações' : 'Criar Prompt'}
-                  </>
-                )}
-              </Button>
-            </DialogFooter>
-          </DialogContent>
-        </Dialog>
 
         {/* Footer */}
         <footer className="border-t mt-16 bg-muted/30">
