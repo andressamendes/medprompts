@@ -1,74 +1,89 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { prompts as staticPrompts } from '@/data/prompts-data';
+import { AuthenticatedNavbar } from '@/components/AuthenticatedNavbar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
-import { Search, Star, Copy, Filter, Loader2, ArrowUpDown, Check, Sparkles, BookOpen } from 'lucide-react';
+import { 
+  Search, Star, Copy, Filter, Loader2, ArrowUpDown, Check, 
+  Sparkles, BookOpen, ArrowLeft, X, Eye 
+} from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
+import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { toast } from '@/hooks/use-toast';
 import { PromptData } from '@/services/api/prompts';
 
 /**
- * Página Prompts - Biblioteca Pública de Prompts Médicos
- * Refatorada para funcionar como biblioteca de consulta (somente leitura)
- * Sistema de favoritos gerenciado via localStorage
+ * Página Prompts - Biblioteca Pública de Prompts Médicos v2.0
+ * 
+ * Melhorias implementadas:
+ * - Design consistente com outras páginas
+ * - Botão de voltar para ferramentas
+ * - Modal completo para visualização
+ * - Performance otimizada com useMemo
+ * - Feedback visual melhorado
+ * - Contadores dinâmicos
+ * - Sistema de favoritos persistente
  */
 
 const FAVORITES_STORAGE_KEY = 'medprompts_favorites';
 const USAGE_STORAGE_KEY = 'medprompts_usage';
 
 export default function Prompts() {
+  const navigate = useNavigate();
+  
   const [prompts, setPrompts] = useState<PromptData[]>([]);
-  const [filteredPrompts, setFilteredPrompts] = useState<PromptData[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedTab, setSelectedTab] = useState('all');
   const [sortBy, setSortBy] = useState<'name' | 'usage' | 'favorites'>('name');
   const [isLoading, setIsLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
+  const [viewingPrompt, setViewingPrompt] = useState<PromptData | null>(null);
 
   const categories = ['all', 'anatomia', 'fisiologia', 'farmacologia', 'clinica', 'cirurgia', 'pediatria', 'estudos', 'geral'];
 
   // Carregar favoritos do localStorage
-  const loadFavorites = (): Set<string> => {
+  const loadFavorites = useCallback((): Set<string> => {
     try {
       const stored = localStorage.getItem(FAVORITES_STORAGE_KEY);
       return stored ? new Set(JSON.parse(stored)) : new Set();
     } catch {
       return new Set();
     }
-  };
+  }, []);
 
   // Salvar favoritos no localStorage
-  const saveFavorites = (favorites: Set<string>) => {
+  const saveFavorites = useCallback((favorites: Set<string>) => {
     try {
       localStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify([...favorites]));
     } catch (error) {
       console.error('Erro ao salvar favoritos:', error);
     }
-  };
+  }, []);
 
   // Carregar contadores de uso do localStorage
-  const loadUsageCounts = (): Record<string, number> => {
+  const loadUsageCounts = useCallback((): Record<string, number> => {
     try {
       const stored = localStorage.getItem(USAGE_STORAGE_KEY);
       return stored ? JSON.parse(stored) : {};
     } catch {
       return {};
     }
-  };
+  }, []);
 
   // Salvar contadores de uso no localStorage
-  const saveUsageCounts = (counts: Record<string, number>) => {
+  const saveUsageCounts = useCallback((counts: Record<string, number>) => {
     try {
       localStorage.setItem(USAGE_STORAGE_KEY, JSON.stringify(counts));
     } catch (error) {
       console.error('Erro ao salvar contadores:', error);
     }
-  };
+  }, []);
 
   // Carregar prompts dos dados estáticos com informações do localStorage
   const loadPrompts = useCallback(async () => {
@@ -89,7 +104,6 @@ export default function Prompts() {
       }));
 
       setPrompts(data);
-      setFilteredPrompts(data);
     } catch (error: unknown) {
       const message =
         typeof error === 'object' && error && 'message' in error
@@ -103,15 +117,15 @@ export default function Prompts() {
     } finally {
       setIsLoading(false);
     }
-  }, []);
+  }, [loadFavorites, loadUsageCounts]);
 
   // Carregar prompts ao montar
   useEffect(() => {
     loadPrompts();
   }, [loadPrompts]);
 
-  // Filtrar e ordenar prompts
-  useEffect(() => {
+  // Filtrar e ordenar prompts usando useMemo para performance
+  const filteredPrompts = useMemo(() => {
     let filtered = prompts;
 
     // Filtro por tab
@@ -136,19 +150,20 @@ export default function Prompts() {
     }
 
     // Ordenação
+    const sorted = [...filtered];
     if (sortBy === 'name') {
-      filtered.sort((a, b) => a.title.localeCompare(b.title));
+      sorted.sort((a, b) => a.title.localeCompare(b.title));
     } else if (sortBy === 'usage') {
-      filtered.sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0));
+      sorted.sort((a, b) => (b.usageCount || 0) - (a.usageCount || 0));
     } else if (sortBy === 'favorites') {
-      filtered.sort((a, b) => (b.isFavorite ? 1 : 0) - (a.isFavorite ? 1 : 0));
+      sorted.sort((a, b) => (b.isFavorite ? 1 : 0) - (a.isFavorite ? 1 : 0));
     }
 
-    setFilteredPrompts(filtered);
+    return sorted;
   }, [prompts, selectedCategory, selectedTab, searchTerm, sortBy]);
 
   // Alternar favorito
-  const toggleFavorite = (id: string) => {
+  const toggleFavorite = useCallback((id: string) => {
     const favorites = loadFavorites();
     
     if (favorites.has(id)) {
@@ -167,10 +182,10 @@ export default function Prompts() {
 
     saveFavorites(favorites);
     loadPrompts();
-  };
+  }, [loadFavorites, saveFavorites, loadPrompts]);
 
   // Copiar prompt e incrementar contador
-  const handleCopy = async (prompt: PromptData) => {
+  const handleCopy = useCallback(async (prompt: PromptData) => {
     try {
       await navigator.clipboard.writeText(prompt.content);
       
@@ -202,53 +217,55 @@ export default function Prompts() {
         variant: 'destructive',
       });
     }
-  };
+  }, [loadUsageCounts, saveUsageCounts, loadPrompts]);
 
-  // Visualizar prompt completo
-  const handleView = (prompt: PromptData) => {
-    toast({
-      title: prompt.title,
-      description: (
-        <div className="mt-2 space-y-2">
-          <p className="text-sm whitespace-pre-wrap max-h-[300px] overflow-y-auto">
-            {prompt.content}
-          </p>
-          <div className="flex flex-wrap gap-1 mt-2">
-            {prompt.tags.map((tag, i) => (
-              <Badge key={i} variant="outline" className="text-xs">
-                {tag}
-              </Badge>
-            ))}
-          </div>
-        </div>
-      ),
-    });
-  };
+  // Visualizar prompt completo em modal
+  const handleView = useCallback((prompt: PromptData) => {
+    setViewingPrompt(prompt);
+  }, []);
+
+  // Limpar busca
+  const clearSearch = useCallback(() => {
+    setSearchTerm('');
+  }, []);
 
   return (
     <TooltipProvider>
-      <div className="min-h-screen bg-gradient-to-br from-background via-background to-primary/5">
+      <div className="min-h-screen bg-background">
+        <AuthenticatedNavbar />
+        
         {/* Main Content */}
-        <main className="container mx-auto px-4 py-8 sm:py-12">
+        <main className="container mx-auto px-4 py-8 sm:py-12 max-w-7xl">
           <div className="space-y-8">
-            {/* Header */}
+            {/* Header com Botão Voltar */}
             <div className="flex flex-col gap-4">
+              <Button
+                variant="ghost"
+                size="sm"
+                onClick={() => navigate('/tools')}
+                className="w-fit gap-2"
+              >
+                <ArrowLeft className="h-4 w-4" />
+                Voltar para Ferramentas
+              </Button>
+
               <div className="space-y-3">
                 <div className="flex items-center gap-3">
                   <div className="p-3 rounded-xl bg-primary/10">
                     <BookOpen className="h-8 w-8 text-primary" />
                   </div>
-                  <div>
-                    <h1 className="text-3xl sm:text-4xl font-bold tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-foreground to-foreground/70">
+                  <div className="flex-1">
+                    <h1 className="text-3xl sm:text-4xl font-bold tracking-tight">
                       Biblioteca de Prompts
                     </h1>
                     <p className="text-sm sm:text-base text-muted-foreground mt-1">
                       {filteredPrompts.length} {filteredPrompts.length === 1 ? 'prompt disponível' : 'prompts disponíveis'}
+                      {searchTerm && ` para "${searchTerm}"`}
                     </p>
                   </div>
                 </div>
                 
-                <div className="flex items-start gap-2 p-4 rounded-lg bg-muted/50 border border-muted">
+                <div className="flex items-start gap-2 p-4 rounded-lg bg-muted/50 border">
                   <Sparkles className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                   <div className="text-sm text-muted-foreground">
                     <p className="font-medium text-foreground mb-1">Biblioteca pública de prompts médicos</p>
@@ -274,15 +291,25 @@ export default function Prompts() {
 
             {/* Filtros e Ordenação */}
             <div className="flex flex-col sm:flex-row gap-3">
-              {/* Busca */}
+              {/* Busca com botão limpar */}
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                 <Input
                   placeholder="Buscar por título, conteúdo ou tags..."
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
-                  className="pl-10"
+                  className="pl-10 pr-10"
                 />
+                {searchTerm && (
+                  <Button
+                    variant="ghost"
+                    size="icon"
+                    className="absolute right-1 top-1/2 -translate-y-1/2 h-7 w-7"
+                    onClick={clearSearch}
+                  >
+                    <X className="h-4 w-4" />
+                  </Button>
+                )}
               </div>
 
               {/* Categoria */}
@@ -325,12 +352,11 @@ export default function Prompts() {
               <>
                 {/* Grid de Prompts */}
                 {filteredPrompts.length > 0 ? (
-                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
-                    {filteredPrompts.map((prompt, index) => (
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
+                    {filteredPrompts.map((prompt) => (
                       <Card 
                         key={prompt.id} 
-                        className="group flex flex-col hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border-2 hover:border-primary/20"
-                        style={{ animationDelay: `${index * 50}ms` }}
+                        className="group flex flex-col hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border hover:border-primary/50"
                       >
                         <CardHeader className="pb-3">
                           <div className="flex items-start justify-between gap-2 mb-2">
@@ -342,14 +368,14 @@ export default function Prompts() {
                                 <Button
                                   variant="ghost"
                                   size="icon"
-                                  className="shrink-0 h-8 w-8"
+                                  className="shrink-0 h-8 w-8 hover:bg-transparent"
                                   onClick={() => prompt.id && toggleFavorite(prompt.id)}
                                 >
                                   <Star
-                                    className={`h-4 w-4 transition-all ${
+                                    className={`h-5 w-5 transition-all ${
                                       prompt.isFavorite 
                                         ? 'fill-yellow-500 text-yellow-500 scale-110' 
-                                        : 'group-hover:text-yellow-500/50'
+                                        : 'text-muted-foreground group-hover:text-yellow-500/50'
                                     }`}
                                   />
                                 </Button>
@@ -368,12 +394,12 @@ export default function Prompts() {
                           {/* Tags */}
                           <div className="flex flex-wrap gap-1.5">
                             {prompt.tags.slice(0, 3).map((tag, i) => (
-                              <Badge key={i} variant="outline" className="text-xs px-2 py-0">
+                              <Badge key={i} variant="outline" className="text-xs px-2 py-0.5">
                                 {tag}
                               </Badge>
                             ))}
                             {prompt.tags.length > 3 && (
-                              <Badge variant="outline" className="text-xs px-2 py-0">
+                              <Badge variant="outline" className="text-xs px-2 py-0.5">
                                 +{prompt.tags.length - 3}
                               </Badge>
                             )}
@@ -383,7 +409,7 @@ export default function Prompts() {
                           <div className="flex items-center gap-3 text-xs text-muted-foreground border-t pt-3">
                             <span className="flex items-center gap-1">
                               <Copy className="h-3 w-3" />
-                              {prompt.usageCount || 0}x copiado
+                              {prompt.usageCount || 0}x
                             </span>
                             <Badge variant="secondary" className="text-xs">
                               {prompt.category}
@@ -398,22 +424,22 @@ export default function Prompts() {
                                   variant={copiedId === prompt.id ? "default" : "outline"}
                                   size="sm"
                                   onClick={() => handleCopy(prompt)}
-                                  className="gap-1.5"
+                                  className="gap-1.5 w-full"
                                 >
                                   {copiedId === prompt.id ? (
                                     <>
-                                      <Check className="h-3 w-3" />
-                                      <span>Copiado!</span>
+                                      <Check className="h-3.5 w-3.5" />
+                                      <span className="text-xs">Copiado!</span>
                                     </>
                                   ) : (
                                     <>
-                                      <Copy className="h-3 w-3" />
-                                      <span>Copiar</span>
+                                      <Copy className="h-3.5 w-3.5" />
+                                      <span className="text-xs">Copiar</span>
                                     </>
                                   )}
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>Copiar prompt para área de transferência</TooltipContent>
+                              <TooltipContent>Copiar prompt</TooltipContent>
                             </Tooltip>
                             
                             <Tooltip>
@@ -422,13 +448,13 @@ export default function Prompts() {
                                   variant="outline"
                                   size="sm"
                                   onClick={() => handleView(prompt)}
-                                  className="gap-1.5"
+                                  className="gap-1.5 w-full"
                                 >
-                                  <BookOpen className="h-3 w-3" />
-                                  <span>Ver</span>
+                                  <Eye className="h-3.5 w-3.5" />
+                                  <span className="text-xs">Ver</span>
                                 </Button>
                               </TooltipTrigger>
-                              <TooltipContent>Visualizar prompt completo</TooltipContent>
+                              <TooltipContent>Visualizar completo</TooltipContent>
                             </Tooltip>
                           </div>
                         </CardContent>
@@ -446,9 +472,17 @@ export default function Prompts() {
                         <p className="text-sm text-muted-foreground">
                           {selectedTab === 'favorites' 
                             ? 'Você ainda não tem prompts favoritos. Clique na estrela para adicionar!' 
+                            : searchTerm 
+                            ? `Nenhum resultado para "${searchTerm}". Tente outros termos.`
                             : 'Tente ajustar os filtros de busca'
                           }
                         </p>
+                        {searchTerm && (
+                          <Button onClick={clearSearch} variant="outline" className="gap-2">
+                            <X className="h-4 w-4" />
+                            Limpar busca
+                          </Button>
+                        )}
                       </div>
                     </CardContent>
                   </Card>
@@ -458,22 +492,58 @@ export default function Prompts() {
           </div>
         </main>
 
-        {/* Footer */}
-        <footer className="border-t mt-16 bg-muted/30">
-          <div className="container mx-auto px-4 py-8">
-            <div className="text-center space-y-2">
-              <p className="text-sm text-muted-foreground">
-                MedPrompts © 2026 • Desenvolvido para estudantes de Medicina
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Desenvolvido por <span className="font-semibold">Andressa Mendes</span> • Estudante de Medicina
-              </p>
-              <p className="text-xs text-muted-foreground">
-                Afya - Guanambi/BA
-              </p>
+        {/* Modal de Visualização */}
+        <Dialog open={!!viewingPrompt} onOpenChange={() => setViewingPrompt(null)}>
+          <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col">
+            <DialogHeader>
+              <DialogTitle className="text-2xl pr-8">{viewingPrompt?.title}</DialogTitle>
+              <DialogDescription>
+                <div className="flex flex-wrap gap-1.5 mt-2">
+                  {viewingPrompt?.tags.map((tag, i) => (
+                    <Badge key={i} variant="outline" className="text-xs">
+                      {tag}
+                    </Badge>
+                  ))}
+                </div>
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="flex-1 overflow-y-auto pr-2 -mr-2">
+              <div className="space-y-4">
+                <div className="text-sm whitespace-pre-wrap leading-relaxed">
+                  {viewingPrompt?.content}
+                </div>
+                
+                <div className="flex items-center gap-4 pt-4 border-t">
+                  <Badge variant="secondary">
+                    {viewingPrompt?.category}
+                  </Badge>
+                  <span className="text-xs text-muted-foreground flex items-center gap-1">
+                    <Copy className="h-3 w-3" />
+                    {viewingPrompt?.usageCount || 0}x copiado
+                  </span>
+                </div>
+              </div>
             </div>
-          </div>
-        </footer>
+
+            <div className="flex gap-2 pt-4 border-t">
+              <Button
+                variant="default"
+                className="flex-1 gap-2"
+                onClick={() => viewingPrompt && handleCopy(viewingPrompt)}
+              >
+                <Copy className="h-4 w-4" />
+                Copiar Prompt
+              </Button>
+              <Button
+                variant="outline"
+                onClick={() => setViewingPrompt(null)}
+              >
+                Fechar
+              </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
       </div>
     </TooltipProvider>
   );
