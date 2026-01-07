@@ -10,42 +10,115 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import { 
   Search, Star, Copy, Filter, Loader2, ArrowUpDown, Check, 
-  Sparkles, BookOpen, ArrowLeft, X, Eye 
+  Sparkles, BookOpen, ArrowLeft, X, Eye, Wand2, ExternalLink
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Label } from '@/components/ui/label';
+import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
 import { PromptData } from '@/services/api/prompts';
 
 /**
- * Página Prompts - Biblioteca Pública de Prompts Médicos v2.0
+ * Página Prompts - Biblioteca Pública de Prompts Médicos v2.1
  * 
- * Melhorias implementadas:
- * - Design consistente com outras páginas
- * - Botão de voltar para ferramentas
- * - Modal completo para visualização
- * - Performance otimizada com useMemo
- * - Feedback visual melhorado
- * - Contadores dinâmicos
- * - Sistema de favoritos persistente
+ * Novidades v2.1:
+ * - Recomendação de IA ideal para cada prompt
+ * - Sistema de personalização com variáveis
+ * - Prompt final pronto para usar direto na IA
+ * - Links diretos para abrir cada IA
  */
 
 const FAVORITES_STORAGE_KEY = 'medprompts_favorites';
 const USAGE_STORAGE_KEY = 'medprompts_usage';
 
+// Tipos de IA disponíveis
+type AIType = 'chatgpt' | 'claude' | 'gemini' | 'perplexity' | 'any';
+
+// Interface estendida para incluir recommendedAI
+interface ExtendedPromptData extends PromptData {
+  recommendedAI?: AIType;
+}
+
+// Mapeamento de IAs recomendadas
+const AI_RECOMMENDATIONS: Record<AIType, { name: string; icon: string; url: string; color: string }> = {
+  chatgpt: {
+    name: 'ChatGPT',
+    icon: '🤖',
+    url: 'https://chat.openai.com/',
+    color: 'bg-green-500/10 text-green-700 dark:text-green-400',
+  },
+  claude: {
+    name: 'Claude',
+    icon: '🧠',
+    url: 'https://claude.ai/',
+    color: 'bg-purple-500/10 text-purple-700 dark:text-purple-400',
+  },
+  gemini: {
+    name: 'Gemini',
+    icon: '✨',
+    url: 'https://gemini.google.com/',
+    color: 'bg-blue-500/10 text-blue-700 dark:text-blue-400',
+  },
+  perplexity: {
+    name: 'Perplexity',
+    icon: '🔍',
+    url: 'https://www.perplexity.ai/',
+    color: 'bg-cyan-500/10 text-cyan-700 dark:text-cyan-400',
+  },
+  any: {
+    name: 'Qualquer IA',
+    icon: '🌐',
+    url: '',
+    color: 'bg-gray-500/10 text-gray-700 dark:text-gray-400',
+  },
+};
+
+interface PromptVariable {
+  key: string;
+  label: string;
+  placeholder: string;
+  type: 'text' | 'textarea';
+}
+
 export default function Prompts() {
   const navigate = useNavigate();
   
-  const [prompts, setPrompts] = useState<PromptData[]>([]);
+  const [prompts, setPrompts] = useState<ExtendedPromptData[]>([]);
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedTab, setSelectedTab] = useState('all');
   const [sortBy, setSortBy] = useState<'name' | 'usage' | 'favorites'>('name');
   const [isLoading, setIsLoading] = useState(false);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [viewingPrompt, setViewingPrompt] = useState<PromptData | null>(null);
+  const [viewingPrompt, setViewingPrompt] = useState<ExtendedPromptData | null>(null);
+  const [customizingPrompt, setCustomizingPrompt] = useState<ExtendedPromptData | null>(null);
+  const [variableValues, setVariableValues] = useState<Record<string, string>>({});
 
   const categories = ['all', 'anatomia', 'fisiologia', 'farmacologia', 'clinica', 'cirurgia', 'pediatria', 'estudos', 'geral'];
+
+  // Extrair variáveis do prompt (formato: {VARIAVEL})
+  const extractVariables = useCallback((content: string): PromptVariable[] => {
+    const regex = /\{([A-Z_]+)\}/g;
+    const matches = [...content.matchAll(regex)];
+    const uniqueKeys = [...new Set(matches.map(m => m[1]))];
+    
+    return uniqueKeys.map(key => ({
+      key,
+      label: key.replace(/_/g, ' ').toLowerCase().replace(/\b\w/g, l => l.toUpperCase()),
+      placeholder: `Digite ${key.replace(/_/g, ' ').toLowerCase()}...`,
+      type: key.includes('TEXTO') || key.includes('DESCRICAO') ? 'textarea' : 'text',
+    }));
+  }, []);
+
+  // Substituir variáveis no prompt
+  const replaceVariables = useCallback((content: string, values: Record<string, string>): string => {
+    let result = content;
+    Object.entries(values).forEach(([key, value]) => {
+      result = result.replace(new RegExp(`\\{${key}\\}`, 'g'), value || `{${key}}`);
+    });
+    return result;
+  }, []);
 
   // Carregar favoritos do localStorage
   const loadFavorites = useCallback((): Set<string> => {
@@ -92,7 +165,7 @@ export default function Prompts() {
       const favorites = loadFavorites();
       const usageCounts = loadUsageCounts();
 
-      const data: PromptData[] = staticPrompts.map((p, index) => ({
+      const data: ExtendedPromptData[] = staticPrompts.map((p, index) => ({
         id: p.id || `prompt-${index}`,
         title: p.title,
         content: p.content,
@@ -101,6 +174,7 @@ export default function Prompts() {
         usageCount: usageCounts[p.id || `prompt-${index}`] || 0,
         isFavorite: favorites.has(p.id || `prompt-${index}`),
         isSystem: true,
+        recommendedAI: (p as ExtendedPromptData).recommendedAI || 'any',
       }));
 
       setPrompts(data);
@@ -128,17 +202,14 @@ export default function Prompts() {
   const filteredPrompts = useMemo(() => {
     let filtered = prompts;
 
-    // Filtro por tab
     if (selectedTab === 'favorites') {
       filtered = filtered.filter((p) => p.isFavorite);
     }
 
-    // Filtro por categoria
     if (selectedCategory !== 'all') {
       filtered = filtered.filter((p) => p.category === selectedCategory);
     }
 
-    // Filtro por busca
     if (searchTerm) {
       const term = searchTerm.toLowerCase();
       filtered = filtered.filter(
@@ -149,7 +220,6 @@ export default function Prompts() {
       );
     }
 
-    // Ordenação
     const sorted = [...filtered];
     if (sortBy === 'name') {
       sorted.sort((a, b) => a.title.localeCompare(b.title));
@@ -185,16 +255,15 @@ export default function Prompts() {
   }, [loadFavorites, saveFavorites, loadPrompts]);
 
   // Copiar prompt e incrementar contador
-  const handleCopy = useCallback(async (prompt: PromptData) => {
+  const handleCopy = useCallback(async (prompt: ExtendedPromptData, customContent?: string) => {
     try {
-      await navigator.clipboard.writeText(prompt.content);
+      const contentToCopy = customContent || prompt.content;
+      await navigator.clipboard.writeText(contentToCopy);
       
       if (prompt.id) {
-        // Feedback visual
         setCopiedId(prompt.id);
         setTimeout(() => setCopiedId(null), 2000);
 
-        // Incrementar contador de uso
         const usageCounts = loadUsageCounts();
         usageCounts[prompt.id] = (usageCounts[prompt.id] || 0) + 1;
         saveUsageCounts(usageCounts);
@@ -219,9 +288,33 @@ export default function Prompts() {
     }
   }, [loadUsageCounts, saveUsageCounts, loadPrompts]);
 
-  // Visualizar prompt completo em modal
-  const handleView = useCallback((prompt: PromptData) => {
+  // Visualizar prompt completo
+  const handleView = useCallback((prompt: ExtendedPromptData) => {
     setViewingPrompt(prompt);
+  }, []);
+
+  // Personalizar prompt
+  const handleCustomize = useCallback((prompt: ExtendedPromptData) => {
+    setCustomizingPrompt(prompt);
+    setVariableValues({});
+  }, []);
+
+  // Copiar prompt personalizado
+  const handleCopyCustomized = useCallback(() => {
+    if (!customizingPrompt) return;
+    
+    const customContent = replaceVariables(customizingPrompt.content, variableValues);
+    handleCopy(customizingPrompt, customContent);
+    setCustomizingPrompt(null);
+    setVariableValues({});
+  }, [customizingPrompt, variableValues, replaceVariables, handleCopy]);
+
+  // Abrir IA recomendada
+  const openRecommendedAI = useCallback((aiKey: AIType) => {
+    const ai = AI_RECOMMENDATIONS[aiKey];
+    if (ai && ai.url) {
+      window.open(ai.url, '_blank');
+    }
   }, []);
 
   // Limpar busca
@@ -234,10 +327,9 @@ export default function Prompts() {
       <div className="min-h-screen bg-background">
         <AuthenticatedNavbar />
         
-        {/* Main Content */}
         <main className="container mx-auto px-4 py-8 sm:py-12 max-w-7xl">
           <div className="space-y-8">
-            {/* Header com Botão Voltar */}
+            {/* Header */}
             <div className="flex flex-col gap-4">
               <Button
                 variant="ghost"
@@ -268,13 +360,12 @@ export default function Prompts() {
                 <div className="flex items-start gap-2 p-4 rounded-lg bg-muted/50 border">
                   <Sparkles className="h-5 w-5 text-primary shrink-0 mt-0.5" />
                   <div className="text-sm text-muted-foreground">
-                    <p className="font-medium text-foreground mb-1">Biblioteca pública de prompts médicos</p>
-                    <p>Explore, copie e favorite os prompts mais úteis para seus estudos. Todos os prompts são de uso livre.</p>
+                    <p className="font-medium text-foreground mb-1">Prompts personalizáveis para estudantes de medicina</p>
+                    <p>Cada prompt é recomendado para uma IA específica. Personalize com seus dados e copie pronto para usar!</p>
                   </div>
                 </div>
               </div>
 
-              {/* Tabs de Filtro Rápido */}
               <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
                 <TabsList className="grid w-full grid-cols-2 h-auto">
                   <TabsTrigger value="all" className="gap-2">
@@ -289,9 +380,8 @@ export default function Prompts() {
               </Tabs>
             </div>
 
-            {/* Filtros e Ordenação */}
+            {/* Filtros */}
             <div className="flex flex-col sm:flex-row gap-3">
-              {/* Busca com botão limpar */}
               <div className="flex-1 relative">
                 <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground pointer-events-none" />
                 <Input
@@ -312,7 +402,6 @@ export default function Prompts() {
                 )}
               </div>
 
-              {/* Categoria */}
               <Select value={selectedCategory} onValueChange={setSelectedCategory}>
                 <SelectTrigger className="w-full sm:w-[160px]">
                   <Filter className="h-4 w-4 mr-2" />
@@ -328,7 +417,6 @@ export default function Prompts() {
                 </SelectContent>
               </Select>
 
-              {/* Ordenação */}
               <Select value={sortBy} onValueChange={(v) => setSortBy(v as typeof sortBy)}>
                 <SelectTrigger className="w-full sm:w-[160px]">
                   <ArrowUpDown className="h-4 w-4 mr-2" />
@@ -342,7 +430,7 @@ export default function Prompts() {
               </Select>
             </div>
 
-            {/* Loading State */}
+            {/* Loading */}
             {isLoading ? (
               <div className="flex flex-col items-center justify-center py-16 sm:py-24 gap-4">
                 <Loader2 className="h-12 w-12 animate-spin text-primary" />
@@ -353,113 +441,151 @@ export default function Prompts() {
                 {/* Grid de Prompts */}
                 {filteredPrompts.length > 0 ? (
                   <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-4 sm:gap-6">
-                    {filteredPrompts.map((prompt) => (
-                      <Card 
-                        key={prompt.id} 
-                        className="group flex flex-col hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border hover:border-primary/50"
-                      >
-                        <CardHeader className="pb-3">
-                          <div className="flex items-start justify-between gap-2 mb-2">
-                            <CardTitle className="text-base sm:text-lg line-clamp-2 leading-tight flex-1">
-                              {prompt.title}
-                            </CardTitle>
-                            <Tooltip>
-                              <TooltipTrigger>
-                                <Button
-                                  variant="ghost"
-                                  size="icon"
-                                  className="shrink-0 h-8 w-8 hover:bg-transparent"
-                                  onClick={() => prompt.id && toggleFavorite(prompt.id)}
-                                >
-                                  <Star
-                                    className={`h-5 w-5 transition-all ${
-                                      prompt.isFavorite 
-                                        ? 'fill-yellow-500 text-yellow-500 scale-110' 
-                                        : 'text-muted-foreground group-hover:text-yellow-500/50'
-                                    }`}
-                                  />
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>
-                                {prompt.isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
-                              </TooltipContent>
-                            </Tooltip>
-                          </div>
-                          <CardDescription className="line-clamp-3 text-xs sm:text-sm">
-                            {prompt.content}
-                          </CardDescription>
-                        </CardHeader>
-                        
-                        <CardContent className="flex-1 flex flex-col gap-3 pt-0">
-                          {/* Tags */}
-                          <div className="flex flex-wrap gap-1.5">
-                            {prompt.tags.slice(0, 3).map((tag, i) => (
-                              <Badge key={i} variant="outline" className="text-xs px-2 py-0.5">
-                                {tag}
+                    {filteredPrompts.map((prompt) => {
+                      const aiKey = prompt.recommendedAI || 'any';
+                      const ai = AI_RECOMMENDATIONS[aiKey];
+                      const hasVariables = extractVariables(prompt.content).length > 0;
+
+                      return (
+                        <Card 
+                          key={prompt.id} 
+                          className="group flex flex-col hover:shadow-lg transition-all duration-300 hover:-translate-y-1 border hover:border-primary/50"
+                        >
+                          <CardHeader className="pb-3">
+                            <div className="flex items-start justify-between gap-2 mb-2">
+                              <div className="flex-1 space-y-2">
+                                <CardTitle className="text-base sm:text-lg line-clamp-2 leading-tight">
+                                  {prompt.title}
+                                </CardTitle>
+                                <Badge className={`text-xs gap-1 ${ai.color}`}>
+                                  <span>{ai.icon}</span>
+                                  <span>{ai.name}</span>
+                                </Badge>
+                              </div>
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <Button
+                                    variant="ghost"
+                                    size="icon"
+                                    className="shrink-0 h-8 w-8 hover:bg-transparent"
+                                    onClick={() => prompt.id && toggleFavorite(prompt.id)}
+                                  >
+                                    <Star
+                                      className={`h-5 w-5 transition-all ${
+                                        prompt.isFavorite 
+                                          ? 'fill-yellow-500 text-yellow-500 scale-110' 
+                                          : 'text-muted-foreground group-hover:text-yellow-500/50'
+                                      }`}
+                                    />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>
+                                  {prompt.isFavorite ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                                </TooltipContent>
+                              </Tooltip>
+                            </div>
+                            <CardDescription className="line-clamp-3 text-xs sm:text-sm">
+                              {prompt.content}
+                            </CardDescription>
+                          </CardHeader>
+                          
+                          <CardContent className="flex-1 flex flex-col gap-3 pt-0">
+                            <div className="flex flex-wrap gap-1.5">
+                              {prompt.tags.slice(0, 3).map((tag, i) => (
+                                <Badge key={i} variant="outline" className="text-xs px-2 py-0.5">
+                                  {tag}
+                                </Badge>
+                              ))}
+                              {prompt.tags.length > 3 && (
+                                <Badge variant="outline" className="text-xs px-2 py-0.5">
+                                  +{prompt.tags.length - 3}
+                                </Badge>
+                              )}
+                            </div>
+
+                            <div className="flex items-center gap-3 text-xs text-muted-foreground border-t pt-3">
+                              <span className="flex items-center gap-1">
+                                <Copy className="h-3 w-3" />
+                                {prompt.usageCount || 0}x
+                              </span>
+                              <Badge variant="secondary" className="text-xs">
+                                {prompt.category}
                               </Badge>
-                            ))}
-                            {prompt.tags.length > 3 && (
-                              <Badge variant="outline" className="text-xs px-2 py-0.5">
-                                +{prompt.tags.length - 3}
-                              </Badge>
+                            </div>
+
+                            <div className="grid grid-cols-2 gap-2">
+                              {hasVariables ? (
+                                <Tooltip>
+                                  <TooltipTrigger>
+                                    <Button
+                                      variant="default"
+                                      size="sm"
+                                      onClick={() => handleCustomize(prompt)}
+                                      className="gap-1.5 w-full"
+                                    >
+                                      <Wand2 className="h-3.5 w-3.5" />
+                                      <span className="text-xs">Personalizar</span>
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Personalizar e copiar</TooltipContent>
+                                </Tooltip>
+                              ) : (
+                                <Tooltip>
+                                  <TooltipTrigger>
+                                    <Button
+                                      variant={copiedId === prompt.id ? "default" : "outline"}
+                                      size="sm"
+                                      onClick={() => handleCopy(prompt)}
+                                      className="gap-1.5 w-full"
+                                    >
+                                      {copiedId === prompt.id ? (
+                                        <>
+                                          <Check className="h-3.5 w-3.5" />
+                                          <span className="text-xs">Copiado!</span>
+                                        </>
+                                      ) : (
+                                        <>
+                                          <Copy className="h-3.5 w-3.5" />
+                                          <span className="text-xs">Copiar</span>
+                                        </>
+                                      )}
+                                    </Button>
+                                  </TooltipTrigger>
+                                  <TooltipContent>Copiar prompt</TooltipContent>
+                                </Tooltip>
+                              )}
+                              
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => handleView(prompt)}
+                                    className="gap-1.5 w-full"
+                                  >
+                                    <Eye className="h-3.5 w-3.5" />
+                                    <span className="text-xs">Ver</span>
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Visualizar completo</TooltipContent>
+                              </Tooltip>
+                            </div>
+
+                            {ai.url && (
+                              <Button
+                                variant="ghost"
+                                size="sm"
+                                onClick={() => openRecommendedAI(aiKey)}
+                                className="gap-2 text-xs w-full"
+                              >
+                                <ExternalLink className="h-3.5 w-3.5" />
+                                Abrir {ai.name}
+                              </Button>
                             )}
-                          </div>
-
-                          {/* Estatísticas */}
-                          <div className="flex items-center gap-3 text-xs text-muted-foreground border-t pt-3">
-                            <span className="flex items-center gap-1">
-                              <Copy className="h-3 w-3" />
-                              {prompt.usageCount || 0}x
-                            </span>
-                            <Badge variant="secondary" className="text-xs">
-                              {prompt.category}
-                            </Badge>
-                          </div>
-
-                          {/* Ações */}
-                          <div className="grid grid-cols-2 gap-2">
-                            <Tooltip>
-                              <TooltipTrigger>
-                                <Button
-                                  variant={copiedId === prompt.id ? "default" : "outline"}
-                                  size="sm"
-                                  onClick={() => handleCopy(prompt)}
-                                  className="gap-1.5 w-full"
-                                >
-                                  {copiedId === prompt.id ? (
-                                    <>
-                                      <Check className="h-3.5 w-3.5" />
-                                      <span className="text-xs">Copiado!</span>
-                                    </>
-                                  ) : (
-                                    <>
-                                      <Copy className="h-3.5 w-3.5" />
-                                      <span className="text-xs">Copiar</span>
-                                    </>
-                                  )}
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Copiar prompt</TooltipContent>
-                            </Tooltip>
-                            
-                            <Tooltip>
-                              <TooltipTrigger>
-                                <Button
-                                  variant="outline"
-                                  size="sm"
-                                  onClick={() => handleView(prompt)}
-                                  className="gap-1.5 w-full"
-                                >
-                                  <Eye className="h-3.5 w-3.5" />
-                                  <span className="text-xs">Ver</span>
-                                </Button>
-                              </TooltipTrigger>
-                              <TooltipContent>Visualizar completo</TooltipContent>
-                            </Tooltip>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    ))}
+                          </CardContent>
+                        </Card>
+                      );
+                    })}
                   </div>
                 ) : (
                   <Card className="border-2 border-dashed">
@@ -504,6 +630,12 @@ export default function Prompts() {
                       {tag}
                     </Badge>
                   ))}
+                  {viewingPrompt && (
+                    <Badge className={`text-xs gap-1 ${AI_RECOMMENDATIONS[viewingPrompt.recommendedAI || 'any'].color}`}>
+                      <span>{AI_RECOMMENDATIONS[viewingPrompt.recommendedAI || 'any'].icon}</span>
+                      <span>{AI_RECOMMENDATIONS[viewingPrompt.recommendedAI || 'any'].name}</span>
+                    </Badge>
+                  )}
                 </div>
               </DialogDescription>
             </DialogHeader>
@@ -527,20 +659,112 @@ export default function Prompts() {
             </div>
 
             <div className="flex gap-2 pt-4 border-t">
-              <Button
-                variant="default"
-                className="flex-1 gap-2"
-                onClick={() => viewingPrompt && handleCopy(viewingPrompt)}
-              >
-                <Copy className="h-4 w-4" />
-                Copiar Prompt
-              </Button>
+              {viewingPrompt && extractVariables(viewingPrompt.content).length > 0 ? (
+                <Button
+                  variant="default"
+                  className="flex-1 gap-2"
+                  onClick={() => {
+                    handleCustomize(viewingPrompt);
+                    setViewingPrompt(null);
+                  }}
+                >
+                  <Wand2 className="h-4 w-4" />
+                  Personalizar Prompt
+                </Button>
+              ) : (
+                <Button
+                  variant="default"
+                  className="flex-1 gap-2"
+                  onClick={() => viewingPrompt && handleCopy(viewingPrompt)}
+                >
+                  <Copy className="h-4 w-4" />
+                  Copiar Prompt
+                </Button>
+              )}
               <Button
                 variant="outline"
                 onClick={() => setViewingPrompt(null)}
               >
                 Fechar
               </Button>
+            </div>
+          </DialogContent>
+        </Dialog>
+
+        {/* Modal de Personalização */}
+        <Dialog open={!!customizingPrompt} onOpenChange={() => setCustomizingPrompt(null)}>
+          <DialogContent className="max-w-3xl max-h-[85vh] flex flex-col">
+            <DialogHeader>
+              <DialogTitle className="text-2xl pr-8">Personalizar Prompt</DialogTitle>
+              <DialogDescription>
+                <div className="space-y-2">
+                  <p>Preencha os campos abaixo para personalizar seu prompt</p>
+                  {customizingPrompt && (
+                    <Badge className={`text-xs gap-1 ${AI_RECOMMENDATIONS[customizingPrompt.recommendedAI || 'any'].color}`}>
+                      <span>{AI_RECOMMENDATIONS[customizingPrompt.recommendedAI || 'any'].icon}</span>
+                      <span>Recomendado: {AI_RECOMMENDATIONS[customizingPrompt.recommendedAI || 'any'].name}</span>
+                    </Badge>
+                  )}
+                </div>
+              </DialogDescription>
+            </DialogHeader>
+            
+            <div className="flex-1 overflow-y-auto pr-2 -mr-2 space-y-4">
+              {customizingPrompt && extractVariables(customizingPrompt.content).map((variable) => (
+                <div key={variable.key} className="space-y-2">
+                  <Label htmlFor={variable.key} className="text-sm font-medium">
+                    {variable.label}
+                  </Label>
+                  {variable.type === 'textarea' ? (
+                    <Textarea
+                      id={variable.key}
+                      value={variableValues[variable.key] || ''}
+                      onChange={(e) => setVariableValues(prev => ({ ...prev, [variable.key]: e.target.value }))}
+                      placeholder={variable.placeholder}
+                      rows={3}
+                      className="resize-none"
+                    />
+                  ) : (
+                    <Input
+                      id={variable.key}
+                      value={variableValues[variable.key] || ''}
+                      onChange={(e) => setVariableValues(prev => ({ ...prev, [variable.key]: e.target.value }))}
+                      placeholder={variable.placeholder}
+                    />
+                  )}
+                </div>
+              ))}
+
+              <div className="space-y-2 pt-4 border-t">
+                <Label className="text-sm font-medium">Preview do Prompt</Label>
+                <div className="p-4 rounded-lg bg-muted text-sm whitespace-pre-wrap leading-relaxed max-h-[200px] overflow-y-auto">
+                  {customizingPrompt && replaceVariables(customizingPrompt.content, variableValues)}
+                </div>
+              </div>
+            </div>
+
+            <div className="flex gap-2 pt-4 border-t">
+              <Button
+                variant="default"
+                className="flex-1 gap-2"
+                onClick={handleCopyCustomized}
+              >
+                <Copy className="h-4 w-4" />
+                Copiar Prompt Personalizado
+              </Button>
+              {customizingPrompt && AI_RECOMMENDATIONS[customizingPrompt.recommendedAI || 'any'].url && (
+                <Button
+                  variant="outline"
+                  className="gap-2"
+                  onClick={() => {
+                    handleCopyCustomized();
+                    openRecommendedAI(customizingPrompt.recommendedAI || 'any');
+                  }}
+                >
+                  <ExternalLink className="h-4 w-4" />
+                  Copiar e Abrir IA
+                </Button>
+              )}
             </div>
           </DialogContent>
         </Dialog>
