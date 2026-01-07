@@ -2,7 +2,7 @@ import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { prompts as staticPrompts } from '@/data/prompts-data';
 import { Prompt } from '@/types/prompt';
-import { AuthenticatedNavbar } from '@/components/AuthenticatedNavbar';
+import { Navbar } from '@/components/Navbar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -18,6 +18,7 @@ import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } f
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { toast } from '@/hooks/use-toast';
+import { useAuth } from '@/contexts/AuthContext';
 
 
 // Interface estendida para campos extras não presentes na interface oficial
@@ -28,15 +29,19 @@ interface PromptExtended extends Prompt {
 
 
 /**
- * Página Prompts - Biblioteca Pública de Prompts Médicos v2.3
+ * Página Prompts - Biblioteca Pública de Prompts Médicos v2.4
  *
+ * ✅ PÁGINA PÚBLICA - Acessível sem login
+ * 
  * Implementa FASE 1 completa:
  * - ✅ Melhoria 1.1: Responsividade Mobile Completa
  * - ✅ Melhoria 1.2: Acessibilidade WCAG 2.1 AA
  * - ✅ Melhoria 1.3: Estados de Carregamento e Feedback
+ * - ✅ NOVA: Navbar pública + CTA para login opcional
  */
 export default function Prompts() {
   const navigate = useNavigate();
+  const { user } = useAuth();
   
   // Estados principais
   const [searchTerm, setSearchTerm] = useState('');
@@ -50,6 +55,7 @@ export default function Prompts() {
   const [isLoading, setIsLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
+  const [showLoginBanner, setShowLoginBanner] = useState(true);
 
 
   // Carregar favoritos do localStorage
@@ -209,7 +215,7 @@ export default function Prompts() {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-background">
-        <AuthenticatedNavbar />
+        <Navbar />
         <div className="container mx-auto px-4 py-8 md:py-12">
           <div className="animate-pulse space-y-8">
             <div className="h-32 bg-gray-200 rounded-xl" />
@@ -228,20 +234,22 @@ export default function Prompts() {
   return (
     <TooltipProvider>
       <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-50 dark:from-gray-950 dark:to-blue-950">
-        <AuthenticatedNavbar />
+        {/* ✅ NAVBAR PÚBLICA */}
+        <Navbar />
 
 
         {/* Hero Section - Responsivo (MELHORIA 1.1) */}
         <section className="relative overflow-hidden bg-gradient-to-br from-indigo-50 via-white to-purple-50 dark:from-gray-950 dark:via-gray-900 dark:to-indigo-950 py-12 sm:py-16 md:py-24">
           <div className="container mx-auto px-4 sm:px-6">
+            {/* ✅ BOTÃO VOLTAR PARA HOME */}
             <Button
               variant="ghost"
-              onClick={() => navigate('/tools')}
+              onClick={() => navigate('/')}
               className="mb-6 gap-2 hover:gap-3 transition-all touch-manipulation min-h-[44px]"
-              aria-label="Voltar para ferramentas"
+              aria-label="Voltar para página inicial"
             >
               <ArrowLeft className="h-4 w-4 md:h-5 md:w-5" />
-              <span className="text-sm md:text-base">Voltar para Ferramentas</span>
+              <span className="text-sm md:text-base">Voltar para Início</span>
             </Button>
 
 
@@ -287,6 +295,44 @@ export default function Prompts() {
         {/* Main Content */}
         <main className="container mx-auto px-4 sm:px-6 py-6 md:py-12">
           <div className="space-y-6 md:space-y-8">
+            {/* ✅ BANNER DE LOGIN (Apenas para usuários não logados com favoritos) */}
+            {!user && favorites.size > 0 && showLoginBanner && (
+              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 border-2 border-indigo-200 dark:border-indigo-800 rounded-xl p-4 md:p-5 shadow-lg">
+                <div className="flex items-start justify-between gap-4">
+                  <div className="flex items-center gap-3 flex-1">
+                    <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
+                      <Star className="h-6 w-6 text-white fill-white" />
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <p className="font-semibold text-sm md:text-base text-gray-900 dark:text-white mb-1">
+                        Você tem {favorites.size} {favorites.size === 1 ? 'prompt favorito' : 'prompts favoritos'}!
+                      </p>
+                      <p className="text-xs md:text-sm text-muted-foreground">
+                        Crie uma conta grátis para sincronizar seus favoritos em todos os dispositivos e ter acesso a ferramentas exclusivas.
+                      </p>
+                    </div>
+                  </div>
+                  <div className="flex items-center gap-2">
+                    <Button
+                      size="sm"
+                      onClick={() => navigate('/register')}
+                      className="whitespace-nowrap bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                    >
+                      Criar Conta Grátis
+                    </Button>
+                    <button
+                      onClick={() => setShowLoginBanner(false)}
+                      className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
+                      aria-label="Fechar banner"
+                    >
+                      <X className="h-4 w-4 text-gray-500" />
+                    </button>
+                  </div>
+                </div>
+              </div>
+            )}
+
+
             {/* Tabs - Responsivo (MELHORIA 1.1) */}
             <Tabs value={selectedTab} onValueChange={setSelectedTab} className="w-full">
               <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 h-12 md:h-14">
