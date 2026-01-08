@@ -21,7 +21,6 @@ import Dashboard from '@/pages/Dashboard';
 const Prompts = lazy(() => import('@/pages/Prompts'));
 const UserTools = lazy(() => import('@/pages/UserTools'));
 const Profile = lazy(() => import('@/pages/Profile'));
-const Library = lazy(() => import('@/pages/Library'));
 const StudySchedule = lazy(() => import('@/pages/StudySchedule'));
 
 // Páginas educacionais públicas
@@ -65,7 +64,7 @@ function App() {
                       <Route path="/ferramentas" element={<Ferramentas />} />
                       <Route path="/focus-zone" element={<FocusZone />} />
                       
-                      {/* Biblioteca de prompts (pública) */}
+                      {/* Biblioteca de prompts (pública - acessível por todos) */}
                       <Route path="/prompts" element={<Prompts />} />
 
                       {/* ==================== ROTAS PROTEGIDAS ==================== */}
@@ -75,18 +74,6 @@ function App() {
                         element={
                           <ProtectedRoute>
                             <Dashboard />
-                          </ProtectedRoute>
-                        } 
-                      />
-
-                    
-                      
-                      {/* Biblioteca médica (PROTEGIDO) */}
-                      <Route 
-                        path="/library" 
-                        element={
-                          <ProtectedRoute>
-                            <Library />
                           </ProtectedRoute>
                         } 
                       />

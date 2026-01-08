@@ -30,7 +30,7 @@ export function AuthenticatedNavbar() {
 
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
-    { path: '/library', label: 'Biblioteca', icon: BookText },
+    { path: '/prompts', label: 'Biblioteca', icon: BookText },
     { path: '/profile', label: 'Perfil', icon: User },
   ];
 
