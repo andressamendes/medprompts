@@ -19,6 +19,8 @@ import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import PromptsService from '@/services/api/promptsService';
 
+// Build: 2026-01-08 09:24 - Integração com backend completa
+
 
 function renderMarkdown(markdown: string): string {
   let html = markdown;
