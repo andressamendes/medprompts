@@ -42,7 +42,7 @@ export const generateAccessToken = (userId: string, email: string): string => {
       expiresIn: JWT_EXPIRE,
       issuer: 'medprompts-api',
       audience: 'medprompts-frontend'
-    });
+    } as any);
 
     logger.info(`Access token gerado para usuário: ${userId}`);
     return token;
@@ -69,7 +69,7 @@ export const generateRefreshToken = (userId: string, tokenVersion: number = 0): 
       expiresIn: JWT_REFRESH_EXPIRE,
       issuer: 'medprompts-api',
       audience: 'medprompts-frontend'
-    });
+    } as any);
 
     logger.info(`Refresh token gerado para usuário: ${userId}`);
     return token;

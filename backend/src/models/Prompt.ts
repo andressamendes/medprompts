@@ -1,19 +1,35 @@
 import { DataTypes, Model, Optional } from 'sequelize';
 import { sequelize } from '../config/database';
-import User from './User'; // ← CORREÇÃO: import default ao invés de named import
+import User from './User';
+
+/**
+ * Interface para variáveis do prompt (campos de preenchimento)
+ */
+export interface PromptVariable {
+  key: string;          // Ex: "{{PACIENTE}}"
+  label: string;        // Ex: "Nome do Paciente"
+  type: 'text' | 'number' | 'textarea' | 'select';
+  options?: string[];   // Para tipo 'select'
+  placeholder?: string; // Placeholder do campo
+  required?: boolean;   // Se o campo é obrigatório
+}
 
 /**
  * Interface dos atributos do Prompt
  */
 export interface PromptAttributes {
   id: string;
-  userId: string;
+  userId: string | null;  // NULL para prompts do sistema
   title: string;
+  description: string;
   content: string;
   category: string;
   tags: string[];
+  variables: PromptVariable[];  // ← NOVO: Campos de preenchimento
+  isSystemPrompt: boolean;      // ← NOVO: Indica se é prompt do sistema
   isFavorite: boolean;
   timesUsed: number;
+  recommendedAI?: string;       // ← NOVO: IA recomendada
   createdAt?: Date;
   updatedAt?: Date;
 }
@@ -24,7 +40,7 @@ export interface PromptAttributes {
 interface PromptCreationAttributes
   extends Optional<
     PromptAttributes,
-    'id' | 'tags' | 'isFavorite' | 'timesUsed' | 'createdAt' | 'updatedAt'
+    'id' | 'userId' | 'description' | 'tags' | 'variables' | 'isSystemPrompt' | 'isFavorite' | 'timesUsed' | 'recommendedAI' | 'createdAt' | 'updatedAt'
   > {}
 
 /**
@@ -35,17 +51,35 @@ export class Prompt
   implements PromptAttributes
 {
   public id!: string;
-  public userId!: string;
+  public userId!: string | null;
   public title!: string;
+  public description!: string;
   public content!: string;
   public category!: string;
   public tags!: string[];
+  public variables!: PromptVariable[];
+  public isSystemPrompt!: boolean;
   public isFavorite!: boolean;
   public timesUsed!: number;
+  public recommendedAI?: string;
 
   // Timestamps
   public readonly createdAt!: Date;
   public readonly updatedAt!: Date;
+
+  /**
+   * Método auxiliar para processar variáveis no conteúdo
+   */
+  public fillVariables(values: Record<string, string>): string {
+    let filledContent = this.content;
+    
+    this.variables.forEach((variable) => {
+      const value = values[variable.key] || '';
+      filledContent = filledContent.replace(new RegExp(variable.key, 'g'), value);
+    });
+    
+    return filledContent;
+  }
 }
 
 /**
@@ -61,7 +95,7 @@ Prompt.init(
     },
     userId: {
       type: DataTypes.UUID,
-      allowNull: false,
+      allowNull: true,  // ← ALTERADO: permite NULL para prompts do sistema
       references: {
         model: 'users',
         key: 'id',
@@ -80,6 +114,17 @@ Prompt.init(
         len: {
           args: [3, 255],
           msg: 'Título deve ter entre 3 e 255 caracteres',
+        },
+      },
+    },
+    description: {
+      type: DataTypes.TEXT,
+      allowNull: false,
+      defaultValue: '',
+      validate: {
+        len: {
+          args: [0, 500],
+          msg: 'Descrição deve ter no máximo 500 caracteres',
         },
       },
     },
@@ -105,20 +150,22 @@ Prompt.init(
         },
         isIn: {
           args: [[
-            'Anamnese',
-            'Diagnóstico',
-            'Tratamento',
-            'Pediatria',
-            'Ginecologia',
-            'Cardiologia',
-            'Neurologia',
-            'Ortopedia',
-            'Emergência',
-            'Cirurgia',
-            'Clínica Médica',
-            'Estudos de Caso',
-            'Revisão',
-            'Outros',
+            'estudos',
+            'clinica',
+            'anamnese',
+            'diagnostico',
+            'tratamento',
+            'pediatria',
+            'ginecologia',
+            'cardiologia',
+            'neurologia',
+            'ortopedia',
+            'emergencia',
+            'cirurgia',
+            'clinica-medica',
+            'estudos-caso',
+            'revisao',
+            'outros',
           ]],
           msg: 'Categoria inválida',
         },
@@ -144,6 +191,35 @@ Prompt.init(
         },
       },
     },
+    variables: {
+      type: DataTypes.JSONB,
+      allowNull: false,
+      defaultValue: [],
+      validate: {
+        isValidVariables(value: PromptVariable[]) {
+          if (!Array.isArray(value)) {
+            throw new Error('Variables deve ser um array');
+          }
+          if (value.length > 20) {
+            throw new Error('Máximo de 20 variáveis permitidas');
+          }
+          value.forEach((variable) => {
+            if (!variable.key || !variable.label || !variable.type) {
+              throw new Error('Cada variável deve ter key, label e type');
+            }
+            if (!['text', 'number', 'textarea', 'select'].includes(variable.type)) {
+              throw new Error('Tipo de variável inválido');
+            }
+          });
+        },
+      },
+    },
+    isSystemPrompt: {
+      type: DataTypes.BOOLEAN,
+      allowNull: false,
+      defaultValue: false,
+      field: 'is_system_prompt',
+    },
     isFavorite: {
       type: DataTypes.BOOLEAN,
       allowNull: false,
@@ -161,6 +237,24 @@ Prompt.init(
         },
       },
       field: 'times_used',
+    },
+    recommendedAI: {
+      type: DataTypes.STRING(50),
+      allowNull: true,
+      field: 'recommended_ai',
+      validate: {
+        isIn: {
+          args: [[
+            'ChatGPT',
+            'Claude',
+            'Gemini',
+            'Perplexity',
+            'NotebookLM',
+            null,
+          ]],
+          msg: 'IA recomendada inválida',
+        },
+      },
     },
   },
   {
@@ -180,6 +274,10 @@ Prompt.init(
       {
         name: 'prompts_is_favorite_idx',
         fields: ['is_favorite'],
+      },
+      {
+        name: 'prompts_is_system_prompt_idx',
+        fields: ['is_system_prompt'],
       },
       {
         name: 'prompts_times_used_idx',

@@ -4,20 +4,32 @@ import Prompt from '../models/Prompt';
 import { logger } from '../utils/logger';
 
 /**
- * Listar prompts do usuário com filtros
+ * Listar prompts (do sistema + do usuário) com filtros
  */
 export const listPrompts = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).userId;
-    const { search, category, tags, isFavorite, sortBy, limit } = req.query;
+    const { search, category, tags, isFavorite, sortBy, limit, includeSystem } = req.query;
 
     // Construir filtros dinâmicos
-    const where: any = { userId };
+    const where: any = {};
 
-    // Filtro de busca (título ou conteúdo)
+    // Se includeSystem=true, mostra prompts do sistema + do usuário
+    // Se false ou não informado, mostra apenas do usuário
+    if (includeSystem === 'true') {
+      where[Op.or] = [
+        { isSystemPrompt: true },
+        { userId: userId || null }
+      ];
+    } else if (userId) {
+      where.userId = userId;
+    }
+
+    // Filtro de busca (título, descrição ou conteúdo)
     if (search) {
       where[Op.or] = [
         { title: { [Op.iLike]: `%${search}%` } },
+        { description: { [Op.iLike]: `%${search}%` } },
         { content: { [Op.iLike]: `%${search}%` } },
       ];
     }
@@ -39,7 +51,11 @@ export const listPrompts = async (req: Request, res: Response) => {
     }
 
     // Ordenação
-    let order: any = [['createdAt', 'DESC']];
+    let order: any = [
+      ['isSystemPrompt', 'DESC'], // Prompts do sistema primeiro
+      ['createdAt', 'DESC']
+    ];
+    
     if (sortBy === 'popular') {
       order = [['timesUsed', 'DESC']];
     } else if (sortBy === 'alphabetical') {
@@ -61,7 +77,7 @@ export const listPrompts = async (req: Request, res: Response) => {
     logger.info('Prompts listados com sucesso', {
       userId,
       count: prompts.length,
-      filters: { search, category, tags, isFavorite, sortBy },
+      filters: { search, category, tags, isFavorite, sortBy, includeSystem },
     });
 
     res.status(200).json({
@@ -85,14 +101,20 @@ export const getPromptById = async (req: Request, res: Response) => {
     const userId = (req as any).userId;
     const { promptId } = req.params;
 
-    const prompt = await Prompt.findOne({
-      where: { id: promptId, userId },
-    });
+    const prompt = await Prompt.findByPk(promptId);
 
     if (!prompt) {
       return res.status(404).json({
         success: false,
         error: 'Prompt não encontrado',
+      });
+    }
+
+    // Verifica permissão: pode ver se for do sistema ou do próprio usuário
+    if (!prompt.isSystemPrompt && prompt.userId !== userId) {
+      return res.status(403).json({
+        success: false,
+        error: 'Você não tem permissão para acessar este prompt',
       });
     }
 
@@ -112,12 +134,12 @@ export const getPromptById = async (req: Request, res: Response) => {
 };
 
 /**
- * Criar novo prompt
+ * Criar novo prompt personalizado
  */
 export const createPrompt = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).userId;
-    const { title, content, category, tags } = req.body;
+    const { title, description, content, category, tags, variables, recommendedAI } = req.body;
 
     // Validações básicas
     if (!title || !content || !category) {
@@ -131,11 +153,15 @@ export const createPrompt = async (req: Request, res: Response) => {
     const prompt = await Prompt.create({
       userId,
       title: title.trim(),
+      description: description?.trim() || '',
       content: content.trim(),
       category,
       tags: tags || [],
+      variables: variables || [],
+      isSystemPrompt: false, // Usuários não podem criar prompts do sistema
       isFavorite: false,
       timesUsed: 0,
+      recommendedAI: recommendedAI || null
     });
 
     logger.info('Prompt criado com sucesso', {
@@ -174,12 +200,10 @@ export const updatePrompt = async (req: Request, res: Response) => {
   try {
     const userId = (req as any).userId;
     const { promptId } = req.params;
-    const { title, content, category, tags } = req.body;
+    const { title, description, content, category, tags, variables, recommendedAI } = req.body;
 
     // Buscar prompt
-    const prompt = await Prompt.findOne({
-      where: { id: promptId, userId },
-    });
+    const prompt = await Prompt.findByPk(promptId);
 
     if (!prompt) {
       return res.status(404).json({
@@ -188,11 +212,30 @@ export const updatePrompt = async (req: Request, res: Response) => {
       });
     }
 
+    // Prompts do sistema não podem ser editados
+    if (prompt.isSystemPrompt) {
+      return res.status(403).json({
+        success: false,
+        error: 'Prompts do sistema não podem ser editados',
+      });
+    }
+
+    // Apenas o dono pode editar
+    if (prompt.userId !== userId) {
+      return res.status(403).json({
+        success: false,
+        error: 'Você não tem permissão para editar este prompt',
+      });
+    }
+
     // Atualizar campos fornecidos
     if (title !== undefined) prompt.title = title.trim();
+    if (description !== undefined) prompt.description = description.trim();
     if (content !== undefined) prompt.content = content.trim();
     if (category !== undefined) prompt.category = category;
     if (tags !== undefined) prompt.tags = tags;
+    if (variables !== undefined) prompt.variables = variables;
+    if (recommendedAI !== undefined) prompt.recommendedAI = recommendedAI;
 
     await prompt.save();
 
@@ -230,14 +273,28 @@ export const deletePrompt = async (req: Request, res: Response) => {
     const { promptId } = req.params;
 
     // Buscar prompt
-    const prompt = await Prompt.findOne({
-      where: { id: promptId, userId },
-    });
+    const prompt = await Prompt.findByPk(promptId);
 
     if (!prompt) {
       return res.status(404).json({
         success: false,
         error: 'Prompt não encontrado',
+      });
+    }
+
+    // Prompts do sistema não podem ser deletados (o trigger do banco também bloqueia)
+    if (prompt.isSystemPrompt) {
+      return res.status(403).json({
+        success: false,
+        error: 'Prompts do sistema não podem ser excluídos',
+      });
+    }
+
+    // Apenas o dono pode deletar
+    if (prompt.userId !== userId) {
+      return res.status(403).json({
+        success: false,
+        error: 'Você não tem permissão para excluir este prompt',
       });
     }
 
@@ -267,14 +324,20 @@ export const toggleFavorite = async (req: Request, res: Response) => {
     const { promptId } = req.params;
 
     // Buscar prompt
-    const prompt = await Prompt.findOne({
-      where: { id: promptId, userId },
-    });
+    const prompt = await Prompt.findByPk(promptId);
 
     if (!prompt) {
       return res.status(404).json({
         success: false,
         error: 'Prompt não encontrado',
+      });
+    }
+
+    // Verifica permissão
+    if (!prompt.isSystemPrompt && prompt.userId !== userId) {
+      return res.status(403).json({
+        success: false,
+        error: 'Você não tem permissão para favoritar este prompt',
       });
     }
 
@@ -313,9 +376,7 @@ export const usePrompt = async (req: Request, res: Response) => {
     const { promptId } = req.params;
 
     // Buscar prompt
-    const prompt = await Prompt.findOne({
-      where: { id: promptId, userId },
-    });
+    const prompt = await Prompt.findByPk(promptId);
 
     if (!prompt) {
       return res.status(404).json({
@@ -349,25 +410,72 @@ export const usePrompt = async (req: Request, res: Response) => {
 };
 
 /**
+ * Preencher variáveis do prompt com valores fornecidos
+ * POST /api/prompts/:promptId/fill
+ */
+export const fillPromptVariables = async (req: Request, res: Response) => {
+  try {
+    const { promptId } = req.params;
+    const { values } = req.body; // { "{{PACIENTE}}": "João Silva", "{{IDADE}}": "45" }
+
+    const prompt = await Prompt.findByPk(promptId);
+
+    if (!prompt) {
+      return res.status(404).json({
+        success: false,
+        error: 'Prompt não encontrado',
+      });
+    }
+
+    if (!values || typeof values !== 'object') {
+      return res.status(400).json({
+        success: false,
+        error: 'Valores inválidos. Envie um objeto com as variáveis',
+      });
+    }
+
+    // Usa o método do model para preencher
+    const filledContent = prompt.fillVariables(values);
+
+    res.status(200).json({
+      success: true,
+      data: {
+        original: prompt.content,
+        filled: filledContent,
+        variables: prompt.variables
+      }
+    });
+  } catch (error: any) {
+    logger.error('Erro ao preencher variáveis', { error: error.message });
+    res.status(500).json({
+      success: false,
+      error: 'Erro ao preencher variáveis',
+    });
+  }
+};
+
+/**
  * Buscar categorias disponíveis
  */
 export const getCategories = async (req: Request, res: Response) => {
   try {
     const categories = [
-      'Anamnese',
-      'Diagnóstico',
-      'Tratamento',
-      'Pediatria',
-      'Ginecologia',
-      'Cardiologia',
-      'Neurologia',
-      'Ortopedia',
-      'Emergência',
-      'Cirurgia',
-      'Clínica Médica',
-      'Estudos de Caso',
-      'Revisão',
-      'Outros',
+      'estudos',
+      'clinica',
+      'anamnese',
+      'diagnostico',
+      'tratamento',
+      'pediatria',
+      'ginecologia',
+      'cardiologia',
+      'neurologia',
+      'ortopedia',
+      'emergencia',
+      'cirurgia',
+      'clinica-medica',
+      'estudos-caso',
+      'revisao',
+      'outros',
     ];
 
     res.status(200).json({

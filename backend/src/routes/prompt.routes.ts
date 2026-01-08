@@ -7,6 +7,7 @@ import {
   deletePrompt,
   toggleFavorite,
   usePrompt,
+  fillPromptVariables,
   getCategories,
   getPopularTags,
 } from '../controllers/promptController';
@@ -25,7 +26,7 @@ router.get('/categories', authenticate, getCategories);
 router.get('/tags', authenticate, getPopularTags);
 
 // Listar prompts do usuário (com filtros opcionais)
-// Query params: search, category, tags, isFavorite, sortBy, limit
+// Query params: search, category, tags, isFavorite, sortBy, limit, includeSystem
 router.get('/', authenticate, listPrompts);
 
 // Buscar prompt por ID
@@ -45,5 +46,8 @@ router.post('/:promptId/favorite', authenticate, toggleFavorite);
 
 // Registrar uso do prompt
 router.post('/:promptId/use', authenticate, usePrompt);
+
+// Preencher variáveis do prompt (retorna conteúdo preenchido)
+router.post('/:promptId/fill', authenticate, fillPromptVariables);
 
 export default router;
