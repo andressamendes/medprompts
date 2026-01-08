@@ -22,7 +22,6 @@ const Prompts = lazy(() => import('@/pages/Prompts'));
 const UserTools = lazy(() => import('@/pages/UserTools'));
 const Profile = lazy(() => import('@/pages/Profile'));
 const Library = lazy(() => import('@/pages/Library'));
-const ToolsHub = lazy(() => import('@/pages/ToolsHub'));
 const StudySchedule = lazy(() => import('@/pages/StudySchedule'));
 
 // Páginas educacionais públicas
@@ -80,15 +79,7 @@ function App() {
                         } 
                       />
 
-                      {/* Hub de ferramentas (PROTEGIDO) */}
-                      <Route 
-                        path="/tools" 
-                        element={
-                          <ProtectedRoute>
-                            <ToolsHub />
-                          </ProtectedRoute>
-                        } 
-                      />
+                    
                       
                       {/* Biblioteca médica (PROTEGIDO) */}
                       <Route 

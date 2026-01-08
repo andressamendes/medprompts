@@ -8,7 +8,6 @@ import {
   X, 
   LayoutDashboard, 
   BookText, 
-  Wrench, 
   User,
   LogOut 
 } from 'lucide-react';
@@ -32,7 +31,6 @@ export function AuthenticatedNavbar() {
   const navItems = [
     { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
     { path: '/prompts', label: 'Biblioteca', icon: BookText },
-    { path: '/tools', label: 'Ferramentas', icon: Wrench },
     { path: '/profile', label: 'Perfil', icon: User },
   ];
 
