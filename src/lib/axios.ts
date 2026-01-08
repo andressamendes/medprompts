@@ -37,14 +37,15 @@ api.interceptors.response.use(
   (error) => {
     // Token expirado ou inválido
     if (error.response?.status === 401) {
-      localStorage.removeItem('medprompts-token');
-      localStorage.removeItem('medprompts-user');
-      
-      // Redirecionar para login apenas se não estiver em rotas públicas
-      const publicRoutes = ['/', '/login', '/register', '/prompts'];
       const currentPath = window.location.pathname;
       
+      // Lista de rotas públicas que NÃO devem forçar logout
+      const publicRoutes = ['/', '/prompts', '/login', '/register', '/guia-ias', '/recursos', '/focus-zone'];
+      
+      // Só remove token e redireciona se estiver em rota protegida
       if (!publicRoutes.includes(currentPath)) {
+        localStorage.removeItem('medprompts-token');
+        localStorage.removeItem('medprompts-user');
         window.location.href = '/login';
       }
     }
