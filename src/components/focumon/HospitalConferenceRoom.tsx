@@ -1,11 +1,5 @@
 import { useEffect, useRef } from 'react';
-
-interface User {
-  id: string;
-  username: string;
-  status: 'FOCUS' | 'SHORT_BREAK' | 'LONG_BREAK' | 'OFFLINE';
-  position: { row: number; col: number };
-}
+import { User } from '@/types/studyRoom.types';
 
 interface HospitalConferenceRoomProps {
   mode: 'FOCUS' | 'SHORT_BREAK' | 'LONG_BREAK';
@@ -47,47 +41,23 @@ export const HospitalConferenceRoom = ({
     // Cores baseadas no horário
     const getColors = () => {
       const base = {
-        morning: {
-          sky: '#87CEEB',
-          wall: '#B8D4C8',
-          floor: '#E8E8E8',
-          ceiling: '#F5F5F5'
-        },
-        afternoon: {
-          sky: '#FFD580',
-          wall: '#A8C4B8',
-          floor: '#E0E0E0',
-          ceiling: '#F0F0F0'
-        },
-        evening: {
-          sky: '#FF9966',
-          wall: '#98B4A8',
-          floor: '#D8D8D8',
-          ceiling: '#E8E8E8'
-        },
-        night: {
-          sky: '#1A1A2E',
-          wall: '#2C5F4F',
-          floor: '#C0C0C0',
-          ceiling: '#D0D0D0'
-        }
+        morning: { sky: '#87CEEB', wall: '#B8D4C8', floor: '#E8E8E8', ceiling: '#F5F5F5' },
+        afternoon: { sky: '#FFD580', wall: '#A8C4B8', floor: '#E0E0E0', ceiling: '#F0F0F0' },
+        evening: { sky: '#FF9966', wall: '#98B4A8', floor: '#D8D8D8', ceiling: '#E8E8E8' },
+        night: { sky: '#1A1A2E', wall: '#2C5F4F', floor: '#C0C0C0', ceiling: '#D0D0D0' }
       };
       return base[timeOfDay];
     };
 
     const colors = getColors();
 
-    // Função auxiliar para desenhar retângulo
     const drawRect = (x: number, y: number, w: number, h: number, color: string) => {
       ctx.fillStyle = color;
       ctx.fillRect(x, y, w, h);
     };
 
-    // Desenhar teto com luzes
     const drawCeiling = () => {
       drawRect(0, 0, width, 100, colors.ceiling);
-      
-      // Luzes fluorescentes
       const lightSpacing = 200;
       for (let x = 150; x < width - 100; x += lightSpacing) {
         ctx.fillStyle = timeOfDay === 'night' ? '#FFFACD' : '#FFFFFF';
@@ -98,23 +68,16 @@ export const HospitalConferenceRoom = ({
       }
     };
 
-    // Desenhar parede frontal com projetor
     const drawFrontWall = () => {
       drawRect(0, 100, width, 150, colors.wall);
-      
-      // Tela de projeção/quadro grande
       const screenX = width / 2 - 250;
       const screenY = 130;
       
-      // Moldura
       ctx.fillStyle = '#2C3E50';
       ctx.fillRect(screenX - 10, screenY - 10, 520, 120);
-      
-      // Tela
       ctx.fillStyle = '#F8F9FA';
       ctx.fillRect(screenX, screenY, 500, 100);
       
-      // Texto motivacional
       ctx.fillStyle = '#E74C3C';
       ctx.font = 'bold 32px Arial';
       ctx.textAlign = 'center';
@@ -124,19 +87,16 @@ export const HospitalConferenceRoom = ({
       ctx.font = '20px Arial';
       ctx.fillText('Capacidade: 50 Estudantes', width / 2, screenY + 75);
       
-      // Logo médico
       ctx.fillStyle = '#E74C3C';
       ctx.beginPath();
       ctx.arc(screenX + 50, screenY + 50, 25, 0, Math.PI * 2);
       ctx.fill();
       
-      // Cruz
       ctx.fillStyle = '#FFFFFF';
       ctx.fillRect(screenX + 40, screenY + 45, 20, 10);
       ctx.fillRect(screenX + 45, screenY + 40, 10, 20);
     };
 
-    // Desenhar piso com padrão
     const drawFloor = () => {
       const tileSize = 50;
       for (let x = 0; x < width; x += tileSize) {
@@ -147,17 +107,13 @@ export const HospitalConferenceRoom = ({
       }
     };
 
-    // Desenhar palco/área do professor
     const drawStage = () => {
-      // Palco elevado
       ctx.fillStyle = '#8B7355';
       ctx.fillRect(width / 2 - 200, 240, 400, 50);
       
-      // Púlpito
       ctx.fillStyle = '#6B5B4A';
       ctx.fillRect(width / 2 - 50, 260, 100, 70);
       
-      // Microfone
       ctx.strokeStyle = '#2C3E50';
       ctx.lineWidth = 3;
       ctx.beginPath();
@@ -171,7 +127,6 @@ export const HospitalConferenceRoom = ({
       ctx.fill();
     };
 
-    // Grid de posições para 50 usuários (10 colunas x 5 linhas)
     const GRID_CONFIG = {
       rows: 5,
       cols: 10,
@@ -181,23 +136,19 @@ export const HospitalConferenceRoom = ({
       spacingY: 100
     };
 
-    // Desenhar assentos vazios
     const drawSeats = () => {
       for (let row = 0; row < GRID_CONFIG.rows; row++) {
         for (let col = 0; col < GRID_CONFIG.cols; col++) {
           const x = GRID_CONFIG.startX + (col * GRID_CONFIG.spacingX);
           const y = GRID_CONFIG.startY + (row * GRID_CONFIG.spacingY);
           
-          // Cadeira
           ctx.fillStyle = '#34495E';
           ctx.fillRect(x + 15, y + 35, 30, 10);
           ctx.fillRect(x + 25, y + 25, 10, 20);
           
-          // Mesa pequena
           ctx.fillStyle = '#8B7355';
           ctx.fillRect(x + 10, y + 45, 40, 5);
           
-          // Número do assento
           ctx.fillStyle = '#7F8C8D';
           ctx.font = '10px monospace';
           ctx.textAlign = 'center';
@@ -207,13 +158,11 @@ export const HospitalConferenceRoom = ({
       }
     };
 
-    // Desenhar avatar de usuário
-    const drawUserAvatar = (user: User, row: number, col: number) => {
-      const x = GRID_CONFIG.startX + (col * GRID_CONFIG.spacingX);
-      const y = GRID_CONFIG.startY + (row * GRID_CONFIG.spacingY);
+    const drawUserAvatar = (user: User) => {
+      const x = GRID_CONFIG.startX + (user.position.col * GRID_CONFIG.spacingX);
+      const y = GRID_CONFIG.startY + (user.position.row * GRID_CONFIG.spacingY);
       const pixelSize = 6;
       
-      // Cor baseada no status
       const getStatusColor = (status: string) => {
         switch (status) {
           case 'FOCUS': return '#2ECC71';
@@ -225,7 +174,7 @@ export const HospitalConferenceRoom = ({
       
       const statusColor = getStatusColor(user.status);
       
-      // Sombra/base
+      // Sombra
       ctx.fillStyle = 'rgba(0,0,0,0.2)';
       ctx.fillRect(x + 15, y + 42, pixelSize * 4, pixelSize);
       
@@ -246,14 +195,14 @@ export const HospitalConferenceRoom = ({
       ctx.fillRect(x + 20 - pixelSize, y + 10 + pixelSize * 4, pixelSize, pixelSize * 2);
       ctx.fillRect(x + 20 + pixelSize * 3, y + 10 + pixelSize * 4, pixelSize, pixelSize * 2);
       
-      // Indicador de status (círculo)
+      // Indicador de status
       ctx.fillStyle = statusColor;
       ctx.beginPath();
       ctx.arc(x + 15, y + 15, 5, 0, Math.PI * 2);
       ctx.fill();
       
-      // Nome do usuário (se for o atual)
-      if (user.id === currentUser?.id) {
+      // Nome (se for o usuário atual)
+      if (user.id === 'current-user') {
         ctx.fillStyle = '#E74C3C';
         ctx.font = 'bold 10px Arial';
         ctx.textAlign = 'center';
@@ -261,58 +210,23 @@ export const HospitalConferenceRoom = ({
       }
     };
 
-    // Gerar usuários mock para demonstração
-    const generateMockUsers = (): User[] => {
-      const users: User[] = [];
-      const statuses: Array<'FOCUS' | 'SHORT_BREAK' | 'LONG_BREAK' | 'OFFLINE'> = 
-        ['FOCUS', 'SHORT_BREAK', 'LONG_BREAK', 'OFFLINE'];
-      
-      // Usuário atual sempre na posição 0,0
-      if (currentUser) {
-        users.push({
-          ...currentUser,
-          position: { row: 0, col: 0 }
-        });
-      }
-      
-      // Adicionar outros usuários (máximo 49 além do atual)
-      const totalUsers = Math.min(otherUsers.length, 49);
-      for (let i = 0; i < totalUsers; i++) {
-        const row = Math.floor((i + 1) / GRID_CONFIG.cols);
-        const col = (i + 1) % GRID_CONFIG.cols;
-        
-        users.push({
-          id: `user-${i + 1}`,
-          username: `Estudante ${i + 1}`,
-          status: statuses[Math.floor(Math.random() * statuses.length)],
-          position: { row, col }
-        });
-      }
-      
-      return users;
-    };
-
-    // Desenhar estatísticas da sala
-    const drawRoomStats = (users: User[]) => {
+    const drawRoomStats = (allUsers: User[]) => {
       const statsY = height - 80;
       
-      // Background
       ctx.fillStyle = 'rgba(44, 62, 80, 0.9)';
       ctx.fillRect(20, statsY, width - 40, 60);
       
-      // Contar status
-      const focusing = users.filter(u => u.status === 'FOCUS').length;
-      const shortBreak = users.filter(u => u.status === 'SHORT_BREAK').length;
-      const longBreak = users.filter(u => u.status === 'LONG_BREAK').length;
-      const offline = users.filter(u => u.status === 'OFFLINE').length;
+      const focusing = allUsers.filter(u => u.status === 'FOCUS').length;
+      const shortBreak = allUsers.filter(u => u.status === 'SHORT_BREAK').length;
+      const longBreak = allUsers.filter(u => u.status === 'LONG_BREAK').length;
+      const offline = allUsers.filter(u => u.status === 'OFFLINE').length;
       
-      // Texto
       ctx.fillStyle = '#FFFFFF';
       ctx.font = 'bold 14px Arial';
       ctx.textAlign = 'left';
       
       const statsX = 40;
-      ctx.fillText(`👥 Total: ${users.length}/50`, statsX, statsY + 25);
+      ctx.fillText(`👥 Total: ${allUsers.length}/50`, statsX, statsY + 25);
       
       ctx.fillStyle = '#2ECC71';
       ctx.fillText(`🟢 Focando: ${focusing}`, statsX + 150, statsY + 25);
@@ -326,56 +240,38 @@ export const HospitalConferenceRoom = ({
       ctx.fillStyle = '#95A5A6';
       ctx.fillText(`⚪ Offline: ${offline}`, statsX + 660, statsY + 25);
       
-      // Horário
       const now = new Date();
       const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
       ctx.fillStyle = '#ECF0F1';
       ctx.textAlign = 'right';
       ctx.fillText(`🕐 ${timeStr}`, width - 40, statsY + 25);
-      
-      // Capacidade
-      ctx.fillText(`Vagas: ${50 - users.length}`, width - 40, statsY + 45);
+      ctx.fillText(`Vagas: ${50 - allUsers.length}`, width - 40, statsY + 45);
     };
 
-    // Função principal de renderização
     const render = () => {
-      // Limpar canvas
       ctx.clearRect(0, 0, width, height);
       
-      // Desenhar elementos fixos
       drawCeiling();
       drawFrontWall();
       drawFloor();
       drawStage();
       drawSeats();
       
-      // Gerar e desenhar usuários
-      const users = generateMockUsers();
-      users.forEach(user => {
-        drawUserAvatar(user, user.position.row, user.position.col);
+      // Desenhar todos os usuários (atual + outros)
+      const allUsers = currentUser ? [currentUser, ...otherUsers] : otherUsers;
+      allUsers.forEach(user => {
+        drawUserAvatar(user);
       });
       
-      // Desenhar estatísticas
-      drawRoomStats(users);
+      drawRoomStats(allUsers);
     };
 
-    // Animação
     let animationFrame: number;
-    let frame = 0;
-
     const animate = () => {
-      frame++;
-      
-      // Redesenhar a cada 60 frames (1 segundo em 60fps)
-      if (frame % 60 === 0) {
-        render();
-      }
-      
+      render();
       animationFrame = requestAnimationFrame(animate);
     };
 
-    // Renderização inicial
-    render();
     animate();
 
     return () => {
@@ -393,7 +289,6 @@ export const HospitalConferenceRoom = ({
         />
       </div>
       
-      {/* Legenda */}
       <div className="flex flex-wrap gap-4 justify-center text-xs text-muted-foreground">
         <div className="flex items-center gap-2">
           <div className="w-3 h-3 rounded-full bg-green-500"></div>

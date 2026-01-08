@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { HospitalConferenceRoom } from './HospitalConferenceRoom';
 import { usePomodoro } from '@/hooks/usePomodoro';
+import { useStudyRoom } from '@/hooks/useStudyRoom';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -15,7 +16,8 @@ import {
   Plus,
   ChevronDown,
   ChevronUp,
-  GripVertical
+  GripVertical,
+  Loader2
 } from 'lucide-react';
 
 interface Task {
@@ -45,6 +47,29 @@ export const FullscreenStudyRoom = () => {
     formatTime,
   } = usePomodoro();
 
+  // Hook do sistema multiplayer
+  const {
+    room,
+    stats,
+    isLoading,
+    currentUser,
+    otherUsers,
+    updateUserStatus,
+    incrementPomodoros,
+  } = useStudyRoom('Você', mode);
+
+  // Sincronizar status do usuário com o modo Pomodoro
+  useEffect(() => {
+    updateUserStatus(mode);
+  }, [mode, updateUserStatus]);
+
+  // Incrementar pomodoros quando completar um ciclo
+  useEffect(() => {
+    if (pomodorosCompleted > 0) {
+      incrementPomodoros();
+    }
+  }, [pomodorosCompleted, incrementPomodoros]);
+
   // Entrar/Sair do fullscreen
   const toggleFullscreen = () => {
     if (!isFullscreen) {
@@ -65,6 +90,21 @@ export const FullscreenStudyRoom = () => {
     document.addEventListener('fullscreenchange', handleFullscreenChange);
     return () => document.removeEventListener('fullscreenchange', handleFullscreenChange);
   }, []);
+
+  // Atalho de teclado SPACE
+  useEffect(() => {
+    if (!isFullscreen) return;
+
+    const handleKeyDown = (e: KeyboardEvent) => {
+      if (e.key === ' ' && e.target === document.body) {
+        e.preventDefault();
+        isRunning ? pause() : start();
+      }
+    };
+
+    document.addEventListener('keydown', handleKeyDown);
+    return () => document.removeEventListener('keydown', handleKeyDown);
+  }, [isFullscreen, isRunning, pause, start]);
 
   // Funções de tarefas
   const addTask = () => {
@@ -106,18 +146,26 @@ export const FullscreenStudyRoom = () => {
     }
   };
 
+  // Loading state
+  if (isLoading) {
+    return (
+      <div className="flex items-center justify-center p-12">
+        <div className="flex flex-col items-center gap-4">
+          <Loader2 className="h-8 w-8 animate-spin text-primary" />
+          <p className="text-sm text-muted-foreground">Entrando na sala de estudos...</p>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className={`relative ${isFullscreen ? 'fixed inset-0 z-50 bg-black' : ''}`}>
       {/* Canvas Principal */}
       <div className={isFullscreen ? 'h-screen w-screen' : 'relative'}>
         <HospitalConferenceRoom 
           mode={mode}
-          currentUser={{
-            id: 'current-user',
-            username: 'Você',
-            status: mode,
-            position: { row: 0, col: 0 }
-          }}
+          currentUser={currentUser}
+          otherUsers={otherUsers}
         />
       </div>
 
@@ -132,6 +180,18 @@ export const FullscreenStudyRoom = () => {
             <Maximize2 className="h-5 w-5" />
             Modo Tela Cheia
           </Button>
+        </div>
+      )}
+
+      {/* Stats da Sala (quando não está em fullscreen) */}
+      {!isFullscreen && stats && (
+        <div className="absolute top-4 left-4 bg-black/80 backdrop-blur-md rounded-lg px-4 py-3 text-white">
+          <div className="flex items-center gap-4 text-sm">
+            <span className="font-semibold">👥 {stats.totalUsers}/50</span>
+            <span className="text-green-400">🟢 {stats.focusing}</span>
+            <span className="text-orange-400">🟡 {stats.shortBreak}</span>
+            <span className="text-purple-400">🟣 {stats.longBreak}</span>
+          </div>
         </div>
       )}
 
@@ -332,6 +392,35 @@ export const FullscreenStudyRoom = () => {
         </div>
       )}
 
+      {/* HUD - Stats da Sala (Overlay Inferior Direito) */}
+      {isFullscreen && stats && (
+        <div className="absolute bottom-4 right-4 z-50">
+          <Card className="bg-black/80 backdrop-blur-md border-2 border-white/20 shadow-2xl">
+            <CardContent className="p-4">
+              <div className="flex flex-col gap-2 text-white text-sm">
+                <div className="font-semibold text-center mb-1">👥 Sala Ativa</div>
+                <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                  <span className="text-white/70">Total:</span>
+                  <span className="text-right font-mono">{stats.totalUsers}/50</span>
+                  
+                  <span className="text-green-400">🟢 Focando:</span>
+                  <span className="text-right font-mono text-green-400">{stats.focusing}</span>
+                  
+                  <span className="text-orange-400">🟡 Pausa:</span>
+                  <span className="text-right font-mono text-orange-400">{stats.shortBreak}</span>
+                  
+                  <span className="text-purple-400">🟣 Longa:</span>
+                  <span className="text-right font-mono text-purple-400">{stats.longBreak}</span>
+                  
+                  <span className="text-white/70">Vagas:</span>
+                  <span className="text-right font-mono">{stats.availableSeats}</span>
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+        </div>
+      )}
+
       {/* Atalhos de Teclado (visível em fullscreen) */}
       {isFullscreen && (
         <div className="absolute top-4 left-4 z-50">
@@ -340,23 +429,6 @@ export const FullscreenStudyRoom = () => {
             <div>ESC - Sair</div>
             <div>SPACE - Play/Pause</div>
           </div>
-        </div>
-      )}
-
-      {/* Atalho de teclado */}
-      {isFullscreen && (
-        <div className="hidden">
-          {/* Listener de teclas */}
-          <input
-            autoFocus
-            onKeyDown={(e) => {
-              if (e.key === ' ') {
-                e.preventDefault();
-                isRunning ? pause() : start();
-              }
-            }}
-            className="opacity-0 absolute"
-          />
         </div>
       )}
     </div>
