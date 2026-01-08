@@ -111,18 +111,79 @@ useEffect(() => {
   loadPrompts();
 }, [user]);
 
-
-
-  // Salvar favoritos localmente (apenas se não estiver logado)
-  useEffect(() => {
-    if (!user) {
+// Carregar prompts da API com fallback para dados estáticos
+useEffect(() => {
+  const loadPrompts = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Tenta carregar da API primeiro
       try {
-        localStorage.setItem('medprompts-favorites', JSON.stringify(Array.from(favorites)));
-      } catch (error) {
-        console.error('Erro ao salvar favoritos:', error);
+        const data = await PromptsService.listPrompts({ includeSystem: true });
+        
+        if (data && data.length > 0) {
+          setPrompts(data);
+          
+          // Carregar favoritos
+          if (!user) {
+            const stored = localStorage.getItem('medprompts-favorites');
+            if (stored) setFavorites(new Set(JSON.parse(stored)));
+          } else {
+            const favs = data.filter(p => p.isFavorite).map(p => p.id);
+            setFavorites(new Set(favs));
+          }
+          return; // API funcionou, não precisa do fallback
+        }
+      } catch (apiError) {
+        // API não disponível, continua para o fallback
       }
+      
+      // Fallback: usar dados estáticos (sempre executa se API falhar ou retornar vazio)
+      try {
+        const promptsModule = await import('@/data/prompts-data');
+        const staticPrompts = promptsModule.prompts || [];
+        
+        if (staticPrompts.length > 0) {
+          setPrompts(staticPrompts);
+        }
+        
+        // Carregar favoritos locais
+        const stored = localStorage.getItem('medprompts-favorites');
+        if (stored) {
+          try {
+            setFavorites(new Set(JSON.parse(stored)));
+          } catch (e) {
+            // Ignora erro ao carregar favoritos
+          }
+        }
+        
+        if (staticPrompts.length > 0) {
+          toast({ 
+            title: 'ℹ️ Modo offline',
+            description: `${staticPrompts.length} prompts carregados localmente`,
+          });
+        }
+      } catch (importError) {
+        toast({ 
+          title: '❌ Erro crítico',
+          description: 'Não foi possível carregar os prompts',
+          variant: 'destructive'
+        });
+      }
+      
+    } catch (error) {
+      toast({ 
+        title: '❌ Erro ao carregar prompts',
+        description: 'Não foi possível carregar os prompts',
+        variant: 'destructive'
+      });
+    } finally {
+      setTimeout(() => setIsLoading(false), 500);
     }
-  }, [favorites, user]);
+  };
+
+  loadPrompts();
+}, [user]);
 
 
   const toggleFavorite = useCallback(async (promptId: string) => {
