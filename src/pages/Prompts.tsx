@@ -60,37 +60,57 @@ export default function Prompts() {
   const [showLoginBanner, setShowLoginBanner] = useState(true);
 
 
-  // Carregar prompts da API
-  useEffect(() => {
-    const loadPrompts = async () => {
+  // Carregar prompts da API com fallback para dados estáticos
+useEffect(() => {
+  const loadPrompts = async () => {
+    try {
+      setIsLoading(true);
+      
+      // Tenta carregar da API primeiro
       try {
-        setIsLoading(true);
         const data = await PromptsService.listPrompts({ includeSystem: true });
         setPrompts(data);
         
-        // Carregar favoritos locais se não estiver logado
+        // Carregar favoritos
         if (!user) {
           const stored = localStorage.getItem('medprompts-favorites');
           if (stored) setFavorites(new Set(JSON.parse(stored)));
         } else {
-          // Se logado, usar favoritos do backend
           const favs = data.filter(p => p.isFavorite).map(p => p.id);
           setFavorites(new Set(favs));
         }
-      } catch (error) {
-        console.error('Erro ao carregar prompts:', error);
+      } catch (apiError) {
+        console.warn('API não disponível, usando dados estáticos:', apiError);
+        
+        // Fallback: usar dados estáticos
+        const { prompts: staticPrompts } = await import('@/data/prompts-data');
+        setPrompts(staticPrompts);
+        
+        // Carregar favoritos locais
+        const stored = localStorage.getItem('medprompts-favorites');
+        if (stored) setFavorites(new Set(JSON.parse(stored)));
+        
         toast({ 
-          title: '❌ Erro ao carregar prompts',
-          description: 'Não foi possível conectar ao servidor',
-          variant: 'destructive'
+          title: 'ℹ️ Modo offline',
+          description: 'Usando prompts locais. Conecte-se à API para sincronizar.',
         });
-      } finally {
-        setTimeout(() => setIsLoading(false), 500);
       }
-    };
+      
+    } catch (error) {
+      console.error('Erro ao carregar prompts:', error);
+      toast({ 
+        title: '❌ Erro ao carregar prompts',
+        description: 'Não foi possível carregar os prompts',
+        variant: 'destructive'
+      });
+    } finally {
+      setTimeout(() => setIsLoading(false), 500);
+    }
+  };
 
-    loadPrompts();
-  }, [user]);
+  loadPrompts();
+}, [user]);
+
 
 
   // Salvar favoritos localmente (apenas se não estiver logado)
