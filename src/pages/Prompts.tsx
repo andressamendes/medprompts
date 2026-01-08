@@ -1,6 +1,5 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { prompts as staticPrompts } from '@/data/prompts-data';
 import { Prompt } from '@/types/prompt';
 import { Navbar } from '@/components/Navbar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
@@ -11,19 +10,14 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
   Search, Star, Copy, Filter, Loader2, ArrowUpDown, Check,
-  Sparkles, BookOpen, ArrowLeft, X, ExternalLink
+  Sparkles, BookOpen, ArrowLeft, X, ExternalLink, Zap
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
-
-
-interface PromptExtended extends Prompt {
-  icon?: string;
-  usageCount?: number;
-}
+import PromptsService from '@/services/api/promptsService';
 
 
 function renderMarkdown(markdown: string): string {
@@ -38,14 +32,14 @@ function renderMarkdown(markdown: string): string {
 
 
 /**
- * ✨ Página Prompts v3.0 - Design Minimalista
+ * ✨ Página Prompts v4.0 - Integração com Backend
  * 
- * Melhorias:
- * - Cards compactos e elegantes
- * - Animações suaves em todos os elementos
- * - Paleta de cores da Home (indigo/purple)
- * - Remoção de informações redundantes
- * - Foco na experiência visual clean
+ * Novidades:
+ * - Integração completa com API do backend
+ * - Suporte a prompts do sistema + prompts do usuário
+ * - Preenchimento de variáveis personalizadas
+ * - Sincronização de favoritos com backend
+ * - Design minimalista mantido
  */
 export default function Prompts() {
   const navigate = useNavigate();
@@ -55,59 +49,124 @@ export default function Prompts() {
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedTab, setSelectedTab] = useState('all');
   const [sortOrder, setSortOrder] = useState('a-z');
+  const [prompts, setPrompts] = useState<Prompt[]>([]);
   const [favorites, setFavorites] = useState<Set<string>>(new Set());
-  const [selectedPrompt, setSelectedPrompt] = useState<PromptExtended | null>(null);
+  const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [showLoginBanner, setShowLoginBanner] = useState(true);
 
 
+  // Carregar prompts da API
   useEffect(() => {
-    try {
-      const stored = localStorage.getItem('medprompts-favorites');
-      if (stored) setFavorites(new Set(JSON.parse(stored)));
-    } catch (error) {
-      console.error('Erro ao carregar favoritos:', error);
-    } finally {
-      setTimeout(() => setIsLoading(false), 500);
-    }
-  }, []);
-
-
-  useEffect(() => {
-    try {
-      localStorage.setItem('medprompts-favorites', JSON.stringify(Array.from(favorites)));
-    } catch (error) {
-      console.error('Erro ao salvar favoritos:', error);
-    }
-  }, [favorites]);
-
-
-  const toggleFavorite = useCallback((promptId: string) => {
-    setFavorites((prev) => {
-      const newFavorites = new Set(prev);
-      const isFavorite = newFavorites.has(promptId);
-      
-      if (isFavorite) {
-        newFavorites.delete(promptId);
-        toast({ title: '✨ Removido dos favoritos' });
-      } else {
-        newFavorites.add(promptId);
-        toast({ title: '⭐ Adicionado aos favoritos' });
+    const loadPrompts = async () => {
+      try {
+        setIsLoading(true);
+        const data = await PromptsService.listPrompts({ includeSystem: true });
+        setPrompts(data);
+        
+        // Carregar favoritos locais se não estiver logado
+        if (!user) {
+          const stored = localStorage.getItem('medprompts-favorites');
+          if (stored) setFavorites(new Set(JSON.parse(stored)));
+        } else {
+          // Se logado, usar favoritos do backend
+          const favs = data.filter(p => p.isFavorite).map(p => p.id);
+          setFavorites(new Set(favs));
+        }
+      } catch (error) {
+        console.error('Erro ao carregar prompts:', error);
+        toast({ 
+          title: '❌ Erro ao carregar prompts',
+          description: 'Não foi possível conectar ao servidor',
+          variant: 'destructive'
+        });
+      } finally {
+        setTimeout(() => setIsLoading(false), 500);
       }
-      
-      return newFavorites;
-    });
-  }, []);
+    };
+
+    loadPrompts();
+  }, [user]);
 
 
-  const copyPrompt = useCallback((prompt: PromptExtended) => {
+  // Salvar favoritos localmente (apenas se não estiver logado)
+  useEffect(() => {
+    if (!user) {
+      try {
+        localStorage.setItem('medprompts-favorites', JSON.stringify(Array.from(favorites)));
+      } catch (error) {
+        console.error('Erro ao salvar favoritos:', error);
+      }
+    }
+  }, [favorites, user]);
+
+
+  const toggleFavorite = useCallback(async (promptId: string) => {
+    try {
+      if (user) {
+        // Se logado, usar API
+        const updatedPrompt = await PromptsService.toggleFavorite(promptId);
+        
+        setPrompts(prev => 
+          prev.map(p => p.id === promptId ? updatedPrompt : p)
+        );
+        
+        setFavorites(prev => {
+          const newFavorites = new Set(prev);
+          if (updatedPrompt.isFavorite) {
+            newFavorites.add(promptId);
+            toast({ title: '⭐ Adicionado aos favoritos' });
+          } else {
+            newFavorites.delete(promptId);
+            toast({ title: '✨ Removido dos favoritos' });
+          }
+          return newFavorites;
+        });
+      } else {
+        // Se não logado, usar localStorage
+        setFavorites(prev => {
+          const newFavorites = new Set(prev);
+          if (newFavorites.has(promptId)) {
+            newFavorites.delete(promptId);
+            toast({ title: '✨ Removido dos favoritos' });
+          } else {
+            newFavorites.add(promptId);
+            toast({ title: '⭐ Adicionado aos favoritos' });
+          }
+          return newFavorites;
+        });
+      }
+    } catch (error) {
+      console.error('Erro ao favoritar:', error);
+      toast({ 
+        title: '❌ Erro ao favoritar',
+        variant: 'destructive'
+      });
+    }
+  }, [user]);
+
+
+const copyPrompt = useCallback(async (prompt: Prompt) => {
+  try {
     navigator.clipboard.writeText(prompt.content);
     setCopiedId(prompt.id);
     toast({ title: '✅ Prompt copiado!' });
+    
+    // Registrar uso (não aguarda para não travar a UI)
+    if (user) {
+      PromptsService.recordUsage(prompt.id).catch((err) => {
+        console.error('Erro ao registrar uso:', err);
+      });
+    }
+    
     setTimeout(() => setCopiedId(null), 2000);
-  }, []);
+  } catch (error) {
+    console.error('Erro ao copiar:', error);
+  }
+}, [user]);
+
 
 
   const openAI = useCallback((aiName: string) => {
@@ -117,7 +176,6 @@ export default function Prompts() {
       Perplexity: 'https://perplexity.ai',
       NotebookLM: 'https://notebooklm.google.com',
       Gemini: 'https://gemini.google.com',
-      Anki: 'https://apps.ankiweb.net',
     };
     const url = urls[aiName];
     if (url) window.open(url, '_blank', 'noopener,noreferrer');
@@ -128,7 +186,7 @@ export default function Prompts() {
     setIsSearching(true);
     setTimeout(() => setIsSearching(false), 200);
     
-    let filtered = [...(staticPrompts as PromptExtended[])];
+    let filtered = [...prompts];
 
     if (selectedTab === 'favorites') {
       filtered = filtered.filter((p) => favorites.has(p.id));
@@ -157,7 +215,7 @@ export default function Prompts() {
     });
 
     return filtered;
-  }, [selectedTab, selectedCategory, searchTerm, sortOrder, favorites]);
+  }, [prompts, selectedTab, selectedCategory, searchTerm, sortOrder, favorites]);
 
 
   const clearFilters = useCallback(() => {
@@ -185,6 +243,17 @@ export default function Prompts() {
       </div>
     );
   }
+
+
+  const getAIName = (prompt: Prompt): string => {
+    if (typeof prompt.recommendedAI === 'string') {
+      return prompt.recommendedAI;
+    }
+    if (prompt.recommendedAI && typeof prompt.recommendedAI === 'object') {
+      return prompt.recommendedAI.primary;
+    }
+    return 'IA';
+  };
 
 
   return (
@@ -336,6 +405,9 @@ export default function Prompts() {
                     <SelectItem value="all">Todas</SelectItem>
                     <SelectItem value="estudos">Estudos</SelectItem>
                     <SelectItem value="clinica">Clínica</SelectItem>
+                    <SelectItem value="anamnese">Anamnese</SelectItem>
+                    <SelectItem value="diagnostico">Diagnóstico</SelectItem>
+                    <SelectItem value="tratamento">Tratamento</SelectItem>
                   </SelectContent>
                 </Select>
 
@@ -383,7 +455,7 @@ export default function Prompts() {
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {filteredPrompts.map((prompt, index) => {
-                  const aiName = prompt.recommendedAI?.primary || 'IA';
+                  const aiName = getAIName(prompt);
                   
                   return (
                     <Card
@@ -396,12 +468,20 @@ export default function Prompts() {
                       
                       <CardHeader className="pb-3 relative z-10">
                         <div className="flex items-start justify-between gap-3 mb-3">
-                          <Badge 
-                            variant="outline"
-                            className="text-xs font-medium bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300"
-                          >
-                            {aiName}
-                          </Badge>
+                          <div className="flex gap-2">
+                            <Badge 
+                              variant="outline"
+                              className="text-xs font-medium bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300"
+                            >
+                              {aiName}
+                            </Badge>
+                            {prompt.isSystemPrompt && (
+                              <Badge variant="outline" className="text-xs">
+                                <Zap className="w-3 h-3 mr-1" />
+                                Sistema
+                              </Badge>
+                            )}
+                          </div>
                           
                           <Tooltip>
                             <TooltipTrigger>
@@ -524,9 +604,15 @@ export default function Prompts() {
                     <DialogTitle className="text-2xl mb-3">{selectedPrompt.title}</DialogTitle>
                     <div className="flex flex-wrap gap-2">
                       <Badge className="bg-gradient-to-r from-indigo-600 to-purple-600">
-                        {selectedPrompt.recommendedAI?.primary}
+                        {getAIName(selectedPrompt)}
                       </Badge>
                       <Badge variant="outline">{selectedPrompt.category}</Badge>
+                      {selectedPrompt.isSystemPrompt && (
+                        <Badge variant="outline">
+                          <Zap className="w-3 h-3 mr-1" />
+                          Sistema
+                        </Badge>
+                      )}
                     </div>
                   </div>
                 </div>
@@ -596,7 +682,7 @@ export default function Prompts() {
                     {favorites.has(selectedPrompt.id) ? 'Favoritado' : 'Favoritar'}
                   </Button>
                   <Button
-                    onClick={() => openAI(selectedPrompt.recommendedAI?.primary || 'ChatGPT')}
+                    onClick={() => openAI(getAIName(selectedPrompt))}
                     className="flex-1 h-11 gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
                   >
                     <ExternalLink className="w-4 h-4" />
@@ -622,7 +708,7 @@ export default function Prompts() {
               <div className="flex items-center justify-center gap-4 pt-4">
                 <Badge variant="outline" className="gap-1">
                   <Sparkles className="w-3 h-3" />
-                  {staticPrompts.length} prompts
+                  {prompts.length} prompts
                 </Badge>
                 <Badge variant="outline" className="gap-1">
                   <Star className="w-3 h-3" />

@@ -1,15 +1,20 @@
 export type PromptCategory = 
   | "estudos"
   | "clinica"
-  | "Técnicas de Estudo Ativo"
-  | "Técnicas de Revisão"
-  | "Integração Clínica"
-  | "Memorização"
-  | "Metacognição"
-  | "Pré-Estudo"
-  | "Estudo Colaborativo"
-  | "Análise de Erros"
-  | "Preparação para Provas"
+  | "anamnese"
+  | "diagnostico"
+  | "tratamento"
+  | "pediatria"
+  | "ginecologia"
+  | "cardiologia"
+  | "neurologia"
+  | "ortopedia"
+  | "emergencia"
+  | "cirurgia"
+  | "clinica-medica"
+  | "estudos-caso"
+  | "revisao"
+  | "outros"
 
 export type StudyLevel = 
   | "1º-2º ano"
@@ -24,12 +29,20 @@ export type AIModel =
   | "Perplexity"
   | "NotebookLM"
   | "Gemini"
-  | "Anki"
 
 export interface AIRecommendation {
   primary: AIModel
   reason: string
   alternatives: AIModel[]
+}
+
+export interface PromptVariable {
+  name: string
+  description: string
+  type: 'text' | 'number' | 'select'
+  options?: string[]
+  required?: boolean
+  defaultValue?: string
 }
 
 export interface Prompt {
@@ -39,14 +52,60 @@ export interface Prompt {
   content: string
   category: PromptCategory
   tags: string[]
+  variables?: PromptVariable[]
+  isSystemPrompt?: boolean
+  isFavorite?: boolean
+  timesUsed?: number
+  recommendedAI?: string | AIRecommendation
+  userId?: string
+  createdAt?: string
+  updatedAt?: string
+  
+  // Compatibilidade UI
+  icon?: string
+  usageCount?: number
   studyLevel?: StudyLevel | StudyLevel[]
   academicLevel?: StudyLevel | StudyLevel[]
   estimatedTime?: string | number
   prerequisites?: string[]
   tips?: string[]
-  recommendedAI?: AIRecommendation
-  
-  // Propriedades opcionais extras (compatibilidade UI)
-  icon?: string
-  usageCount?: number
+}
+
+export interface CreatePromptDTO {
+  title: string
+  description?: string
+  content: string
+  category: PromptCategory
+  tags?: string[]
+  variables?: PromptVariable[]
+  recommendedAI?: string
+}
+
+export interface UpdatePromptDTO extends Partial<CreatePromptDTO> {
+  isFavorite?: boolean
+}
+
+export interface PromptsListResponse {
+  success: boolean
+  prompts: Prompt[]
+  count?: number
+}
+
+export interface PromptResponse {
+  success: boolean
+  prompt: Prompt
+  message?: string
+}
+
+export interface FillPromptVariablesRequest {
+  values: Record<string, string>
+}
+
+export interface FillPromptVariablesResponse {
+  success: boolean
+  data: {
+    original: string
+    filled: string
+    variables: PromptVariable[]
+  }
 }
