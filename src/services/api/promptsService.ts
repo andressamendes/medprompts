@@ -5,7 +5,6 @@ import {
   PromptResponse,
   CreatePromptDTO,
   UpdatePromptDTO,
-  FillPromptVariablesRequest,
   FillPromptVariablesResponse,
 } from '@/types/prompt';
 

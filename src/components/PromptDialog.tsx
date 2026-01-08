@@ -41,8 +41,25 @@ export function PromptDialog({ prompt, open, onOpenChange }: PromptDialogProps) 
     window.open(url, '_blank');
   };
 
-  // Verifica qual IA é recomendada
-  const recommendedAI = prompt.recommendedAI?.primary;
+  // Helper para extrair nome da IA
+  const getAIName = (ai: string | { primary: string; reason?: string; alternatives?: string[] } | undefined): string => {
+    if (!ai) return '';
+    return typeof ai === 'string' ? ai : ai.primary;
+  };
+
+  const getAIReason = (ai: string | { primary: string; reason?: string; alternatives?: string[] } | undefined): string => {
+    if (!ai || typeof ai === 'string') return '';
+    return ai.reason || '';
+  };
+
+  const getAIAlternatives = (ai: string | { primary: string; reason?: string; alternatives?: string[] } | undefined): string[] => {
+    if (!ai || typeof ai === 'string') return [];
+    return ai.alternatives || [];
+  };
+
+  const recommendedAI = getAIName(prompt.recommendedAI);
+  const reason = getAIReason(prompt.recommendedAI);
+  const alternatives = getAIAlternatives(prompt.recommendedAI);
 
   return (
     <Dialog open={open} onOpenChange={onOpenChange}>
@@ -75,20 +92,22 @@ export function PromptDialog({ prompt, open, onOpenChange }: PromptDialogProps) 
           </div>
 
           {/* Seção de Recomendação de IA */}
-          {prompt.recommendedAI && (
+          {recommendedAI && (
             <div className="bg-gradient-to-r from-blue-50 to-indigo-50 dark:from-blue-950 dark:to-indigo-950 border border-blue-200 dark:border-blue-800 rounded-lg p-4 space-y-3">
               <div className="flex items-start gap-2">
                 <Sparkles className="w-5 h-5 text-blue-600 dark:text-blue-400 mt-0.5 flex-shrink-0" />
                 <div className="space-y-2 flex-1">
                   <p className="text-sm font-semibold text-blue-900 dark:text-blue-100">
-                    🤖 IA Recomendada: <span className="text-blue-600 dark:text-blue-400">{prompt.recommendedAI.primary}</span>
+                    🤖 IA Recomendada: <span className="text-blue-600 dark:text-blue-400">{recommendedAI}</span>
                   </p>
-                  <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
-                    {prompt.recommendedAI.reason}
-                  </p>
-                  {prompt.recommendedAI.alternatives && prompt.recommendedAI.alternatives.length > 0 && (
+                  {reason && (
+                    <p className="text-xs text-blue-700 dark:text-blue-300 leading-relaxed">
+                      {reason}
+                    </p>
+                  )}
+                  {alternatives.length > 0 && (
                     <p className="text-xs text-muted-foreground">
-                      Alternativas: {prompt.recommendedAI.alternatives.join(', ')}
+                      Alternativas: {alternatives.join(', ')}
                     </p>
                   )}
                 </div>

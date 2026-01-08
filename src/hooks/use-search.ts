@@ -32,6 +32,12 @@ export const useSearch = () => {
     }
   }, [])
 
+  // Helper para extrair nome da IA
+  const getAIName = (ai: string | { primary: string } | undefined): string => {
+    if (!ai) return '';
+    return typeof ai === 'string' ? ai : ai.primary;
+  };
+
   // Filtra prompts com proteção total
   const filteredPrompts = useMemo(() => {
     if (!Array.isArray(prompts)) {
@@ -50,7 +56,7 @@ export const useSearch = () => {
           ))
 
       const matchesSection = !selectedSection || prompt.category === selectedSection
-      const matchesAI = !selectedAI || prompt.recommendedAI?.primary === selectedAI
+      const matchesAI = !selectedAI || getAIName(prompt.recommendedAI) === selectedAI
 
       return matchesQuery && matchesSection && matchesAI
     })

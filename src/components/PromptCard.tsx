@@ -60,9 +60,14 @@ export const PromptCard = ({ prompt, onClick }: PromptCardProps) => {
   const { isFavorite, toggleFavorite } = useFavorites()
   const favorite = isFavorite(prompt.id)
 
-  const aiStyle = prompt.recommendedAI?.primary
-    ? AI_STYLES[prompt.recommendedAI.primary]
-    : null
+  // Helper para extrair nome da IA
+  const getAIName = (ai: string | { primary: string } | undefined): string => {
+    if (!ai) return '';
+    return typeof ai === 'string' ? ai : ai.primary;
+  };
+
+  const aiName = getAIName(prompt.recommendedAI);
+  const aiStyle = aiName ? AI_STYLES[aiName as keyof typeof AI_STYLES] : null;
 
   return (
     <Card
@@ -103,7 +108,7 @@ export const PromptCard = ({ prompt, onClick }: PromptCardProps) => {
           >
             <span className="text-base">{aiStyle.icon}</span>
             <span className={cn("text-xs font-bold tracking-wide", aiStyle.text)}>
-              {prompt.recommendedAI?.primary}
+              {aiName}
             </span>
           </div>
         </div>
