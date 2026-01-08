@@ -1,4 +1,5 @@
-import { useNavigate } from 'react-router-dom';
+import { useState } from 'react';
+import { useNavigate, useLocation, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Card, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
@@ -16,27 +17,24 @@ import {
   GraduationCap,
   MessageSquare,
   BarChart3,
-  Shield
+  Shield,
+  Menu,
+  X
 } from 'lucide-react';
 
 /**
- * ✨ Home v3.0 - Landing Page Minimalista
+ * ✨ Home v3.1 - Landing Page Minimalista (LINKS CORRIGIDOS)
  * 
- * Design System:
- * - Paleta: Gradientes indigo/purple
- * - Animações suaves em todos elementos
- * - Cards translúcidos com backdrop-blur
- * - Responsividade mobile-first
- * - CTAs fortes para conversão
- * 
- * Números Reais:
- * - 26 prompts especializados
- * - 4 IAs recomendadas
- * - 2 categorias principais
- * - Gamificação na área logada
+ * CORREÇÕES v3.1:
+ * - ✅ Todos os navigate() sem prefixo /medprompts/
+ * - ✅ Menu mobile hamburger adicionado
+ * - ✅ Indicador de página ativa
+ * - ✅ Logo como Link semântico
  */
 export default function NewIndex() {
   const navigate = useNavigate();
+  const location = useLocation();
+  const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
 
   const features = [
     {
@@ -70,25 +68,25 @@ export default function NewIndex() {
       icon: BookOpen,
       title: 'Guia de IAs',
       description: 'Compare ChatGPT, Claude, Perplexity e mais',
-      link: '/medprompts/guia-ias'
+      link: '/guia-ias'
     },
     {
       icon: Rocket,
       title: 'Focus Zone',
       description: 'Técnica Pomodoro para estudos concentrados',
-      link: '/medprompts/focus-zone'
+      link: '/focus-zone'
     },
     {
       icon: GraduationCap,
       title: 'Biblioteca de Prompts',
       description: 'Acesse todos os 26 prompts especializados',
-      link: '/medprompts/prompts'
+      link: '/prompts'
     },
     {
       icon: BarChart3,
       title: 'Ferramentas',
       description: 'Recursos para otimizar seu aprendizado',
-      link: '/medprompts/ferramentas'
+      link: '/ferramentas'
     }
   ];
 
@@ -108,97 +106,122 @@ export default function NewIndex() {
     'Categorização inteligente'
   ];
 
+  const navLinks = [
+    { label: 'Prompts', path: '/prompts' },
+    { label: 'Guia de IAs', path: '/guia-ias' },
+    { label: 'Ferramentas', path: '/ferramentas' }
+  ];
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-indigo-50 to-purple-50 dark:from-gray-950 dark:via-indigo-950 dark:to-purple-950">
-      {/* ==================== NAVBAR ==================== */}
+      {/* NAVBAR */}
       <nav className="sticky top-0 z-50 border-b bg-white/80 dark:bg-gray-950/80 backdrop-blur-lg">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="flex h-16 items-center justify-between">
-            {/* Logo */}
-            <button 
-              onClick={() => navigate('/medprompts/')}
-              className="flex items-center gap-2 font-bold text-xl group"
-            >
+            <Link to="/" className="flex items-center gap-2 font-bold text-xl group">
               <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center shadow-lg group-hover:shadow-xl group-hover:scale-105 transition-all duration-300">
                 <Brain className="w-6 h-6 text-white" />
               </div>
               <span className="bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">
                 MedPrompts
               </span>
-            </button>
+            </Link>
 
-            {/* Nav Links - Desktop */}
             <div className="hidden md:flex items-center gap-6">
-              <button
-                onClick={() => navigate('/medprompts/prompts')}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Prompts
-              </button>
-              <button
-                onClick={() => navigate('/medprompts/guia-ias')}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Guia de IAs
-              </button>
-              <button
-                onClick={() => navigate('/medprompts/ferramentas')}
-                className="text-sm font-medium text-muted-foreground hover:text-foreground transition-colors"
-              >
-                Ferramentas
-              </button>
+              {navLinks.map((link) => (
+                <button
+                  key={link.path}
+                  onClick={() => navigate(link.path)}
+                  className={`text-sm font-medium transition-colors ${
+                    location.pathname === link.path
+                      ? 'text-indigo-600 dark:text-indigo-400 font-semibold'
+                      : 'text-muted-foreground hover:text-foreground'
+                  }`}
+                >
+                  {link.label}
+                </button>
+              ))}
             </div>
 
-            {/* Auth Buttons */}
-            <div className="flex items-center gap-3">
-              <Button
-                variant="ghost"
-                onClick={() => navigate('/medprompts/login')}
-                className="text-sm"
-              >
+            <div className="hidden md:flex items-center gap-3">
+              <Button variant="ghost" onClick={() => navigate('/login')} className="text-sm">
                 Entrar
               </Button>
               <Button
-                onClick={() => navigate('/medprompts/register')}
+                onClick={() => navigate('/register')}
                 className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300"
               >
-                Começar Grátis
+                Começar 
               </Button>
             </div>
+
+            <button
+              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              className="md:hidden p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+              aria-label="Menu"
+            >
+              {mobileMenuOpen ? <X className="h-6 w-6" /> : <Menu className="h-6 w-6" />}
+            </button>
           </div>
+
+          {mobileMenuOpen && (
+            <div className="md:hidden border-t py-4 space-y-3 animate-in fade-in slide-in-from-top-4 duration-300">
+              {navLinks.map((link) => (
+                <button
+                  key={link.path}
+                  onClick={() => {
+                    navigate(link.path);
+                    setMobileMenuOpen(false);
+                  }}
+                  className={`block w-full text-left px-4 py-2 rounded-lg transition-colors ${
+                    location.pathname === link.path
+                      ? 'bg-indigo-50 dark:bg-indigo-900/30 text-indigo-600 dark:text-indigo-400 font-semibold'
+                      : 'text-muted-foreground hover:bg-gray-100 dark:hover:bg-gray-800'
+                  }`}
+                >
+                  {link.label}
+                </button>
+              ))}
+              <div className="flex flex-col gap-2 pt-4 border-t">
+                <Button variant="outline" onClick={() => { navigate('/login'); setMobileMenuOpen(false); }} className="w-full">
+                  Entrar
+                </Button>
+                <Button
+                  onClick={() => { navigate('/register'); setMobileMenuOpen(false); }}
+                  className="w-full bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                >
+                  Começar 
+                </Button>
+              </div>
+            </div>
+          )}
         </div>
       </nav>
-
-
-      {/* ==================== HERO SECTION ==================== */}
+      {/* HERO SECTION */}
       <section className="relative overflow-hidden py-20 md:py-32">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="max-w-4xl mx-auto text-center space-y-8 animate-in fade-in slide-in-from-bottom-8 duration-1000">
-            {/* Badge */}
             <div className="inline-flex items-center gap-2 px-4 py-2 rounded-full bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/30 dark:to-purple-900/30 text-indigo-700 dark:text-indigo-300 text-sm font-medium backdrop-blur-sm">
               <Sparkles className="h-4 w-4" />
               <span>Plataforma de Estudos Médicos com IA</span>
             </div>
 
-            {/* Título Principal */}
             <h1 className="text-5xl md:text-6xl lg:text-7xl font-bold tracking-tight leading-tight">
               Estude Medicina com{' '}
-              <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent animate-gradient">
+              <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
                 Inteligência Artificial
               </span>
             </h1>
 
-            {/* Descrição */}
             <p className="text-xl md:text-2xl text-muted-foreground max-w-3xl mx-auto">
               26 prompts especializados para ChatGPT, Claude e Perplexity. 
               Otimize seus estudos, crie flashcards, simule casos clínicos e muito mais.
             </p>
 
-            {/* CTAs */}
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
               <Button
                 size="lg"
-                onClick={() => navigate('/medprompts/register')}
+                onClick={() => navigate('/register')}
                 className="w-full sm:w-auto bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-lg px-8 py-6 shadow-2xl hover:shadow-indigo-500/50 transition-all duration-300 group"
               >
                 <span>Criar Conta Grátis</span>
@@ -208,7 +231,7 @@ export default function NewIndex() {
               <Button
                 size="lg"
                 variant="outline"
-                onClick={() => navigate('/medprompts/prompts')}
+                onClick={() => navigate('/prompts')}
                 className="w-full sm:w-auto text-lg px-8 py-6 border-2 hover:border-indigo-300 dark:hover:border-indigo-700 hover:bg-indigo-50 dark:hover:bg-indigo-950/30"
               >
                 <BookOpen className="mr-2 h-5 w-5" />
@@ -216,7 +239,6 @@ export default function NewIndex() {
               </Button>
             </div>
 
-            {/* Social Proof */}
             <div className="flex items-center justify-center gap-2 text-sm text-muted-foreground pt-6">
               <div className="flex -space-x-2">
                 {[...Array(3)].map((_, i) => (
@@ -228,14 +250,12 @@ export default function NewIndex() {
           </div>
         </div>
 
-        {/* Animated Blobs */}
         <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
         <div className="absolute top-0 right-1/4 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000" />
         <div className="absolute bottom-0 left-1/3 w-96 h-96 bg-pink-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-4000" />
       </section>
 
-
-      {/* ==================== FEATURES SECTION ==================== */}
+      {/* FEATURES SECTION */}
       <section className="py-20 md:py-28 bg-white/30 dark:bg-gray-950/30 backdrop-blur-sm">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
@@ -279,8 +299,7 @@ export default function NewIndex() {
         </div>
       </section>
 
-
-      {/* ==================== STATS SECTION ==================== */}
+      {/* STATS SECTION */}
       <section className="py-20 md:py-28">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="grid grid-cols-2 md:grid-cols-4 gap-8">
@@ -305,8 +324,7 @@ export default function NewIndex() {
         </div>
       </section>
 
-
-      {/* ==================== TOOLS SECTION ==================== */}
+      {/* TOOLS SECTION */}
       <section className="py-20 md:py-28 bg-white/30 dark:bg-gray-950/30 backdrop-blur-sm">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="text-center max-w-3xl mx-auto mb-16 space-y-4">
@@ -347,9 +365,7 @@ export default function NewIndex() {
           </div>
         </div>
       </section>
-
-
-      {/* ==================== BENEFITS SECTION ==================== */}
+      {/* BENEFITS SECTION */}
       <section className="py-20 md:py-28">
         <div className="container mx-auto px-4 sm:px-6">
           <div className="max-w-4xl mx-auto">
@@ -379,8 +395,7 @@ export default function NewIndex() {
         </div>
       </section>
 
-
-      {/* ==================== CTA SECTION ==================== */}
+      {/* CTA SECTION */}
       <section className="py-20 md:py-28 bg-gradient-to-br from-indigo-600 via-purple-600 to-pink-600 relative overflow-hidden">
         <div className="absolute inset-0 bg-[url('/grid.svg')] opacity-10" />
         
@@ -402,7 +417,7 @@ export default function NewIndex() {
             <div className="flex flex-col sm:flex-row items-center justify-center gap-4 pt-4">
               <Button
                 size="lg"
-                onClick={() => navigate('/medprompts/register')}
+                onClick={() => navigate('/register')}
                 className="w-full sm:w-auto bg-white text-indigo-600 hover:bg-gray-100 text-lg px-8 py-6 shadow-2xl hover:shadow-white/20 transition-all duration-300 group"
               >
                 <span>Começar Gratuitamente</span>
@@ -412,7 +427,7 @@ export default function NewIndex() {
               <Button
                 size="lg"
                 variant="outline"
-                onClick={() => navigate('/medprompts/prompts')}
+                onClick={() => navigate('/prompts')}
                 className="w-full sm:w-auto text-lg px-8 py-6 border-2 border-white text-white hover:bg-white/10 backdrop-blur-sm"
               >
                 <BookOpen className="mr-2 h-5 w-5" />
@@ -423,12 +438,10 @@ export default function NewIndex() {
         </div>
       </section>
 
-
-      {/* ==================== FOOTER ==================== */}
+      {/* FOOTER */}
       <footer className="border-t bg-white/50 dark:bg-gray-950/50 backdrop-blur-sm" role="contentinfo">
         <div className="container mx-auto px-4 sm:px-6 py-12">
           <div className="grid grid-cols-1 md:grid-cols-4 gap-8">
-            {/* Coluna 1 - Sobre */}
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-indigo-600 to-purple-600 flex items-center justify-center">
@@ -441,51 +454,48 @@ export default function NewIndex() {
               </p>
             </div>
 
-            {/* Coluna 2 - Links */}
             <div className="space-y-4">
               <h3 className="font-semibold">Recursos</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
-                  <button onClick={() => navigate('/medprompts/prompts')} className="hover:text-foreground transition-colors">
+                  <button onClick={() => navigate('/prompts')} className="hover:text-foreground transition-colors">
                     Biblioteca de Prompts
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => navigate('/medprompts/guia-ias')} className="hover:text-foreground transition-colors">
+                  <button onClick={() => navigate('/guia-ias')} className="hover:text-foreground transition-colors">
                     Guia de IAs
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => navigate('/medprompts/ferramentas')} className="hover:text-foreground transition-colors">
+                  <button onClick={() => navigate('/ferramentas')} className="hover:text-foreground transition-colors">
                     Ferramentas
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => navigate('/medprompts/focus-zone')} className="hover:text-foreground transition-colors">
+                  <button onClick={() => navigate('/focus-zone')} className="hover:text-foreground transition-colors">
                     Focus Zone
                   </button>
                 </li>
               </ul>
             </div>
 
-            {/* Coluna 3 - Conta */}
             <div className="space-y-4">
               <h3 className="font-semibold">Conta</h3>
               <ul className="space-y-2 text-sm text-muted-foreground">
                 <li>
-                  <button onClick={() => navigate('/medprompts/register')} className="hover:text-foreground transition-colors">
+                  <button onClick={() => navigate('/register')} className="hover:text-foreground transition-colors">
                     Criar Conta
                   </button>
                 </li>
                 <li>
-                  <button onClick={() => navigate('/medprompts/login')} className="hover:text-foreground transition-colors">
+                  <button onClick={() => navigate('/login')} className="hover:text-foreground transition-colors">
                     Fazer Login
                   </button>
                 </li>
               </ul>
             </div>
 
-            {/* Coluna 4 - Desenvolvido por */}
             <div className="space-y-4">
               <h3 className="font-semibold">Desenvolvido por</h3>
               <div className="text-sm text-muted-foreground space-y-1">
@@ -496,7 +506,6 @@ export default function NewIndex() {
             </div>
           </div>
 
-          {/* Copyright */}
           <div className="border-t mt-8 pt-6 text-center">
             <p className="text-sm text-muted-foreground">
               MedPrompts © {new Date().getFullYear()} • Todos os direitos reservados
