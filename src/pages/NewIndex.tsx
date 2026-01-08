@@ -9,8 +9,6 @@ import {
   Target,
   Trophy,
   Zap,
-  Clock,
-  Users,
   ArrowRight,
   CheckCircle2,
   Star,
