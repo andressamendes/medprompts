@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Gerador de Ícones PWA - MedPrompts</title>
+    <style>
+        body {
+            font-family: Arial, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            text-align: center;
+        }
+        canvas {
+            border: 2px solid #2563eb;
+            margin: 20px 0;
+            display: none;
+        }
+        button {
+            background: #2563eb;
+            color: white;
+            border: none;
+            padding: 15px 30px;
+            font-size: 16px;
+            border-radius: 8px;
+            cursor: pointer;
+            margin: 10px;
+        }
+        button:hover {
+            background: #1d4ed8;
+        }
+        .preview {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            margin: 30px 0;
+        }
+        .preview-item {
+            text-align: center;
+        }
+        .preview-item img {
+            border: 2px solid #e5e7eb;
+            border-radius: 12px;
+        }
+        h1 { color: #2563eb; }
+        .info {
+            background: #f3f4f6;
+            padding: 15px;
+            border-radius: 8px;
+            margin: 20px 0;
+        }
+    </style>
+</head>
+<body>
+    <h1>🎨 Gerador de Ícones PWA</h1>
+    <p>Clique nos botões abaixo para gerar e baixar os ícones da PWA</p>
+
+    <div class="info">
+        <p><strong>📋 Instruções:</strong></p>
+        <p>1. Clique em "Gerar Ícones"</p>
+        <p>2. Baixe o ícone 192x192</p>
+        <p>3. Baixe o ícone 512x512</p>
+        <p>4. Salve ambos na pasta <code>public/</code> do projeto</p>
+    </div>
+
+    <button onclick="generateIcons()">🎨 Gerar Ícones</button>
+
+    <div class="preview" id="preview" style="display: none;">
+        <div class="preview-item">
+            <h3>192x192</h3>
+            <img id="preview192" width="192" height="192">
+            <br>
+            <button onclick="download(192)">⬇️ Baixar icon-192.png</button>
+        </div>
+        <div class="preview-item">
+            <h3>512x512</h3>
+            <img id="preview512" width="256" height="256">
+            <br>
+            <button onclick="download(512)">⬇️ Baixar icon-512.png</button>
+        </div>
+    </div>
+
+    <canvas id="canvas192" width="192" height="192"></canvas>
+    <canvas id="canvas512" width="512" height="512"></canvas>
+
+    <script>
+        function generateIcon(canvas, size) {
+            const ctx = canvas.getContext('2d');
+            
+            // Background azul
+            ctx.fillStyle = '#2563eb';
+            ctx.fillRect(0, 0, size, size);
+            
+            // Texto "M"
+            ctx.fillStyle = 'white';
+            ctx.font = `bold ${size * 0.6}px Arial, sans-serif`;
+            ctx.textAlign = 'center';
+            ctx.textBaseline = 'middle';
+            ctx.fillText('M', size / 2, size / 2);
+            
+            // Subtítulo pequeno
+            ctx.font = `${size * 0.08}px Arial, sans-serif`;
+            ctx.fillText('MedPrompts', size / 2, size * 0.85);
+            
+            return canvas.toDataURL('image/png');
+        }
+
+        function generateIcons() {
+            const canvas192 = document.getElementById('canvas192');
+            const canvas512 = document.getElementById('canvas512');
+            
+            const dataUrl192 = generateIcon(canvas192, 192);
+            const dataUrl512 = generateIcon(canvas512, 512);
+            
+            document.getElementById('preview192').src = dataUrl192;
+            document.getElementById('preview512').src = dataUrl512;
+            
+            document.getElementById('preview').style.display = 'flex';
+        }
+
+        function download(size) {
+            const canvas = document.getElementById('canvas' + size);
+            const dataUrl = canvas.toDataURL('image/png');
+            
+            const link = document.createElement('a');
+            link.download = `icon-${size}.png`;
+            link.href = dataUrl;
+            link.click();
+        }
+    </script>
+</body>
+</html>
