@@ -49,7 +49,6 @@ export const FullscreenStudyRoom = () => {
 
   // Hook do sistema multiplayer
   const {
-    room,
     stats,
     isLoading,
     currentUser,
