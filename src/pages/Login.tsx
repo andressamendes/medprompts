@@ -33,6 +33,7 @@ export default function Login() {
     setIsLoading(true);
 
     try {
+      // Aguarda login completar e atualizar estado
       await login(formData.email, formData.password);
       
       toast({
@@ -40,10 +41,10 @@ export default function Login() {
         description: 'Bem-vindo de volta!',
       });
       
-      // Usar navigate do React Router para redirecionar corretamente
+      // Pequeno delay para garantir que o estado foi atualizado
       setTimeout(() => {
-        navigate('/dashboard');
-      }, 800);
+        navigate('/dashboard', { replace: true });
+      }, 100);
     } catch (error: any) {
       toast({
         title: 'Erro ao fazer login',
@@ -75,6 +76,7 @@ export default function Login() {
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 disabled={isLoading}
                 required
+                autoComplete="email"
               />
             </div>
             <div className="space-y-2">
@@ -87,6 +89,7 @@ export default function Login() {
                 onChange={(e) => setFormData({ ...formData, password: e.target.value })}
                 disabled={isLoading}
                 required
+                autoComplete="current-password"
               />
             </div>
           </CardContent>

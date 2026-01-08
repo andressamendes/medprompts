@@ -10,7 +10,7 @@ import { Loader2 } from 'lucide-react';
 
 export default function Register() {
   const navigate = useNavigate();
-  const { register, refreshAuth } = useAuth();
+  const { register } = useAuth();
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
   const [formData, setFormData] = useState({
@@ -22,7 +22,6 @@ export default function Register() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    e.stopPropagation();
     
     if (!formData.name || !formData.email || !formData.password || !formData.confirmPassword) {
       toast({
@@ -30,7 +29,7 @@ export default function Register() {
         description: 'Por favor, preencha todos os campos',
         variant: 'destructive',
       });
-      return false;
+      return;
     }
 
     if (formData.password !== formData.confirmPassword) {
@@ -39,7 +38,7 @@ export default function Register() {
         description: 'As senhas digitadas não são iguais',
         variant: 'destructive',
       });
-      return false;
+      return;
     }
 
     if (formData.password.length < 8) {
@@ -48,24 +47,24 @@ export default function Register() {
         description: 'A senha deve ter pelo menos 8 caracteres',
         variant: 'destructive',
       });
-      return false;
+      return;
     }
 
     setIsLoading(true);
     
     try {
+      // Aguarda registro completar e atualizar estado
       await register(formData.name, formData.email, formData.password);
-      
-      // Forçar atualização do AuthContext
-      refreshAuth();
       
       toast({
         title: 'Conta criada!',
         description: 'Bem-vindo ao MedPrompts!',
       });
       
-      // Navegar sem reload
-      navigate('/dashboard', { replace: true });
+      // Pequeno delay para garantir que o estado foi atualizado
+      setTimeout(() => {
+        navigate('/dashboard', { replace: true });
+      }, 100);
       
     } catch (error: any) {
       toast({
@@ -75,8 +74,6 @@ export default function Register() {
       });
       setIsLoading(false);
     }
-    
-    return false;
   };
 
   return (
@@ -88,7 +85,7 @@ export default function Register() {
             Preencha os dados abaixo para criar sua conta
           </CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmit} noValidate>
+        <form onSubmit={handleSubmit}>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="name">Nome Completo</Label>
