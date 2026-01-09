@@ -1,4 +1,4 @@
-import { useEffect, useRef } from 'react';
+import { useEffect, useRef, useState } from 'react';
 import { User } from '@/types/studyRoom.types';
 import { AVATAR_CATALOG, CLASS_YEARS } from '@/types/avatar.types';
 
@@ -14,277 +14,666 @@ export const HospitalInfirmary = ({
   otherUsers = [] 
 }: HospitalInfirmaryProps) => {
   const canvasRef = useRef<HTMLCanvasElement>(null);
+  const containerRef = useRef<HTMLDivElement>(null);
+  const [dimensions, setDimensions] = useState({ width: 1600, height: 900 });
+
+  // Responsividade automática
+  useEffect(() => {
+    const updateDimensions = () => {
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect();
+        const width = rect.width;
+        const height = Math.max(width * 0.5625, 600); // Aspect ratio 16:9, mínimo 600px
+        setDimensions({ width, height });
+      }
+    };
+
+    updateDimensions();
+    window.addEventListener('resize', updateDimensions);
+    return () => window.removeEventListener('resize', updateDimensions);
+  }, []);
 
   useEffect(() => {
     const canvas = canvasRef.current;
     if (!canvas) return;
 
-    const ctx = canvas.getContext('2d');
+    const ctx = canvas.getContext('2d', { alpha: false });
     if (!ctx) return;
 
-    const width = 1200;
-    const height = 800;
-    canvas.width = width;
-    canvas.height = height;
+    const { width, height } = dimensions;
+    const dpr = window.devicePixelRatio || 1;
+    
+    // High DPI support
+    canvas.width = width * dpr;
+    canvas.height = height * dpr;
+    canvas.style.width = `${width}px`;
+    canvas.style.height = `${height}px`;
+    ctx.scale(dpr, dpr);
 
+    // Escala dinâmica baseada no tamanho
+    const scale = width / 1600;
+
+    // Funções auxiliares
     const drawRect = (x: number, y: number, w: number, h: number, color: string) => {
       ctx.fillStyle = color;
-      ctx.fillRect(x, y, w, h);
+      ctx.fillRect(x * scale, y * scale, w * scale, h * scale);
     };
 
-    const drawText = (text: string, x: number, y: number, size: number, color: string, align: CanvasTextAlign = 'left') => {
+    const drawRoundedRect = (x: number, y: number, w: number, h: number, r: number, color: string) => {
       ctx.fillStyle = color;
-      ctx.font = `${size}px Arial`;
-      ctx.textAlign = align;
-      ctx.fillText(text, x, y);
+      ctx.beginPath();
+      ctx.roundRect(x * scale, y * scale, w * scale, h * scale, r * scale);
+      ctx.fill();
     };
 
-    // Desenhar piso da enfermaria
+    const drawText = (text: string, x: number, y: number, size: number, color: string, align: CanvasTextAlign = 'center', weight: string = 'normal') => {
+      ctx.fillStyle = color;
+      ctx.font = `${weight} ${size * scale}px 'Inter', -apple-system, system-ui, sans-serif`;
+      ctx.textAlign = align;
+      ctx.fillText(text, x * scale, y * scale);
+    };
+
+    const drawShadow = (x: number, y: number, w: number, h: number, blur: number, color: string) => {
+      ctx.shadowColor = color;
+      ctx.shadowBlur = blur * scale;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 2 * scale;
+    };
+
+    const clearShadow = () => {
+      ctx.shadowColor = 'transparent';
+      ctx.shadowBlur = 0;
+      ctx.shadowOffsetX = 0;
+      ctx.shadowOffsetY = 0;
+    };
+
+    // Gradiente para piso
+    const createFloorGradient = () => {
+      const gradient = ctx.createLinearGradient(0, 0, 0, height);
+      gradient.addColorStop(0, '#F5F7FA');
+      gradient.addColorStop(0.5, '#E8EDF2');
+      gradient.addColorStop(1, '#DFE6ED');
+      return gradient;
+    };
+
+    // Desenhar piso com textura
     const drawFloor = () => {
-      const tileSize = 40;
+      ctx.fillStyle = createFloorGradient();
+      ctx.fillRect(0, 0, width, height);
+      
+      // Grid de tiles
+      const tileSize = 60 * scale;
+      ctx.strokeStyle = '#D0D8E0';
+      ctx.lineWidth = 1;
+      
       for (let x = 0; x < width; x += tileSize) {
         for (let y = 0; y < height; y += tileSize) {
-          const isLight = ((x / tileSize) + (y / tileSize)) % 2 === 0;
-          drawRect(x, y, tileSize, tileSize, isLight ? '#E8E8E8' : '#D8D8D8');
+          ctx.strokeRect(x, y, tileSize, tileSize);
         }
       }
     };
 
-    // Desenhar paredes e divisórias
-    const drawWalls = () => {
-      // Parede superior
-      drawRect(0, 0, width, 30, '#A8C4B8');
-      drawText('🏥 ENFERMARIA HOSPITALAR', width / 2, 20, 18, '#2C3E50', 'center');
-
-      // Parede esquerda
-      drawRect(0, 0, 30, height, '#A8C4B8');
-
-      // Parede direita
-      drawRect(width - 30, 0, 30, height, '#A8C4B8');
-
-      // Divisórias internas (verticais)
-      drawRect(width / 3, 30, 8, height - 30, '#98A4A8');
-      drawRect((width / 3) * 2, 30, 8, height - 30, '#98A4A8');
-
-      // Divisória horizontal
-      drawRect(30, height / 2, width - 60, 8, '#98A4A8');
+    // Header com logo
+    const drawHeader = () => {
+      // Background do header com gradiente
+      const headerGradient = ctx.createLinearGradient(0, 0, 0, 80 * scale);
+      headerGradient.addColorStop(0, '#2C3E50');
+      headerGradient.addColorStop(1, '#34495E');
+      ctx.fillStyle = headerGradient;
+      ctx.fillRect(0, 0, width, 80 * scale);
+      
+      // Logo MedFocus
+      drawText('🏥 MedFocus', width / 2, 50, 32, '#FFFFFF', 'center', 'bold');
+      drawText('Enfermaria Virtual', width / 2, 70, 14, '#BDC3C7', 'center', 'normal');
     };
 
-    // Área de Triagem (superior esquerda)
+    // Área de Triagem (melhorada)
     const drawTriageArea = () => {
-      const x = 50;
-      const y = 60;
-      drawText('📋 TRIAGEM', x, y, 14, '#E74C3C', 'left');
+      const x = 60;
+      const y = 120;
       
-      // Balcão de recepção
-      drawRect(x, y + 10, 100, 60, '#8B7355');
-      drawRect(x + 5, y + 15, 90, 50, '#A0826D');
+      // Fundo da área com sombra
+      drawShadow(x, y, 320, 200, 15, 'rgba(0,0,0,0.1)');
+      drawRoundedRect(x, y, 320, 200, 12, '#FFFFFF');
+      clearShadow();
+      
+      // Borda colorida
+      ctx.strokeStyle = '#E74C3C';
+      ctx.lineWidth = 3 * scale;
+      ctx.beginPath();
+      ctx.roundRect(x * scale, y * scale, 320 * scale, 200 * scale, 12 * scale);
+      ctx.stroke();
+      
+      // Título da área
+      drawText('📋 TRIAGEM', x + 160, y + 30, 18, '#E74C3C', 'center', 'bold');
+      
+      // Balcão de recepção 3D
+      const deskX = x + 40;
+      const deskY = y + 50;
+      
+      // Sombra do balcão
+      drawShadow(deskX, deskY, 240, 80, 10, 'rgba(0,0,0,0.15)');
+      
+      // Parte frontal
+      const frontGradient = ctx.createLinearGradient(
+        deskX * scale, deskY * scale, 
+        deskX * scale, (deskY + 80) * scale
+      );
+      frontGradient.addColorStop(0, '#A0826D');
+      frontGradient.addColorStop(1, '#8B7355');
+      ctx.fillStyle = frontGradient;
+      ctx.fillRect(deskX * scale, deskY * scale, 240 * scale, 80 * scale);
+      
+      // Topo do balcão
+      ctx.fillStyle = '#B8967D';
+      ctx.fillRect(deskX * scale, deskY * scale, 240 * scale, 10 * scale);
+      
+      clearShadow();
+      
+      // Computador no balcão
+      ctx.fillStyle = '#34495E';
+      ctx.fillRect((deskX + 180) * scale, (deskY + 20) * scale, 40 * scale, 30 * scale);
+      ctx.fillStyle = '#5DADE2';
+      ctx.fillRect((deskX + 183) * scale, (deskY + 23) * scale, 34 * scale, 24 * scale);
       
       // Cadeiras de espera
-      const chairY = y + 90;
-      for (let i = 0; i < 3; i++) {
-        drawRect(x + (i * 35), chairY, 25, 25, '#34495E');
+      const chairY = y + 150;
+      for (let i = 0; i < 4; i++) {
+        const chairX = x + 40 + (i * 60);
+        
+        // Sombra da cadeira
+        ctx.fillStyle = 'rgba(0,0,0,0.1)';
+        ctx.fillRect((chairX - 2) * scale, (chairY + 30) * scale, 34 * scale, 8 * scale);
+        
+        // Assento
+        ctx.fillStyle = '#3498DB';
+        ctx.fillRect(chairX * scale, chairY * scale, 30 * scale, 25 * scale);
+        
+        // Encosto
+        ctx.fillStyle = '#2980B9';
+        ctx.fillRect(chairX * scale, (chairY - 20) * scale, 30 * scale, 20 * scale);
       }
     };
 
-    // Consultório 1 (superior centro)
-    const drawConsultingRoom1 = () => {
-      const x = (width / 3) + 40;
-      const y = 60;
-      drawText('🩺 CONSULTÓRIO 1', x, y, 14, '#3498DB', 'left');
+    // Consultório com mais detalhes
+    const drawConsultingRoom = (x: number, y: number, number: number) => {
+      // Fundo
+      drawShadow(x, y, 280, 200, 15, 'rgba(0,0,0,0.1)');
+      drawRoundedRect(x, y, 280, 200, 12, '#FFFFFF');
+      clearShadow();
+      
+      // Borda
+      ctx.strokeStyle = '#3498DB';
+      ctx.lineWidth = 3 * scale;
+      ctx.beginPath();
+      ctx.roundRect(x * scale, y * scale, 280 * scale, 200 * scale, 12 * scale);
+      ctx.stroke();
+      
+      // Título
+      drawText(`🩺 CONSULTÓRIO ${number}`, x + 140, y + 30, 16, '#3498DB', 'center', 'bold');
       
       // Mesa do médico
-      drawRect(x, y + 10, 80, 50, '#8B7355');
+      ctx.fillStyle = '#8B7355';
+      ctx.fillRect((x + 20) * scale, (y + 50) * scale, 100 * scale, 60 * scale);
+      ctx.fillStyle = '#A0826D';
+      ctx.fillRect((x + 20) * scale, (y + 50) * scale, 100 * scale, 8 * scale);
       
-      // Maca de exame
-      drawRect(x + 100, y + 10, 100, 60, '#E8E8E8');
-      drawRect(x + 105, y + 15, 90, 50, '#FFFFFF');
+      // Laptop na mesa
+      ctx.fillStyle = '#2C3E50';
+      ctx.fillRect((x + 40) * scale, (y + 60) * scale, 60 * scale, 40 * scale);
+      ctx.fillStyle = '#34495E';
+      ctx.fillRect((x + 43) * scale, (y + 63) * scale, 54 * scale, 34 * scale);
+      
+      // Maca de exame detalhada
+      const bedX = x + 150;
+      const bedY = y + 50;
+      
+      // Base da maca
+      ctx.fillStyle = '#BDC3C7';
+      ctx.fillRect(bedX * scale, bedY * scale, 110 * scale, 80 * scale);
+      
+      // Colchão
+      ctx.fillStyle = '#ECF0F1';
+      ctx.fillRect((bedX + 5) * scale, (bedY + 5) * scale, 100 * scale, 70 * scale);
+      
+      // Travesseiro
+      ctx.fillStyle = '#E8F6F3';
+      ctx.fillRect((bedX + 10) * scale, (bedY + 10) * scale, 40 * scale, 20 * scale);
+      
+      // Lençol (detalhe)
+      ctx.fillStyle = '#D5F4E6';
+      ctx.fillRect((bedX + 10) * scale, (bedY + 35) * scale, 90 * scale, 40 * scale);
+      
+      // Pés da maca
+      ctx.fillStyle = '#95A5A6';
+      ctx.fillRect((bedX + 10) * scale, (bedY + 80) * scale, 8 * scale, 20 * scale);
+      ctx.fillRect((bedX + 92) * scale, (bedY + 80) * scale, 8 * scale, 20 * scale);
+      
+      // Equipamentos na parede
+      ctx.fillStyle = '#E8E8E8';
+      ctx.fillRect((x + 20) * scale, (y + 130) * scale, 40 * scale, 50 * scale);
+      ctx.fillStyle = '#FF6B6B';
+      ctx.beginPath();
+      ctx.arc((x + 40) * scale, (y + 150) * scale, 8 * scale, 0, Math.PI * 2);
+      ctx.fill();
     };
 
-    // Consultório 2 (superior direita)
-    const drawConsultingRoom2 = () => {
-      const x = ((width / 3) * 2) + 40;
-      const y = 60;
-      drawText('🩺 CONSULTÓRIO 2', x, y, 14, '#3498DB', 'left');
-      
-      // Mesa do médico
-      drawRect(x, y + 10, 80, 50, '#8B7355');
-      
-      // Maca de exame
-      drawRect(x + 100, y + 10, 100, 60, '#E8E8E8');
-      drawRect(x + 105, y + 15, 90, 50, '#FFFFFF');
-    };
-
-    // Enfermaria Central (inferior esquerda) - 4 leitos
+    // Enfermaria com leitos
     const drawInfirmaryBeds = () => {
-      const x = 50;
-      const y = (height / 2) + 40;
-      drawText('🛏️ ENFERMARIA', x, y, 14, '#27AE60', 'left');
+      const x = 60;
+      const y = 360;
+      
+      // Fundo
+      drawShadow(x, y, 660, 220, 15, 'rgba(0,0,0,0.1)');
+      drawRoundedRect(x, y, 660, 220, 12, '#FFFFFF');
+      clearShadow();
+      
+      // Borda
+      ctx.strokeStyle = '#27AE60';
+      ctx.lineWidth = 3 * scale;
+      ctx.beginPath();
+      ctx.roundRect(x * scale, y * scale, 660 * scale, 220 * scale, 12 * scale);
+      ctx.stroke();
+      
+      // Título
+      drawText('🛏️ ENFERMARIA', x + 330, y + 30, 18, '#27AE60', 'center', 'bold');
       
       // 4 leitos em grid 2x2
       const bedPositions = [
-        { x: x, y: y + 10 },
-        { x: x + 120, y: y + 10 },
-        { x: x, y: y + 110 },
-        { x: x + 120, y: y + 110 }
+        { x: x + 40, y: y + 50 },
+        { x: x + 360, y: y + 50 },
+        { x: x + 40, y: y + 140 },
+        { x: x + 360, y: y + 140 }
       ];
       
       bedPositions.forEach(pos => {
-        // Leito
-        drawRect(pos.x, pos.y, 100, 80, '#E8E8E8');
-        drawRect(pos.x + 5, pos.y + 5, 90, 70, '#FFFFFF');
+        // Leito completo
+        drawShadow(pos.x, pos.y, 280, 70, 8, 'rgba(0,0,0,0.08)');
+        
+        // Estrutura
+        ctx.fillStyle = '#BDC3C7';
+        ctx.fillRect(pos.x * scale, pos.y * scale, 280 * scale, 70 * scale);
+        
+        // Colchão
+        ctx.fillStyle = '#ECF0F1';
+        ctx.fillRect((pos.x + 5) * scale, (pos.y + 5) * scale, 270 * scale, 60 * scale);
         
         // Travesseiro
-        drawRect(pos.x + 10, pos.y + 10, 80, 20, '#B8D4E8');
+        ctx.fillStyle = '#D5F4E6';
+        ctx.fillRect((pos.x + 15) * scale, (pos.y + 10) * scale, 80 * scale, 25 * scale);
+        
+        // Lençol
+        ctx.fillStyle = '#FFFFFF';
+        ctx.fillRect((pos.x + 15) * scale, (pos.y + 38) * scale, 250 * scale, 27 * scale);
+        
+        clearShadow();
+        
+        // Monitor de sinais vitais
+        ctx.fillStyle = '#34495E';
+        ctx.fillRect((pos.x + 240) * scale, (pos.y - 30) * scale, 50 * scale, 40 * scale);
+        ctx.fillStyle = '#27AE60';
+        ctx.fillRect((pos.x + 245) * scale, (pos.y - 25) * scale, 40 * scale, 30 * scale);
+        
+        // Linha do monitor (heartbeat)
+        ctx.strokeStyle = '#2ECC71';
+        ctx.lineWidth = 2 * scale;
+        ctx.beginPath();
+        ctx.moveTo((pos.x + 250) * scale, (pos.y - 10) * scale);
+        ctx.lineTo((pos.x + 255) * scale, (pos.y - 10) * scale);
+        ctx.lineTo((pos.x + 258) * scale, (pos.y - 20) * scale);
+        ctx.lineTo((pos.x + 262) * scale, (pos.y - 5) * scale);
+        ctx.lineTo((pos.x + 265) * scale, (pos.y - 10) * scale);
+        ctx.lineTo((pos.x + 275) * scale, (pos.y - 10) * scale);
+        ctx.stroke();
       });
     };
 
-    // Sala de Medicação (inferior centro)
+    // Sala de Medicação
     const drawMedicationRoom = () => {
-      const x = (width / 3) + 40;
-      const y = (height / 2) + 40;
-      drawText('💊 MEDICAÇÃO', x, y, 14, '#F39C12', 'left');
+      const x = 760;
+      const y = 360;
+      
+      drawShadow(x, y, 300, 220, 15, 'rgba(0,0,0,0.1)');
+      drawRoundedRect(x, y, 300, 220, 12, '#FFFFFF');
+      clearShadow();
+      
+      ctx.strokeStyle = '#F39C12';
+      ctx.lineWidth = 3 * scale;
+      ctx.beginPath();
+      ctx.roundRect(x * scale, y * scale, 300 * scale, 220 * scale, 12 * scale);
+      ctx.stroke();
+      
+      drawText('💊 MEDICAÇÃO', x + 150, y + 30, 16, '#F39C12', 'center', 'bold');
       
       // Balcão de medicamentos
-      drawRect(x, y + 10, 120, 60, '#8B7355');
-      drawRect(x + 5, y + 15, 110, 50, '#A0826D');
+      ctx.fillStyle = '#8B7355';
+      ctx.fillRect((x + 30) * scale, (y + 50) * scale, 240 * scale, 80 * scale);
+      ctx.fillStyle = '#A0826D';
+      ctx.fillRect((x + 30) * scale, (y + 50) * scale, 240 * scale, 10 * scale);
       
-      // Armário de medicamentos
-      drawRect(x + 140, y + 10, 80, 100, '#5C4033');
+      // Armário de medicamentos (detalhado)
+      ctx.fillStyle = '#5C4033';
+      ctx.fillRect((x + 40) * scale, (y + 140) * scale, 220 * scale, 60 * scale);
       
-      // Prateleiras
-      for (let i = 0; i < 3; i++) {
-        drawRect(x + 145, y + 20 + (i * 30), 70, 3, '#FFFFFF');
-      }
+      // Prateleiras com medicamentos
+      const shelfY = [145, 165, 185];
+      shelfY.forEach(sy => {
+        ctx.fillStyle = '#7F6C60';
+        ctx.fillRect((x + 45) * scale, (y + sy) * scale, 210 * scale, 3 * scale);
+        
+        // Frascos de medicamento
+        for (let i = 0; i < 8; i++) {
+          const bottleX = x + 50 + (i * 25);
+          ctx.fillStyle = i % 3 === 0 ? '#3498DB' : i % 3 === 1 ? '#E74C3C' : '#2ECC71';
+          ctx.fillRect(bottleX * scale, (y + sy - 12) * scale, 15 * scale, 12 * scale);
+        }
+      });
     };
 
-    // Sala de Procedimentos (inferior direita)
+    // Sala de Procedimentos
     const drawProcedureRoom = () => {
-      const x = ((width / 3) * 2) + 40;
-      const y = (height / 2) + 40;
-      drawText('⚕️ PROCEDIMENTOS', x, y, 14, '#9B59B6', 'left');
+      const x = 1100;
+      const y = 360;
       
-      // Mesa de procedimentos
-      drawRect(x, y + 10, 120, 80, '#C0C0C0');
-      drawRect(x + 5, y + 15, 110, 70, '#E8E8E8');
+      drawShadow(x, y, 440, 220, 15, 'rgba(0,0,0,0.1)');
+      drawRoundedRect(x, y, 440, 220, 12, '#FFFFFF');
+      clearShadow();
       
-      // Carrinho de equipamentos
-      drawRect(x + 140, y + 10, 60, 80, '#34495E');
-      
-      // Rodas
-      ctx.fillStyle = '#2C3E50';
+      ctx.strokeStyle = '#9B59B6';
+      ctx.lineWidth = 3 * scale;
       ctx.beginPath();
-      ctx.arc(x + 150, y + 90, 8, 0, Math.PI * 2);
+      ctx.roundRect(x * scale, y * scale, 440 * scale, 220 * scale, 12 * scale);
+      ctx.stroke();
+      
+      drawText('⚕️ PROCEDIMENTOS', x + 220, y + 30, 16, '#9B59B6', 'center', 'bold');
+      
+      // Mesa cirúrgica
+      ctx.fillStyle = '#C0C0C0';
+      ctx.fillRect((x + 40) * scale, (y + 60) * scale, 180 * scale, 100 * scale);
+      ctx.fillStyle = '#D5D5D5';
+      ctx.fillRect((x + 45) * scale, (y + 65) * scale, 170 * scale, 90 * scale);
+      
+      // Lâmpada cirúrgica (em cima)
+      ctx.fillStyle = '#F1C40F';
+      ctx.beginPath();
+      ctx.ellipse((x + 130) * scale, (y + 45) * scale, 35 * scale, 15 * scale, 0, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Raios de luz
+      ctx.fillStyle = 'rgba(241, 196, 15, 0.2)';
+      ctx.beginPath();
+      ctx.moveTo((x + 95) * scale, (y + 50) * scale);
+      ctx.lineTo((x + 60) * scale, (y + 90) * scale);
+      ctx.lineTo((x + 200) * scale, (y + 90) * scale);
+      ctx.lineTo((x + 165) * scale, (y + 50) * scale);
+      ctx.closePath();
+      ctx.fill();
+      
+      // Carrinho de instrumentos
+      ctx.fillStyle = '#7F8C8D';
+      ctx.fillRect((x + 260) * scale, (y + 70) * scale, 140 * scale, 100 * scale);
+      
+      // Prateleiras do carrinho
+      [80, 105, 130].forEach(cy => {
+        ctx.fillStyle = '#95A5A6';
+        ctx.fillRect((x + 265) * scale, (y + cy) * scale, 130 * scale, 3 * scale);
+        
+        // Instrumentos
+        for (let i = 0; i < 5; i++) {
+          ctx.fillStyle = '#BDC3C7';
+          ctx.fillRect((x + 270 + i * 25) * scale, (y + cy - 8) * scale, 8 * scale, 8 * scale);
+        }
+      });
+      
+      // Rodas do carrinho
+      ctx.fillStyle = '#34495E';
+      ctx.beginPath();
+      ctx.arc((x + 280) * scale, (y + 175) * scale, 10 * scale, 0, Math.PI * 2);
       ctx.fill();
       ctx.beginPath();
-      ctx.arc(x + 190, y + 90, 8, 0, Math.PI * 2);
+      ctx.arc((x + 380) * scale, (y + 175) * scale, 10 * scale, 0, Math.PI * 2);
       ctx.fill();
     };
 
-    // Desenhar avatar estilo Stardew Valley
+    // Avatar de alta qualidade com animação
+    let breatheOffset = 0;
     const drawAvatar = (user: User) => {
       const { x, y } = user.position;
       const avatar = AVATAR_CATALOG[user.avatar.avatarType];
       const classInfo = CLASS_YEARS[user.avatar.classYear];
-      
 
-      // Sombra
-      ctx.fillStyle = 'rgba(0,0,0,0.2)';
+      // Escala baseada no tamanho da tela
+      const avatarScale = scale * 1.2;
+      const baseX = x * scale;
+      const baseY = y * scale;
+
+      // Sombra realista
+      ctx.fillStyle = 'rgba(0,0,0,0.15)';
       ctx.beginPath();
-      ctx.ellipse(x, y + 20, 12, 4, 0, 0, Math.PI * 2);
+      ctx.ellipse(baseX, baseY + (25 * avatarScale), 18 * avatarScale, 6 * avatarScale, 0, 0, Math.PI * 2);
       ctx.fill();
 
-      // Corpo (uniforme)
-      ctx.fillStyle = avatar.colors.uniform;
-      drawRect(x - 8, y - 5, 16, 20, avatar.colors.uniform);
+      // Efeito de respiração sutil
+      const breathe = Math.sin(breatheOffset) * 0.5;
+
+      // Corpo (uniforme) com gradiente
+      const bodyGradient = ctx.createLinearGradient(
+        baseX - (12 * avatarScale), 
+        baseY - (8 * avatarScale), 
+        baseX + (12 * avatarScale), 
+        baseY + (18 * avatarScale)
+      );
+      bodyGradient.addColorStop(0, avatar.colors.uniform);
+      bodyGradient.addColorStop(1, shadeColor(avatar.colors.uniform, -20));
+      ctx.fillStyle = bodyGradient;
       
-      // Cabeça
-      ctx.fillStyle = avatar.colors.skin;
       ctx.beginPath();
-      ctx.arc(x, y - 12, 8, 0, Math.PI * 2);
+      ctx.roundRect(
+        baseX - (12 * avatarScale), 
+        (baseY - 8 * avatarScale) + breathe, 
+        24 * avatarScale, 
+        26 * avatarScale, 
+        4 * avatarScale
+      );
       ctx.fill();
       
-      // Cabelo
+      // Cabeça com gradiente
+      const headGradient = ctx.createRadialGradient(
+        baseX - (3 * avatarScale), 
+        (baseY - 18 * avatarScale) + breathe,
+        2 * avatarScale,
+        baseX, 
+        (baseY - 15 * avatarScale) + breathe, 
+        12 * avatarScale
+      );
+      headGradient.addColorStop(0, lightenColor(avatar.colors.skin, 10));
+      headGradient.addColorStop(1, avatar.colors.skin);
+      ctx.fillStyle = headGradient;
+      ctx.beginPath();
+      ctx.arc(baseX, (baseY - 15 * avatarScale) + breathe, 12 * avatarScale, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Cabelo estilizado
       ctx.fillStyle = avatar.colors.hair;
       ctx.beginPath();
-      ctx.arc(x, y - 16, 9, 0, Math.PI);
+      ctx.arc(baseX, (baseY - 22 * avatarScale) + breathe, 13 * avatarScale, 0, Math.PI);
       ctx.fill();
       
-      // Braços (cor de status)
-      const getStatusColor = (status: string) => {
-        switch (status) {
-          case 'FOCUS': return '#2ECC71';
-          case 'SHORT_BREAK': return '#F39C12';
-          case 'LONG_BREAK': return '#9B59B6';
-          default: return '#95A5A6';
-        }
-      };
+      // Detalhe do cabelo (brilho)
+      ctx.fillStyle = lightenColor(avatar.colors.hair, 30);
+      ctx.beginPath();
+      ctx.arc(baseX - (4 * avatarScale), (baseY - 24 * avatarScale) + breathe, 4 * avatarScale, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Olhos
+      ctx.fillStyle = '#2C3E50';
+      ctx.beginPath();
+      ctx.arc(baseX - (4 * avatarScale), (baseY - 16 * avatarScale) + breathe, 1.5 * avatarScale, 0, Math.PI * 2);
+      ctx.fill();
+      ctx.beginPath();
+      ctx.arc(baseX + (4 * avatarScale), (baseY - 16 * avatarScale) + breathe, 1.5 * avatarScale, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Boca (sorriso)
+      ctx.strokeStyle = '#E74C3C';
+      ctx.lineWidth = 1.5 * avatarScale;
+      ctx.beginPath();
+      ctx.arc(baseX, (baseY - 12 * avatarScale) + breathe, 4 * avatarScale, 0.2, Math.PI - 0.2);
+      ctx.stroke();
       
+      // Braços com cor de status
       const statusColor = getStatusColor(user.status);
       ctx.fillStyle = statusColor;
-      drawRect(x - 12, y - 5, 4, 12, statusColor);
-      drawRect(x + 8, y - 5, 4, 12, statusColor);
-
-      // Detalhe do acessório (pequeno acento)
-      ctx.fillStyle = avatar.colors.accent;
+      
+      // Braço esquerdo
       ctx.beginPath();
-      ctx.arc(x, y + 5, 3, 0, Math.PI * 2);
+      ctx.roundRect(
+        baseX - (18 * avatarScale), 
+        (baseY - 8 * avatarScale) + breathe, 
+        6 * avatarScale, 
+        20 * avatarScale, 
+        3 * avatarScale
+      );
+      ctx.fill();
+      
+      // Braço direito
+      ctx.beginPath();
+      ctx.roundRect(
+        baseX + (12 * avatarScale), 
+        (baseY - 8 * avatarScale) + breathe, 
+        6 * avatarScale, 
+        20 * avatarScale, 
+        3 * avatarScale
+      );
       ctx.fill();
 
-      // Tag de identificação (Turma + ID)
+      // Acessório/Badge
+      ctx.fillStyle = avatar.colors.accent;
+      ctx.beginPath();
+      ctx.arc(baseX, (baseY + 6 * avatarScale) + breathe, 4 * avatarScale, 0, Math.PI * 2);
+      ctx.fill();
+
+      // Tag de identificação premium
       const userId = user.id === 'current-user' ? 'VOCÊ' : user.id.slice(-3);
-      const tag = user.id === 'current-user' ? 'VOCÊ' : `${user.avatar.classYear} #${userId}`;
+      const tag = user.id === 'current-user' ? '✨ VOCÊ' : `${user.avatar.classYear} #${userId}`;
       
-      // Background da tag
-      ctx.fillStyle = classInfo.color;
-      const tagWidth = ctx.measureText(tag).width + 10;
-      drawRect(x - tagWidth / 2, y - 35, tagWidth, 16, classInfo.color);
+      ctx.font = `bold ${12 * avatarScale}px 'Inter', sans-serif`;
+      const tagWidth = ctx.measureText(tag).width + (12 * avatarScale);
+      const tagX = baseX - (tagWidth / 2);
+      const tagY = baseY - (45 * avatarScale);
+      
+      // Sombra da tag
+      ctx.fillStyle = 'rgba(0,0,0,0.2)';
+      ctx.beginPath();
+      ctx.roundRect(tagX + (2 * avatarScale), tagY + (2 * avatarScale), tagWidth, 20 * avatarScale, 10 * avatarScale);
+      ctx.fill();
+      
+      // Background da tag com gradiente
+      const tagGradient = ctx.createLinearGradient(tagX, tagY, tagX, tagY + (20 * avatarScale));
+      tagGradient.addColorStop(0, classInfo.color);
+      tagGradient.addColorStop(1, shadeColor(classInfo.color, -20));
+      ctx.fillStyle = tagGradient;
+      ctx.beginPath();
+      ctx.roundRect(tagX, tagY, tagWidth, 20 * avatarScale, 10 * avatarScale);
+      ctx.fill();
       
       // Texto da tag
-      drawText(tag, x, y - 23, 10, '#FFFFFF', 'center');
+      ctx.fillStyle = '#FFFFFF';
+      ctx.textAlign = 'center';
+      ctx.fillText(tag, baseX, tagY + (14 * avatarScale));
       
-      // Indicador de status (círculo pequeno)
+      // Indicador de status (círculo pulsante)
+      const pulseSize = 4 + Math.abs(Math.sin(breatheOffset * 2)) * 2;
       ctx.fillStyle = statusColor;
       ctx.beginPath();
-      ctx.arc(x - tagWidth / 2 + 5, y - 27, 3, 0, Math.PI * 2);
+      ctx.arc(tagX + (8 * avatarScale), tagY + (10 * avatarScale), pulseSize * avatarScale, 0, Math.PI * 2);
+      ctx.fill();
+      
+      // Glow do status
+      ctx.fillStyle = `${statusColor}40`;
+      ctx.beginPath();
+      ctx.arc(tagX + (8 * avatarScale), tagY + (10 * avatarScale), (pulseSize + 3) * avatarScale, 0, Math.PI * 2);
       ctx.fill();
     };
 
-    // Função principal de renderização
+    const getStatusColor = (status: string) => {
+      switch (status) {
+        case 'FOCUS': return '#2ECC71';
+        case 'SHORT_BREAK': return '#F39C12';
+        case 'LONG_BREAK': return '#9B59B6';
+        default: return '#95A5A6';
+      }
+    };
+
+    // Funções de cor
+    const shadeColor = (color: string, percent: number) => {
+      const num = parseInt(color.replace("#",""),16);
+      const amt = Math.round(2.55 * percent);
+      const R = (num >> 16) + amt;
+      const G = (num >> 8 & 0x00FF) + amt;
+      const B = (num & 0x0000FF) + amt;
+      return "#" + (0x1000000 + (R<255?R<1?0:R:255)*0x10000 +
+        (G<255?G<1?0:G:255)*0x100 + (B<255?B<1?0:B:255))
+        .toString(16).slice(1);
+    };
+
+    const lightenColor = (color: string, percent: number) => shadeColor(color, percent);
+
+    // Renderização principal
     const render = () => {
       ctx.clearRect(0, 0, width, height);
       
       drawFloor();
-      drawWalls();
+      drawHeader();
       drawTriageArea();
-      drawConsultingRoom1();
-      drawConsultingRoom2();
+      drawConsultingRoom(420, 120, 1);
+      drawConsultingRoom(740, 120, 2);
       drawInfirmaryBeds();
       drawMedicationRoom();
       drawProcedureRoom();
       
-      // Desenhar todos os usuários
+      // Desenhar avatares
       const allUsers = currentUser ? [currentUser, ...otherUsers] : otherUsers;
       allUsers.forEach(user => {
         drawAvatar(user);
       });
 
-      // Stats inferior
-      const statsY = height - 30;
-      drawRect(0, statsY, width, 30, 'rgba(44, 62, 80, 0.9)');
+      // Footer com stats premium
+      const footerY = height - 60;
+      const footerGradient = ctx.createLinearGradient(0, footerY, 0, height);
+      footerGradient.addColorStop(0, 'rgba(44, 62, 80, 0.95)');
+      footerGradient.addColorStop(1, 'rgba(52, 73, 94, 0.98)');
+      ctx.fillStyle = footerGradient;
+      ctx.fillRect(0, footerY, width, 60);
       
       const focusing = allUsers.filter(u => u.status === 'FOCUS').length;
       const shortBreak = allUsers.filter(u => u.status === 'SHORT_BREAK').length;
       const longBreak = allUsers.filter(u => u.status === 'LONG_BREAK').length;
       
-      drawText(`👥 ${allUsers.length}/30`, 40, statsY + 20, 12, '#FFFFFF');
-      drawText(`🟢 ${focusing}`, 140, statsY + 20, 12, '#2ECC71');
-      drawText(`🟡 ${shortBreak}`, 210, statsY + 20, 12, '#F39C12');
-      drawText(`🟣 ${longBreak}`, 280, statsY + 20, 12, '#9B59B6');
+      // Stats com ícones
+      ctx.font = `600 ${16 * scale}px 'Inter', sans-serif`;
+      ctx.fillStyle = '#ECF0F1';
+      ctx.textAlign = 'left';
+      ctx.fillText(`👥 ${allUsers.length}/30`, 40 * scale, (footerY + 35) * scale);
       
+      ctx.fillStyle = '#2ECC71';
+      ctx.fillText(`🟢 ${focusing}`, 180 * scale, (footerY + 35) * scale);
+      
+      ctx.fillStyle = '#F39C12';
+      ctx.fillText(`🟡 ${shortBreak}`, 280 * scale, (footerY + 35) * scale);
+      
+      ctx.fillStyle = '#9B59B6';
+      ctx.fillText(`🟣 ${longBreak}`, 380 * scale, (footerY + 35) * scale);
+      
+      // Relógio
       const now = new Date();
-      const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' });
-      drawText(`🕐 ${timeStr}`, width - 100, statsY + 20, 12, '#ECF0F1');
+      const timeStr = now.toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit', second: '2-digit' });
+      ctx.fillStyle = '#BDC3C7';
+      ctx.textAlign = 'right';
+      ctx.fillText(`🕐 ${timeStr}`, (width - 40) * scale, (footerY + 35) * scale);
+      
+      // Atualizar animação de respiração
+      breatheOffset += 0.03;
     };
 
     let animationFrame: number;
@@ -298,36 +687,18 @@ export const HospitalInfirmary = ({
     return () => {
       cancelAnimationFrame(animationFrame);
     };
-  }, [mode, currentUser, otherUsers]);
+  }, [mode, currentUser, otherUsers, dimensions]);
 
   return (
-    <div className="flex flex-col gap-4">
-      <div className="flex justify-center items-center bg-gray-100 dark:bg-gray-900 rounded-lg overflow-auto p-4">
-        <canvas 
-          ref={canvasRef} 
-          className="rounded-lg shadow-2xl"
-          style={{ imageRendering: 'pixelated', maxWidth: '100%', height: 'auto' }}
-        />
-      </div>
-      
-      <div className="flex flex-wrap gap-4 justify-center text-xs text-muted-foreground">
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-green-500"></div>
-          <span>Focando</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-orange-500"></div>
-          <span>Pausa Curta</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-purple-500"></div>
-          <span>Pausa Longa</span>
-        </div>
-        <div className="flex items-center gap-2">
-          <div className="w-3 h-3 rounded-full bg-gray-400"></div>
-          <span>Offline</span>
-        </div>
-      </div>
+    <div ref={containerRef} className="w-full">
+      <canvas 
+        ref={canvasRef} 
+        className="rounded-xl shadow-2xl w-full"
+        style={{ 
+          imageRendering: 'auto',
+          display: 'block'
+        }}
+      />
     </div>
   );
 };
