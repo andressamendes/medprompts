@@ -13,9 +13,15 @@ export default defineConfig(({ command }) => {
     resolve: {
       alias: {
         '@': path.resolve(__dirname, './src'),
+        // Polyfill para Buffer no navegador
+        'buffer': 'buffer/',
       },
     },
     base,
+    define: {
+      // Define global para algumas bibliotecas que esperam Node.js
+      'global': 'globalThis',
+    },
     build: {
       outDir: 'dist',
       assetsDir: 'assets',
