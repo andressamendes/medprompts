@@ -1,4 +1,5 @@
 import { AvatarCustomization } from './avatar.types';
+import { Direction, MovementState } from './movement.types';
 
 /**
  * Tipos TypeScript para o sistema de Study Room
@@ -20,6 +21,12 @@ export interface User {
   joinedAt: Date;
   lastActivity: Date;
   avatar: AvatarCustomization;
+  direction: Direction;
+  movementState: MovementState;
+  targetPosition?: Position;
+  currentPath?: Position[];
+  interactingWith?: string;
+  animationFrame: number;
 }
 
 export interface StudyRoom {

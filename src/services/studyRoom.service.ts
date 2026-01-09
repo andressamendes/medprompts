@@ -1,5 +1,7 @@
 import { User, UserStatus, StudyRoom, RoomStats } from '@/types/studyRoom.types';
 import { AvatarType, ClassYear, AVATAR_CATALOG, DEFAULT_AVATAR } from '@/types/avatar.types';
+import { Direction, MovementState } from '@/types/movement.types';
+import { HOSPITAL_MAP } from '@/data/hospitalMap.data';
 
 /**
  * Serviço MOCK para simular sistema multiplayer
@@ -17,28 +19,33 @@ const STUDENT_NAMES = [
   'Emerson Pires', 'Fabiana Luz'
 ];
 
-// Posições predefinidas nas áreas da enfermaria
-const AREA_POSITIONS = {
-  triagem: [
-    { x: 100, y: 180 }, { x: 150, y: 180 }, { x: 200, y: 180 }
-  ],
-  consultorio1: [
-    { x: 450, y: 120 }, { x: 550, y: 150 }
-  ],
-  consultorio2: [
-    { x: 850, y: 120 }, { x: 950, y: 150 }
-  ],
-  enfermaria: [
-    { x: 100, y: 480 }, { x: 220, y: 480 },
-    { x: 100, y: 580 }, { x: 220, y: 580 }
-  ],
-  medicacao: [
-    { x: 450, y: 500 }, { x: 550, y: 500 }, { x: 500, y: 600 }
-  ],
-  procedimentos: [
-    { x: 850, y: 500 }, { x: 950, y: 550 }
-  ]
-};
+// Gerar posições válidas baseadas no mapa do hospital
+function getValidSpawnPositions(): Array<{ x: number; y: number }> {
+  const positions: Array<{ x: number; y: number }> = [];
+
+  // Adicionar posições próximas aos móveis interativos
+  HOSPITAL_MAP.furniture.forEach(furniture => {
+    // Posições ao redor do móvel
+    const surroundingPositions = [
+      { x: furniture.x - 1, y: furniture.y },
+      { x: furniture.x + furniture.width, y: furniture.y },
+      { x: furniture.x, y: furniture.y - 1 },
+      { x: furniture.x, y: furniture.y + furniture.height }
+    ];
+
+    surroundingPositions.forEach(pos => {
+      if (pos.x >= 0 && pos.x < HOSPITAL_MAP.width &&
+          pos.y >= 0 && pos.y < HOSPITAL_MAP.height &&
+          HOSPITAL_MAP.tiles[pos.y][pos.x].isWalkable) {
+        positions.push(pos);
+      }
+    });
+  });
+
+  return positions;
+}
+
+const VALID_POSITIONS = getValidSpawnPositions();
 
 class StudyRoomService {
   private room: StudyRoom;
@@ -66,9 +73,12 @@ class StudyRoomService {
   ): Promise<StudyRoom> {
     this.usedPositions.clear();
 
-    // Adicionar usuário atual
-    const currentUserPosition = { x: 100, y: 180 }; // Triagem
+    // Adicionar usuário atual (posição inicial no hospital)
+    const currentUserPosition = { x: 12, y: 5 }; // Recepção
     this.usedPositions.add(`${currentUserPosition.x}-${currentUserPosition.y}`);
+
+    const directions: Direction[] = ['up', 'down', 'left', 'right'];
+    const randomDirection = directions[Math.floor(Math.random() * directions.length)];
 
     const currentUser: User = {
       id: this.currentUserId,
@@ -78,7 +88,10 @@ class StudyRoomService {
       pomodorosCompleted: 0,
       joinedAt: new Date(),
       lastActivity: new Date(),
-      avatar: currentUserAvatar
+      avatar: currentUserAvatar,
+      direction: randomDirection,
+      movementState: 'idle',
+      animationFrame: 0
     };
 
     // Gerar usuários simulados (entre 8 e 15)
@@ -99,14 +112,7 @@ class StudyRoomService {
   private generateSimulatedUsers(count: number): User[] {
     const users: User[] = [];
     const availableNames = [...STUDENT_NAMES];
-    const allPositions = [
-      ...AREA_POSITIONS.triagem,
-      ...AREA_POSITIONS.consultorio1,
-      ...AREA_POSITIONS.consultorio2,
-      ...AREA_POSITIONS.enfermaria,
-      ...AREA_POSITIONS.medicacao,
-      ...AREA_POSITIONS.procedimentos
-    ];
+    const allPositions = [...VALID_POSITIONS];
 
     const statuses: UserStatus[] = ['FOCUS', 'SHORT_BREAK', 'LONG_BREAK', 'OFFLINE'];
     const statusWeights = [0.5, 0.3, 0.15, 0.05];
@@ -157,6 +163,26 @@ class StudyRoomService {
       // Gerar ID único de 3 dígitos
       const userId = String(Math.floor(Math.random() * 900) + 100);
 
+      // Direção aleatória
+      const directions: Direction[] = ['up', 'down', 'left', 'right'];
+      const randomDirection = directions[Math.floor(Math.random() * directions.length)];
+
+      // Estado de movimento baseado no status e tipo de móvel próximo
+      let movementState: MovementState = 'idle';
+      const nearbyFurniture = HOSPITAL_MAP.furniture.find(f =>
+        Math.abs(f.x - position.x) <= 1 && Math.abs(f.y - position.y) <= 1
+      );
+
+      if (nearbyFurniture) {
+        if (nearbyFurniture.type === 'chair') {
+          movementState = 'sitting';
+        } else if (nearbyFurniture.type === 'bed' && status === 'LONG_BREAK') {
+          movementState = 'lying';
+        } else if (nearbyFurniture.type === 'computer' || nearbyFurniture.type === 'desk') {
+          movementState = status === 'FOCUS' ? 'using' : 'idle';
+        }
+      }
+
       users.push({
         id: userId,
         username,
@@ -168,7 +194,10 @@ class StudyRoomService {
         avatar: {
           avatarType: randomAvatarType,
           classYear: randomClassYear
-        }
+        },
+        direction: randomDirection,
+        movementState,
+        animationFrame: Math.floor(Math.random() * 60)
       });
     }
 

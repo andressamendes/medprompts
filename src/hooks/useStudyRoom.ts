@@ -2,18 +2,26 @@ import { useState, useEffect, useCallback } from 'react';
 import studyRoomService from '@/services/studyRoom.service';
 import { User, UserStatus, StudyRoom, RoomStats } from '@/types/studyRoom.types';
 import { AvatarCustomization, AvatarType, ClassYear } from '@/types/avatar.types';
+import { InteractionSuggestion } from '@/services/interaction.service';
+
+export interface PomodoroSuggestion {
+  status: UserStatus;
+  suggestions: InteractionSuggestion[];
+  message: string;
+}
 
 /**
  * Hook customizado para gerenciar estado da Study Room
  */
 export const useStudyRoom = (
-  currentUserName: string = 'Você', 
+  currentUserName: string = 'Você',
   initialStatus: UserStatus = 'FOCUS',
   initialAvatar?: AvatarCustomization
 ) => {
   const [room, setRoom] = useState<StudyRoom | null>(null);
   const [stats, setStats] = useState<RoomStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
+  const [pomodoroSuggestion, setPomodoroSuggestion] = useState<PomodoroSuggestion | null>(null);
 
   // Inicializar sala
   useEffect(() => {
@@ -61,6 +69,12 @@ export const useStudyRoom = (
     const updatedRoom = studyRoomService.getRoom();
     setRoom({ ...updatedRoom });
     setStats(studyRoomService.getRoomStats());
+
+    // Gerar sugestões de móveis baseadas no novo status
+    const currentUser = updatedRoom.users.find(u => u.id === 'current-user');
+    if (currentUser) {
+      generatePomodoroSuggestion(newStatus, currentUser);
+    }
   }, []);
 
   // Atualizar avatar do usuário atual
@@ -87,6 +101,41 @@ export const useStudyRoom = (
     return room?.users.filter(u => u.id !== 'current-user') || [];
   }, [room]);
 
+  // Gerar sugestões de móveis baseado no status Pomodoro
+  const generatePomodoroSuggestion = useCallback((status: UserStatus, _user: User) => {
+    let message = '';
+
+    switch (status) {
+      case 'FOCUS':
+        message = '💻 Modo FOCO ativado! Que tal ir para um computador ou mesa de estudo?';
+        break;
+      case 'SHORT_BREAK':
+        message = '☕ Pausa curta! Relaxe em uma cadeira confortável.';
+        break;
+      case 'LONG_BREAK':
+        message = '😴 Pausa longa! Descanse em um leito da enfermaria.';
+        break;
+      case 'OFFLINE':
+        message = '';
+        break;
+    }
+
+    if (message) {
+      setPomodoroSuggestion({
+        status,
+        suggestions: [], // Será preenchido pelo InteractionSystem no componente
+        message
+      });
+    } else {
+      setPomodoroSuggestion(null);
+    }
+  }, []);
+
+  // Limpar sugestão Pomodoro
+  const clearPomodoroSuggestion = useCallback(() => {
+    setPomodoroSuggestion(null);
+  }, []);
+
   return {
     stats,
     isLoading,
@@ -95,5 +144,7 @@ export const useStudyRoom = (
     updateUserStatus,
     updateUserAvatar,
     incrementPomodoros,
+    pomodoroSuggestion,
+    clearPomodoroSuggestion,
   };
 };
