@@ -96,7 +96,12 @@ export async function encryptData(data: unknown): Promise<string> {
     combined.set(encryptedArray, SALT_LENGTH + IV_LENGTH);
 
     // Converte para Base64 para armazenamento
-    return btoa(String.fromCharCode(...Array.from(combined)));
+    const combinedArray = Array.from(combined);
+    let binaryString = '';
+    for (let i = 0; i < combinedArray.length; i++) {
+      binaryString += String.fromCharCode(combinedArray[i]);
+    }
+    return btoa(binaryString);
   } catch (error) {
     console.error('Erro ao encriptar dados:', error);
     throw new Error('Falha na encriptação de dados');

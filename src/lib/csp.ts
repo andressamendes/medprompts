@@ -11,7 +11,12 @@
 export function generateNonce(): string {
   const array = new Uint8Array(16);
   window.crypto.getRandomValues(array);
-  return btoa(String.fromCharCode(... Array.from(array)));
+  const arrayValues = Array.from(array);
+  let binaryString = '';
+  for (let i = 0; i < arrayValues.length; i++) {
+    binaryString += String.fromCharCode(arrayValues[i]);
+  }
+  return btoa(binaryString);
 }
 
 /**
