@@ -14,6 +14,7 @@ import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { securityConfig } from '../config/security.config';
 import { sanitizationService } from './sanitization.service';
+import { rateLimitService, getRateLimitIdentifier, formatRateLimitError } from './rate-limit.service';
 
 // ==========================================
 // TIPOS DE DADOS
@@ -336,6 +337,14 @@ class SecureAuthService {
    * Login com verificação de senha bcrypt e JWT
    */
   async login(credentials: LoginCredentials): Promise<AuthResponse> {
+    // FASE 7: Rate limiting para prevenir brute force
+    const identifier = getRateLimitIdentifier();
+    const rateLimitResult = rateLimitService.checkLimit(identifier, 'login');
+
+    if (!rateLimitResult.allowed) {
+      throw new Error(formatRateLimitError(rateLimitResult));
+    }
+
     const users = this.getUsersWithPassword();
     const user = users.find(u => u.email === credentials.email);
 
@@ -366,8 +375,9 @@ class SecureAuthService {
       throw new Error('Senha incorreta');
     }
 
-    // Login bem-sucedido - reseta tentativas
+    // Login bem-sucedido - reseta tentativas e rate limit
     this.resetLoginAttempts(user);
+    rateLimitService.reset(identifier, 'login');
 
     // Gera tokens JWT
     const accessToken = this.generateAccessToken(user);
@@ -396,8 +406,17 @@ class SecureAuthService {
   /**
    * Registro com hash bcrypt de senha
    * FASE 5: Adicionada sanitização de inputs (XSS protection)
+   * FASE 7: Adicionado rate limiting
    */
   async register(data: RegisterData): Promise<AuthResponse> {
+    // FASE 7: Rate limiting para prevenir spam de registros
+    const identifier = getRateLimitIdentifier();
+    const rateLimitResult = rateLimitService.checkLimit(identifier, 'register');
+
+    if (!rateLimitResult.allowed) {
+      throw new Error(formatRateLimitError(rateLimitResult));
+    }
+
     // NOVO: Sanitiza e valida todos os inputs
     const validationResult = sanitizationService.sanitizeUserRegistration(data);
 
