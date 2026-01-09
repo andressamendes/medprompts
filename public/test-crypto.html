@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Test Web Crypto API - MedPrompts</title>
+    <style>
+        body {
+            font-family: system-ui, -apple-system, sans-serif;
+            max-width: 800px;
+            margin: 50px auto;
+            padding: 20px;
+            background: #f5f5f5;
+        }
+        .container {
+            background: white;
+            padding: 30px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #6366f1;
+            margin-bottom: 10px;
+        }
+        .subtitle {
+            color: #666;
+            margin-bottom: 30px;
+        }
+        #result {
+            margin-top: 20px;
+        }
+        .success {
+            color: #059669;
+            font-size: 18px;
+            margin: 10px 0;
+        }
+        .error {
+            color: #dc2626;
+            font-size: 18px;
+            margin: 10px 0;
+        }
+        .back-link {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 10px 20px;
+            background: #6366f1;
+            color: white;
+            text-decoration: none;
+            border-radius: 6px;
+        }
+        .back-link:hover {
+            background: #4f46e5;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>🧪 Test Web Crypto API</h1>
+        <p class="subtitle">Verificando se o navegador suporta criptografia nativa...</p>
+        <div id="result">Testando...</div>
+    </div>
+    
+    <script>
+        async function testCrypto() {
+            const result = document.getElementById('result');
+            result.innerHTML = '';
+            
+            try {
+                // Test PBKDF2
+                const encoder = new TextEncoder();
+                const password = encoder.encode('test123');
+                const salt = window.crypto.getRandomValues(new Uint8Array(16));
+                
+                const keyMaterial = await window.crypto.subtle.importKey(
+                    'raw',
+                    password,
+                    'PBKDF2',
+                    false,
+                    ['deriveBits']
+                );
+                
+                const hash = await window.crypto.subtle.deriveBits(
+                    {
+                        name: 'PBKDF2',
+                        salt: salt,
+                        iterations: 100000,
+                        hash: 'SHA-256'
+                    },
+                    keyMaterial,
+                    256
+                );
+                
+                result.innerHTML += '<p class="success">✅ PBKDF2 funcionando! (Hash de senhas)</p>';
+                
+                // Test HMAC
+                const secret = encoder.encode('secret-key');
+                const data = encoder.encode('data-to-sign');
+                
+                const hmacKey = await window.crypto.subtle.importKey(
+                    'raw',
+                    secret,
+                    { name: 'HMAC', hash: 'SHA-256' },
+                    false,
+                    ['sign']
+                );
+                
+                const signature = await window.crypto.subtle.sign(
+                    'HMAC',
+                    hmacKey,
+                    data
+                );
+                
+                result.innerHTML += '<p class="success">✅ HMAC-SHA256 funcionando! (JWT tokens)</p>';
+                
+                // Test AES-GCM
+                const aesKey = await window.crypto.subtle.generateKey(
+                    { name: 'AES-GCM', length: 256 },
+                    true,
+                    ['encrypt', 'decrypt']
+                );
+                
+                const iv = window.crypto.getRandomValues(new Uint8Array(12));
+                const plaintext = encoder.encode('test data');
+                
+                const encrypted = await window.crypto.subtle.encrypt(
+                    { name: 'AES-GCM', iv: iv },
+                    aesKey,
+                    plaintext
+                );
+                
+                result.innerHTML += '<p class="success">✅ AES-GCM funcionando! (Criptografia de dados)</p>';
+                result.innerHTML += '<p class="success" style="font-weight: bold; font-size: 20px; margin-top: 20px;">🎉 Web Crypto API totalmente funcional!</p>';
+                result.innerHTML += '<p style="color: #666;">Seu navegador suporta todas as operações criptográficas necessárias.</p>';
+                result.innerHTML += '<a href="/medprompts/" class="back-link">← Voltar para o MedPrompts</a>';
+                
+            } catch (error) {
+                result.innerHTML = '<p class="error">❌ Erro: ' + error.message + '</p>';
+                result.innerHTML += '<p style="color: #666;">Seu navegador pode não suportar Web Crypto API ou você está acessando via HTTP (precisa ser HTTPS).</p>';
+                result.innerHTML += '<a href="/medprompts/" class="back-link">← Voltar para o MedPrompts</a>';
+                console.error(error);
+            }
+        }
+        
+        testCrypto();
+    </script>
+</body>
+</html>
