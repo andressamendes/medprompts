@@ -119,7 +119,11 @@ export async function decryptData<T>(encryptedData: string): Promise<T> {
     const decoder = new TextDecoder();
 
     // Converte de Base64 para buffer
-    const combined = Uint8Array.from(atob(encryptedData), (c) => c.charCodeAt(0));
+    const binaryString = atob(encryptedData);
+    const combined = new Uint8Array(binaryString.length);
+    for (let i = 0; i < binaryString.length; i++) {
+      combined[i] = binaryString.charCodeAt(i);
+    }
 
     // Extrai salt, iv e dados encriptados
     const salt = combined.slice(0, SALT_LENGTH);
