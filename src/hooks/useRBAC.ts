@@ -13,7 +13,7 @@
  * ```
  */
 
-import { useMemo } from 'react';
+import { useMemo, useState, useEffect } from 'react';
 import { authService, UserRole } from '../services/auth.service';
 import { rbacService, Permission } from '../services/rbac.service';
 
@@ -56,11 +56,20 @@ export interface RBACContext {
  * Hook principal para RBAC
  */
 export function useRBAC(): RBACContext {
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
   const currentUser = authService.getCurrentUser();
-  const isAuthenticated = authService.isAuthenticated();
 
   const role = currentUser?.role || null;
   const userId = currentUser?.id || null;
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const authenticated = await authService.isAuthenticated();
+      setIsAuthenticated(authenticated);
+    };
+
+    checkAuth();
+  }, []);
 
   // Memoiza o contexto para evitar recálculos
   const rbacContext = useMemo<RBACContext>(() => {

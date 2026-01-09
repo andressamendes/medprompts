@@ -56,10 +56,27 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   redirectTo = '/login',
   redirectToOnForbidden = '/dashboard',
   onAccessDenied,
+  fallback,
 }) => {
   const location = useLocation();
-  const isAuthenticated = authService.isAuthenticated();
+  const [isChecking, setIsChecking] = React.useState(true);
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
   const currentUser = authService.getCurrentUser();
+
+  React.useEffect(() => {
+    const checkAuth = async () => {
+      const authenticated = await authService.isAuthenticated();
+      setIsAuthenticated(authenticated);
+      setIsChecking(false);
+    };
+
+    checkAuth();
+  }, []);
+
+  // Aguarda verificação assíncrona
+  if (isChecking) {
+    return <>{fallback || null}</>;
+  }
 
   // Verifica autenticação
   if (requireAuth && !isAuthenticated) {
@@ -142,8 +159,24 @@ export const IfAuthorized: React.FC<IfAuthorizedProps> = ({
   fallback = null,
   onUnauthorized,
 }) => {
-  const isAuthenticated = authService.isAuthenticated();
+  const [isChecking, setIsChecking] = React.useState(true);
+  const [isAuthenticated, setIsAuthenticated] = React.useState(false);
   const currentUser = authService.getCurrentUser();
+
+  React.useEffect(() => {
+    const checkAuth = async () => {
+      const authenticated = await authService.isAuthenticated();
+      setIsAuthenticated(authenticated);
+      setIsChecking(false);
+    };
+
+    checkAuth();
+  }, []);
+
+  // Aguarda verificação
+  if (isChecking) {
+    return <>{fallback}</>;
+  }
 
   if (!isAuthenticated || !currentUser) {
     if (onUnauthorized) {

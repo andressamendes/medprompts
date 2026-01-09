@@ -10,8 +10,8 @@
  * Substitui: src/services/auth.service.ts (implementação insegura com Base64)
  */
 
-import bcrypt from 'bcryptjs';
-import jwt from 'jsonwebtoken';
+// ⚠️ REMOVIDO: bcryptjs e jsonwebtoken (bibliotecas Node.js incompatíveis com navegador)
+// ✅ SUBSTITUÍDO: Web Crypto API nativa do navegador
 import { securityConfig } from '../config/security.config';
 import { sanitizationService } from './sanitization.service';
 import { rateLimitService, getRateLimitIdentifier, formatRateLimitError } from './rate-limit.service';
@@ -86,27 +86,116 @@ const CURRENT_USER_KEY = 'medprompts_current_user';
  */
 class SecureAuthService {
   // ==========================================
-  // HASHING DE SENHAS (Bcrypt)
+  // HASHING DE SENHAS (Web Crypto API - PBKDF2)
   // ==========================================
 
   /**
-   * Hash seguro de senha usando bcrypt
-   * CORREÇÃO CRÍTICA: Substitui Base64 inseguro
+   * Hash seguro de senha usando PBKDF2 (Web Crypto API)
+   * SUBSTITUIÇÃO: bcrypt → PBKDF2 com salt aleatório
    */
   private async hashPassword(password: string): Promise<string> {
-    const saltRounds = securityConfig.bcrypt.rounds;
-    return await bcrypt.hash(password, saltRounds);
+    try {
+      const encoder = new TextEncoder();
+      const passwordBuffer = encoder.encode(password);
+
+      // Gera salt aleatório de 16 bytes
+      const salt = window.crypto.getRandomValues(new Uint8Array(16));
+
+      // Importa senha como chave
+      const keyMaterial = await window.crypto.subtle.importKey(
+        'raw',
+        passwordBuffer,
+        'PBKDF2',
+        false,
+        ['deriveBits']
+      );
+
+      // Deriva hash usando PBKDF2 (100.000 iterações = equivalente ao bcrypt rounds 12)
+      const hashBuffer = await window.crypto.subtle.deriveBits(
+        {
+          name: 'PBKDF2',
+          salt: salt,
+          iterations: 100000,
+          hash: 'SHA-256'
+        },
+        keyMaterial,
+        256 // 256 bits = 32 bytes
+      );
+
+      // Combina salt + hash e converte para Base64
+      const hashArray = new Uint8Array(hashBuffer);
+      const combined = new Uint8Array(salt.length + hashArray.length);
+      combined.set(salt, 0);
+      combined.set(hashArray, salt.length);
+
+      // Converte para Base64
+      const combinedArray = Array.from(combined);
+      let binaryString = '';
+      for (let i = 0; i < combinedArray.length; i++) {
+        binaryString += String.fromCharCode(combinedArray[i]);
+      }
+      return btoa(binaryString);
+    } catch (error) {
+      console.error('Erro ao criar hash de senha:', error);
+      throw new Error('Falha ao processar senha');
+    }
   }
 
   /**
-   * Verifica se senha corresponde ao hash bcrypt
+   * Verifica se senha corresponde ao hash PBKDF2
    */
   private async verifyPassword(
     password: string,
     hashedPassword: string
   ): Promise<boolean> {
     try {
-      return await bcrypt.compare(password, hashedPassword);
+      // Decodifica Base64
+      const binaryString = atob(hashedPassword);
+      const combined = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        combined[i] = binaryString.charCodeAt(i);
+      }
+
+      // Extrai salt (primeiros 16 bytes) e hash (restante)
+      const salt = combined.slice(0, 16);
+      const storedHash = combined.slice(16);
+
+      // Recalcula hash com a senha fornecida
+      const encoder = new TextEncoder();
+      const passwordBuffer = encoder.encode(password);
+
+      const keyMaterial = await window.crypto.subtle.importKey(
+        'raw',
+        passwordBuffer,
+        'PBKDF2',
+        false,
+        ['deriveBits']
+      );
+
+      const hashBuffer = await window.crypto.subtle.deriveBits(
+        {
+          name: 'PBKDF2',
+          salt: salt,
+          iterations: 100000,
+          hash: 'SHA-256'
+        },
+        keyMaterial,
+        256
+      );
+
+      const calculatedHash = new Uint8Array(hashBuffer);
+
+      // Compara hashes em tempo constante (previne timing attacks)
+      if (calculatedHash.length !== storedHash.length) {
+        return false;
+      }
+
+      let mismatch = 0;
+      for (let i = 0; i < calculatedHash.length; i++) {
+        mismatch |= calculatedHash[i] ^ storedHash[i];
+      }
+
+      return mismatch === 0;
     } catch (error) {
       console.error('Erro ao verificar senha:', error);
       return false;
@@ -114,66 +203,189 @@ class SecureAuthService {
   }
 
   // ==========================================
-  // JWT TOKENS
+  // JWT-LIKE TOKENS (Web Crypto API - HMAC-SHA256)
   // ==========================================
 
   /**
-   * Gera token JWT de acesso (15 minutos)
-   * CORREÇÃO CRÍTICA: Substitui Base64 inseguro
+   * Cria assinatura HMAC-SHA256 para token
+   * SUBSTITUIÇÃO: jsonwebtoken → Web Crypto API HMAC
    */
-  private generateAccessToken(user: User): string {
-    const payload: Omit<JWTPayload, 'iat' | 'exp'> = {
+  private async signToken(payload: string, secret: string): Promise<string> {
+    const encoder = new TextEncoder();
+    const secretBuffer = encoder.encode(secret);
+    const payloadBuffer = encoder.encode(payload);
+
+    // Importa secret como chave HMAC
+    const key = await window.crypto.subtle.importKey(
+      'raw',
+      secretBuffer,
+      { name: 'HMAC', hash: 'SHA-256' },
+      false,
+      ['sign']
+    );
+
+    // Gera assinatura
+    const signatureBuffer = await window.crypto.subtle.sign(
+      'HMAC',
+      key,
+      payloadBuffer
+    );
+
+    // Converte para Base64URL
+    const signatureArray = new Uint8Array(signatureBuffer);
+    const signatureArrayValues = Array.from(signatureArray);
+    let binaryString = '';
+    for (let i = 0; i < signatureArrayValues.length; i++) {
+      binaryString += String.fromCharCode(signatureArrayValues[i]);
+    }
+    return btoa(binaryString)
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=/g, '');
+  }
+
+  /**
+   * Verifica assinatura HMAC-SHA256 do token
+   */
+  private async verifyTokenSignature(
+    payload: string,
+    signature: string,
+    secret: string
+  ): Promise<boolean> {
+    try {
+      const expectedSignature = await this.signToken(payload, secret);
+
+      // Comparação em tempo constante
+      if (signature.length !== expectedSignature.length) {
+        return false;
+      }
+
+      let mismatch = 0;
+      for (let i = 0; i < signature.length; i++) {
+        mismatch |= signature.charCodeAt(i) ^ expectedSignature.charCodeAt(i);
+      }
+
+      return mismatch === 0;
+    } catch (error) {
+      console.error('Erro ao verificar assinatura:', error);
+      return false;
+    }
+  }
+
+  /**
+   * Gera token JWT-like de acesso (15 minutos)
+   */
+  private async generateAccessToken(user: User): Promise<string> {
+    const now = Math.floor(Date.now() / 1000);
+    const exp = now + 15 * 60; // 15 minutos
+
+    const payload: JWTPayload = {
       userId: user.id,
       email: user.email,
       role: user.role,
       type: 'access',
+      iat: now,
+      exp: exp,
     };
 
-    return jwt.sign(
-      payload,
-      securityConfig.jwt.secret,
-      {
-        expiresIn: securityConfig.jwt.expiresIn,
-        algorithm: 'HS256',
-      } as jwt.SignOptions
-    );
+    const header = { alg: 'HS256', typ: 'JWT' };
+
+    // Codifica header e payload em Base64URL
+    const encodedHeader = btoa(JSON.stringify(header))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=/g, '');
+
+    const encodedPayload = btoa(JSON.stringify(payload))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=/g, '');
+
+    const message = `${encodedHeader}.${encodedPayload}`;
+    const signature = await this.signToken(message, securityConfig.jwt.secret);
+
+    return `${message}.${signature}`;
   }
 
   /**
-   * Gera refresh token JWT (7 dias)
+   * Gera refresh token JWT-like (7 dias)
    */
-  private generateRefreshToken(user: User): string {
-    const payload: Omit<JWTPayload, 'iat' | 'exp'> = {
+  private async generateRefreshToken(user: User): Promise<string> {
+    const now = Math.floor(Date.now() / 1000);
+    const exp = now + 7 * 24 * 60 * 60; // 7 dias
+
+    const payload: JWTPayload = {
       userId: user.id,
       email: user.email,
       role: user.role,
       type: 'refresh',
+      iat: now,
+      exp: exp,
     };
 
-    return jwt.sign(
-      payload,
-      securityConfig.jwt.refreshSecret,
-      {
-        expiresIn: securityConfig.jwt.refreshExpiresIn,
-        algorithm: 'HS256',
-      } as jwt.SignOptions
+    const header = { alg: 'HS256', typ: 'JWT' };
+
+    const encodedHeader = btoa(JSON.stringify(header))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=/g, '');
+
+    const encodedPayload = btoa(JSON.stringify(payload))
+      .replace(/\+/g, '-')
+      .replace(/\//g, '_')
+      .replace(/=/g, '');
+
+    const message = `${encodedHeader}.${encodedPayload}`;
+    const signature = await this.signToken(
+      message,
+      securityConfig.jwt.refreshSecret
     );
+
+    return `${message}.${signature}`;
   }
 
   /**
-   * Verifica e decodifica token JWT
+   * Verifica e decodifica token JWT-like de acesso
    */
-  private verifyAccessToken(token: string): JWTPayload | null {
+  private async verifyAccessToken(token: string): Promise<JWTPayload | null> {
     try {
-      const decoded = jwt.verify(token, securityConfig.jwt.secret, {
-        algorithms: ['HS256'],
-      }) as JWTPayload;
+      const parts = token.split('.');
+      if (parts.length !== 3) {
+        throw new Error('Token format invalid');
+      }
 
-      if (decoded.type !== 'access') {
+      const [encodedHeader, encodedPayload, signature] = parts;
+      const message = `${encodedHeader}.${encodedPayload}`;
+
+      // Verifica assinatura
+      const isValid = await this.verifyTokenSignature(
+        message,
+        signature,
+        securityConfig.jwt.secret
+      );
+
+      if (!isValid) {
+        throw new Error('Invalid signature');
+      }
+
+      // Decodifica payload
+      const payloadJson = atob(
+        encodedPayload.replace(/-/g, '+').replace(/_/g, '/')
+      );
+      const payload = JSON.parse(payloadJson) as JWTPayload;
+
+      // Verifica tipo
+      if (payload.type !== 'access') {
         throw new Error('Token type mismatch');
       }
 
-      return decoded;
+      // Verifica expiração
+      const now = Math.floor(Date.now() / 1000);
+      if (payload.exp < now) {
+        throw new Error('Token expired');
+      }
+
+      return payload;
     } catch (error) {
       console.error('Token inválido:', error);
       return null;
@@ -181,19 +393,47 @@ class SecureAuthService {
   }
 
   /**
-   * Verifica e decodifica refresh token
+   * Verifica e decodifica refresh token JWT-like
    */
-  private verifyRefreshToken(token: string): JWTPayload | null {
+  private async verifyRefreshToken(token: string): Promise<JWTPayload | null> {
     try {
-      const decoded = jwt.verify(token, securityConfig.jwt.refreshSecret, {
-        algorithms: ['HS256'],
-      }) as JWTPayload;
+      const parts = token.split('.');
+      if (parts.length !== 3) {
+        throw new Error('Token format invalid');
+      }
 
-      if (decoded.type !== 'refresh') {
+      const [encodedHeader, encodedPayload, signature] = parts;
+      const message = `${encodedHeader}.${encodedPayload}`;
+
+      // Verifica assinatura
+      const isValid = await this.verifyTokenSignature(
+        message,
+        signature,
+        securityConfig.jwt.refreshSecret
+      );
+
+      if (!isValid) {
+        throw new Error('Invalid signature');
+      }
+
+      // Decodifica payload
+      const payloadJson = atob(
+        encodedPayload.replace(/-/g, '+').replace(/_/g, '/')
+      );
+      const payload = JSON.parse(payloadJson) as JWTPayload;
+
+      // Verifica tipo
+      if (payload.type !== 'refresh') {
         throw new Error('Token type mismatch');
       }
 
-      return decoded;
+      // Verifica expiração
+      const now = Math.floor(Date.now() / 1000);
+      if (payload.exp < now) {
+        throw new Error('Token expired');
+      }
+
+      return payload;
     } catch (error) {
       console.error('Refresh token inválido:', error);
       return null;
@@ -311,11 +551,11 @@ class SecureAuthService {
   /**
    * Verifica se usuário está autenticado
    */
-  isAuthenticated(): boolean {
+  async isAuthenticated(): Promise<boolean> {
     const token = localStorage.getItem(TOKEN_STORAGE_KEY);
     if (!token) return false;
 
-    const payload = this.verifyAccessToken(token);
+    const payload = await this.verifyAccessToken(token);
     return payload !== null;
   }
 
@@ -380,8 +620,8 @@ class SecureAuthService {
     rateLimitService.reset(identifier, 'login');
 
     // Gera tokens JWT
-    const accessToken = this.generateAccessToken(user);
-    const refreshToken = this.generateRefreshToken(user);
+    const accessToken = await this.generateAccessToken(user);
+    const refreshToken = await this.generateRefreshToken(user);
 
     // Salva refresh token no usuário
     user.refreshToken = refreshToken;
@@ -455,8 +695,8 @@ class SecureAuthService {
     this.saveUsersWithPassword(users);
 
     // Gera tokens JWT
-    const accessToken = this.generateAccessToken(newUser);
-    const refreshToken = this.generateRefreshToken(newUser);
+    const accessToken = await this.generateAccessToken(newUser);
+    const refreshToken = await this.generateRefreshToken(newUser);
 
     // Salva refresh token
     newUser.refreshToken = refreshToken;
@@ -489,7 +729,7 @@ class SecureAuthService {
     }
 
     // Verifica refresh token
-    const payload = this.verifyRefreshToken(refreshToken);
+    const payload = await this.verifyRefreshToken(refreshToken);
     if (!payload) {
       throw new Error('Refresh token inválido. Faça login novamente.');
     }
@@ -503,7 +743,7 @@ class SecureAuthService {
     }
 
     // Gera novo access token
-    const newAccessToken = this.generateAccessToken(user);
+    const newAccessToken = await this.generateAccessToken(user);
 
     // Salva novo token
     localStorage.setItem(TOKEN_STORAGE_KEY, newAccessToken);

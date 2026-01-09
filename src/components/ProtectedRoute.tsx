@@ -1,4 +1,5 @@
 import { Navigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
 import { authService } from '@/services/auth.service';
 
 interface ProtectedRouteProps {
@@ -6,15 +7,30 @@ interface ProtectedRouteProps {
 }
 
 export default function ProtectedRoute({ children }: ProtectedRouteProps) {
-  // ÚNICA VERIFICAÇÃO: localStorage direto
-  const hasToken = authService.isAuthenticated();
-  const hasUser = authService.getCurrentUser() !== null;
-  
-  // Se localStorage tem autenticação, permitir acesso IMEDIATAMENTE
-  if (hasToken && hasUser) {
+  const [isChecking, setIsChecking] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
+
+  useEffect(() => {
+    const checkAuth = async () => {
+      const hasToken = await authService.isAuthenticated();
+      const hasUser = authService.getCurrentUser() !== null;
+      setIsAuthenticated(hasToken && hasUser);
+      setIsChecking(false);
+    };
+
+    checkAuth();
+  }, []);
+
+  // Aguarda verificação assíncrona
+  if (isChecking) {
+    return null; // ou um loading spinner
+  }
+
+  // Se autenticado, permitir acesso
+  if (isAuthenticated) {
     return <>{children}</>;
   }
 
-  // Se não tem autenticação, redirecionar para login
+  // Se não autenticado, redirecionar para login
   return <Navigate to="/login" replace />;
 }

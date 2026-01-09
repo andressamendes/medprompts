@@ -17,10 +17,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [user, setUser] = useState<User | null>(null);
   const [isLoading, setIsLoading] = useState(true);
 
-  const refreshAuth = () => {
+  const refreshAuth = async () => {
     const currentUser = authService.getCurrentUser();
-    const isAuth = authService.isAuthenticated();
-    
+    const isAuth = await authService.isAuthenticated();
+
     if (currentUser && isAuth) {
       setUser(currentUser);
     } else {
@@ -29,8 +29,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   };
 
   useEffect(() => {
-    refreshAuth();
-    setIsLoading(false);
+    refreshAuth().finally(() => setIsLoading(false));
   }, []);
 
   const login = async (email: string, password: string) => {
