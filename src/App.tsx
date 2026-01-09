@@ -10,6 +10,7 @@ import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { lazy, Suspense, useEffect } from 'react';
 import { logger } from '@/utils/logger';
 import { cspService } from '@/services/csp.service';
+import { securityHeadersService } from '@/services/security-headers.service';
 
 // Páginas públicas
 import NewIndex from '@/pages/NewIndex';
@@ -51,6 +52,19 @@ function App() {
     logger.info('CSP inicializado', {
       csp: cspService.generateCSP()
     });
+
+    // Aplica security headers
+    securityHeadersService.applyMetaHeaders();
+    securityHeadersService.logSecurityHeaders();
+
+    // Valida configuração de segurança
+    const validation = securityHeadersService.validateSecurityConfig();
+    if (!validation.isValid) {
+      console.error('❌ Erros de segurança:', validation.errors);
+    }
+    if (validation.warnings.length > 0) {
+      console.warn('⚠️ Avisos de segurança:', validation.warnings);
+    }
   }, []);
 
   return (
