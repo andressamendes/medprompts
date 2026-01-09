@@ -2065,4 +2065,4 @@ Para cada hipótese prioritária, sugira:
 • "Comum é comum, raro é raro" mas "não perca o grave"
 • Pistas diferenciadoras evitam viés de ancoragem
 • Diagnóstico diferencial guia investigação, não é decorativo
-• Reavaliar diagnóstico diferencial conforme novos dados surgem`,tags:["diagnóstico diferencial","raciocínio clínico","priorização"],academicLevel:"3º-4º ano",estimatedTime:20,recommendedAI:{primary:"ChatGPT",reason:"Organiza informações em categorias lógicas. Prioriza hipóteses de forma estruturada e justificada.",alternatives:["Claude"]}}];export{e as p};
+• Reavaliar diagnóstico diferencial conforme novos dados surgem`,tags:["diagnóstico diferencial","raciocínio clínico","priorização"],academicLevel:"3º-4º ano",estimatedTime:20,recommendedAI:{primary:"ChatGPT",reason:"Organiza informações em categorias lógicas. Prioriza hipóteses de forma estruturada e justificada.",alternatives:["Claude"]}}];export{e as prompts};
