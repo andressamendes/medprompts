@@ -53,11 +53,6 @@ export const HospitalInfirmary = ({
     // Escala dinâmica baseada no tamanho
     const scale = width / 1600;
 
-    // Funções auxiliares
-    const drawRect = (x: number, y: number, w: number, h: number, color: string) => {
-      ctx.fillStyle = color;
-      ctx.fillRect(x * scale, y * scale, w * scale, h * scale);
-    };
 
     const drawRoundedRect = (x: number, y: number, w: number, h: number, r: number, color: string) => {
       ctx.fillStyle = color;
@@ -73,7 +68,7 @@ export const HospitalInfirmary = ({
       ctx.fillText(text, x * scale, y * scale);
     };
 
-    const drawShadow = (x: number, y: number, w: number, h: number, blur: number, color: string) => {
+    const drawShadow = (blur: number, color: string) => {
       ctx.shadowColor = color;
       ctx.shadowBlur = blur * scale;
       ctx.shadowOffsetX = 0;
@@ -133,7 +128,7 @@ export const HospitalInfirmary = ({
       const y = 120;
       
       // Fundo da área com sombra
-      drawShadow(x, y, 320, 200, 15, 'rgba(0,0,0,0.1)');
+      drawShadow(15, 'rgba(0,0,0,0.1)');
       drawRoundedRect(x, y, 320, 200, 12, '#FFFFFF');
       clearShadow();
       
@@ -152,7 +147,7 @@ export const HospitalInfirmary = ({
       const deskY = y + 50;
       
       // Sombra do balcão
-      drawShadow(deskX, deskY, 240, 80, 10, 'rgba(0,0,0,0.15)');
+      drawShadow(15, 'rgba(0,0,0,0.1)');
       
       // Parte frontal
       const frontGradient = ctx.createLinearGradient(
@@ -198,7 +193,7 @@ export const HospitalInfirmary = ({
     // Consultório com mais detalhes
     const drawConsultingRoom = (x: number, y: number, number: number) => {
       // Fundo
-      drawShadow(x, y, 280, 200, 15, 'rgba(0,0,0,0.1)');
+      drawShadow(15, 'rgba(0,0,0,0.1)');
       drawRoundedRect(x, y, 280, 200, 12, '#FFFFFF');
       clearShadow();
       
@@ -264,7 +259,7 @@ export const HospitalInfirmary = ({
       const y = 360;
       
       // Fundo
-      drawShadow(x, y, 660, 220, 15, 'rgba(0,0,0,0.1)');
+      drawShadow(15, 'rgba(0,0,0,0.1)');
       drawRoundedRect(x, y, 660, 220, 12, '#FFFFFF');
       clearShadow();
       
@@ -288,7 +283,7 @@ export const HospitalInfirmary = ({
       
       bedPositions.forEach(pos => {
         // Leito completo
-        drawShadow(pos.x, pos.y, 280, 70, 8, 'rgba(0,0,0,0.08)');
+        drawShadow(15, 'rgba(0,0,0,0.1)');
         
         // Estrutura
         ctx.fillStyle = '#BDC3C7';
@@ -333,7 +328,7 @@ export const HospitalInfirmary = ({
       const x = 760;
       const y = 360;
       
-      drawShadow(x, y, 300, 220, 15, 'rgba(0,0,0,0.1)');
+      drawShadow(15, 'rgba(0,0,0,0.1)');
       drawRoundedRect(x, y, 300, 220, 12, '#FFFFFF');
       clearShadow();
       
@@ -375,7 +370,7 @@ export const HospitalInfirmary = ({
       const x = 1100;
       const y = 360;
       
-      drawShadow(x, y, 440, 220, 15, 'rgba(0,0,0,0.1)');
+      drawShadow(15, 'rgba(0,0,0,0.1)');
       drawRoundedRect(x, y, 440, 220, 12, '#FFFFFF');
       clearShadow();
       
