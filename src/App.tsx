@@ -9,6 +9,7 @@ import ProtectedRoute from '@/components/ProtectedRoute';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { lazy, Suspense, useEffect } from 'react';
 import { logger } from '@/utils/logger';
+import { cspService } from '@/services/csp.service';
 
 // Páginas públicas
 import NewIndex from '@/pages/NewIndex';
@@ -43,6 +44,12 @@ function App() {
       version: '2.0.0',
       environment: import.meta.env.MODE,
       timestamp: new Date().toISOString()
+    });
+
+    // Inicializa CSP reporting
+    cspService.setupCSPReporting();
+    logger.info('CSP inicializado', {
+      csp: cspService.generateCSP()
     });
   }, []);
 
