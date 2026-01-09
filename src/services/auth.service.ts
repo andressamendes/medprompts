@@ -13,6 +13,7 @@
 import bcrypt from 'bcryptjs';
 import jwt from 'jsonwebtoken';
 import { securityConfig } from '../config/security.config';
+import { sanitizationService } from './sanitization.service';
 
 // ==========================================
 // TIPOS DE DADOS
@@ -394,32 +395,38 @@ class SecureAuthService {
 
   /**
    * Registro com hash bcrypt de senha
+   * FASE 5: Adicionada sanitização de inputs (XSS protection)
    */
   async register(data: RegisterData): Promise<AuthResponse> {
+    // NOVO: Sanitiza e valida todos os inputs
+    const validationResult = sanitizationService.sanitizeUserRegistration(data);
+
+    if (!validationResult.isValid) {
+      throw new Error(
+        'Dados inválidos:\n' + validationResult.errors.join('\n')
+      );
+    }
+
+    const sanitizedData = validationResult.sanitized!;
     const users = this.getUsersWithPassword();
 
     // Verifica se email já existe
-    if (users.some(u => u.email === data.email)) {
+    if (users.some(u => u.email === sanitizedData.email)) {
       throw new Error('Este email já está registrado. Faça login.');
     }
 
-    // Validação de senha
-    if (data.password.length < 8) {
-      throw new Error('A senha deve ter pelo menos 8 caracteres.');
-    }
-
     // Hash da senha com bcrypt
-    const hashedPassword = await this.hashPassword(data.password);
+    const hashedPassword = await this.hashPassword(sanitizedData.password);
 
     // Cria novo usuário
     const newUser: UserWithPassword = {
       id: `user_${Date.now()}`,
-      name: data.name,
-      email: data.email,
+      name: sanitizedData.name,
+      email: sanitizedData.email,
       password: hashedPassword,
       role: 'USER', // NOVO: Role padrão
-      university: data.university,
-      graduationYear: data.graduationYear,
+      university: sanitizedData.university,
+      graduationYear: sanitizedData.graduationYear,
       createdAt: new Date().toISOString(),
       isEmailVerified: false, // NOVO: Email não verificado
       loginAttempts: 0,

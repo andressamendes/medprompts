@@ -36,6 +36,7 @@
     "chart.js": "^4.5.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
+    "dompurify": "^3.3.1",
     "driver.js": "^1.4.0",
     "gapi-script": "^1.2.0",
     "jsonwebtoken": "^9.0.3",
@@ -49,6 +50,7 @@
   },
   "devDependencies": {
     "@types/bcryptjs": "^2.4.6",
+    "@types/dompurify": "^3.0.5",
     "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.11.16",
     "@types/pathfinding": "^0.1.0",
