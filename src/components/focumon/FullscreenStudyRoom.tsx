@@ -1,7 +1,9 @@
 import { useState, useEffect } from 'react';
-import { HospitalConferenceRoom } from './HospitalConferenceRoom';
+import { HospitalInfirmary } from './HospitalInfirmary';
+import { AvatarCustomizationModal } from './AvatarCustomizationModal';
 import { usePomodoro } from '@/hooks/usePomodoro';
 import { useStudyRoom } from '@/hooks/useStudyRoom';
+import { AvatarCustomization, DEFAULT_AVATAR } from '@/types/avatar.types';
 import { Button } from '@/components/ui/button';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
@@ -17,7 +19,8 @@ import {
   ChevronDown,
   ChevronUp,
   GripVertical,
-  Loader2
+  Loader2,
+  User
 } from 'lucide-react';
 
 interface Task {
@@ -27,6 +30,8 @@ interface Task {
   completed: boolean;
 }
 
+const STORAGE_KEY_AVATAR = 'medprompts_avatar_customization';
+
 export const FullscreenStudyRoom = () => {
   const [isFullscreen, setIsFullscreen] = useState(false);
   const [isTasksExpanded, setIsTasksExpanded] = useState(false);
@@ -34,6 +39,21 @@ export const FullscreenStudyRoom = () => {
   const [tasks, setTasks] = useState<Task[]>([]);
   const [newTaskText, setNewTaskText] = useState('');
   const [newTaskTime, setNewTaskTime] = useState(25);
+  const [showAvatarModal, setShowAvatarModal] = useState(false);
+  const [hasCustomized, setHasCustomized] = useState(false);
+
+  // Carregar avatar do localStorage ou usar padrão
+  const [avatarCustomization, setAvatarCustomization] = useState<AvatarCustomization>(() => {
+    const saved = localStorage.getItem(STORAGE_KEY_AVATAR);
+    if (saved) {
+      try {
+        return JSON.parse(saved);
+      } catch {
+        return DEFAULT_AVATAR;
+      }
+    }
+    return DEFAULT_AVATAR;
+  });
 
   const {
     mode,
@@ -54,8 +74,17 @@ export const FullscreenStudyRoom = () => {
     currentUser,
     otherUsers,
     updateUserStatus,
+    updateUserAvatar,
     incrementPomodoros,
-  } = useStudyRoom('Você', mode);
+  } = useStudyRoom('Você', mode, avatarCustomization);
+
+  // Mostrar modal na primeira visita
+  useEffect(() => {
+    const saved = localStorage.getItem(STORAGE_KEY_AVATAR);
+    if (!saved && !hasCustomized) {
+      setShowAvatarModal(true);
+    }
+  }, [hasCustomized]);
 
   // Sincronizar status do usuário com o modo Pomodoro
   useEffect(() => {
@@ -68,6 +97,14 @@ export const FullscreenStudyRoom = () => {
       incrementPomodoros();
     }
   }, [pomodorosCompleted, incrementPomodoros]);
+
+  // Salvar avatar customizado
+  const handleSaveAvatar = (customization: AvatarCustomization) => {
+    setAvatarCustomization(customization);
+    localStorage.setItem(STORAGE_KEY_AVATAR, JSON.stringify(customization));
+    updateUserAvatar(customization.avatarType, customization.classYear);
+    setHasCustomized(true);
+  };
 
   // Entrar/Sair do fullscreen
   const toggleFullscreen = () => {
@@ -151,285 +188,297 @@ export const FullscreenStudyRoom = () => {
       <div className="flex items-center justify-center p-12">
         <div className="flex flex-col items-center gap-4">
           <Loader2 className="h-8 w-8 animate-spin text-primary" />
-          <p className="text-sm text-muted-foreground">Entrando na sala de estudos...</p>
+          <p className="text-sm text-muted-foreground">Entrando na enfermaria...</p>
         </div>
       </div>
     );
   }
 
   return (
-    <div className={`relative ${isFullscreen ? 'fixed inset-0 z-50 bg-black' : ''}`}>
-      {/* Canvas Principal */}
-      <div className={isFullscreen ? 'h-screen w-screen' : 'relative'}>
-        <HospitalConferenceRoom 
-          mode={mode}
-          currentUser={currentUser}
-          otherUsers={otherUsers}
-        />
-      </div>
+    <>
+      {/* Modal de Customização */}
+      <AvatarCustomizationModal
+        open={showAvatarModal}
+        onOpenChange={setShowAvatarModal}
+        initialCustomization={avatarCustomization}
+        onSave={handleSaveAvatar}
+      />
 
-      {/* Botão de Fullscreen (quando não está em fullscreen) */}
-      {!isFullscreen && (
-        <div className="absolute top-4 right-4">
-          <Button
-            onClick={toggleFullscreen}
-            size="lg"
-            className="gap-2 shadow-lg"
-          >
-            <Maximize2 className="h-5 w-5" />
-            Modo Tela Cheia
-          </Button>
+      <div className={`relative ${isFullscreen ? 'fixed inset-0 z-50 bg-black' : ''}`}>
+        {/* Canvas Principal */}
+        <div className={isFullscreen ? 'h-screen w-screen' : 'relative'}>
+          <HospitalInfirmary 
+            mode={mode}
+            currentUser={currentUser}
+            otherUsers={otherUsers}
+          />
         </div>
-      )}
 
-      {/* Stats da Sala (quando não está em fullscreen) */}
-      {!isFullscreen && stats && (
-        <div className="absolute top-4 left-4 bg-black/80 backdrop-blur-md rounded-lg px-4 py-3 text-white">
-          <div className="flex items-center gap-4 text-sm">
-            <span className="font-semibold">👥 {stats.totalUsers}/50</span>
-            <span className="text-green-400">🟢 {stats.focusing}</span>
-            <span className="text-orange-400">🟡 {stats.shortBreak}</span>
-            <span className="text-purple-400">🟣 {stats.longBreak}</span>
+        {/* Botões superiores (quando não está em fullscreen) */}
+        {!isFullscreen && (
+          <div className="absolute top-4 right-4 flex gap-2">
+            <Button
+              onClick={() => setShowAvatarModal(true)}
+              variant="outline"
+              size="lg"
+              className="gap-2 shadow-lg"
+            >
+              <User className="h-5 w-5" />
+              Editar Avatar
+            </Button>
+            <Button
+              onClick={toggleFullscreen}
+              size="lg"
+              className="gap-2 shadow-lg"
+            >
+              <Maximize2 className="h-5 w-5" />
+              Modo Tela Cheia
+            </Button>
           </div>
-        </div>
-      )}
+        )}
 
-      {/* HUD - Timer Pomodoro (Overlay Superior Direito) */}
-      {isFullscreen && (
-        <div className="absolute top-4 right-4 z-50">
-          <Card className={`bg-black/80 backdrop-blur-md border-2 ${getModeColor()} shadow-2xl`}>
-            <CardHeader className="pb-2 pt-3 px-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className={`text-lg font-bold ${getModeColor()}`}>
-                  {getModeLabel()}
-                </CardTitle>
-                <div className="flex gap-1">
-                  <Button
-                    onClick={() => setIsTimerMinimized(!isTimerMinimized)}
-                    size="sm"
-                    variant="ghost"
-                    className="h-6 w-6 p-0 text-white hover:bg-white/20"
-                  >
-                    {isTimerMinimized ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
-                  </Button>
-                  <Button
-                    onClick={toggleFullscreen}
-                    size="sm"
-                    variant="ghost"
-                    className="h-6 w-6 p-0 text-white hover:bg-white/20"
-                  >
-                    <Minimize2 className="h-4 w-4" />
-                  </Button>
-                </div>
-              </div>
-            </CardHeader>
+        {/* Stats da Sala (quando não está em fullscreen) */}
+        {!isFullscreen && stats && (
+          <div className="absolute top-4 left-4 bg-black/80 backdrop-blur-md rounded-lg px-4 py-3 text-white">
+            <div className="flex items-center gap-4 text-sm">
+              <span className="font-semibold">👥 {stats.totalUsers}/30</span>
+              <span className="text-green-400">🟢 {stats.focusing}</span>
+              <span className="text-orange-400">🟡 {stats.shortBreak}</span>
+              <span className="text-purple-400">🟣 {stats.longBreak}</span>
+            </div>
+          </div>
+        )}
 
-            {!isTimerMinimized && (
-              <CardContent className="space-y-3 px-4 pb-4">
-                {/* Timer Display */}
-                <div className="text-5xl font-mono font-bold text-white text-center">
-                  {formatTime(timeLeft)}
-                </div>
-
-                {/* Pomodoros Completados */}
-                <div className="flex gap-1 justify-center">
-                  {Array.from({ length: 4 }).map((_, i) => (
-                    <div
-                      key={i}
-                      className={`w-2 h-2 rounded-full ${
-                        i < pomodorosCompleted % 4 ? 'bg-green-500' : 'bg-white/30'
-                      }`}
-                    />
-                  ))}
-                </div>
-
-                {/* Controles */}
-                <div className="flex gap-2 justify-center">
-                  <Button
-                    onClick={isRunning ? pause : start}
-                    size="sm"
-                    className="gap-1"
-                  >
-                    {isRunning ? (
-                      <>
-                        <Pause className="h-3 w-3" />
-                        Pausar
-                      </>
-                    ) : (
-                      <>
-                        <Play className="h-3 w-3" />
-                        Iniciar
-                      </>
-                    )}
-                  </Button>
-                  
-                  <Button onClick={reset} size="sm" variant="outline">
-                    <RotateCcw className="h-3 w-3" />
-                  </Button>
-                  
-                  <Button onClick={skip} size="sm" variant="outline">
-                    <SkipForward className="h-3 w-3" />
-                  </Button>
-                </div>
-
-                {/* Stats */}
-                <div className="text-xs text-white/70 text-center">
-                  {pomodorosCompleted} pomodoros hoje
-                </div>
-              </CardContent>
-            )}
-          </Card>
-        </div>
-      )}
-
-      {/* HUD - Lista de Tarefas (Overlay Inferior Esquerdo) */}
-      {isFullscreen && (
-        <div className="absolute bottom-4 left-4 z-50 w-96">
-          <Card className="bg-black/80 backdrop-blur-md border-2 border-blue-500 shadow-2xl">
-            <CardHeader className="pb-2 pt-3 px-4">
-              <div className="flex items-center justify-between">
-                <CardTitle className="text-lg font-bold text-blue-500">
-                  📋 Tarefas
-                </CardTitle>
-                <Button
-                  onClick={() => setIsTasksExpanded(!isTasksExpanded)}
-                  size="sm"
-                  variant="ghost"
-                  className="h-6 w-6 p-0 text-white hover:bg-white/20"
-                >
-                  {isTasksExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
-                </Button>
-              </div>
-            </CardHeader>
-
-            {isTasksExpanded && (
-              <CardContent className="space-y-3 px-4 pb-4">
-                {/* Adicionar Tarefa */}
-                <div className="flex gap-2">
-                  <Input
-                    placeholder="Nova tarefa..."
-                    value={newTaskText}
-                    onChange={(e) => setNewTaskText(e.target.value)}
-                    onKeyDown={(e) => {
-                      if (e.key === 'Enter') addTask();
-                    }}
-                    className="flex-1 bg-white/10 border-white/30 text-white placeholder:text-white/50"
-                  />
-                  <Input
-                    type="number"
-                    min="5"
-                    max="120"
-                    value={newTaskTime}
-                    onChange={(e) => setNewTaskTime(Number(e.target.value))}
-                    className="w-16 bg-white/10 border-white/30 text-white"
-                  />
-                  <Button onClick={addTask} size="sm" className="px-2">
-                    <Plus className="h-4 w-4" />
-                  </Button>
-                </div>
-
-                {/* Lista de Tarefas */}
-                <div className="space-y-2 max-h-64 overflow-y-auto">
-                  {tasks.length === 0 ? (
-                    <div className="text-center py-4 text-white/50 text-sm">
-                      Nenhuma tarefa adicionada
-                    </div>
-                  ) : (
-                    tasks.map((task) => (
-                      <div
-                        key={task.id}
-                        className={`flex items-center gap-2 p-2 rounded-lg border transition-all ${
-                          task.completed
-                            ? 'bg-white/5 border-white/20'
-                            : 'bg-white/10 border-white/30'
-                        }`}
-                      >
-                        <GripVertical className="h-3 w-3 text-white/30 flex-shrink-0" />
-                        
-                        <input
-                          type="checkbox"
-                          checked={task.completed}
-                          onChange={() => toggleComplete(task.id)}
-                          className="h-3 w-3 rounded flex-shrink-0"
-                        />
-
-                        <div className="flex-1 min-w-0">
-                          <p
-                            className={`text-sm truncate ${
-                              task.completed ? 'line-through text-white/50' : 'text-white'
-                            }`}
-                          >
-                            {task.text}
-                          </p>
-                          <p className="text-xs text-white/50">{task.timeBlock} min</p>
-                        </div>
-
-                        <Button
-                          onClick={() => removeTask(task.id)}
-                          size="sm"
-                          variant="ghost"
-                          className="h-6 w-6 p-0 text-white/50 hover:text-white hover:bg-white/20 flex-shrink-0"
-                        >
-                          <X className="h-3 w-3" />
-                        </Button>
-                      </div>
-                    ))
-                  )}
-                </div>
-
-                {/* Estatísticas */}
-                {tasks.length > 0 && (
-                  <div className="flex gap-4 text-xs text-white/70 pt-2 border-t border-white/20">
-                    <span>Total: {tasks.length}</span>
-                    <span>Concluídas: {tasks.filter(t => t.completed).length}</span>
-                    <span>Tempo: {tasks.reduce((acc, t) => acc + t.timeBlock, 0)} min</span>
+        {/* HUD - Timer Pomodoro (Overlay Superior Direito) */}
+        {isFullscreen && (
+          <div className="absolute top-4 right-4 z-50">
+            <Card className={`bg-black/80 backdrop-blur-md border-2 ${getModeColor()} shadow-2xl`}>
+              <CardHeader className="pb-2 pt-3 px-4">
+                <div className="flex items-center justify-between">
+                  <CardTitle className={`text-lg font-bold ${getModeColor()}`}>
+                    {getModeLabel()}
+                  </CardTitle>
+                  <div className="flex gap-1">
+                    <Button
+                      onClick={() => setIsTimerMinimized(!isTimerMinimized)}
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 w-6 p-0 text-white hover:bg-white/20"
+                    >
+                      {isTimerMinimized ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+                    </Button>
+                    <Button
+                      onClick={toggleFullscreen}
+                      size="sm"
+                      variant="ghost"
+                      className="h-6 w-6 p-0 text-white hover:bg-white/20"
+                    >
+                      <Minimize2 className="h-4 w-4" />
+                    </Button>
                   </div>
-                )}
-              </CardContent>
-            )}
-          </Card>
-        </div>
-      )}
-
-      {/* HUD - Stats da Sala (Overlay Inferior Direito) */}
-      {isFullscreen && stats && (
-        <div className="absolute bottom-4 right-4 z-50">
-          <Card className="bg-black/80 backdrop-blur-md border-2 border-white/20 shadow-2xl">
-            <CardContent className="p-4">
-              <div className="flex flex-col gap-2 text-white text-sm">
-                <div className="font-semibold text-center mb-1">👥 Sala Ativa</div>
-                <div className="grid grid-cols-2 gap-x-4 gap-y-1">
-                  <span className="text-white/70">Total:</span>
-                  <span className="text-right font-mono">{stats.totalUsers}/50</span>
-                  
-                  <span className="text-green-400">🟢 Focando:</span>
-                  <span className="text-right font-mono text-green-400">{stats.focusing}</span>
-                  
-                  <span className="text-orange-400">🟡 Pausa:</span>
-                  <span className="text-right font-mono text-orange-400">{stats.shortBreak}</span>
-                  
-                  <span className="text-purple-400">🟣 Longa:</span>
-                  <span className="text-right font-mono text-purple-400">{stats.longBreak}</span>
-                  
-                  <span className="text-white/70">Vagas:</span>
-                  <span className="text-right font-mono">{stats.availableSeats}</span>
                 </div>
-              </div>
-            </CardContent>
-          </Card>
-        </div>
-      )}
+              </CardHeader>
 
-      {/* Atalhos de Teclado (visível em fullscreen) */}
-      {isFullscreen && (
-        <div className="absolute top-4 left-4 z-50">
-          <div className="bg-black/60 backdrop-blur-md rounded-lg px-3 py-2 text-white/70 text-xs">
-            <div className="font-semibold mb-1">Atalhos:</div>
-            <div>ESC - Sair</div>
-            <div>SPACE - Play/Pause</div>
+              {!isTimerMinimized && (
+                <CardContent className="space-y-3 px-4 pb-4">
+                  <div className="text-5xl font-mono font-bold text-white text-center">
+                    {formatTime(timeLeft)}
+                  </div>
+
+                  <div className="flex gap-1 justify-center">
+                    {Array.from({ length: 4 }).map((_, i) => (
+                      <div
+                        key={i}
+                        className={`w-2 h-2 rounded-full ${
+                          i < pomodorosCompleted % 4 ? 'bg-green-500' : 'bg-white/30'
+                        }`}
+                      />
+                    ))}
+                  </div>
+
+                  <div className="flex gap-2 justify-center">
+                    <Button
+                      onClick={isRunning ? pause : start}
+                      size="sm"
+                      className="gap-1"
+                    >
+                      {isRunning ? (
+                        <>
+                          <Pause className="h-3 w-3" />
+                          Pausar
+                        </>
+                      ) : (
+                        <>
+                          <Play className="h-3 w-3" />
+                          Iniciar
+                        </>
+                      )}
+                    </Button>
+                    
+                    <Button onClick={reset} size="sm" variant="outline">
+                      <RotateCcw className="h-3 w-3" />
+                    </Button>
+                    
+                    <Button onClick={skip} size="sm" variant="outline">
+                      <SkipForward className="h-3 w-3" />
+                    </Button>
+                  </div>
+
+                  <div className="text-xs text-white/70 text-center">
+                    {pomodorosCompleted} pomodoros hoje
+                  </div>
+                </CardContent>
+              )}
+            </Card>
           </div>
-        </div>
-      )}
-    </div>
+        )}
+
+        {/* HUD - Lista de Tarefas (Overlay Inferior Esquerdo) */}
+        {isFullscreen && (
+          <div className="absolute bottom-4 left-4 z-50 w-96">
+            <Card className="bg-black/80 backdrop-blur-md border-2 border-blue-500 shadow-2xl">
+              <CardHeader className="pb-2 pt-3 px-4">
+                <div className="flex items-center justify-between">
+                  <CardTitle className="text-lg font-bold text-blue-500">
+                    📋 Tarefas
+                  </CardTitle>
+                  <Button
+                    onClick={() => setIsTasksExpanded(!isTasksExpanded)}
+                    size="sm"
+                    variant="ghost"
+                    className="h-6 w-6 p-0 text-white hover:bg-white/20"
+                  >
+                    {isTasksExpanded ? <ChevronDown className="h-4 w-4" /> : <ChevronUp className="h-4 w-4" />}
+                  </Button>
+                </div>
+              </CardHeader>
+
+              {isTasksExpanded && (
+                <CardContent className="space-y-3 px-4 pb-4">
+                  <div className="flex gap-2">
+                    <Input
+                      placeholder="Nova tarefa..."
+                      value={newTaskText}
+                      onChange={(e) => setNewTaskText(e.target.value)}
+                      onKeyDown={(e) => {
+                        if (e.key === 'Enter') addTask();
+                      }}
+                      className="flex-1 bg-white/10 border-white/30 text-white placeholder:text-white/50"
+                    />
+                    <Input
+                      type="number"
+                      min="5"
+                      max="120"
+                      value={newTaskTime}
+                      onChange={(e) => setNewTaskTime(Number(e.target.value))}
+                      className="w-16 bg-white/10 border-white/30 text-white"
+                    />
+                    <Button onClick={addTask} size="sm" className="px-2">
+                      <Plus className="h-4 w-4" />
+                    </Button>
+                  </div>
+
+                  <div className="space-y-2 max-h-64 overflow-y-auto">
+                    {tasks.length === 0 ? (
+                      <div className="text-center py-4 text-white/50 text-sm">
+                        Nenhuma tarefa adicionada
+                      </div>
+                    ) : (
+                      tasks.map((task) => (
+                        <div
+                          key={task.id}
+                          className={`flex items-center gap-2 p-2 rounded-lg border transition-all ${
+                            task.completed
+                              ? 'bg-white/5 border-white/20'
+                              : 'bg-white/10 border-white/30'
+                          }`}
+                        >
+                          <GripVertical className="h-3 w-3 text-white/30 flex-shrink-0" />
+                          
+                          <input
+                            type="checkbox"
+                            checked={task.completed}
+                            onChange={() => toggleComplete(task.id)}
+                            className="h-3 w-3 rounded flex-shrink-0"
+                          />
+
+                          <div className="flex-1 min-w-0">
+                            <p
+                              className={`text-sm truncate ${
+                                task.completed ? 'line-through text-white/50' : 'text-white'
+                              }`}
+                            >
+                              {task.text}
+                            </p>
+                            <p className="text-xs text-white/50">{task.timeBlock} min</p>
+                          </div>
+
+                          <Button
+                            onClick={() => removeTask(task.id)}
+                            size="sm"
+                            variant="ghost"
+                            className="h-6 w-6 p-0 text-white/50 hover:text-white hover:bg-white/20 flex-shrink-0"
+                          >
+                            <X className="h-3 w-3" />
+                          </Button>
+                        </div>
+                      ))
+                    )}
+                  </div>
+
+                  {tasks.length > 0 && (
+                    <div className="flex gap-4 text-xs text-white/70 pt-2 border-t border-white/20">
+                      <span>Total: {tasks.length}</span>
+                      <span>Concluídas: {tasks.filter(t => t.completed).length}</span>
+                      <span>Tempo: {tasks.reduce((acc, t) => acc + t.timeBlock, 0)} min</span>
+                    </div>
+                  )}
+                </CardContent>
+              )}
+            </Card>
+          </div>
+        )}
+
+        {/* HUD - Stats da Sala (Overlay Inferior Direito) */}
+        {isFullscreen && stats && (
+          <div className="absolute bottom-4 right-4 z-50">
+            <Card className="bg-black/80 backdrop-blur-md border-2 border-white/20 shadow-2xl">
+              <CardContent className="p-4">
+                <div className="flex flex-col gap-2 text-white text-sm">
+                  <div className="font-semibold text-center mb-1">👥 Enfermaria</div>
+                  <div className="grid grid-cols-2 gap-x-4 gap-y-1">
+                    <span className="text-white/70">Total:</span>
+                    <span className="text-right font-mono">{stats.totalUsers}/30</span>
+                    
+                    <span className="text-green-400">🟢 Focando:</span>
+                    <span className="text-right font-mono text-green-400">{stats.focusing}</span>
+                    
+                    <span className="text-orange-400">🟡 Pausa:</span>
+                    <span className="text-right font-mono text-orange-400">{stats.shortBreak}</span>
+                    
+                    <span className="text-purple-400">🟣 Longa:</span>
+                    <span className="text-right font-mono text-purple-400">{stats.longBreak}</span>
+                    
+                    <span className="text-white/70">Vagas:</span>
+                    <span className="text-right font-mono">{stats.availableSeats}</span>
+                  </div>
+                </div>
+              </CardContent>
+            </Card>
+          </div>
+        )}
+
+        {/* Atalhos de Teclado (visível em fullscreen) */}
+        {isFullscreen && (
+          <div className="absolute top-4 left-4 z-50">
+            <div className="bg-black/60 backdrop-blur-md rounded-lg px-3 py-2 text-white/70 text-xs">
+              <div className="font-semibold mb-1">Atalhos:</div>
+              <div>ESC - Sair</div>
+              <div>SPACE - Play/Pause</div>
+            </div>
+          </div>
+        )}
+      </div>
+    </>
   );
 };

@@ -1,11 +1,16 @@
 import { useState, useEffect, useCallback } from 'react';
 import studyRoomService from '@/services/studyRoom.service';
 import { User, UserStatus, StudyRoom, RoomStats } from '@/types/studyRoom.types';
+import { AvatarCustomization, AvatarType, ClassYear } from '@/types/avatar.types';
 
 /**
  * Hook customizado para gerenciar estado da Study Room
  */
-export const useStudyRoom = (currentUserName: string = 'Você', initialStatus: UserStatus = 'FOCUS') => {
+export const useStudyRoom = (
+  currentUserName: string = 'Você', 
+  initialStatus: UserStatus = 'FOCUS',
+  initialAvatar?: AvatarCustomization
+) => {
   const [room, setRoom] = useState<StudyRoom | null>(null);
   const [stats, setStats] = useState<RoomStats | null>(null);
   const [isLoading, setIsLoading] = useState(true);
@@ -15,7 +20,11 @@ export const useStudyRoom = (currentUserName: string = 'Você', initialStatus: U
     const initRoom = async () => {
       try {
         setIsLoading(true);
-        const initializedRoom = await studyRoomService.initialize(currentUserName, initialStatus);
+        const initializedRoom = await studyRoomService.initialize(
+          currentUserName, 
+          initialStatus,
+          initialAvatar
+        );
         setRoom(initializedRoom);
         setStats(studyRoomService.getRoomStats());
       } catch (error) {
@@ -31,7 +40,7 @@ export const useStudyRoom = (currentUserName: string = 'Você', initialStatus: U
     return () => {
       studyRoomService.cleanup();
     };
-  }, [currentUserName, initialStatus]);
+  }, [currentUserName, initialStatus, initialAvatar]);
 
   // Atualizar stats periodicamente
   useEffect(() => {
@@ -41,7 +50,7 @@ export const useStudyRoom = (currentUserName: string = 'Você', initialStatus: U
       const updatedRoom = studyRoomService.getRoom();
       setRoom({ ...updatedRoom });
       setStats(studyRoomService.getRoomStats());
-    }, 1000); // Atualizar a cada 1 segundo
+    }, 1000);
 
     return () => clearInterval(interval);
   }, [room]);
@@ -52,6 +61,13 @@ export const useStudyRoom = (currentUserName: string = 'Você', initialStatus: U
     const updatedRoom = studyRoomService.getRoom();
     setRoom({ ...updatedRoom });
     setStats(studyRoomService.getRoomStats());
+  }, []);
+
+  // Atualizar avatar do usuário atual
+  const updateUserAvatar = useCallback((avatarType: AvatarType, classYear: ClassYear) => {
+    studyRoomService.updateCurrentUserAvatar(avatarType, classYear);
+    const updatedRoom = studyRoomService.getRoom();
+    setRoom({ ...updatedRoom });
   }, []);
 
   // Incrementar pomodoros do usuário atual
@@ -72,12 +88,12 @@ export const useStudyRoom = (currentUserName: string = 'Você', initialStatus: U
   }, [room]);
 
   return {
-    room,
     stats,
     isLoading,
     currentUser: getCurrentUser(),
     otherUsers: getOtherUsers(),
     updateUserStatus,
+    updateUserAvatar,
     incrementPomodoros,
   };
 };

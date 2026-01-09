@@ -1,11 +1,11 @@
 import { User, UserStatus, StudyRoom, RoomStats } from '@/types/studyRoom.types';
+import { AvatarType, ClassYear, AVATAR_CATALOG, DEFAULT_AVATAR } from '@/types/avatar.types';
 
 /**
  * Serviço MOCK para simular sistema multiplayer
- * Versão 1.0 - Simulação local sem backend
+ * Versão 2.0 - Com avatares customizáveis e posicionamento livre
  */
 
-// Nomes realistas para estudantes
 const STUDENT_NAMES = [
   'Ana Silva', 'Bruno Costa', 'Carlos Santos', 'Diana Lima',
   'Eduardo Souza', 'Fernanda Alves', 'Gabriel Rocha', 'Helena Martins',
@@ -14,24 +14,43 @@ const STUDENT_NAMES = [
   'Rafael Gomes', 'Sofia Carvalho', 'Thiago Ribeiro', 'Vitoria Pinto',
   'Wellington Castro', 'Xuxa Monteiro', 'Yasmin Teixeira', 'Zilda Nunes',
   'Alberto Ramos', 'Beatriz Lopes', 'Cesar Moura', 'Daniela Cunha',
-  'Emerson Pires', 'Fabiana Luz', 'Gustavo Melo', 'Heloisa Campos',
-  'Iago Freitas', 'Joana Braga', 'Kevin Azevedo', 'Larissa Duarte',
-  'Marcelo Viana', 'Natalia Porto', 'Otavio Silva', 'Patricia Reis',
-  'Quirino Bastos', 'Renata Farias', 'Sergio Lima', 'Tatiana Moraes',
-  'Ulisses Neves', 'Vanessa Correia', 'Wagner Torres', 'Xenia Santos',
-  'Yuri Macedo', 'Zara Vieira'
+  'Emerson Pires', 'Fabiana Luz'
 ];
+
+// Posições predefinidas nas áreas da enfermaria
+const AREA_POSITIONS = {
+  triagem: [
+    { x: 100, y: 180 }, { x: 150, y: 180 }, { x: 200, y: 180 }
+  ],
+  consultorio1: [
+    { x: 450, y: 120 }, { x: 550, y: 150 }
+  ],
+  consultorio2: [
+    { x: 850, y: 120 }, { x: 950, y: 150 }
+  ],
+  enfermaria: [
+    { x: 100, y: 480 }, { x: 220, y: 480 },
+    { x: 100, y: 580 }, { x: 220, y: 580 }
+  ],
+  medicacao: [
+    { x: 450, y: 500 }, { x: 550, y: 500 }, { x: 500, y: 600 }
+  ],
+  procedimentos: [
+    { x: 850, y: 500 }, { x: 950, y: 550 }
+  ]
+};
 
 class StudyRoomService {
   private room: StudyRoom;
   private currentUserId: string = 'current-user';
   private updateInterval: NodeJS.Timeout | null = null;
+  private usedPositions: Set<string> = new Set();
 
   constructor() {
     this.room = {
       id: 'main-room',
-      name: 'Hospital Conference Room',
-      capacity: 50,
+      name: 'Hospital Infirmary',
+      capacity: 30,
       users: [],
       createdAt: new Date()
     };
@@ -40,20 +59,30 @@ class StudyRoomService {
   /**
    * Inicializar sala com usuário atual e usuários simulados
    */
-  async initialize(currentUserName: string, currentStatus: UserStatus): Promise<StudyRoom> {
+  async initialize(
+    currentUserName: string, 
+    currentStatus: UserStatus,
+    currentUserAvatar = DEFAULT_AVATAR
+  ): Promise<StudyRoom> {
+    this.usedPositions.clear();
+
     // Adicionar usuário atual
+    const currentUserPosition = { x: 100, y: 180 }; // Triagem
+    this.usedPositions.add(`${currentUserPosition.x}-${currentUserPosition.y}`);
+
     const currentUser: User = {
       id: this.currentUserId,
       username: currentUserName,
       status: currentStatus,
-      position: { row: 0, col: 0 },
+      position: currentUserPosition,
       pomodorosCompleted: 0,
       joinedAt: new Date(),
-      lastActivity: new Date()
+      lastActivity: new Date(),
+      avatar: currentUserAvatar
     };
 
-    // Gerar usuários simulados (entre 5 e 20)
-    const numberOfUsers = Math.floor(Math.random() * 16) + 5;
+    // Gerar usuários simulados (entre 8 e 15)
+    const numberOfUsers = Math.floor(Math.random() * 8) + 8;
     const simulatedUsers = this.generateSimulatedUsers(numberOfUsers);
 
     this.room.users = [currentUser, ...simulatedUsers];
@@ -69,18 +98,28 @@ class StudyRoomService {
    */
   private generateSimulatedUsers(count: number): User[] {
     const users: User[] = [];
-    const usedPositions = new Set<string>(['0-0']); // Posição do usuário atual
     const availableNames = [...STUDENT_NAMES];
+    const allPositions = [
+      ...AREA_POSITIONS.triagem,
+      ...AREA_POSITIONS.consultorio1,
+      ...AREA_POSITIONS.consultorio2,
+      ...AREA_POSITIONS.enfermaria,
+      ...AREA_POSITIONS.medicacao,
+      ...AREA_POSITIONS.procedimentos
+    ];
 
     const statuses: UserStatus[] = ['FOCUS', 'SHORT_BREAK', 'LONG_BREAK', 'OFFLINE'];
-    const statusWeights = [0.5, 0.3, 0.15, 0.05]; // 50% focando, 30% pausa curta, etc
+    const statusWeights = [0.5, 0.3, 0.15, 0.05];
 
-    for (let i = 0; i < count && availableNames.length > 0; i++) {
-      // Selecionar nome aleatório
+    const avatarTypes: AvatarType[] = Object.keys(AVATAR_CATALOG) as AvatarType[];
+    const classYears: ClassYear[] = ['TI', 'TII', 'TIII', 'TIV', 'TV', 'TVI'];
+
+    for (let i = 0; i < count && availableNames.length > 0 && allPositions.length > 0; i++) {
+      // Nome aleatório
       const nameIndex = Math.floor(Math.random() * availableNames.length);
       const username = availableNames.splice(nameIndex, 1)[0];
 
-      // Selecionar status com peso
+      // Status com peso
       const randomWeight = Math.random();
       let cumulativeWeight = 0;
       let status: UserStatus = 'FOCUS';
@@ -93,27 +132,43 @@ class StudyRoomService {
         }
       }
 
-      // Encontrar posição disponível
-      let position = { row: 0, col: 0 };
+      // Posição disponível
+      let position = { x: 0, y: 0 };
+      let positionFound = false;
       let attempts = 0;
-      do {
-        position = {
-          row: Math.floor(Math.random() * 5),
-          col: Math.floor(Math.random() * 10)
-        };
-        attempts++;
-      } while (usedPositions.has(`${position.row}-${position.col}`) && attempts < 100);
 
-      usedPositions.add(`${position.row}-${position.col}`);
+      while (!positionFound && attempts < 50) {
+        const posIndex = Math.floor(Math.random() * allPositions.length);
+        const testPos = allPositions[posIndex];
+        const posKey = `${testPos.x}-${testPos.y}`;
+        
+        if (!this.usedPositions.has(posKey)) {
+          position = testPos;
+          this.usedPositions.add(posKey);
+          positionFound = true;
+        }
+        attempts++;
+      }
+
+      // Avatar aleatório
+      const randomAvatarType = avatarTypes[Math.floor(Math.random() * avatarTypes.length)];
+      const randomClassYear = classYears[Math.floor(Math.random() * classYears.length)];
+
+      // Gerar ID único de 3 dígitos
+      const userId = String(Math.floor(Math.random() * 900) + 100);
 
       users.push({
-        id: `user-${i + 1}`,
+        id: userId,
         username,
         status,
         position,
         pomodorosCompleted: Math.floor(Math.random() * 8),
-        joinedAt: new Date(Date.now() - Math.random() * 3600000), // Até 1h atrás
-        lastActivity: new Date()
+        joinedAt: new Date(Date.now() - Math.random() * 3600000),
+        lastActivity: new Date(),
+        avatar: {
+          avatarType: randomAvatarType,
+          classYear: randomClassYear
+        }
       });
     }
 
@@ -127,6 +182,17 @@ class StudyRoomService {
     const currentUser = this.room.users.find(u => u.id === this.currentUserId);
     if (currentUser) {
       currentUser.status = newStatus;
+      currentUser.lastActivity = new Date();
+    }
+  }
+
+  /**
+   * Atualizar avatar do usuário atual
+   */
+  updateCurrentUserAvatar(avatarType: AvatarType, classYear: ClassYear): void {
+    const currentUser = this.room.users.find(u => u.id === this.currentUserId);
+    if (currentUser) {
+      currentUser.avatar = { avatarType, classYear };
       currentUser.lastActivity = new Date();
     }
   }
@@ -169,7 +235,7 @@ class StudyRoomService {
   }
 
   /**
-   * Iniciar atualizações automáticas (simula usuários mudando de status)
+   * Iniciar atualizações automáticas
    */
   private startAutoUpdate(): void {
     if (this.updateInterval) {
@@ -202,10 +268,11 @@ class StudyRoomService {
           if (otherUsers.length > 0) {
             const userToRemove = otherUsers[Math.floor(Math.random() * otherUsers.length)];
             this.room.users = this.room.users.filter(u => u.id !== userToRemove.id);
+            this.usedPositions.delete(`${userToRemove.position.x}-${userToRemove.position.y}`);
           }
         }
       }
-    }, 5000); // Atualizar a cada 5 segundos
+    }, 5000);
   }
 
   /**
@@ -224,6 +291,7 @@ class StudyRoomService {
   cleanup(): void {
     this.stopAutoUpdate();
     this.room.users = [];
+    this.usedPositions.clear();
   }
 }
 
