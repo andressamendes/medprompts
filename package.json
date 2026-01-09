@@ -32,11 +32,13 @@
     "@radix-ui/react-toast": "^1.2.15",
     "@react-oauth/google": "^0.13.4",
     "axios": "^1.13.2",
+    "bcryptjs": "^3.0.3",
     "chart.js": "^4.5.1",
     "class-variance-authority": "^0.7.1",
     "clsx": "^2.1.1",
     "driver.js": "^1.4.0",
     "gapi-script": "^1.2.0",
+    "jsonwebtoken": "^9.0.3",
     "lucide-react": "^0.316.0",
     "pathfinding": "^0.4.18",
     "react": "^18.2.0",
@@ -46,6 +48,8 @@
     "tailwind-merge": "^2.6.0"
   },
   "devDependencies": {
+    "@types/bcryptjs": "^2.4.6",
+    "@types/jsonwebtoken": "^9.0.10",
     "@types/node": "^20.11.16",
     "@types/pathfinding": "^0.1.0",
     "@types/react": "^18.2.55",
