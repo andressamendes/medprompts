@@ -28,9 +28,10 @@ export const PublicNavbar = () => {
   };
 
   const navLinks = [
-    { label: 'Biblioteca', path: '/prompts' },
+    { label: 'Biblioteca de Prompts', path: '/prompts' },
     { label: 'Guia de IAs', path: '/guia-ias' },
-    { label: 'Ferramentas', path: '/ferramentas' }
+    { label: 'Focus Zone', path: '/focus-zone' },
+    { label: 'Hub de Recursos', path: '/ferramentas' }
   ];
 
   return (
