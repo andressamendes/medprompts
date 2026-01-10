@@ -137,8 +137,16 @@ const GuiaIAs = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/20">
       <PublicNavbar />
-      
-      <main className="container mx-auto px-4 py-8">
+
+      {/* Skip to Content Link (acessibilidade) */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-16 focus:left-4 focus:z-50 focus:bg-purple-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-md"
+      >
+        Pular para conteúdo principal
+      </a>
+
+      <main id="main-content" className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto space-y-12">
           {/* Header com botão voltar */}
           <div className="flex items-center gap-4">
@@ -155,19 +163,19 @@ const GuiaIAs = () => {
           </div>
 
           {/* Hero Section */}
-          <div className="text-center space-y-6 py-8">
+          <header className="text-center space-y-6 py-8">
             <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full text-sm font-semibold shadow-lg">
-              <Zap className="h-4 w-4" />
+              <Zap className="h-4 w-4" aria-hidden="true" />
               Atualizado Janeiro 2026
             </div>
             <h1 className="text-5xl sm:text-6xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
               Guia de IAs para Medicina
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
-              As melhores ferramentas de Inteligência Artificial atualizadas para estudantes de medicina, 
+              As melhores ferramentas de Inteligência Artificial atualizadas para estudantes de medicina,
               com informações sobre funcionalidades, preços e casos de uso específicos.
             </p>
-          </div>
+          </header>
 
           {/* Banner de Destaque */}
           <Card className="bg-gradient-to-r from-indigo-600 to-purple-600 text-white border-none shadow-2xl">
@@ -175,7 +183,7 @@ const GuiaIAs = () => {
               <div className="flex items-start gap-6">
                 <div className="flex-shrink-0">
                   <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-                    <Brain className="h-8 w-8" />
+                    <Brain className="h-8 w-8" aria-hidden="true" />
                   </div>
                 </div>
                 <div className="flex-1 space-y-3">
@@ -205,7 +213,7 @@ const GuiaIAs = () => {
               <div key={cat.category} className="space-y-6">
                 <div className="flex items-center gap-4">
                   <div className={`w-12 h-12 bg-gradient-to-r ${cat.color} rounded-xl flex items-center justify-center shadow-lg`}>
-                    <Icon className="h-6 w-6 text-white" />
+                    <Icon className="h-6 w-6 text-white" aria-hidden="true" />
                   </div>
                   <div>
                     <h2 className="text-3xl font-bold text-gray-900">{cat.title}</h2>
@@ -215,7 +223,12 @@ const GuiaIAs = () => {
 
                 <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                   {filteredIAs(cat.category).map((ia) => (
-                    <Card key={ia.name} className="hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 bg-white/80 backdrop-blur-sm border-gray-200">
+                    <Card
+                      key={ia.name}
+                      className="hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 bg-white/80 backdrop-blur-sm border-gray-200"
+                      role="article"
+                      aria-label={`${ia.name}: ${ia.description}`}
+                    >
                       <CardHeader>
                         <div className={`h-2 w-full rounded-t-lg bg-gradient-to-r ${ia.color} mb-4`} />
                         <div className="flex items-start justify-between gap-2 mb-2">
@@ -230,7 +243,7 @@ const GuiaIAs = () => {
                       <CardContent className="space-y-5">
                         <div>
                           <h4 className="font-bold text-sm mb-3 flex items-center gap-2 text-gray-900">
-                            <Zap className="h-4 w-4 text-indigo-600" />
+                            <Zap className="h-4 w-4 text-indigo-600" aria-hidden="true" />
                             Pontos Fortes:
                           </h4>
                           <ul className="space-y-2">
@@ -245,7 +258,7 @@ const GuiaIAs = () => {
 
                         <div>
                           <h4 className="font-bold text-sm mb-2 flex items-center gap-2 text-gray-900">
-                            <BookOpen className="h-4 w-4 text-purple-600" />
+                            <BookOpen className="h-4 w-4 text-purple-600" aria-hidden="true" />
                             Ideal Para:
                           </h4>
                           <p className="text-sm text-gray-700 leading-relaxed">{ia.ideal}</p>
@@ -253,7 +266,7 @@ const GuiaIAs = () => {
 
                         <div className="flex items-center justify-between pt-3 border-t border-gray-200">
                           <div className="flex items-center gap-2">
-                            <DollarSign className="h-4 w-4 text-green-600" />
+                            <DollarSign className="h-4 w-4 text-green-600" aria-hidden="true" />
                             <span className="text-sm font-bold text-gray-900">{ia.price}</span>
                           </div>
                         </div>
