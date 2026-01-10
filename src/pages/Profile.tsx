@@ -11,6 +11,7 @@ import { useToast } from '@/hooks/use-toast';
 import { User, Lock, Settings, Upload, Loader2, ArrowLeft } from 'lucide-react';
 import { authService } from '@/services/auth.service';
 import { getOrCreateCSRFToken, validateCSRFToken } from '@/utils/csrf';
+import { sanitizeImageUrl } from '@/utils/security';
 
 interface UserProfile {
   name: string;
@@ -637,14 +638,21 @@ export default function Profile() {
               <div className="flex flex-col items-center gap-6">
                 <div className="relative">
                   <Avatar className="h-32 w-32 md:h-40 md:w-40">
-                    <AvatarImage src={avatarPreview || profile.avatar} alt={profile.name} />
+                    <AvatarImage
+                      src={sanitizeImageUrl(avatarPreview || profile.avatar || '')}
+                      alt={`Avatar de ${profile.name}`}
+                      onError={(e) => {
+                        // Fallback para imagem quebrada
+                        e.currentTarget.src = '/default-avatar.png';
+                      }}
+                    />
                     <AvatarFallback className="text-4xl">
                       {profile.name?.split(' ').map(n => n[0]).join('').toUpperCase() || 'U'}
                     </AvatarFallback>
                   </Avatar>
                   {isUploadingAvatar && (
                     <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
-                      <Loader2 className="h-8 w-8 animate-spin text-white" />
+                      <Loader2 className="h-8 w-8 animate-spin text-white" aria-hidden="true" />
                     </div>
                   )}
                 </div>
