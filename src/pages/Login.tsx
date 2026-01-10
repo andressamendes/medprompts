@@ -90,6 +90,7 @@ export default function Login() {
                 disabled={isLoading}
                 required
                 autoComplete="current-password"
+                showPasswordToggle={true}
               />
             </div>
           </CardContent>
