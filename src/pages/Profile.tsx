@@ -163,37 +163,8 @@ export default function Profile() {
     setProfile(prev => ({ ...prev, graduationYear: value }));
   };
 
-  // MELHORIA CRÍTICA 1: Verificação real de senha atual
-  const verifyCurrentPassword = (currentPassword: string): boolean => {
-    const currentUser = authService.getCurrentUser();
-    
-    if (!currentUser) {
-      toast({
-        title: 'Erro de autenticação',
-        description: 'Usuário não encontrado. Faça login novamente.',
-        variant: 'destructive'
-      });
-      return false;
-    }
-
-    // Busca usuário no localStorage para verificar senha
-    const users = JSON.parse(localStorage.getItem('users') || '[]');
-    const user = users.find((u: any) => u.id === currentUser.id);
-    
-    if (!user || user.password !== currentPassword) {
-      toast({
-        title: 'Senha incorreta',
-        description: 'A senha atual informada está incorreta',
-        variant: 'destructive'
-      });
-      return false;
-    }
-
-    return true;
-  };
-
   // Validação de senha com segurança melhorada
-  const validatePassword = (): boolean => {
+  const validatePassword = async (): Promise<boolean> => {
     if (passwordData.currentPassword.length < 8) {
       toast({
         title: 'Senha atual inválida',
@@ -203,8 +174,28 @@ export default function Profile() {
       return false;
     }
 
-    // MELHORIA CRÍTICA 1: Verifica senha atual
-    if (!verifyCurrentPassword(passwordData.currentPassword)) {
+    // SEGURANÇA: Verifica senha atual usando authService (PBKDF2)
+    const currentUser = authService.getCurrentUser();
+    if (!currentUser) {
+      toast({
+        title: 'Erro de autenticação',
+        description: 'Usuário não encontrado. Faça login novamente.',
+        variant: 'destructive'
+      });
+      return false;
+    }
+
+    const isValidPassword = await authService.validateCurrentPassword(
+      currentUser.email,
+      passwordData.currentPassword
+    );
+
+    if (!isValidPassword) {
+      toast({
+        title: 'Senha incorreta',
+        description: 'A senha atual informada está incorreta',
+        variant: 'destructive'
+      });
       return false;
     }
 
@@ -222,7 +213,7 @@ export default function Profile() {
     const hasLowerCase = /[a-z]/.test(passwordData.newPassword);
     const hasNumber = /[0-9]/.test(passwordData.newPassword);
     const hasSpecialChar = /[!@#$%^&*(),.?":{}|<>]/.test(passwordData.newPassword);
-    
+
     if (!hasUpperCase || !hasLowerCase || !hasNumber || !hasSpecialChar) {
       toast({
         title: 'Senha fraca',
@@ -410,7 +401,9 @@ export default function Profile() {
 
   // Alterar senha
   const handleChangePassword = async () => {
-    if (!validatePassword()) return;
+    // Valida senha (agora é async)
+    const isValid = await validatePassword();
+    if (!isValid) return;
 
     setIsLoadingPassword(true);
 
@@ -420,14 +413,12 @@ export default function Profile() {
         throw new Error('Usuário não autenticado');
       }
 
-      // Atualizar senha no localStorage
-      const users = JSON.parse(localStorage.getItem('users') || '[]');
-      const userIndex = users.findIndex((u: any) => u.id === currentUser.id);
-      
-      if (userIndex !== -1) {
-        users[userIndex].password = passwordData.newPassword;
-        localStorage.setItem('users', JSON.stringify(users));
-      }
+      // SEGURANÇA: Usa authService.updatePassword com hashing PBKDF2
+      await authService.updatePassword(
+        currentUser.id,
+        passwordData.currentPassword,
+        passwordData.newPassword
+      );
 
       toast({
         title: 'Sucesso!',

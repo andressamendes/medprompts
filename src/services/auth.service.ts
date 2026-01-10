@@ -871,6 +871,32 @@ class SecureAuthService {
   }
 
   /**
+   * Valida se a senha atual do usuário está correta
+   * @param email - Email do usuário
+   * @param password - Senha a ser validada
+   * @returns true se a senha estiver correta, false caso contrário
+   */
+  async validateCurrentPassword(
+    email: string,
+    password: string
+  ): Promise<boolean> {
+    try {
+      const users = this.getUsersWithPassword();
+      const user = users.find(u => u.email === email);
+
+      if (!user) {
+        return false;
+      }
+
+      // Verifica senha com PBKDF2
+      return await this.verifyPassword(password, user.password);
+    } catch (error) {
+      console.error('Erro ao validar senha:', error);
+      return false;
+    }
+  }
+
+  /**
    * Atualiza senha do usuário
    */
   async updatePassword(
@@ -887,7 +913,7 @@ class SecureAuthService {
 
     const user = users[userIndex];
 
-    // Verifica senha atual com bcrypt
+    // Verifica senha atual com PBKDF2
     const isPasswordValid = await this.verifyPassword(
       currentPassword,
       user.password
@@ -902,7 +928,7 @@ class SecureAuthService {
       throw new Error('A nova senha deve ter pelo menos 8 caracteres.');
     }
 
-    // Hash da nova senha com bcrypt
+    // Hash da nova senha com PBKDF2
     user.password = await this.hashPassword(newPassword);
     users[userIndex] = user;
     this.saveUsersWithPassword(users);
