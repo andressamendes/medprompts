@@ -15,6 +15,7 @@
 import { securityConfig } from '../config/security.config';
 import { sanitizationService } from './sanitization.service';
 import { rateLimitService, getRateLimitIdentifier, formatRateLimitError } from './rate-limit.service';
+import { avatarStorage } from '@/utils/avatarStorage';
 
 // ==========================================
 // TIPOS DE DADOS
@@ -932,6 +933,42 @@ class SecureAuthService {
     user.password = await this.hashPassword(newPassword);
     users[userIndex] = user;
     this.saveUsersWithPassword(users);
+  }
+
+  /**
+   * Salva avatar no IndexedDB (substitui localStorage)
+   * @param userId - ID do usuário
+   * @param blob - Blob da imagem
+   * @param mimeType - MIME type da imagem
+   */
+  async saveAvatarToIndexedDB(userId: string, blob: Blob, mimeType: string): Promise<void> {
+    await avatarStorage.saveAvatar(userId, blob, mimeType);
+  }
+
+  /**
+   * Recupera avatar do IndexedDB
+   * @param userId - ID do usuário
+   * @returns Promise<string | null> - URL do blob ou null
+   */
+  async getAvatarFromIndexedDB(userId: string): Promise<string | null> {
+    return await avatarStorage.getAvatar(userId);
+  }
+
+  /**
+   * Remove avatar do IndexedDB
+   * @param userId - ID do usuário
+   */
+  async deleteAvatarFromIndexedDB(userId: string): Promise<void> {
+    await avatarStorage.deleteAvatar(userId);
+  }
+
+  /**
+   * Migra avatar do localStorage para IndexedDB
+   * @param userId - ID do usuário
+   * @param dataUrl - Data URL do localStorage
+   */
+  async migrateAvatarToIndexedDB(userId: string, dataUrl: string): Promise<boolean> {
+    return await avatarStorage.migrateFromLocalStorage(userId, dataUrl);
   }
 
   /**

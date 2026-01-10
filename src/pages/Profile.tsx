@@ -87,7 +87,7 @@ export default function Profile() {
   const loadProfileData = async () => {
     try {
       const currentUser = authService.getCurrentUser();
-      
+
       if (currentUser) {
         setProfile({
           name: currentUser.name,
@@ -96,9 +96,31 @@ export default function Profile() {
           graduationYear: currentUser.graduationYear || new Date().getFullYear(),
           avatar: currentUser.avatar || ''
         });
-        setAvatarPreview(currentUser.avatar || '');
+
+        // MELHORIA: Carrega avatar do IndexedDB
+        const avatarUrl = await authService.getAvatarFromIndexedDB(currentUser.id);
+
+        if (avatarUrl) {
+          setAvatarPreview(avatarUrl);
+          setProfile(prev => ({ ...prev, avatar: avatarUrl }));
+        } else if (currentUser.avatar && currentUser.avatar.startsWith('data:image/')) {
+          // MIGRAÇÃO: Se avatar ainda está como data URL no localStorage, migra para IndexedDB
+          const migrated = await authService.migrateAvatarToIndexedDB(currentUser.id, currentUser.avatar);
+
+          if (migrated) {
+            // Recarrega do IndexedDB após migração
+            const newAvatarUrl = await authService.getAvatarFromIndexedDB(currentUser.id);
+            if (newAvatarUrl) {
+              setAvatarPreview(newAvatarUrl);
+              setProfile(prev => ({ ...prev, avatar: newAvatarUrl }));
+            }
+          } else {
+            // Fallback para data URL se migração falhar
+            setAvatarPreview(currentUser.avatar);
+          }
+        }
       }
-      
+
       setPreferences({
         theme: 'system',
         notifications: true,
@@ -388,55 +410,43 @@ export default function Profile() {
 
     setIsUploadingAvatar(true);
 
-    // Criar preview
-    const reader = new FileReader();
-    reader.onloadend = async () => {
-      const avatarData = reader.result as string;
-      
-      // TODO: Em produção, enviar para servidor e receber URL
-      // const response = await fetch('/api/upload/avatar', {
-      //   method: 'POST',
-      //   body: formData
-      // });
-      // const { avatarUrl } = await response.json();
-      
-      setAvatarPreview(avatarData);
-
-      // Salvar no perfil
+    try {
       const currentUser = authService.getCurrentUser();
-      if (currentUser) {
-        try {
-          await authService.updateUser(currentUser.id, {
-            avatar: avatarData
-          });
-          setProfile(prev => ({ ...prev, avatar: avatarData }));
-          
-          toast({
-            title: 'Sucesso!',
-            description: 'Avatar atualizado com sucesso',
-          });
-        } catch (error) {
-          toast({
-            title: 'Erro ao salvar avatar',
-            description: 'Não foi possível salvar o avatar. Tente novamente.',
-            variant: 'destructive'
-          });
-        } finally {
-          setIsUploadingAvatar(false);
-        }
+      if (!currentUser) {
+        throw new Error('Usuário não autenticado');
       }
-    };
 
-    reader.onerror = () => {
+      // MELHORIA: Salva no IndexedDB em vez de localStorage (50MB+ vs 5-10MB)
+      // Converte File para Blob
+      const blob = new Blob([file], { type: file.type });
+
+      // Salva no IndexedDB
+      await authService.saveAvatarToIndexedDB(currentUser.id, blob, file.type);
+
+      // Cria URL do blob para preview
+      const avatarUrl = await authService.getAvatarFromIndexedDB(currentUser.id);
+
+      if (avatarUrl) {
+        setAvatarPreview(avatarUrl);
+        setProfile(prev => ({ ...prev, avatar: avatarUrl }));
+
+        toast({
+          title: 'Sucesso!',
+          description: 'Avatar atualizado com sucesso',
+        });
+      } else {
+        throw new Error('Falha ao recuperar avatar');
+      }
+    } catch (error: any) {
+      console.error('Erro ao salvar avatar:', error);
       toast({
-        title: 'Erro ao processar arquivo',
-        description: 'Não foi possível ler o arquivo. Tente novamente.',
+        title: 'Erro ao salvar avatar',
+        description: error.message || 'Não foi possível salvar o avatar. Tente novamente.',
         variant: 'destructive'
       });
+    } finally {
       setIsUploadingAvatar(false);
-    };
-
-    reader.readAsDataURL(file);
+    }
   };
 
   // Alterar senha
