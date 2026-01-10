@@ -80,7 +80,22 @@ export default function Login() {
               />
             </div>
             <div className="space-y-2">
-              <Label htmlFor="password">Senha</Label>
+              <div className="flex items-center justify-between">
+                <Label htmlFor="password">Senha</Label>
+                <Link
+                  to="#"
+                  className="text-sm text-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
+                  onClick={(e) => {
+                    e.preventDefault();
+                    toast({
+                      title: 'Em desenvolvimento',
+                      description: 'A funcionalidade de recuperação de senha estará disponível em breve.',
+                    });
+                  }}
+                >
+                  Esqueci minha senha
+                </Link>
+              </div>
               <Input
                 id="password"
                 type="password"
