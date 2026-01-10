@@ -3,13 +3,13 @@ import { Link, useNavigate, useLocation } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { useAuth } from '@/contexts/AuthContext';
 import { useToast } from '@/hooks/use-toast';
-import { 
-  Menu, 
-  X, 
-  LayoutDashboard, 
-  BookText, 
+import {
+  Menu,
+  X,
+  Wrench,
+  BookText,
   User,
-  LogOut 
+  LogOut
 } from 'lucide-react';
 
 export function AuthenticatedNavbar() {
@@ -29,7 +29,7 @@ export function AuthenticatedNavbar() {
   };
 
   const navItems = [
-    { path: '/dashboard', label: 'Dashboard', icon: LayoutDashboard },
+    { path: '/minhas-ferramentas', label: 'Ferramentas', icon: Wrench },
     { path: '/prompts', label: 'Biblioteca', icon: BookText },
     { path: '/profile', label: 'Perfil', icon: User },
   ];
@@ -41,7 +41,7 @@ export function AuthenticatedNavbar() {
       <div className="container mx-auto px-4">
         <div className="flex h-16 items-center justify-between">
           {/* Logo */}
-          <Link to="/dashboard" className="flex items-center space-x-2">
+          <Link to="/" className="flex items-center space-x-2">
             <div className="h-8 w-8 rounded-lg bg-gradient-to-br from-indigo-500 to-purple-600 flex items-center justify-center">
               <span className="text-white font-bold text-lg">M</span>
             </div>

@@ -43,7 +43,7 @@ export default function Login() {
       
       // Pequeno delay para garantir que o estado foi atualizado
       setTimeout(() => {
-        navigate('/dashboard', { replace: true });
+        navigate('/minhas-ferramentas', { replace: true });
       }, 100);
     } catch (error: any) {
       toast({

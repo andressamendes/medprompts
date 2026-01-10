@@ -17,7 +17,6 @@ import NewIndex from '@/pages/NewIndex';
 import Login from '@/pages/Login';
 import Register from '@/pages/Register';
 import NotFound from '@/pages/NotFound';
-import Dashboard from '@/pages/Dashboard';
 
 // Páginas com lazy loading
 const Prompts = lazy(() => import('@/pages/Prompts'));
@@ -89,16 +88,7 @@ function App() {
                       <Route path="/prompts" element={<Prompts />} />
 
                       {/* ==================== ROTAS PROTEGIDAS ==================== */}
-                      {/* Dashboard */}
-                      <Route 
-                        path="/dashboard" 
-                        element={
-                          <ProtectedRoute>
-                            <Dashboard />
-                          </ProtectedRoute>
-                        } 
-                      />
-                      
+
                       {/* Cronograma de estudos (PROTEGIDO) */}
                       <Route 
                         path="/study-schedule" 

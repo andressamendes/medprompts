@@ -33,7 +33,7 @@ interface ProtectedRouteProps {
 
   // Redirecionamento
   redirectTo?: string; // Padrão: '/login'
-  redirectToOnForbidden?: string; // Padrão: '/dashboard'
+  redirectToOnForbidden?: string; // Padrão: '/'
 
   // Callback customizado
   onAccessDenied?: () => void;
@@ -54,7 +54,7 @@ export const ProtectedRoute: React.FC<ProtectedRouteProps> = ({
   requiredPermissions,
   anyPermission,
   redirectTo = '/login',
-  redirectToOnForbidden = '/dashboard',
+  redirectToOnForbidden = '/',
   onAccessDenied,
   fallback,
 }) => {
