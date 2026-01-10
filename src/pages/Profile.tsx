@@ -10,6 +10,7 @@ import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { useToast } from '@/hooks/use-toast';
 import { User, Lock, Settings, Upload, Loader2, ArrowLeft } from 'lucide-react';
 import { authService } from '@/services/auth.service';
+import { getOrCreateCSRFToken, validateCSRFToken } from '@/utils/csrf';
 
 interface UserProfile {
   name: string;
@@ -61,6 +62,9 @@ export default function Profile() {
   const [isLoadingPreferences, setIsLoadingPreferences] = useState(false);
   const [isUploadingAvatar, setIsUploadingAvatar] = useState(false);
   const [avatarPreview, setAvatarPreview] = useState<string>('');
+
+  // CSRF Protection: Inicializa token ao montar componente
+  const [csrfToken] = useState(() => getOrCreateCSRFToken());
 
   // Carregar dados do perfil ao montar componente
   useEffect(() => {
@@ -237,6 +241,16 @@ export default function Profile() {
 
   // Salvar informações pessoais
   const handleSaveProfile = async () => {
+    // CSRF Protection: Valida token antes de operação sensível
+    if (!validateCSRFToken(csrfToken)) {
+      toast({
+        title: 'Erro de segurança',
+        description: 'Token de sessão inválido. Recarregue a página.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     if (!validateName(profile.name)) return;
     if (!validateUniversity(profile.university)) return;
     if (!validateGraduationYear(profile.graduationYear)) return;
@@ -252,7 +266,7 @@ export default function Profile() {
           graduationYear: profile.graduationYear
         });
       }
-      
+
       toast({
         title: 'Sucesso!',
         description: 'Perfil atualizado com sucesso',
@@ -342,6 +356,16 @@ export default function Profile() {
     const file = event.target.files?.[0];
     if (!file) return;
 
+    // CSRF Protection: Valida token antes de upload
+    if (!validateCSRFToken(csrfToken)) {
+      toast({
+        title: 'Erro de segurança',
+        description: 'Token de sessão inválido. Recarregue a página.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     // Validar imagem
     const isValid = await validateImage(file);
     if (!isValid) return;
@@ -401,6 +425,16 @@ export default function Profile() {
 
   // Alterar senha
   const handleChangePassword = async () => {
+    // CSRF Protection: Valida token antes de operação crítica
+    if (!validateCSRFToken(csrfToken)) {
+      toast({
+        title: 'Erro de segurança',
+        description: 'Token de sessão inválido. Recarregue a página.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     // Valida senha (agora é async)
     const isValid = await validatePassword();
     if (!isValid) return;
@@ -443,6 +477,16 @@ export default function Profile() {
 
   // Salvar preferências
   const handleSavePreferences = async () => {
+    // CSRF Protection: Valida token antes de salvar preferências
+    if (!validateCSRFToken(csrfToken)) {
+      toast({
+        title: 'Erro de segurança',
+        description: 'Token de sessão inválido. Recarregue a página.',
+        variant: 'destructive'
+      });
+      return;
+    }
+
     setIsLoadingPreferences(true);
 
     try {
