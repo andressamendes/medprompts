@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Prompt } from '@/types/prompt';
-import { Navbar } from '@/components/Navbar';
+import { PublicNavbar } from '@/components/PublicNavbar';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -312,7 +312,7 @@ const copyPrompt = useCallback(async (prompt: Prompt) => {
   if (isLoading) {
     return (
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-indigo-50 to-purple-50 dark:from-gray-950 dark:via-indigo-950 dark:to-purple-950">
-        <Navbar />
+        <PublicNavbar />
         <div className="container mx-auto px-4 py-12">
           <div className="animate-pulse space-y-8">
             <div className="h-24 bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl" />
@@ -342,7 +342,7 @@ const copyPrompt = useCallback(async (prompt: Prompt) => {
   return (
     <TooltipProvider>
       <div className="min-h-screen bg-gradient-to-br from-gray-50 via-indigo-50 to-purple-50 dark:from-gray-950 dark:via-indigo-950 dark:to-purple-950">
-        <Navbar />
+        <PublicNavbar />
 
 
         {/* ✨ Hero Section Minimalista */}
