@@ -12,6 +12,7 @@ import { User, Lock, Settings, Upload, Loader2, ArrowLeft } from 'lucide-react';
 import { authService } from '@/services/auth.service';
 import { getOrCreateCSRFToken, validateCSRFToken } from '@/utils/csrf';
 import { sanitizeImageUrl } from '@/utils/security';
+import { validateImageFile, uploadRateLimiter } from '@/utils/fileValidation';
 
 interface UserProfile {
   name: string;
@@ -283,38 +284,28 @@ export default function Profile() {
     }
   };
 
-  // MELHORIA CRÍTICA 3: Validação melhorada de avatar com dimensões
-  const validateImage = (file: File): Promise<boolean> => {
+  // SEGURANÇA: Validação robusta com Magic Bytes (OWASP A03:2021)
+  const validateImage = async (file: File): Promise<boolean> => {
+    // 1️⃣ Valida assinatura real do arquivo (magic bytes)
+    const validationResult = await validateImageFile(file);
+
+    if (!validationResult.valid) {
+      toast({
+        title: 'Arquivo inválido',
+        description: validationResult.error || 'O arquivo não passou na validação de segurança',
+        variant: 'destructive'
+      });
+      return false;
+    }
+
+    // 2️⃣ Validar dimensões da imagem (prevenção de DoS)
     return new Promise((resolve) => {
-      // Validar tipo de arquivo
-      if (!file.type.startsWith('image/')) {
-        toast({
-          title: 'Arquivo inválido',
-          description: 'Por favor, selecione uma imagem (PNG, JPG, WEBP)',
-          variant: 'destructive'
-        });
-        resolve(false);
-        return;
-      }
-
-      // Validar tamanho (máximo 2MB)
-      if (file.size > 2 * 1024 * 1024) {
-        toast({
-          title: 'Arquivo muito grande',
-          description: 'A imagem deve ter no máximo 2MB',
-          variant: 'destructive'
-        });
-        resolve(false);
-        return;
-      }
-
-      // Validar dimensões da imagem
       const img = new Image();
       const objectUrl = URL.createObjectURL(file);
-      
+
       img.onload = () => {
         URL.revokeObjectURL(objectUrl);
-        
+
         if (img.width < 100 || img.height < 100) {
           toast({
             title: 'Imagem muito pequena',
@@ -356,6 +347,19 @@ export default function Profile() {
   const handleAvatarUpload = async (event: React.ChangeEvent<HTMLInputElement>) => {
     const file = event.target.files?.[0];
     if (!file) return;
+
+    // RATE LIMITING: Previne spam de uploads (1 upload por 60s)
+    if (!uploadRateLimiter.canUpload()) {
+      const remainingSeconds = uploadRateLimiter.getCooldownRemaining();
+      toast({
+        title: 'Aguarde um momento',
+        description: `Você poderá fazer outro upload em ${remainingSeconds} segundos`,
+        variant: 'destructive'
+      });
+      // Limpa o input para permitir nova tentativa depois
+      event.target.value = '';
+      return;
+    }
 
     // CSRF Protection: Valida token antes de upload
     if (!validateCSRFToken(csrfToken)) {
