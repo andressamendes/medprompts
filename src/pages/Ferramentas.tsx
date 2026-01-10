@@ -188,10 +188,18 @@ const Ferramentas = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
       <PublicNavbar />
-      
-      <div className="max-w-7xl mx-auto px-4 py-16">
+
+      {/* Skip to Content Link (acessibilidade) */}
+      <a
+        href="#main-content"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-16 focus:left-4 focus:z-50 focus:bg-purple-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-md"
+      >
+        Pular para conteúdo principal
+      </a>
+
+      <main id="main-content" className="max-w-7xl mx-auto px-4 py-16">
         {/* Header */}
-        <div className="text-center mb-16">
+        <header className="text-center mb-16">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 backdrop-blur-sm rounded-full shadow-sm mb-6">
             <span className="text-2xl">🔧</span>
             <span className="text-sm font-medium text-purple-700">Recursos Essenciais</span>
@@ -202,7 +210,7 @@ const Ferramentas = () => {
           <p className="text-xl text-gray-600 max-w-3xl mx-auto">
             Curadoria de ferramentas gratuitas e pagas para potencializar seus estudos. Use em conjunto com os prompts da biblioteca.
           </p>
-        </div>
+        </header>
 
         {/* Categorias */}
         {categorias.map((categoria, idx) => (
@@ -214,9 +222,10 @@ const Ferramentas = () => {
             
             <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-6">
               {categoria.ferramentas.map((ferramenta, ferrIdx) => (
-                <div 
+                <article
                   key={ferrIdx}
                   className={`bg-white p-6 rounded-xl shadow-md hover:shadow-xl transition-all border-2 ${getCorBorda(categoria.cor)}`}
+                  aria-label={`${ferramenta.name}: ${ferramenta.description}`}
                 >
                   <div className="flex items-start justify-between mb-3">
                     <h3 className="text-xl font-bold text-gray-800">{ferramenta.name}</h3>
@@ -232,10 +241,11 @@ const Ferramentas = () => {
                     target="_blank"
                     rel="noopener noreferrer"
                     className="inline-flex items-center gap-2 text-sm font-medium text-purple-600 hover:text-purple-700 transition-colors"
+                    aria-label={`Acessar ${ferramenta.name}`}
                   >
-                    Acessar <ExternalLink size={14} />
+                    Acessar <ExternalLink size={14} aria-hidden="true" />
                   </a>
-                </div>
+                </article>
               ))}
             </div>
           </section>
@@ -254,7 +264,7 @@ const Ferramentas = () => {
             Ver Biblioteca de Prompts →
           </a>
         </div>
-      </div>
+      </main>
     </div>
   );
 };
