@@ -2,6 +2,7 @@ import { useNavigate, Link } from 'react-router-dom';
 import { PublicNavbar } from '@/components/PublicNavbar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
+import { AccessibleCard } from '@/components/AccessibleCard';
 import {
   Brain,
   BookOpen,
@@ -192,8 +193,16 @@ export default function NewIndex() {
       {/* NAVBAR UNIFICADO */}
       <PublicNavbar />
 
+      {/* Skip to Content Link (acessibilidade) */}
+      <a
+        href="#main-content"
+        className="skip-to-content sr-only focus:not-sr-only focus:absolute focus:top-16 focus:left-4 focus:z-50 focus:bg-purple-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-md"
+      >
+        Pular para conteúdo principal
+      </a>
+
       {/* HERO DIRETO E EDUCACIONAL */}
-      <section className="container mx-auto px-4 sm:px-6 py-12 md:py-16">
+      <section id="main-content" className="container mx-auto px-4 sm:px-6 py-12 md:py-16">
         <div className="max-w-4xl mx-auto text-center space-y-6">
           {/* Badge Educacional */}
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium">
@@ -250,9 +259,10 @@ export default function NewIndex() {
           {/* Grid 2x2 de Cards Funcionais */}
           <div className="grid md:grid-cols-2 gap-6">
             {toolsHub.map((tool, index) => (
-              <Card
+              <AccessibleCard
                 key={index}
                 onClick={() => navigate(tool.link)}
+                ariaLabel={`Acessar ${tool.title}: ${tool.description}`}
                 className={`group p-6 cursor-pointer hover:shadow-xl transition-all duration-300 border-2 ${colorClasses[tool.color].border} animate-in fade-in slide-in-from-bottom-4`}
                 style={{ animationDelay: `${index * 100}ms` }}
               >
@@ -294,7 +304,7 @@ export default function NewIndex() {
                     Acessar
                   </Button>
                 </div>
-              </Card>
+              </AccessibleCard>
             ))}
           </div>
         </div>
@@ -316,9 +326,10 @@ export default function NewIndex() {
           {/* Cards Horizontais de Categorias */}
           <div className="grid md:grid-cols-2 gap-6">
             {categories.map((category, index) => (
-              <Card
+              <AccessibleCard
                 key={index}
                 onClick={() => navigate(category.link)}
+                ariaLabel={`Ver ${category.count} prompts de ${category.title}: ${category.description}`}
                 className={`group p-6 cursor-pointer border-2 ${colorClasses[category.color].border} hover:shadow-lg transition-all duration-300 animate-in fade-in slide-in-from-bottom-4`}
                 style={{ animationDelay: `${index * 150}ms` }}
               >
@@ -350,7 +361,7 @@ export default function NewIndex() {
                     </Link>
                   </div>
                 </div>
-              </Card>
+              </AccessibleCard>
             ))}
           </div>
         </div>
