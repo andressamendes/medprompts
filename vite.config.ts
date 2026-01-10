@@ -32,7 +32,8 @@ export default defineConfig(({ command }) => {
           chunkFileNames: 'assets/[name]-[hash].js',
           entryFileNames: 'assets/[name]-[hash].js',
           assetFileNames: 'assets/[name]-[hash].[ext]'
-        }
+        },
+        treeshake: false, // TEMPORÁRIO: desabilita tree-shaking para debug
       },
       // Aumenta o limite de aviso de chunk size
       chunkSizeWarningLimit: 1000,
