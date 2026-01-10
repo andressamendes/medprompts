@@ -73,6 +73,17 @@ export default function Profile() {
     loadProfileData();
   }, []);
 
+  // MELHORIA DE PERFORMANCE: Limpar Blob URLs ao desmontar (previne memory leak)
+  useEffect(() => {
+    // Cleanup function executada quando componente desmonta ou avatarPreview muda
+    return () => {
+      // Apenas revoga URLs de blob (não data URLs ou HTTP URLs)
+      if (avatarPreview && avatarPreview.startsWith('blob:')) {
+        URL.revokeObjectURL(avatarPreview);
+      }
+    };
+  }, [avatarPreview]);
+
   const loadProfileData = async () => {
     try {
       const currentUser = authService.getCurrentUser();
