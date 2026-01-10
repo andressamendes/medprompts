@@ -56,20 +56,21 @@ export default function Login() {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
-      <Card className="w-full max-w-md">
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
+      <Card className="w-full max-w-md" role="region" aria-label="Formulário de login">
         <CardHeader className="space-y-1">
-          <CardTitle className="text-2xl font-bold">Login</CardTitle>
-          <CardDescription>
+          <CardTitle className="text-2xl font-bold" id="login-title">Login</CardTitle>
+          <CardDescription id="login-description">
             Entre com suas credenciais para acessar sua conta
           </CardDescription>
         </CardHeader>
-        <form onSubmit={handleSubmit}>
+        <form onSubmit={handleSubmit} aria-labelledby="login-title" aria-describedby="login-description" noValidate>
           <CardContent className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
               <Input
                 id="email"
+                name="email"
                 type="email"
                 placeholder="seu@email.com"
                 value={formData.email}
@@ -77,6 +78,9 @@ export default function Login() {
                 disabled={isLoading}
                 required
                 autoComplete="email"
+                aria-label="Digite seu endereço de email"
+                aria-required="true"
+                aria-invalid={false}
               />
             </div>
             <div className="space-y-2">
@@ -98,6 +102,7 @@ export default function Login() {
               </div>
               <Input
                 id="password"
+                name="password"
                 type="password"
                 placeholder="••••••••"
                 value={formData.password}
@@ -106,14 +111,23 @@ export default function Login() {
                 required
                 autoComplete="current-password"
                 showPasswordToggle={true}
+                aria-label="Digite sua senha"
+                aria-required="true"
+                aria-invalid={false}
               />
             </div>
           </CardContent>
           <CardFooter className="flex flex-col space-y-4">
-            <Button type="submit" className="w-full" disabled={isLoading}>
+            <Button
+              type="submit"
+              className="w-full"
+              disabled={isLoading}
+              aria-label={isLoading ? "Processando login..." : "Entrar na conta"}
+              aria-busy={isLoading}
+            >
               {isLoading ? (
                 <>
-                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
                   Entrando...
                 </>
               ) : (
@@ -122,13 +136,17 @@ export default function Login() {
             </Button>
             <p className="text-sm text-center text-muted-foreground">
               Não tem uma conta?{' '}
-              <Link to="/register" className="text-primary hover:underline">
+              <Link
+                to="/register"
+                className="text-primary hover:underline focus:outline-none focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 rounded"
+                aria-label="Ir para página de registro"
+              >
                 Registre-se
               </Link>
             </p>
           </CardFooter>
         </form>
       </Card>
-    </div>
+    </main>
   );
 }
