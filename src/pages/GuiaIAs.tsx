@@ -1,4 +1,4 @@
-import { Navbar } from "@/components/Navbar";
+import { PublicNavbar } from "@/components/PublicNavbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, ArrowLeft, BookOpen, Zap, Search, Brain, DollarSign, Users } from "lucide-react";
@@ -136,7 +136,7 @@ const GuiaIAs = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/20">
-      <Navbar />
+      <PublicNavbar />
       
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto space-y-12">
