@@ -7,6 +7,7 @@ import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardFooter, CardHeader, CardTitle } from '@/components/ui/card';
 import { useToast } from '@/hooks/use-toast';
 import { Loader2 } from 'lucide-react';
+import { rateLimiter } from '@/utils/rateLimiter';
 
 export default function Login() {
   const { login } = useAuth();
@@ -20,11 +21,23 @@ export default function Login() {
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
+
     if (!formData.email || !formData.password) {
       toast({
         title: 'Campos obrigatórios',
         description: 'Por favor, preencha todos os campos',
+        variant: 'destructive',
+      });
+      return;
+    }
+
+    // RATE LIMITING: Previne brute force de login
+    const limitCheck = rateLimiter.checkLimit('login', formData.email);
+
+    if (!limitCheck.allowed) {
+      toast({
+        title: 'Muitas tentativas de login',
+        description: rateLimiter.formatErrorMessage('login', limitCheck.resetIn),
         variant: 'destructive',
       });
       return;
@@ -35,17 +48,23 @@ export default function Login() {
     try {
       // Aguarda login completar e atualizar estado
       await login(formData.email, formData.password);
-      
+
+      // Registra tentativa bem-sucedida
+      rateLimiter.recordAttempt('login', formData.email);
+
       toast({
         title: 'Login realizado!',
         description: 'Bem-vindo de volta!',
       });
-      
+
       // Pequeno delay para garantir que o estado foi atualizado
       setTimeout(() => {
         navigate('/minhas-ferramentas', { replace: true });
       }, 100);
     } catch (error: any) {
+      // Registra tentativa falha
+      rateLimiter.recordAttempt('login', formData.email);
+
       toast({
         title: 'Erro ao fazer login',
         description: error.message || 'Verifique suas credenciais',

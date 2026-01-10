@@ -12,7 +12,8 @@ import { User, Lock, Settings, Upload, Loader2, ArrowLeft } from 'lucide-react';
 import { authService } from '@/services/auth.service';
 import { getOrCreateCSRFToken, validateCSRFToken } from '@/utils/csrf';
 import { sanitizeImageUrl } from '@/utils/security';
-import { validateImageFile, uploadRateLimiter } from '@/utils/fileValidation';
+import { validateImageFile } from '@/utils/fileValidation';
+import { rateLimiter } from '@/utils/rateLimiter';
 
 interface UserProfile {
   name: string;
@@ -276,6 +277,21 @@ export default function Profile() {
 
   // Salvar informações pessoais
   const handleSaveProfile = async () => {
+    // RATE LIMITING: Previne spam de atualizações de perfil
+    const currentUser = authService.getCurrentUser();
+    if (currentUser) {
+      const limitCheck = rateLimiter.checkLimit('profileUpdate', currentUser.id);
+
+      if (!limitCheck.allowed) {
+        toast({
+          title: 'Muitas tentativas',
+          description: rateLimiter.formatErrorMessage('profileUpdate', limitCheck.resetIn),
+          variant: 'destructive'
+        });
+        return;
+      }
+    }
+
     // CSRF Protection: Valida token antes de operação sensível
     if (!validateCSRFToken(csrfToken)) {
       toast({
@@ -300,6 +316,9 @@ export default function Profile() {
           university: profile.university,
           graduationYear: profile.graduationYear
         });
+
+        // Registra tentativa bem-sucedida
+        rateLimiter.recordAttempt('profileUpdate', currentUser.id);
       }
 
       toast({
@@ -381,17 +400,21 @@ export default function Profile() {
     const file = event.target.files?.[0];
     if (!file) return;
 
-    // RATE LIMITING: Previne spam de uploads (1 upload por 60s)
-    if (!uploadRateLimiter.canUpload()) {
-      const remainingSeconds = uploadRateLimiter.getCooldownRemaining();
-      toast({
-        title: 'Aguarde um momento',
-        description: `Você poderá fazer outro upload em ${remainingSeconds} segundos`,
-        variant: 'destructive'
-      });
-      // Limpa o input para permitir nova tentativa depois
-      event.target.value = '';
-      return;
+    // RATE LIMITING: Previne spam de uploads
+    const currentUser = authService.getCurrentUser();
+    if (currentUser) {
+      const limitCheck = rateLimiter.checkLimit('avatarUpload', currentUser.id);
+
+      if (!limitCheck.allowed) {
+        toast({
+          title: 'Muitas tentativas',
+          description: rateLimiter.formatErrorMessage('avatarUpload', limitCheck.resetIn),
+          variant: 'destructive'
+        });
+        // Limpa o input para permitir nova tentativa depois
+        event.target.value = '';
+        return;
+      }
     }
 
     // CSRF Protection: Valida token antes de upload
@@ -430,6 +453,9 @@ export default function Profile() {
         setAvatarPreview(avatarUrl);
         setProfile(prev => ({ ...prev, avatar: avatarUrl }));
 
+        // Registra tentativa bem-sucedida
+        rateLimiter.recordAttempt('avatarUpload', currentUser.id);
+
         toast({
           title: 'Sucesso!',
           description: 'Avatar atualizado com sucesso',
@@ -451,6 +477,21 @@ export default function Profile() {
 
   // Alterar senha
   const handleChangePassword = async () => {
+    // RATE LIMITING: Previne brute force em troca de senha
+    const currentUser = authService.getCurrentUser();
+    if (currentUser) {
+      const limitCheck = rateLimiter.checkLimit('passwordChange', currentUser.id);
+
+      if (!limitCheck.allowed) {
+        toast({
+          title: 'Muitas tentativas',
+          description: rateLimiter.formatErrorMessage('passwordChange', limitCheck.resetIn),
+          variant: 'destructive'
+        });
+        return;
+      }
+    }
+
     // CSRF Protection: Valida token antes de operação crítica
     if (!validateCSRFToken(csrfToken)) {
       toast({
@@ -479,6 +520,9 @@ export default function Profile() {
         passwordData.currentPassword,
         passwordData.newPassword
       );
+
+      // Registra tentativa bem-sucedida
+      rateLimiter.recordAttempt('passwordChange', currentUser.id);
 
       toast({
         title: 'Sucesso!',
