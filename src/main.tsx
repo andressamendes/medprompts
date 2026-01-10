@@ -3,11 +3,13 @@ import ReactDOM from 'react-dom/client';
 import App from './App';
 import './index.css';
 
-// ✅ FORÇAR INCLUSÃO: Imports explícitos para prevenir tree-shaking incorreto
-import '@/components/focumon/FullscreenStudyRoom';
-import '@/components/focumon/HospitalInfirmary';
-import '@/components/focumon/StardewHospital';
-import '@/components/focumon/AvatarCustomizationModal';
+// ✅ FORÇAR INCLUSÃO: Import barrel para prevenir tree-shaking incorreto
+// Import * força inclusão de TODOS os exports do módulo
+import * as focumon from '@/components/focumon';
+// Previne que a importação seja removida como "unused"
+if (typeof window !== 'undefined') {
+  (window as any).__focumon = focumon;
+}
 
 /**
  * Ponto de entrada da aplicação
