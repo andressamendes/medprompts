@@ -16,6 +16,7 @@ import { securityConfig } from '../config/security.config';
 import { sanitizationService } from './sanitization.service';
 import { rateLimitService, getRateLimitIdentifier, formatRateLimitError } from './rate-limit.service';
 import { avatarStorage } from '@/utils/avatarStorage';
+import { jwtService } from './jwt.service';
 
 // ==========================================
 // TIPOS DE DADOS
@@ -64,14 +65,8 @@ export interface AuthResponse {
   expiresIn: string; // NOVO
 }
 
-export interface JWTPayload {
-  userId: string;
-  email: string;
-  role: UserRole;
-  type: 'access' | 'refresh';
-  iat: number;
-  exp: number;
-}
+// JWTPayload agora é exportado por jwt.service.ts
+export type { JWTPayload } from './jwt.service';
 
 // ==========================================
 // CONSTANTES
@@ -210,242 +205,9 @@ class SecureAuthService {
   }
 
   // ==========================================
-  // JWT-LIKE TOKENS (Web Crypto API - HMAC-SHA256)
+  // JWT TOKENS - Delegado para jwt.service.ts
   // ==========================================
-
-  /**
-   * Cria assinatura HMAC-SHA256 para token
-   * SUBSTITUIÇÃO: jsonwebtoken → Web Crypto API HMAC
-   */
-  private async signToken(payload: string, secret: string): Promise<string> {
-    const encoder = new TextEncoder();
-    const secretBuffer = encoder.encode(secret);
-    const payloadBuffer = encoder.encode(payload);
-
-    // Importa secret como chave HMAC
-    const key = await window.crypto.subtle.importKey(
-      'raw',
-      secretBuffer,
-      { name: 'HMAC', hash: 'SHA-256' },
-      false,
-      ['sign']
-    );
-
-    // Gera assinatura
-    const signatureBuffer = await window.crypto.subtle.sign(
-      'HMAC',
-      key,
-      payloadBuffer
-    );
-
-    // Converte para Base64URL
-    const signatureArray = new Uint8Array(signatureBuffer);
-    const signatureArrayValues = Array.from(signatureArray);
-    let binaryString = '';
-    for (let i = 0; i < signatureArrayValues.length; i++) {
-      binaryString += String.fromCharCode(signatureArrayValues[i]);
-    }
-    return btoa(binaryString)
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=/g, '');
-  }
-
-  /**
-   * Verifica assinatura HMAC-SHA256 do token
-   */
-  private async verifyTokenSignature(
-    payload: string,
-    signature: string,
-    secret: string
-  ): Promise<boolean> {
-    try {
-      const expectedSignature = await this.signToken(payload, secret);
-
-      // Comparação em tempo constante
-      if (signature.length !== expectedSignature.length) {
-        return false;
-      }
-
-      let mismatch = 0;
-      for (let i = 0; i < signature.length; i++) {
-        mismatch |= signature.charCodeAt(i) ^ expectedSignature.charCodeAt(i);
-      }
-
-      return mismatch === 0;
-    } catch (error) {
-      console.error('Erro ao verificar assinatura:', error);
-      return false;
-    }
-  }
-
-  /**
-   * Gera token JWT-like de acesso (15 minutos)
-   */
-  private async generateAccessToken(user: User): Promise<string> {
-    const now = Math.floor(Date.now() / 1000);
-    const exp = now + 15 * 60; // 15 minutos
-
-    const payload: JWTPayload = {
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-      type: 'access',
-      iat: now,
-      exp: exp,
-    };
-
-    const header = { alg: 'HS256', typ: 'JWT' };
-
-    // Codifica header e payload em Base64URL
-    const encodedHeader = btoa(JSON.stringify(header))
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=/g, '');
-
-    const encodedPayload = btoa(JSON.stringify(payload))
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=/g, '');
-
-    const message = `${encodedHeader}.${encodedPayload}`;
-    const signature = await this.signToken(message, securityConfig.jwt.secret);
-
-    return `${message}.${signature}`;
-  }
-
-  /**
-   * Gera refresh token JWT-like (7 dias)
-   */
-  private async generateRefreshToken(user: User): Promise<string> {
-    const now = Math.floor(Date.now() / 1000);
-    const exp = now + 7 * 24 * 60 * 60; // 7 dias
-
-    const payload: JWTPayload = {
-      userId: user.id,
-      email: user.email,
-      role: user.role,
-      type: 'refresh',
-      iat: now,
-      exp: exp,
-    };
-
-    const header = { alg: 'HS256', typ: 'JWT' };
-
-    const encodedHeader = btoa(JSON.stringify(header))
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=/g, '');
-
-    const encodedPayload = btoa(JSON.stringify(payload))
-      .replace(/\+/g, '-')
-      .replace(/\//g, '_')
-      .replace(/=/g, '');
-
-    const message = `${encodedHeader}.${encodedPayload}`;
-    const signature = await this.signToken(
-      message,
-      securityConfig.jwt.refreshSecret
-    );
-
-    return `${message}.${signature}`;
-  }
-
-  /**
-   * Verifica e decodifica token JWT-like de acesso
-   */
-  private async verifyAccessToken(token: string): Promise<JWTPayload | null> {
-    try {
-      const parts = token.split('.');
-      if (parts.length !== 3) {
-        throw new Error('Token format invalid');
-      }
-
-      const [encodedHeader, encodedPayload, signature] = parts;
-      const message = `${encodedHeader}.${encodedPayload}`;
-
-      // Verifica assinatura
-      const isValid = await this.verifyTokenSignature(
-        message,
-        signature,
-        securityConfig.jwt.secret
-      );
-
-      if (!isValid) {
-        throw new Error('Invalid signature');
-      }
-
-      // Decodifica payload
-      const payloadJson = atob(
-        encodedPayload.replace(/-/g, '+').replace(/_/g, '/')
-      );
-      const payload = JSON.parse(payloadJson) as JWTPayload;
-
-      // Verifica tipo
-      if (payload.type !== 'access') {
-        throw new Error('Token type mismatch');
-      }
-
-      // Verifica expiração
-      const now = Math.floor(Date.now() / 1000);
-      if (payload.exp < now) {
-        throw new Error('Token expired');
-      }
-
-      return payload;
-    } catch (error) {
-      console.error('Token inválido:', error);
-      return null;
-    }
-  }
-
-  /**
-   * Verifica e decodifica refresh token JWT-like
-   */
-  private async verifyRefreshToken(token: string): Promise<JWTPayload | null> {
-    try {
-      const parts = token.split('.');
-      if (parts.length !== 3) {
-        throw new Error('Token format invalid');
-      }
-
-      const [encodedHeader, encodedPayload, signature] = parts;
-      const message = `${encodedHeader}.${encodedPayload}`;
-
-      // Verifica assinatura
-      const isValid = await this.verifyTokenSignature(
-        message,
-        signature,
-        securityConfig.jwt.refreshSecret
-      );
-
-      if (!isValid) {
-        throw new Error('Invalid signature');
-      }
-
-      // Decodifica payload
-      const payloadJson = atob(
-        encodedPayload.replace(/-/g, '+').replace(/_/g, '/')
-      );
-      const payload = JSON.parse(payloadJson) as JWTPayload;
-
-      // Verifica tipo
-      if (payload.type !== 'refresh') {
-        throw new Error('Token type mismatch');
-      }
-
-      // Verifica expiração
-      const now = Math.floor(Date.now() / 1000);
-      if (payload.exp < now) {
-        throw new Error('Token expired');
-      }
-
-      return payload;
-    } catch (error) {
-      console.error('Refresh token inválido:', error);
-      return null;
-    }
-  }
+  // Métodos JWT movidos para jwt.service.ts para modularização
 
   // ==========================================
   // STORAGE (LocalStorage)
@@ -562,7 +324,7 @@ class SecureAuthService {
     const token = localStorage.getItem(TOKEN_STORAGE_KEY);
     if (!token) return false;
 
-    const payload = await this.verifyAccessToken(token);
+    const payload = await jwtService.verifyAccessToken(token);
 
     // Se token inválido, limpa localStorage (migração de formato antigo)
     if (payload === null) {
@@ -666,8 +428,8 @@ class SecureAuthService {
     rateLimitService.reset(identifier, 'login');
 
     // Gera tokens JWT
-    const accessToken = await this.generateAccessToken(user);
-    const refreshToken = await this.generateRefreshToken(user);
+    const accessToken = await jwtService.generateAccessToken(user);
+    const refreshToken = await jwtService.generateRefreshToken(user);
 
     // Salva refresh token no usuário
     user.refreshToken = refreshToken;
@@ -741,8 +503,8 @@ class SecureAuthService {
     this.saveUsersWithPassword(users);
 
     // Gera tokens JWT
-    const accessToken = await this.generateAccessToken(newUser);
-    const refreshToken = await this.generateRefreshToken(newUser);
+    const accessToken = await jwtService.generateAccessToken(newUser);
+    const refreshToken = await jwtService.generateRefreshToken(newUser);
 
     // Salva refresh token
     newUser.refreshToken = refreshToken;
@@ -775,7 +537,7 @@ class SecureAuthService {
     }
 
     // Verifica refresh token
-    const payload = await this.verifyRefreshToken(refreshToken);
+    const payload = await jwtService.verifyRefreshToken(refreshToken);
     if (!payload) {
       throw new Error('Refresh token inválido. Faça login novamente.');
     }
@@ -789,7 +551,7 @@ class SecureAuthService {
     }
 
     // Gera novo access token
-    const newAccessToken = await this.generateAccessToken(user);
+    const newAccessToken = await jwtService.generateAccessToken(user);
 
     // Salva novo token
     localStorage.setItem(TOKEN_STORAGE_KEY, newAccessToken);
@@ -832,7 +594,7 @@ class SecureAuthService {
     const token = localStorage.getItem(TOKEN_STORAGE_KEY);
     if (!token) return null;
 
-    const payload = this.verifyAccessToken(token);
+    const payload = await jwtService.verifyAccessToken(token);
     if (!payload) {
       // Token expirado - tentar refresh
       try {
