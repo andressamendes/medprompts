@@ -210,7 +210,7 @@ export default function FocusZone() {
   return (
     <main className="relative min-h-screen overflow-hidden">
       {/* Fundo gradiente médico profissional */}
-      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-indigo-950 to-slate-900" />
+      <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900" />
       
       {/* Overlay com padrão de grade médica sutil */}
       <div 
@@ -259,7 +259,7 @@ export default function FocusZone() {
                   onClick={() => changeMode('focus')}
                   className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all ${
                     mode === 'focus'
-                      ? 'bg-indigo-600 text-white shadow-lg scale-105'
+                      ? 'bg-blue-600 text-white shadow-lg scale-105'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
@@ -279,7 +279,7 @@ export default function FocusZone() {
                   onClick={() => changeMode('longBreak')}
                   className={`px-4 py-2 rounded-xl font-semibold text-sm transition-all ${
                     mode === 'longBreak'
-                      ? 'bg-purple-600 text-white shadow-lg scale-105'
+                      ? 'bg-green-600 text-white shadow-lg scale-105'
                       : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                   }`}
                 >
@@ -337,7 +337,7 @@ export default function FocusZone() {
               {/* Contador de ciclos */}
               <div className="text-center">
                 <p className="text-sm text-gray-600">
-                  Ciclos completados: <span className="font-bold text-indigo-600">{completedCycles}</span>
+                  Ciclos completados: <span className="font-bold text-blue-600">{completedCycles}</span>
                 </p>
                 <div className="flex justify-center gap-1 mt-2">
                   {[...Array(4)].map((_, i) => (
@@ -345,7 +345,7 @@ export default function FocusZone() {
                       key={i}
                       className={`w-2 h-2 rounded-full transition-all ${
                         i < (completedCycles % 4)
-                          ? 'bg-indigo-600 scale-125'
+                          ? 'bg-blue-600 scale-125'
                           : 'bg-gray-300'
                       }`}
                     />
@@ -358,8 +358,8 @@ export default function FocusZone() {
                 <button
                   className={`${
                     isRunning
-                      ? "bg-indigo-600 hover:bg-indigo-700"
-                      : "bg-purple-600 hover:bg-purple-700"
+                      ? "bg-blue-600 hover:bg-blue-700"
+                      : "bg-green-600 hover:bg-green-700"
                   } text-white font-semibold rounded-xl px-6 py-3 sm:px-8 sm:py-3 transition-all shadow-lg hover:scale-105 flex-1 max-w-[160px]`}
                   onClick={() => setIsRunning(!isRunning)}
                 >
@@ -367,7 +367,7 @@ export default function FocusZone() {
                 </button>
                 
                 <button
-                  className="bg-gray-100 hover:bg-gray-200 text-indigo-700 font-semibold rounded-xl px-5 py-3 sm:px-6 sm:py-3 transition-all shadow-lg hover:scale-105"
+                  className="bg-gray-100 hover:bg-gray-200 text-blue-700 font-semibold rounded-xl px-5 py-3 sm:px-6 sm:py-3 transition-all shadow-lg hover:scale-105"
                   onClick={resetTimer}
                   title="Resetar timer"
                 >
@@ -376,11 +376,11 @@ export default function FocusZone() {
               </div>
 
               {/* PLAYER LO-FI */}
-              <div className={`bg-gradient-to-br ${STATIONS[stationIndex].color} rounded-2xl shadow-inner p-5 sm:p-6 border border-indigo-200/30 backdrop-blur-sm`}>
+              <div className={`bg-gradient-to-br ${STATIONS[stationIndex].color} rounded-2xl shadow-inner p-5 sm:p-6 border border-blue-200/30 backdrop-blur-sm`}>
                 <div className="flex flex-col gap-3 items-center">
                   <div className="flex items-center gap-2">
                     <div className={`w-2 h-2 rounded-full ${playing ? 'bg-red-500 animate-pulse' : 'bg-gray-400'}`} />
-                    <span className="font-semibold text-indigo-900 text-sm sm:text-base">
+                    <span className="font-semibold text-blue-900 text-sm sm:text-base">
                       {STATIONS[stationIndex].name}
                     </span>
                   </div>
@@ -388,7 +388,7 @@ export default function FocusZone() {
                   <div className="flex gap-2 sm:gap-3 w-full items-center">
                     <button
                       onClick={togglePlay}
-                      className="flex-1 px-4 py-2.5 sm:px-6 sm:py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-lg transition-all hover:scale-105 flex items-center justify-center gap-2"
+                      className="flex-1 px-4 py-2.5 sm:px-6 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg transition-all hover:scale-105 flex items-center justify-center gap-2"
                       aria-label={playing ? "Pausar Rádio" : "Tocar Rádio"}
                     >
                       {playing ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
@@ -397,7 +397,7 @@ export default function FocusZone() {
                     
                     <button
                       onClick={nextStation}
-                      className="px-4 py-2.5 sm:px-5 sm:py-3 bg-white hover:bg-gray-50 text-indigo-700 font-semibold border-2 border-indigo-300 rounded-xl shadow-lg transition-all hover:scale-105"
+                      className="px-4 py-2.5 sm:px-5 sm:py-3 bg-white hover:bg-gray-50 text-blue-700 font-semibold border-2 border-blue-300 rounded-xl shadow-lg transition-all hover:scale-105"
                       aria-label="Próxima Estação"
                     >
                       Trocar
@@ -412,9 +412,9 @@ export default function FocusZone() {
                       aria-label={volume === 0 ? "Ativar som" : "Desativar som"}
                     >
                       {volume === 0 ? (
-                        <VolumeX className="w-5 h-5 text-indigo-900" />
+                        <VolumeX className="w-5 h-5 text-blue-900" />
                       ) : (
-                        <Volume2 className="w-5 h-5 text-indigo-900" />
+                        <Volume2 className="w-5 h-5 text-blue-900" />
                       )}
                     </button>
                     <input
@@ -426,7 +426,7 @@ export default function FocusZone() {
                       className="flex-1 h-2 bg-indigo-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
                       aria-label="Controle de volume"
                     />
-                    <span className="text-indigo-900 font-semibold text-sm min-w-[3ch]">
+                    <span className="text-blue-900 font-semibold text-sm min-w-[3ch]">
                       {volume}%
                     </span>
                   </div>

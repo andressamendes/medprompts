@@ -170,7 +170,7 @@ const Ferramentas = () => {
             ideal: "Revisão de material, compreensão profunda, criação de apresentações"
           },
           badge: "ATUALIZADO 2026",
-          badgeColor: "bg-indigo-100 text-indigo-700"
+          badgeColor: "bg-blue-100 text-blue-700"
         },
         {
           name: "Anki",
@@ -214,7 +214,7 @@ const Ferramentas = () => {
             alternativas: ["Obsidian (local + gratuito)", "RemNote (foco em revisão)"]
           },
           badge: "Desconto Estudante",
-          badgeColor: "bg-purple-100 text-purple-700"
+          badgeColor: "bg-blue-100 text-blue-700"
         },
         {
           name: "Obsidian",
@@ -277,7 +277,7 @@ const Ferramentas = () => {
             ideal: "Diagnóstico diferencial complexo, casos raros"
           },
           badge: "Profissional",
-          badgeColor: "bg-purple-100 text-purple-700"
+          badgeColor: "bg-blue-100 text-blue-700"
         }
       ]
     },
@@ -340,7 +340,7 @@ const Ferramentas = () => {
             ideal: "Revisão completa, preparação para exames, aprendizado estruturado"
           },
           badge: "Completo",
-          badgeColor: "bg-purple-100 text-purple-700"
+          badgeColor: "bg-blue-100 text-blue-700"
         }
       ]
     },
@@ -389,7 +389,7 @@ const Ferramentas = () => {
             ideal: "Quem usa Google Docs, escrita acadêmica fluida"
           },
           badge: "Desconto Estudante",
-          badgeColor: "bg-purple-100 text-purple-700"
+          badgeColor: "bg-blue-100 text-blue-700"
         },
         {
           name: "EndNote",
@@ -458,7 +458,7 @@ const Ferramentas = () => {
             ideal: "Resumir palestras gravadas, criar materiais de revisão"
           },
           badge: "Automação",
-          badgeColor: "bg-purple-100 text-purple-700"
+          badgeColor: "bg-blue-100 text-blue-700"
         },
         {
           name: "YouLearn AI",
@@ -490,7 +490,7 @@ const Ferramentas = () => {
             ideal: "Pesquisa acadêmica, revisão de literatura, meta-análises"
           },
           badge: "Pesquisa",
-          badgeColor: "bg-indigo-100 text-indigo-700"
+          badgeColor: "bg-blue-100 text-blue-700"
         },
         {
           name: "TurboLearn AI",
@@ -529,7 +529,7 @@ const Ferramentas = () => {
             ideal: "Estudantes avançados, pesquisa complexa, segundo cérebro"
           },
           badge: "Avançado",
-          badgeColor: "bg-purple-100 text-purple-700"
+          badgeColor: "bg-blue-100 text-blue-700"
         },
         {
           name: "Logseq",
@@ -561,7 +561,7 @@ const Ferramentas = () => {
             ideal: "Organização estruturada de conhecimento, estudantes visuais"
           },
           badge: "Moderno",
-          badgeColor: "bg-indigo-100 text-indigo-700"
+          badgeColor: "bg-blue-100 text-blue-700"
         },
         {
           name: "Heptabase",
@@ -577,7 +577,7 @@ const Ferramentas = () => {
             ideal: "Aprendizado visual, mapas conceituais, fisiopatologia"
           },
           badge: "Visual",
-          badgeColor: "bg-pink-100 text-pink-700"
+          badgeColor: "bg-green-100 text-green-700"
         }
       ]
     },
@@ -656,12 +656,12 @@ const Ferramentas = () => {
 
   const getCorBadge = (cor: string) => {
     const cores: Record<string, string> = {
-      purple: "bg-purple-100 text-purple-700",
-      pink: "bg-pink-100 text-pink-700",
+      purple: "bg-blue-100 text-blue-700",
+      pink: "bg-green-100 text-green-700",
       blue: "bg-blue-100 text-blue-700",
       green: "bg-green-100 text-green-700",
       orange: "bg-orange-100 text-orange-700",
-      indigo: "bg-indigo-100 text-indigo-700",
+      indigo: "bg-blue-100 text-blue-700",
       red: "bg-red-100 text-red-700",
       teal: "bg-teal-100 text-teal-700",
       cyan: "bg-cyan-100 text-cyan-700",
@@ -674,8 +674,8 @@ const Ferramentas = () => {
 
   const getCorBorda = (cor: string) => {
     const cores: Record<string, string> = {
-      purple: "border-purple-200 hover:border-purple-400",
-      pink: "border-pink-200 hover:border-pink-400",
+      purple: "border-blue-200 hover:border-blue-400",
+      pink: "border-green-200 hover:border-green-400",
       blue: "border-blue-200 hover:border-blue-400",
       green: "border-green-200 hover:border-green-400",
       orange: "border-orange-200 hover:border-orange-400",
@@ -1025,7 +1025,7 @@ const Ferramentas = () => {
                             colorClass = "bg-green-600 text-white";
                           } else if (plat === "Desktop") {
                             icon = <Monitor size={12} />;
-                            colorClass = "bg-purple-100 text-purple-700";
+                            colorClass = "bg-blue-100 text-blue-700";
                           } else if (plat === "Chrome Extension") {
                             icon = <Globe size={12} />;
                             colorClass = "bg-yellow-100 text-yellow-700";

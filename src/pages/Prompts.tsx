@@ -289,7 +289,7 @@ const copyPrompt = useCallback(async (prompt: Prompt) => {
             <div className="h-24 bg-gradient-to-r from-indigo-100 to-purple-100 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-2xl" />
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="h-48 bg-gradient-to-br from-indigo-50 to-purple-50 dark:from-indigo-900/10 dark:to-purple-900/10 rounded-xl" />
+                <div key={i} className="h-48 bg-gradient-to-br from-blue-50 to-green-50 dark:from-indigo-900/10 dark:to-purple-900/10 rounded-xl" />
               ))}
             </div>
           </div>
@@ -338,7 +338,7 @@ const copyPrompt = useCallback(async (prompt: Prompt) => {
 
 
               <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold tracking-tight">
-                <span className="bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent animate-gradient">
+                <span className="text-blue-600 dark:text-blue-400">
                   Prompts Médicos
                 </span>
               </h1>
@@ -357,9 +357,9 @@ const copyPrompt = useCallback(async (prompt: Prompt) => {
           </div>
 
 
-          {/* Blobs animados */}
-          <div className="absolute top-0 left-1/4 w-96 h-96 bg-purple-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob" />
-          <div className="absolute top-0 right-1/4 w-96 h-96 bg-indigo-300 rounded-full mix-blend-multiply filter blur-3xl opacity-20 animate-blob animation-delay-2000" />
+          {/* Blobs animados - cores acadêmicas */}
+          <div className="absolute top-0 left-1/4 w-96 h-96 bg-blue-200 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob" />
+          <div className="absolute top-0 right-1/4 w-96 h-96 bg-green-200 rounded-full mix-blend-multiply filter blur-3xl opacity-10 animate-blob animation-delay-2000" />
         </section>
 
 
@@ -368,7 +368,7 @@ const copyPrompt = useCallback(async (prompt: Prompt) => {
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
             {/* Banner Login */}
             {!user && favorites.size > 0 && showLoginBanner && (
-              <div className="bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-950/30 dark:to-purple-950/30 border border-indigo-200 dark:border-indigo-800 rounded-2xl p-5 shadow-lg backdrop-blur-sm animate-in fade-in slide-in-from-top-4 duration-500">
+              <div className="bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-950/30 dark:to-green-950/30 border border-blue-200 dark:border-blue-800 rounded-2xl p-5 shadow-lg backdrop-blur-sm animate-in fade-in slide-in-from-top-4 duration-500">
                 <div className="flex items-start justify-between gap-4">
                   <div className="flex items-center gap-3 flex-1">
                     <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
@@ -387,7 +387,7 @@ const copyPrompt = useCallback(async (prompt: Prompt) => {
                     <Button
                       size="sm"
                       onClick={() => navigate('/register')}
-                      className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl transition-all duration-300"
+                      className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300"
                     >
                       Criar Conta
                     </Button>
@@ -525,7 +525,7 @@ const copyPrompt = useCallback(async (prompt: Prompt) => {
                           <div className="flex gap-2">
                             <Badge 
                               variant="outline"
-                              className="text-xs font-medium bg-gradient-to-r from-indigo-50 to-purple-50 dark:from-indigo-900/30 dark:to-purple-900/30 border-indigo-200 dark:border-indigo-800 text-indigo-700 dark:text-indigo-300"
+                              className="text-xs font-medium bg-gradient-to-r from-blue-50 to-green-50 dark:from-indigo-900/30 dark:to-purple-900/30 border-blue-200 dark:border-blue-800 text-indigo-700 dark:text-indigo-300"
                             >
                               {aiName}
                             </Badge>
@@ -598,7 +598,7 @@ const copyPrompt = useCallback(async (prompt: Prompt) => {
                                     variant="default"
                                     size="sm"
                                     onClick={() => setCustomizerPrompt(prompt)}
-                                    className="w-full h-9 gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all duration-300"
+                                    className="w-full h-9 gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 transition-all duration-300"
                                   >
                                     <Sparkles className="w-4 h-4" />
                                     <span className="text-xs">Personalizar</span>
@@ -669,7 +669,7 @@ const copyPrompt = useCallback(async (prompt: Prompt) => {
 
                         <Button
                           onClick={() => openAI(aiName)}
-                          className="w-full h-9 text-xs gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 shadow-lg hover:shadow-xl hover:shadow-indigo-500/30 transition-all duration-300"
+                          className="w-full h-9 text-xs gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300"
                         >
                           <ExternalLink className="w-4 h-4" />
                           Abrir {aiName}
@@ -745,7 +745,7 @@ const copyPrompt = useCallback(async (prompt: Prompt) => {
                   <div className="flex-1">
                     <DialogTitle className="text-2xl mb-3">{selectedPrompt.title}</DialogTitle>
                     <div className="flex flex-wrap gap-2">
-                      <Badge className="bg-gradient-to-r from-indigo-600 to-purple-600">
+                      <Badge className="bg-gradient-to-r from-blue-600 to-blue-700">
                         {getAIName(selectedPrompt)}
                       </Badge>
                       <Badge variant="outline">{selectedPrompt.category}</Badge>
@@ -825,7 +825,7 @@ const copyPrompt = useCallback(async (prompt: Prompt) => {
                   </Button>
                   <Button
                     onClick={() => openAI(getAIName(selectedPrompt))}
-                    className="flex-1 h-11 gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700"
+                    className="flex-1 h-11 gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
                   >
                     <ExternalLink className="w-4 h-4" />
                     Abrir IA
@@ -845,7 +845,7 @@ const copyPrompt = useCallback(async (prompt: Prompt) => {
                 MedPrompts © 2026 • Desenvolvido para estudantes de Medicina
               </p>
               <p className="text-sm text-muted-foreground">
-                Por <span className="font-semibold bg-gradient-to-r from-indigo-600 to-purple-600 bg-clip-text text-transparent">Andressa Mendes</span>
+                Por <span className="font-semibold bg-gradient-to-r from-blue-600 to-blue-700 bg-clip-text text-transparent">Andressa Mendes</span>
               </p>
               <div className="flex items-center justify-center gap-4 pt-4">
                 <Badge variant="outline" className="gap-1">

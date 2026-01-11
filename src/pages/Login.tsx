@@ -75,7 +75,7 @@ export default function Login() {
   };
 
   return (
-    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-indigo-100 dark:from-gray-900 dark:to-gray-800 p-4">
+    <main className="min-h-screen flex items-center justify-center bg-gradient-to-br from-blue-50 to-blue-100 dark:from-gray-900 dark:to-gray-800 p-4">
       <Card className="w-full max-w-md" role="region" aria-label="Formulário de login">
         <CardHeader className="space-y-1">
           <CardTitle className="text-2xl font-bold" id="login-title">Login</CardTitle>

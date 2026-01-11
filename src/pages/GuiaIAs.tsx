@@ -114,7 +114,7 @@ const GuiaIAs = () => {
       name: "Gemini 2.5 Flash-Lite",
       description: "Versão low-cost do Gemini 2.5. Ideal para tarefas que exigem velocidade sem comprometer qualidade.",
       url: "https://gemini.google.com",
-      color: "from-indigo-500 to-purple-500",
+      color: "from-blue-500 to-blue-600",
       pros: ["Baixo custo", "Velocidade alta", "Google integrado", "Contexto expandido"],
       ideal: "Resumos rápidos, consultas simples, revisão de notas, flashcards",
       price: "Gratuito",
@@ -126,7 +126,7 @@ const GuiaIAs = () => {
       name: "NotebookLM",
       description: "EXCLUSIVO para estudantes! Trabalha APENAS com fontes carregadas, sem alucinações. Gera podcasts automáticos.",
       url: "https://notebooklm.google.com",
-      color: "from-indigo-500 to-purple-500",
+      color: "from-blue-500 to-blue-600",
       pros: ["Sem alucinações", "Podcasts automáticos", "100 notebooks grátis", "Citações precisas"],
       ideal: "Revisão de material, compreensão profunda, estudo ativo, organização",
       price: "GRATUITO",
@@ -165,7 +165,7 @@ const GuiaIAs = () => {
       title: "Estudos e Revisão",
       icon: BookOpen,
       description: "Ferramentas especializadas para aprendizado",
-      color: "from-indigo-500 to-purple-500",
+      color: "from-blue-500 to-blue-600",
       category: "estudos"
     },
     {
@@ -274,13 +274,13 @@ const GuiaIAs = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-indigo-50/30 to-purple-50/20">
+    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/20">
       <PublicNavbar />
 
       {/* Skip to Content Link (acessibilidade) */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-16 focus:left-4 focus:z-50 focus:bg-purple-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-md"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-16 focus:left-4 focus:z-50 focus:bg-blue-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-md"
       >
         Pular para conteúdo principal
       </a>
@@ -303,11 +303,11 @@ const GuiaIAs = () => {
 
           {/* Hero Section */}
           <header className="text-center space-y-6 py-8">
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full text-sm font-semibold shadow-lg">
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full text-sm font-semibold shadow-lg">
               <Zap className="h-4 w-4" aria-hidden="true" />
               Atualizado Janeiro 2026
             </div>
-            <h1 className="text-5xl sm:text-6xl font-bold bg-gradient-to-r from-indigo-600 via-purple-600 to-pink-600 bg-clip-text text-transparent">
+            <h1 className="text-5xl sm:text-6xl font-bold text-blue-600 dark:text-blue-400">
               Guia de IAs para Medicina
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
@@ -369,7 +369,7 @@ const GuiaIAs = () => {
             <CardHeader>
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
-                  <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
+                  <div className="w-10 h-10 bg-gradient-to-r from-blue-500 to-blue-600 rounded-lg flex items-center justify-center">
                     <Filter className="h-5 w-5 text-white" />
                   </div>
                   <div>
@@ -400,7 +400,7 @@ const GuiaIAs = () => {
                       variant={filtroPreco === "todos" ? "default" : "outline"}
                       size="sm"
                       onClick={() => setFiltroPreco("todos")}
-                      className={filtroPreco === "todos" ? "bg-indigo-600 hover:bg-indigo-700" : ""}
+                      className={filtroPreco === "todos" ? "bg-blue-600 hover:bg-blue-700" : ""}
                     >
                       Todos
                     </Button>
@@ -431,7 +431,7 @@ const GuiaIAs = () => {
                       variant={filtroCategoria === "todos" ? "default" : "outline"}
                       size="sm"
                       onClick={() => setFiltroCategoria("todos")}
-                      className={filtroCategoria === "todos" ? "bg-indigo-600 hover:bg-indigo-700" : ""}
+                      className={filtroCategoria === "todos" ? "bg-blue-600 hover:bg-blue-700" : ""}
                     >
                       Todas
                     </Button>
@@ -478,7 +478,7 @@ const GuiaIAs = () => {
                       variant={filtroNovidade === "todos" ? "default" : "outline"}
                       size="sm"
                       onClick={() => setFiltroNovidade("todos")}
-                      className={filtroNovidade === "todos" ? "bg-indigo-600 hover:bg-indigo-700" : ""}
+                      className={filtroNovidade === "todos" ? "bg-blue-600 hover:bg-blue-700" : ""}
                     >
                       Todos
                     </Button>
