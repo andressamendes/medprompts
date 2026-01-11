@@ -59,60 +59,8 @@ export default function Prompts() {
   const [isSearching, setIsSearching] = useState(false);
   const [showLoginBanner, setShowLoginBanner] = useState(true);
 
-
   // Carregar prompts da API com fallback para dados estáticos
-useEffect(() => {
-  const loadPrompts = async () => {
-    try {
-      setIsLoading(true);
-      
-      // Tenta carregar da API primeiro
-      try {
-        const data = await PromptsService.listPrompts({ includeSystem: true });
-        setPrompts(data);
-        
-        // Carregar favoritos
-        if (!user) {
-          const stored = localStorage.getItem('medprompts-favorites');
-          if (stored) setFavorites(new Set(JSON.parse(stored)));
-        } else {
-          const favs = data.filter(p => p.isFavorite).map(p => p.id);
-          setFavorites(new Set(favs));
-        }
-      } catch (apiError) {
-        console.warn('API não disponível, usando dados estáticos:', apiError);
-        
-        // Fallback: usar dados estáticos
-        const { prompts: staticPrompts } = await import('@/data/prompts-data');
-        setPrompts(staticPrompts);
-        
-        // Carregar favoritos locais
-        const stored = localStorage.getItem('medprompts-favorites');
-        if (stored) setFavorites(new Set(JSON.parse(stored)));
-        
-        toast({ 
-          title: 'ℹ️ Modo offline',
-          description: 'Usando prompts locais. Conecte-se à API para sincronizar.',
-        });
-      }
-      
-    } catch (error) {
-      console.error('Erro ao carregar prompts:', error);
-      toast({ 
-        title: '❌ Erro ao carregar prompts',
-        description: 'Não foi possível carregar os prompts',
-        variant: 'destructive'
-      });
-    } finally {
-      setTimeout(() => setIsLoading(false), 500);
-    }
-  };
-
-  loadPrompts();
-}, [user]);
-
-// Carregar prompts da API com fallback para dados estáticos
-useEffect(() => {
+  useEffect(() => {
   const loadPrompts = async () => {
     try {
       setIsLoading(true);
@@ -172,13 +120,13 @@ useEffect(() => {
       }
       
     } catch (error) {
-      toast({ 
+      toast({
         title: '❌ Erro ao carregar prompts',
         description: 'Não foi possível carregar os prompts',
         variant: 'destructive'
       });
     } finally {
-      setTimeout(() => setIsLoading(false), 500);
+      setIsLoading(false);
     }
   };
 
@@ -265,10 +213,14 @@ const copyPrompt = useCallback(async (prompt: Prompt) => {
   }, []);
 
 
-  const filteredPrompts = useMemo(() => {
+  // Manage searching state separately from filtering logic
+  useEffect(() => {
     setIsSearching(true);
-    setTimeout(() => setIsSearching(false), 200);
-    
+    const timer = setTimeout(() => setIsSearching(false), 200);
+    return () => clearTimeout(timer);
+  }, [searchTerm, selectedCategory, selectedTab]);
+
+  const filteredPrompts = useMemo(() => {
     let filtered = [...prompts];
 
     if (selectedTab === 'favorites') {
