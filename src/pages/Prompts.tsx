@@ -18,8 +18,10 @@ import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
 import { useAuth } from '@/contexts/AuthContext';
 import PromptsService from '@/services/api/promptsService';
+import { PromptCustomizer } from '@/components/PromptCustomizer';
+import { extractVariables } from '@/lib/promptVariables';
 
-// Build: 2026-01-08 09:24 - Integração com backend completa
+// Build: 2026-01-10 - Personalização de prompts com variáveis
 
 
 function renderMarkdown(markdown: string): string {
@@ -59,6 +61,7 @@ export default function Prompts() {
   const [isSearching, setIsSearching] = useState(false);
   const [showLoginBanner, setShowLoginBanner] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
+  const [customizerPrompt, setCustomizerPrompt] = useState<Prompt | null>(null);
   const ITEMS_PER_PAGE = 12;
 
   // Carregar prompts do sistema (dados locais) com suporte opcional para API
@@ -586,45 +589,81 @@ const copyPrompt = useCallback(async (prompt: Prompt) => {
 
                         {/* Ações minimalistas */}
                         <div className="flex gap-2 pt-3 border-t dark:border-gray-800">
-                          <Tooltip>
-                            <TooltipTrigger>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => copyPrompt(prompt)}
-                                className="flex-1 h-9 gap-2 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 dark:hover:from-indigo-900/30 dark:hover:to-purple-900/30 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300"
-                              >
-                                {copiedId === prompt.id ? (
-                                  <>
-                                    <Check className="w-4 h-4 text-green-600" />
-                                    <span className="text-xs">Copiado!</span>
-                                  </>
-                                ) : (
-                                  <>
-                                    <Copy className="w-4 h-4" />
-                                    <span className="text-xs">Copiar</span>
-                                  </>
-                                )}
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Copiar prompt</TooltipContent>
-                          </Tooltip>
+                          {extractVariables(prompt.content).length > 0 ? (
+                            // Prompt tem variáveis - mostrar botão Personalizar
+                            <>
+                              <Tooltip>
+                                <TooltipTrigger className="flex-1">
+                                  <Button
+                                    variant="default"
+                                    size="sm"
+                                    onClick={() => setCustomizerPrompt(prompt)}
+                                    className="w-full h-9 gap-2 bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 transition-all duration-300"
+                                  >
+                                    <Sparkles className="w-4 h-4" />
+                                    <span className="text-xs">Personalizar</span>
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Preencher variáveis do prompt</TooltipContent>
+                              </Tooltip>
 
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setSelectedPrompt(prompt)}
+                                    className="h-9 gap-2 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 dark:hover:from-indigo-900/30 dark:hover:to-purple-900/30 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300"
+                                  >
+                                    <BookOpen className="w-4 h-4" />
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Ver detalhes</TooltipContent>
+                              </Tooltip>
+                            </>
+                          ) : (
+                            // Prompt sem variáveis - mostrar botões tradicionais
+                            <>
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => copyPrompt(prompt)}
+                                    className="flex-1 h-9 gap-2 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 dark:hover:from-indigo-900/30 dark:hover:to-purple-900/30 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300"
+                                  >
+                                    {copiedId === prompt.id ? (
+                                      <>
+                                        <Check className="w-4 h-4 text-green-600" />
+                                        <span className="text-xs">Copiado!</span>
+                                      </>
+                                    ) : (
+                                      <>
+                                        <Copy className="w-4 h-4" />
+                                        <span className="text-xs">Copiar</span>
+                                      </>
+                                    )}
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Copiar prompt</TooltipContent>
+                              </Tooltip>
 
-                          <Tooltip>
-                            <TooltipTrigger>
-                              <Button
-                                variant="outline"
-                                size="sm"
-                                onClick={() => setSelectedPrompt(prompt)}
-                                className="flex-1 h-9 gap-2 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 dark:hover:from-indigo-900/30 dark:hover:to-purple-900/30 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300"
-                              >
-                                <BookOpen className="w-4 h-4" />
-                                <span className="text-xs">Ver</span>
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Ver detalhes</TooltipContent>
-                          </Tooltip>
+                              <Tooltip>
+                                <TooltipTrigger>
+                                  <Button
+                                    variant="outline"
+                                    size="sm"
+                                    onClick={() => setSelectedPrompt(prompt)}
+                                    className="flex-1 h-9 gap-2 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 dark:hover:from-indigo-900/30 dark:hover:to-purple-900/30 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300"
+                                  >
+                                    <BookOpen className="w-4 h-4" />
+                                    <span className="text-xs">Ver</span>
+                                  </Button>
+                                </TooltipTrigger>
+                                <TooltipContent>Ver detalhes</TooltipContent>
+                              </Tooltip>
+                            </>
+                          )}
                         </div>
 
 
@@ -821,6 +860,15 @@ const copyPrompt = useCallback(async (prompt: Prompt) => {
             </div>
           </div>
         </footer>
+
+        {/* Customizer Modal */}
+        {customizerPrompt && (
+          <PromptCustomizer
+            prompt={customizerPrompt}
+            open={!!customizerPrompt}
+            onOpenChange={(open) => !open && setCustomizerPrompt(null)}
+          />
+        )}
       </div>
     </TooltipProvider>
   );
