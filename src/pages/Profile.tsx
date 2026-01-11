@@ -577,51 +577,52 @@ export default function Profile() {
   };
 
   return (
-    <div className="container max-w-4xl mx-auto px-4 py-8 md:py-12">
+    <main role="main" className="container max-w-4xl mx-auto px-4 py-8 md:py-12">
       <div className="mb-8">
-        <Button 
-          variant="ghost" 
-          size="sm" 
+        <Button
+          variant="ghost"
+          size="sm"
           onClick={() => navigate('/dashboard')}
           className="mb-4 flex items-center gap-2"
+          aria-label="Voltar para a página do dashboard"
         >
-          <ArrowLeft className="h-4 w-4" />
+          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
           Voltar ao Dashboard
         </Button>
-        
+
         <h1 className="text-3xl md:text-4xl font-bold mb-2">Meu Perfil</h1>
         <p className="text-muted-foreground">Gerencie suas informações pessoais e preferências</p>
       </div>
 
       <Tabs defaultValue="personal" className="space-y-6">
-        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2">
-          <TabsTrigger value="personal" className="flex items-center gap-2">
-            <User className="h-4 w-4" />
+        <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2" role="tablist" aria-label="Seções do perfil">
+          <TabsTrigger value="personal" className="flex items-center gap-2" aria-label="Aba Informações Pessoais">
+            <User className="h-4 w-4" aria-hidden="true" />
             <span className="hidden sm:inline">Pessoal</span>
             <span className="sm:hidden">Info</span>
           </TabsTrigger>
-          <TabsTrigger value="avatar" className="flex items-center gap-2">
-            <Upload className="h-4 w-4" />
+          <TabsTrigger value="avatar" className="flex items-center gap-2" aria-label="Aba Avatar e Foto">
+            <Upload className="h-4 w-4" aria-hidden="true" />
             <span className="hidden sm:inline">Avatar</span>
             <span className="sm:hidden">Foto</span>
           </TabsTrigger>
-          <TabsTrigger value="security" className="flex items-center gap-2">
-            <Lock className="h-4 w-4" />
+          <TabsTrigger value="security" className="flex items-center gap-2" aria-label="Aba Segurança e Senha">
+            <Lock className="h-4 w-4" aria-hidden="true" />
             <span className="hidden sm:inline">Segurança</span>
             <span className="sm:hidden">Senha</span>
           </TabsTrigger>
-          <TabsTrigger value="preferences" className="flex items-center gap-2">
-            <Settings className="h-4 w-4" />
+          <TabsTrigger value="preferences" className="flex items-center gap-2" aria-label="Aba Preferências e Configurações">
+            <Settings className="h-4 w-4" aria-hidden="true" />
             <span className="hidden sm:inline">Preferências</span>
             <span className="sm:hidden">Config</span>
           </TabsTrigger>
         </TabsList>
 
         {/* Aba de Informações Pessoais */}
-        <TabsContent value="personal">
+        <TabsContent value="personal" role="tabpanel" aria-labelledby="personal-tab">
           <Card>
             <CardHeader>
-              <CardTitle>Informações Pessoais</CardTitle>
+              <CardTitle id="personal-tab">Informações Pessoais</CardTitle>
               <CardDescription>
                 Atualize suas informações de perfil
               </CardDescription>
@@ -646,8 +647,9 @@ export default function Profile() {
                   value={profile.email}
                   disabled
                   className="bg-muted min-h-[44px]"
+                  aria-describedby="email-hint"
                 />
-                <p className="text-sm text-muted-foreground">
+                <p id="email-hint" className="text-sm text-muted-foreground">
                   O email não pode ser alterado
                 </p>
               </div>
@@ -720,8 +722,13 @@ export default function Profile() {
                     </AvatarFallback>
                   </Avatar>
                   {isUploadingAvatar && (
-                    <div className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full">
+                    <div
+                      className="absolute inset-0 flex items-center justify-center bg-black/50 rounded-full"
+                      aria-live="polite"
+                      aria-atomic="true"
+                    >
                       <Loader2 className="h-8 w-8 animate-spin text-white" aria-hidden="true" />
+                      <span className="sr-only">Enviando avatar...</span>
                     </div>
                   )}
                 </div>
@@ -733,9 +740,10 @@ export default function Profile() {
                       disabled={isUploadingAvatar}
                       className="flex items-center gap-2"
                       asChild
+                      aria-label="Selecionar arquivo de imagem para avatar"
                     >
                       <span>
-                        <Upload className="h-4 w-4" />
+                        <Upload className="h-4 w-4" aria-hidden="true" />
                         {isUploadingAvatar ? 'Enviando...' : 'Escolher Imagem'}
                       </span>
                     </Button>
@@ -747,8 +755,10 @@ export default function Profile() {
                     className="hidden"
                     onChange={handleAvatarUpload}
                     disabled={isUploadingAvatar}
+                    aria-label="Selecionar arquivo de imagem para avatar"
+                    aria-describedby="avatar-hint"
                   />
-                  <p className="text-sm text-muted-foreground">
+                  <p id="avatar-hint" className="text-sm text-muted-foreground">
                     PNG, JPG ou WEBP. 100-2000px. Máximo 2MB.
                   </p>
                 </div>
@@ -788,8 +798,9 @@ export default function Profile() {
                   onChange={(e) => setPasswordData(prev => ({ ...prev, newPassword: e.target.value }))}
                   placeholder="Digite a nova senha"
                   className="min-h-[44px]"
+                  aria-describedby="newPassword-hint"
                 />
-                <p className="text-sm text-muted-foreground">
+                <p id="newPassword-hint" className="text-sm text-muted-foreground">
                   Mínimo 8 caracteres, com letras maiúsculas, minúsculas, números e caracteres especiais (!@#$%)
                 </p>
               </div>
@@ -803,7 +814,11 @@ export default function Profile() {
                   onChange={(e) => setPasswordData(prev => ({ ...prev, confirmPassword: e.target.value }))}
                   placeholder="Confirme a nova senha"
                   className="min-h-[44px]"
+                  aria-describedby="confirmPassword-hint"
                 />
+                <p id="confirmPassword-hint" className="sr-only">
+                  Digite a mesma senha informada no campo anterior para confirmação
+                </p>
               </div>
 
               <Button 
@@ -837,12 +852,15 @@ export default function Profile() {
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>Tema</Label>
-                    <p className="text-sm text-muted-foreground">
+                    <Label htmlFor="theme-select">Tema</Label>
+                    <p id="theme-hint" className="text-sm text-muted-foreground">
                       Escolha o tema da interface
                     </p>
                   </div>
                   <select
+                    id="theme-select"
+                    aria-label="Selecione o tema da interface"
+                    aria-describedby="theme-hint"
                     value={preferences.theme}
                     onChange={(e) => setPreferences(prev => ({ ...prev, theme: e.target.value as 'light' | 'dark' | 'system' }))}
                     className="px-3 py-2 border rounded-md min-h-[44px]"
@@ -855,12 +873,15 @@ export default function Profile() {
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>Notificações</Label>
-                    <p className="text-sm text-muted-foreground">
+                    <Label htmlFor="notifications-switch">Notificações</Label>
+                    <p id="notifications-hint" className="text-sm text-muted-foreground">
                       Receba notificações no navegador
                     </p>
                   </div>
                   <Switch
+                    id="notifications-switch"
+                    aria-label="Ativar notificações no navegador"
+                    aria-describedby="notifications-hint"
                     checked={preferences.notifications}
                     onCheckedChange={(checked: boolean) => setPreferences(prev => ({ ...prev, notifications: checked }))}
                   />
@@ -868,12 +889,15 @@ export default function Profile() {
 
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
-                    <Label>Notificações por Email</Label>
-                    <p className="text-sm text-muted-foreground">
+                    <Label htmlFor="email-notifications-switch">Notificações por Email</Label>
+                    <p id="email-notifications-hint" className="text-sm text-muted-foreground">
                       Receba atualizações por email
                     </p>
                   </div>
                   <Switch
+                    id="email-notifications-switch"
+                    aria-label="Ativar notificações por email"
+                    aria-describedby="email-notifications-hint"
                     checked={preferences.emailNotifications}
                     onCheckedChange={(checked: boolean) => setPreferences(prev => ({ ...prev, emailNotifications: checked }))}
                   />
@@ -898,6 +922,6 @@ export default function Profile() {
           </Card>
         </TabsContent>
       </Tabs>
-    </div>
+    </main>
   );
 }
