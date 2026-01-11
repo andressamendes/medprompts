@@ -14,6 +14,7 @@ import { getOrCreateCSRFToken, validateCSRFToken } from '@/utils/csrf';
 import { sanitizeImageUrl } from '@/utils/security';
 import { validateImageFile } from '@/utils/fileValidation';
 import { rateLimiter } from '@/utils/rateLimiter';
+import { SkipLinks } from '@/components/SkipLinks';
 
 interface UserProfile {
   name: string;
@@ -577,22 +578,24 @@ export default function Profile() {
   };
 
   return (
-    <main role="main" className="container max-w-4xl mx-auto px-4 py-8 md:py-12">
-      <div className="mb-8">
-        <Button
-          variant="ghost"
-          size="sm"
-          onClick={() => navigate('/dashboard')}
-          className="mb-4 flex items-center gap-2"
-          aria-label="Voltar para a página do dashboard"
-        >
-          <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-          Voltar ao Dashboard
-        </Button>
+    <>
+      <SkipLinks />
+      <main role="main" id="main-content" className="container max-w-4xl mx-auto px-4 py-8 md:py-12">
+        <div className="mb-8">
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => navigate('/dashboard')}
+            className="mb-4 flex items-center gap-2"
+            aria-label="Voltar para a página do dashboard"
+          >
+            <ArrowLeft className="h-4 w-4" aria-hidden="true" />
+            Voltar ao Dashboard
+          </Button>
 
-        <h1 className="text-3xl md:text-4xl font-bold mb-2">Meu Perfil</h1>
-        <p className="text-muted-foreground">Gerencie suas informações pessoais e preferências</p>
-      </div>
+          <h1 className="text-3xl md:text-4xl font-bold mb-2">Meu Perfil</h1>
+          <p className="text-muted-foreground">Gerencie suas informações pessoais e preferências</p>
+        </div>
 
       <Tabs defaultValue="personal" className="space-y-6">
         <TabsList className="grid w-full grid-cols-2 md:grid-cols-4 gap-2" role="tablist" aria-label="Seções do perfil">
@@ -627,7 +630,7 @@ export default function Profile() {
                 Atualize suas informações de perfil
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4" role="form" aria-labelledby="personal-tab">
               <div className="space-y-2">
                 <Label htmlFor="name">Nome Completo</Label>
                 <Input
@@ -678,14 +681,16 @@ export default function Profile() {
                 />
               </div>
 
-              <Button 
-                onClick={handleSaveProfile} 
+              <Button
+                onClick={handleSaveProfile}
                 className="w-full md:w-auto"
                 disabled={isLoadingProfile}
+                aria-live="polite"
+                aria-atomic="true"
               >
                 {isLoadingProfile ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
                     Salvando...
                   </>
                 ) : (
@@ -771,12 +776,12 @@ export default function Profile() {
         <TabsContent value="security">
           <Card>
             <CardHeader>
-              <CardTitle>Alterar Senha</CardTitle>
+              <CardTitle id="security-tab">Alterar Senha</CardTitle>
               <CardDescription>
                 Mantenha sua conta segura com uma senha forte
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-4">
+            <CardContent className="space-y-4" role="form" aria-labelledby="security-tab">
               <div className="space-y-2">
                 <Label htmlFor="currentPassword">Senha Atual</Label>
                 <Input
@@ -821,14 +826,16 @@ export default function Profile() {
                 </p>
               </div>
 
-              <Button 
-                onClick={handleChangePassword} 
+              <Button
+                onClick={handleChangePassword}
                 className="w-full md:w-auto"
                 disabled={isLoadingPassword}
+                aria-live="polite"
+                aria-atomic="true"
               >
                 {isLoadingPassword ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
                     Alterando...
                   </>
                 ) : (
@@ -843,12 +850,12 @@ export default function Profile() {
         <TabsContent value="preferences">
           <Card>
             <CardHeader>
-              <CardTitle>Preferências</CardTitle>
+              <CardTitle id="preferences-tab">Preferências</CardTitle>
               <CardDescription>
                 Personalize sua experiência
               </CardDescription>
             </CardHeader>
-            <CardContent className="space-y-6">
+            <CardContent className="space-y-6" role="form" aria-labelledby="preferences-tab">
               <div className="space-y-4">
                 <div className="flex items-center justify-between">
                   <div className="space-y-0.5">
@@ -904,14 +911,16 @@ export default function Profile() {
                 </div>
               </div>
 
-              <Button 
-                onClick={handleSavePreferences} 
+              <Button
+                onClick={handleSavePreferences}
                 className="w-full md:w-auto"
                 disabled={isLoadingPreferences}
+                aria-live="polite"
+                aria-atomic="true"
               >
                 {isLoadingPreferences ? (
                   <>
-                    <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                    <Loader2 className="mr-2 h-4 w-4 animate-spin" aria-hidden="true" />
                     Salvando...
                   </>
                 ) : (
@@ -922,6 +931,7 @@ export default function Profile() {
           </Card>
         </TabsContent>
       </Tabs>
-    </main>
+      </main>
+    </>
   );
 }
