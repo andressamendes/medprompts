@@ -12,64 +12,70 @@ import {
 const features = [
   {
     icon: Brain,
-    title: 'IA Especializada',
+    title: 'Prompts Especializados',
     description:
-      'Prompts desenvolvidos especificamente para estudantes de medicina, otimizados para cada fase do curso.',
-    gradient: 'from-purple-600 to-pink-600',
+      'Biblioteca de prompts desenvolvidos para as principais áreas da medicina: clínica, pesquisa, estudos e prática baseada em evidências.',
+    color: 'blue',
   },
   {
     icon: Zap,
-    title: 'Aumente Produtividade',
+    title: 'Organização de Estudos',
     description:
-      'Economize horas de estudo com prompts que aceleram pesquisas, resumos e revisões de conteúdo.',
-    gradient: 'from-pink-600 to-cyan-600',
+      'Ferramentas para estruturar cronogramas, criar resumos, mapas mentais e flashcards de forma eficiente.',
+    color: 'green',
   },
   {
     icon: Target,
-    title: 'Focado em Resultados',
+    title: 'Metodologia Validada',
     description:
-      'Cada prompt é testado e refinado para gerar os melhores resultados acadêmicos e práticos.',
-    gradient: 'from-cyan-600 to-purple-600',
+      'Prompts baseados em metodologias científicas como PICO, EBM e técnicas de estudo ativo comprovadas.',
+    color: 'purple',
   },
   {
     icon: TrendingUp,
-    title: 'Gamificação',
+    title: 'Recursos de Produtividade',
     description:
-      'Sistema de XP, níveis, conquistas e desafios semanais para manter você motivado nos estudos.',
-    gradient: 'from-purple-600 to-pink-600',
+      'Pomodoro, agenda de estudos, controle de tarefas e ferramentas para otimizar seu tempo.',
+    color: 'amber',
   },
   {
     icon: Shield,
-    title: 'Confiável',
+    title: 'Conteúdo Curado',
     description:
-      'Biblioteca curada por estudantes de medicina, com prompts validados e atualizados regularmente.',
-    gradient: 'from-pink-600 to-cyan-600',
+      'Prompts revisados por estudantes de medicina e atualizados continuamente com base em feedback da comunidade.',
+    color: 'blue',
   },
   {
     icon: Users,
-    title: 'Comunidade',
+    title: 'Colaborativo',
     description:
-      'Faça parte de uma comunidade de estudantes que utilizam IA para potencializar seus estudos.',
-    gradient: 'from-cyan-600 to-purple-600',
+      'Projeto open-source onde a comunidade acadêmica contribui com melhorias, novos prompts e recursos.',
+    color: 'green',
   },
 ];
 
+const colorMap: Record<string, string> = {
+  blue: 'bg-blue-100 dark:bg-blue-900/30 text-blue-600 dark:text-blue-400',
+  green: 'bg-green-100 dark:bg-green-900/30 text-green-600 dark:text-green-400',
+  purple: 'bg-purple-100 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400',
+  amber: 'bg-amber-100 dark:bg-amber-900/30 text-amber-600 dark:text-amber-400',
+};
+
 export const Features: React.FC = () => {
   return (
-    <section className="py-20 md:py-32">
+    <section className="py-20 md:py-32 bg-white dark:bg-gray-950">
       <div className="container mx-auto px-4">
         {/* Header */}
         <div className="mb-16 text-center">
-          <h2 className="mb-4 text-3xl font-bold tracking-tight sm:text-4xl md:text-5xl">
-            Por que escolher{' '}
-            <span className="bg-gradient-to-r from-purple-600 to-pink-600 bg-clip-text text-transparent">
+          <h2 className="mb-4 text-3xl font-bold tracking-tight text-gray-900 dark:text-white sm:text-4xl md:text-5xl">
+            Recursos do{' '}
+            <span className="text-blue-600 dark:text-blue-400">
               MedPrompts
             </span>
-            ?
           </h2>
-          <p className="mx-auto max-w-2xl text-lg text-muted-foreground">
-            A plataforma mais completa de prompts de IA para estudantes de medicina,
-            com recursos exclusivos de gamificação e produtividade.
+          <p className="mx-auto max-w-2xl text-lg text-gray-600 dark:text-gray-400">
+            Ferramentas e recursos acadêmicos para apoiar seus estudos em medicina
+            e otimizar seu aprendizado com inteligência artificial.
           </p>
         </div>
 
@@ -77,27 +83,28 @@ export const Features: React.FC = () => {
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {features.map((feature, index) => {
             const Icon = feature.icon;
+            const iconColorClass = colorMap[feature.color] || colorMap.blue;
+
             return (
               <Card
                 key={index}
-                variant="elevated"
-                className="group relative overflow-hidden transition-all duration-300 hover:scale-105"
+                variant="outline"
+                className="group transition-all duration-200 hover:shadow-md"
               >
-                {/* Gradient Background on Hover */}
-                <div
-                  className={`absolute inset-0 bg-gradient-to-br ${feature.gradient} opacity-0 transition-opacity duration-300 group-hover:opacity-10`}
-                />
-                
                 <CardHeader>
                   <div
-                    className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg bg-gradient-to-br ${feature.gradient}`}
+                    className={`mb-4 inline-flex h-12 w-12 items-center justify-center rounded-lg ${iconColorClass}`}
                   >
-                    <Icon className="h-6 w-6 text-white" />
+                    <Icon className="h-6 w-6" />
                   </div>
-                  <CardTitle className="text-xl">{feature.title}</CardTitle>
+                  <CardTitle className="text-xl text-gray-900 dark:text-white">
+                    {feature.title}
+                  </CardTitle>
                 </CardHeader>
                 <CardContent>
-                  <p className="text-muted-foreground">{feature.description}</p>
+                  <p className="text-gray-600 dark:text-gray-400">
+                    {feature.description}
+                  </p>
                 </CardContent>
               </Card>
             );

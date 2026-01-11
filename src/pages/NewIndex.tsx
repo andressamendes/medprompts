@@ -3,6 +3,7 @@ import { PublicNavbar } from '@/components/PublicNavbar';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
 import { AccessibleCard } from '@/components/AccessibleCard';
+import { About } from '@/components/sections/About';
 import {
   Brain,
   BookOpen,
@@ -13,8 +14,7 @@ import {
   Timer,
   Library,
   Stethoscope,
-  Heart,
-  Lightbulb
+  Heart
 } from 'lucide-react';
 
 /**
@@ -205,39 +205,41 @@ export default function NewIndex() {
       <section id="main-content" className="container mx-auto px-4 sm:px-6 py-12 md:py-16">
         <div className="max-w-4xl mx-auto text-center space-y-6">
           {/* Badge Educacional */}
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-purple-50 dark:bg-purple-900/30 text-purple-700 dark:text-purple-300 rounded-full text-sm font-medium">
-            <Stethoscope className="h-4 w-4" />
-            Plataforma de Aprendizado Médico
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg text-sm font-medium border border-blue-200 dark:border-blue-800">
+            <BookOpen className="h-4 w-4" />
+            Portal Acadêmico de IA para Medicina
           </div>
-          
+
           {/* Título Direto */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white leading-tight">
-            Ferramentas de IA para
-            <span className="block text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-indigo-600">
-              Estudantes de Medicina
+            <span className="text-blue-600 dark:text-blue-400">
+              MEDPROMPTS
+            </span>
+            <span className="block text-2xl md:text-3xl lg:text-4xl font-normal text-gray-700 dark:text-gray-300 mt-2">
+              Recursos de IA para estudantes de medicina
             </span>
           </h1>
-          
+
           {/* Descrição Funcional */}
-          <p className="text-lg md:text-xl text-gray-600 dark:text-gray-300 max-w-3xl mx-auto">
-            26 prompts prontos para ChatGPT, Claude e Perplexity. 
-            Comparativo de 4 IAs, timer Pomodoro e ferramentas de estudo.
+          <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
+            Biblioteca colaborativa com 26+ prompts para ChatGPT, Claude e Perplexity,
+            guia comparativo de IAs e ferramentas de produtividade acadêmica.
           </p>
 
           {/* Botões de Ação */}
           <div className="flex flex-col sm:flex-row gap-3 justify-center pt-4">
-            <Button 
-              asChild 
+            <Button
+              asChild
               size="lg"
-              className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-md hover:shadow-lg transition-all duration-300"
+              className="bg-blue-600 hover:bg-blue-700 text-white"
             >
               <Link to="/prompts" className="gap-2">
-                Explorar Biblioteca
+                Acessar Prompts
                 <ArrowRight className="h-4 w-4" />
               </Link>
             </Button>
-            <Button asChild size="lg" variant="outline">
-              <Link to="/guia-ias">Ver Guia de IAs</Link>
+            <Button asChild size="lg" variant="outline" className="border-gray-300 dark:border-gray-700">
+              <Link to="/guia-ias">Ver Recursos</Link>
             </Button>
           </div>
         </div>
@@ -403,37 +405,41 @@ export default function NewIndex() {
         </div>
       </section>
 
-      {/* CTA EDUCACIONAL (não comercial) */}
+      {/* SEÇÃO SOBRE O PROJETO */}
+      <About />
+
+      {/* CTA EDUCACIONAL (opcional) */}
       <section className="container mx-auto px-4 sm:px-6 py-12 md:py-16">
-        <Card className="max-w-4xl mx-auto p-8 md:p-12 bg-gradient-to-br from-purple-50 to-indigo-50 dark:from-purple-900/20 dark:to-indigo-900/20 border-2 border-purple-200 dark:border-purple-800">
+        <Card className="max-w-4xl mx-auto p-8 md:p-12 bg-gradient-to-br from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20 border border-blue-200 dark:border-blue-800">
           <div className="text-center space-y-6">
-            {/* Badge Transparente */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 dark:bg-gray-900/80 rounded-full text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm backdrop-blur-sm">
-              <Lightbulb className="h-4 w-4 text-purple-600 dark:text-purple-400" />
-              Acompanhe seu progresso
+            {/* Badge */}
+            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 dark:bg-gray-900/80 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm backdrop-blur-sm border border-gray-200 dark:border-gray-700">
+              <Trophy className="h-4 w-4 text-blue-600 dark:text-blue-400" />
+              Recursos Adicionais (Opcional)
             </div>
 
-            {/* Título Educacional */}
+            {/* Título */}
             <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
-              Crie uma conta para salvar favoritos e ganhar XP
+              Crie uma conta para recursos extras
             </h2>
 
-            {/* Descrição Funcional */}
-            <p className="text-gray-600 dark:text-gray-300 max-w-2xl mx-auto">
-              Timer Pomodoro exclusivo, sistema de conquistas, estatísticas de estudo e organização personalizada com favoritos e tags.
+            {/* Descrição */}
+            <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
+              Salve seus prompts favoritos, use o timer Pomodoro, acompanhe estatísticas
+              de estudo e organize recursos com tags personalizadas.
             </p>
 
-            {/* Botões Equilibrados */}
+            {/* Botões */}
             <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
-              <Button 
-                asChild 
+              <Button
+                asChild
                 size="lg"
-                className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-md hover:shadow-lg transition-all duration-300"
+                className="bg-blue-600 hover:bg-blue-700 text-white"
               >
                 <Link to="/register">Criar Conta</Link>
               </Button>
-              <Button asChild size="lg" variant="outline">
-                <Link to="/prompts">Usar sem conta</Link>
+              <Button asChild size="lg" variant="outline" className="border-gray-300 dark:border-gray-700">
+                <Link to="/prompts">Continuar sem conta</Link>
               </Button>
             </div>
           </div>

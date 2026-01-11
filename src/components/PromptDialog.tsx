@@ -2,8 +2,9 @@ import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/u
 import { Button } from '@/components/ui/button';
 import { Badge } from '@/components/ui/badge';
 import { Prompt } from '@/types/prompt';
-import { Clock, BookOpen, Star, Copy, ExternalLink, Sparkles } from 'lucide-react';
+import { Clock, BookOpen, Star, Copy, ExternalLink, Sparkles, Wand2 } from 'lucide-react';
 import { useState } from 'react';
+import { PromptCustomizerDialog } from './PromptCustomizerDialog';
 
 interface PromptDialogProps {
   prompt: Prompt | null;
@@ -13,6 +14,7 @@ interface PromptDialogProps {
 
 export function PromptDialog({ prompt, open, onOpenChange }: PromptDialogProps) {
   const [copied, setCopied] = useState(false);
+  const [customizerOpen, setCustomizerOpen] = useState(false);
 
   if (!prompt) return null;
 
@@ -61,8 +63,12 @@ export function PromptDialog({ prompt, open, onOpenChange }: PromptDialogProps) 
   const reason = getAIReason(prompt.recommendedAI);
   const alternatives = getAIAlternatives(prompt.recommendedAI);
 
+  // Detecta se o prompt tem variáveis personalizáveis
+  const hasVariables = /\[([A-ZÀ-Ú\s]+)\]/.test(prompt.content);
+
   return (
-    <Dialog open={open} onOpenChange={onOpenChange}>
+    <>
+      <Dialog open={open} onOpenChange={onOpenChange}>
       <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
         <DialogHeader>
           <DialogTitle className="text-2xl font-bold">{prompt.title}</DialogTitle>
@@ -137,44 +143,67 @@ export function PromptDialog({ prompt, open, onOpenChange }: PromptDialogProps) 
           </div>
 
           {/* Botões de ação */}
-          <div className="flex flex-col sm:flex-row gap-3">
-            <Button onClick={handleCopy} className="flex-1" variant="default">
-              <Copy className="w-4 h-4 mr-2" />
-              {copied ? 'Copiado!' : 'Copiar Prompt'}
-            </Button>
-            
-            <Button 
-              onClick={openInChatGPT} 
-              variant={recommendedAI === 'ChatGPT' ? 'default' : 'outline'}
-              className="flex-1"
-            >
-              {recommendedAI === 'ChatGPT' && <Star className="w-4 h-4 mr-2 fill-current" />}
-              <ExternalLink className="w-4 h-4 mr-2" />
-              ChatGPT
-            </Button>
-            
-            <Button 
-              onClick={openInClaude} 
-              variant={recommendedAI === 'Claude' ? 'default' : 'outline'}
-              className="flex-1"
-            >
-              {recommendedAI === 'Claude' && <Star className="w-4 h-4 mr-2 fill-current" />}
-              <ExternalLink className="w-4 h-4 mr-2" />
-              Claude
-            </Button>
-            
-            <Button 
-              onClick={openInPerplexity} 
-              variant={recommendedAI === 'Perplexity' ? 'default' : 'outline'}
-              className="flex-1"
-            >
-              {recommendedAI === 'Perplexity' && <Star className="w-4 h-4 mr-2 fill-current" />}
-              <ExternalLink className="w-4 h-4 mr-2" />
-              Perplexity
-            </Button>
+          <div className="flex flex-col gap-3">
+            {/* Botão de personalização (se tiver variáveis) */}
+            {hasVariables && (
+              <Button
+                onClick={() => setCustomizerOpen(true)}
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
+                size="lg"
+              >
+                <Wand2 className="w-4 h-4 mr-2" />
+                Personalizar Prompt
+              </Button>
+            )}
+
+            {/* Botões padrão */}
+            <div className="flex flex-col sm:flex-row gap-3">
+              <Button onClick={handleCopy} className="flex-1" variant="default">
+                <Copy className="w-4 h-4 mr-2" />
+                {copied ? 'Copiado!' : 'Copiar Prompt'}
+              </Button>
+
+              <Button
+                onClick={openInChatGPT}
+                variant={recommendedAI === 'ChatGPT' ? 'default' : 'outline'}
+                className="flex-1"
+              >
+                {recommendedAI === 'ChatGPT' && <Star className="w-4 h-4 mr-2 fill-current" />}
+                <ExternalLink className="w-4 h-4 mr-2" />
+                ChatGPT
+              </Button>
+
+              <Button
+                onClick={openInClaude}
+                variant={recommendedAI === 'Claude' ? 'default' : 'outline'}
+                className="flex-1"
+              >
+                {recommendedAI === 'Claude' && <Star className="w-4 h-4 mr-2 fill-current" />}
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Claude
+              </Button>
+
+              <Button
+                onClick={openInPerplexity}
+                variant={recommendedAI === 'Perplexity' ? 'default' : 'outline'}
+                className="flex-1"
+              >
+                {recommendedAI === 'Perplexity' && <Star className="w-4 h-4 mr-2 fill-current" />}
+                <ExternalLink className="w-4 h-4 mr-2" />
+                Perplexity
+              </Button>
+            </div>
           </div>
         </div>
       </DialogContent>
     </Dialog>
+
+      {/* Modal de personalização */}
+      <PromptCustomizerDialog
+        prompt={prompt}
+        open={customizerOpen}
+        onOpenChange={setCustomizerOpen}
+      />
+    </>
   );
 }

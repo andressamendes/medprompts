@@ -28,24 +28,24 @@ export const PublicNavbar = () => {
   };
 
   const navLinks = [
-    { label: 'Biblioteca de Prompts', path: '/prompts' },
+    { label: 'Prompts', path: '/prompts' },
+    { label: 'Ferramentas', path: '/ferramentas' },
     { label: 'Guia de IAs', path: '/guia-ias' },
-    { label: 'Focus Zone', path: '/focus-zone' },
-    { label: 'Hub de Recursos', path: '/ferramentas' }
+    { label: 'Focus Zone', path: '/focus-zone' }
   ];
 
   return (
     <nav className="sticky top-0 z-50 border-b bg-white/95 dark:bg-gray-950/95 backdrop-blur-sm">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="flex h-16 items-center justify-between">
-          {/* Logo com Tagline Educacional */}
+          {/* Logo Acadêmico */}
           <Link to="/" className="flex items-center gap-2 group">
-            <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-md group-hover:shadow-lg group-hover:scale-105 transition-all duration-300">
+            <div className="w-10 h-10 rounded-lg bg-blue-600 dark:bg-blue-500 flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-200">
               <Brain className="w-6 h-6 text-white" />
             </div>
             <div className="flex flex-col">
               <span className="text-xl font-bold text-gray-900 dark:text-white">MedPrompts</span>
-              <span className="text-xs text-gray-500 dark:text-gray-400 hidden sm:block">Hub de IA para Medicina</span>
+              <span className="text-xs text-gray-600 dark:text-gray-400 hidden sm:block">Portal Acadêmico</span>
             </div>
           </Link>
 
@@ -78,16 +78,20 @@ export const PublicNavbar = () => {
             </Button>
 
             {/* Botão Entrar */}
-            <Button variant="ghost" onClick={() => navigate('/login')} className="text-sm">
+            <Button
+              variant="ghost"
+              onClick={() => navigate('/login')}
+              className="text-sm text-gray-700 dark:text-gray-300"
+            >
               Entrar
             </Button>
 
-            {/* Botão Começar */}
+            {/* Botão Criar Conta */}
             <Button
               onClick={() => navigate('/register')}
-              className="bg-gradient-to-r from-purple-600 to-indigo-600 hover:from-purple-700 hover:to-indigo-700 shadow-md hover:shadow-lg transition-all duration-300"
+              className="bg-blue-600 hover:bg-blue-700 text-white"
             >
-              Começar
+              Criar Conta
             </Button>
           </div>
 
@@ -135,18 +139,18 @@ export const PublicNavbar = () => {
             
             {/* Botões Mobile */}
             <div className="flex flex-col gap-2 pt-4 border-t">
-              <Button 
-                variant="outline" 
-                onClick={() => { navigate('/login'); setMobileMenuOpen(false); }} 
+              <Button
+                variant="outline"
+                onClick={() => { navigate('/login'); setMobileMenuOpen(false); }}
                 className="w-full"
               >
                 Entrar
               </Button>
               <Button
                 onClick={() => { navigate('/register'); setMobileMenuOpen(false); }}
-                className="w-full bg-gradient-to-r from-purple-600 to-indigo-600"
+                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
               >
-                Começar
+                Criar Conta
               </Button>
             </div>
           </div>
