@@ -58,6 +58,8 @@ export default function Prompts() {
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
   const [showLoginBanner, setShowLoginBanner] = useState(true);
+  const [currentPage, setCurrentPage] = useState(1);
+  const ITEMS_PER_PAGE = 12;
 
   // Carregar prompts da API com fallback para dados estáticos
   useEffect(() => {
@@ -252,6 +254,19 @@ const copyPrompt = useCallback(async (prompt: Prompt) => {
     return filtered;
   }, [prompts, selectedTab, selectedCategory, searchTerm, sortOrder, favorites]);
 
+  // Reset page when filters change
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCategory, selectedTab, sortOrder]);
+
+  // Paginated prompts
+  const paginatedPrompts = useMemo(() => {
+    const startIndex = (currentPage - 1) * ITEMS_PER_PAGE;
+    const endIndex = startIndex + ITEMS_PER_PAGE;
+    return filteredPrompts.slice(startIndex, endIndex);
+  }, [filteredPrompts, currentPage, ITEMS_PER_PAGE]);
+
+  const totalPages = Math.ceil(filteredPrompts.length / ITEMS_PER_PAGE);
 
   const clearFilters = useCallback(() => {
     setSearchTerm('');
@@ -489,7 +504,7 @@ const copyPrompt = useCallback(async (prompt: Prompt) => {
               </div>
             ) : (
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
-                {filteredPrompts.map((prompt, index) => {
+                {paginatedPrompts.map((prompt, index) => {
                   const aiName = getAIName(prompt);
                   
                   return (
@@ -623,6 +638,58 @@ const copyPrompt = useCallback(async (prompt: Prompt) => {
                     </Card>
                   );
                 })}
+              </div>
+            )}
+
+            {/* Pagination Controls */}
+            {filteredPrompts.length > ITEMS_PER_PAGE && (
+              <div className="flex items-center justify-center gap-2 mt-8">
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
+                  disabled={currentPage === 1}
+                >
+                  Anterior
+                </Button>
+
+                <div className="flex items-center gap-1">
+                  {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
+                    // Show first, last, current, and adjacent pages
+                    if (
+                      page === 1 ||
+                      page === totalPages ||
+                      Math.abs(page - currentPage) <= 1
+                    ) {
+                      return (
+                        <Button
+                          key={page}
+                          variant={page === currentPage ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => setCurrentPage(page)}
+                          className="w-10"
+                        >
+                          {page}
+                        </Button>
+                      );
+                    } else if (
+                      page === currentPage - 2 ||
+                      page === currentPage + 2
+                    ) {
+                      return <span key={page} className="px-2">...</span>;
+                    }
+                    return null;
+                  })}
+                </div>
+
+                <Button
+                  variant="outline"
+                  size="sm"
+                  onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
+                  disabled={currentPage === totalPages}
+                >
+                  Próxima
+                </Button>
               </div>
             )}
           </div>
