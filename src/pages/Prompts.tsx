@@ -61,67 +61,68 @@ export default function Prompts() {
   const [currentPage, setCurrentPage] = useState(1);
   const ITEMS_PER_PAGE = 12;
 
-  // Carregar prompts da API com fallback para dados estáticos
+  // Carregar prompts do sistema (dados locais) com suporte opcional para API
   useEffect(() => {
   const loadPrompts = async () => {
     try {
       setIsLoading(true);
-      
-      // Tenta carregar da API primeiro
+
+      // Estratégia: Usar dados do sistema primeiro (mais rápido e confiável)
+      // API é opcional e só seria usada se backend estiver configurado
+
       try {
-        const data = await PromptsService.listPrompts({ includeSystem: true });
-        
-        if (data && data.length > 0) {
-          setPrompts(data);
-          
-          // Carregar favoritos
-          if (!user) {
-            const stored = localStorage.getItem('medprompts-favorites');
-            if (stored) setFavorites(new Set(JSON.parse(stored)));
-          } else {
-            const favs = data.filter(p => p.isFavorite).map(p => p.id);
-            setFavorites(new Set(favs));
-          }
-          return; // API funcionou, não precisa do fallback
-        }
-      } catch (apiError) {
-        // API não disponível, continua para o fallback
-      }
-      
-      // Fallback: usar dados estáticos (sempre executa se API falhar ou retornar vazio)
-      try {
+        // Carregar prompts do sistema (built-in database)
         const promptsModule = await import('@/data/prompts-data');
-        const staticPrompts = promptsModule.prompts || [];
-        
-        if (staticPrompts.length > 0) {
-          setPrompts(staticPrompts);
-        }
-        
-        // Carregar favoritos locais
-        const stored = localStorage.getItem('medprompts-favorites');
-        if (stored) {
-          try {
-            setFavorites(new Set(JSON.parse(stored)));
-          } catch (e) {
-            // Ignora erro ao carregar favoritos
+        const systemPrompts = promptsModule.prompts || [];
+
+        if (systemPrompts.length > 0) {
+          setPrompts(systemPrompts);
+
+          // Carregar favoritos do localStorage
+          const stored = localStorage.getItem('medprompts-favorites');
+          if (stored) {
+            try {
+              setFavorites(new Set(JSON.parse(stored)));
+            } catch (e) {
+              console.warn('Erro ao carregar favoritos:', e);
+            }
           }
+
+          // Opcional: tentar sincronizar com API se backend estiver disponível
+          if (user && import.meta.env.VITE_API_URL) {
+            try {
+              const apiData = await PromptsService.listPrompts({ includeSystem: true });
+
+              if (apiData && apiData.length > 0) {
+                // Mesclar prompts do sistema com prompts do usuário da API
+                const userPrompts = apiData.filter(p => !p.isSystemPrompt);
+                const mergedPrompts = [...systemPrompts, ...userPrompts];
+                setPrompts(mergedPrompts);
+
+                // Atualizar favoritos da API
+                const favs = apiData.filter(p => p.isFavorite).map(p => p.id);
+                setFavorites(new Set(favs));
+              }
+            } catch (apiError) {
+              // API indisponível - ignorar silenciosamente e usar dados locais
+              console.info('Backend não disponível, usando dados do sistema');
+            }
+          }
+        } else {
+          throw new Error('Dados do sistema não encontrados');
         }
-        
-        if (staticPrompts.length > 0) {
-          toast({ 
-            title: 'ℹ️ Modo offline',
-            description: `${staticPrompts.length} prompts carregados localmente`,
-          });
-        }
+
       } catch (importError) {
-        toast({ 
+        console.error('Erro ao carregar dados do sistema:', importError);
+        toast({
           title: '❌ Erro crítico',
-          description: 'Não foi possível carregar os prompts',
+          description: 'Não foi possível carregar os prompts do sistema',
           variant: 'destructive'
         });
       }
-      
+
     } catch (error) {
+      console.error('Erro ao carregar prompts:', error);
       toast({
         title: '❌ Erro ao carregar prompts',
         description: 'Não foi possível carregar os prompts',
