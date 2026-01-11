@@ -1,6 +1,3 @@
-import { driver } from 'driver.js';
-import 'driver.js/dist/driver.css';
-
 const TUTORIAL_STORAGE_KEY = 'medprompts_tutorial_completed';
 
 export function hasTutorialCompleted(): boolean {
@@ -15,7 +12,11 @@ export function resetTutorial(): void {
   localStorage.removeItem(TUTORIAL_STORAGE_KEY);
 }
 
-export function startTutorial() {
+export async function startTutorial() {
+  // Lazy load driver.js apenas quando tutorial é iniciado
+  const { driver } = await import('driver.js');
+  await import('driver.js/dist/driver.css');
+
   const driverObj = driver({
     showProgress: true,
     showButtons: ['next', 'previous', 'close'],

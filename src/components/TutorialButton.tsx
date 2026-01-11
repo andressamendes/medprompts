@@ -20,9 +20,9 @@ export function TutorialButton() {
     }
   }, []);
 
-  const handleStartTutorial = () => {
+  const handleStartTutorial = async () => {
     setShowWelcome(false);
-    startTutorial();
+    await startTutorial();
     setTutorialCompleted(true);
   };
 
