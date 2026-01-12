@@ -100,9 +100,9 @@ export class NetworkManager {
     });
 
     // Error handling
-    this.room.onError((code: number, message: string) => {
-      console.error(`Room error (${code}):`, message);
-      this.emit('error', { code, message });
+    this.room.onError((code: number, message?: string) => {
+      console.error(`Room error (${code}):`, message || 'Unknown error');
+      this.emit('error', { code, message: message || 'Unknown error' });
     });
 
     // Leave handling

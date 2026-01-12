@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_CONFIG } from '../config';
+import { SpriteGenerator } from '../utils/SpriteGenerator';
 
 export class Player extends Phaser.Physics.Arcade.Sprite {
   public userId: string;
@@ -69,24 +70,20 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       };
     }
 
-    // Create a simple colored circle as placeholder
-    this.createPlaceholderGraphics();
+    // Create improved doctor sprite
+    this.createImprovedSprite();
   }
 
-  private createPlaceholderGraphics(): void {
-    const color = this.isLocalPlayer ? 0x00ff00 : 0x4444ff;
-    const graphics = this.scene.make.graphics({ x: 0, y: 0 });
-    graphics.fillStyle(color, 1);
-    graphics.fillCircle(16, 16, 14);
+  private createImprovedSprite(): void {
+    // Check if texture already exists
+    if (!this.scene.textures.exists('player-local') && this.isLocalPlayer) {
+      SpriteGenerator.createDoctorSprite(this.scene, true);
+    } else if (!this.scene.textures.exists('player-remote') && !this.isLocalPlayer) {
+      SpriteGenerator.createDoctorSprite(this.scene, false);
+    }
 
-    // Add a direction indicator
-    graphics.fillStyle(0xffffff, 1);
-    graphics.fillCircle(16, 10, 3);
-
-    graphics.generateTexture('player', 32, 32);
-    graphics.destroy();
-
-    this.setTexture('player');
+    const textureName = this.isLocalPlayer ? 'player-local' : 'player-remote';
+    this.setTexture(textureName);
   }
 
   update(): void {

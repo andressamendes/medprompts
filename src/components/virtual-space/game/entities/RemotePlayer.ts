@@ -1,5 +1,6 @@
 import Phaser from 'phaser';
 import { GAME_CONFIG } from '../config';
+import { SpriteGenerator } from '../utils/SpriteGenerator';
 
 export class RemotePlayer extends Phaser.Physics.Arcade.Sprite {
   public userId: string;
@@ -8,7 +9,6 @@ export class RemotePlayer extends Phaser.Physics.Arcade.Sprite {
   public nameText: Phaser.GameObjects.Text;
   public levelBadge: Phaser.GameObjects.Text;
   private statusIndicator: Phaser.GameObjects.Arc;
-  private currentStatus: string = 'active';
 
   constructor(
     scene: Phaser.Scene,
@@ -53,7 +53,12 @@ export class RemotePlayer extends Phaser.Physics.Arcade.Sprite {
     // Create status indicator (small circle)
     this.statusIndicator = scene.add.circle(x + 15, y - 15, 4, 0x00ff00);
 
-    this.setTexture('player');
+    // Create improved sprite if not exists
+    if (!scene.textures.exists('player-remote')) {
+      SpriteGenerator.createDoctorSprite(scene, false);
+    }
+
+    this.setTexture('player-remote');
   }
 
   updatePosition(x: number, y: number, direction?: string): void {
@@ -75,8 +80,6 @@ export class RemotePlayer extends Phaser.Physics.Arcade.Sprite {
   }
 
   updateStatus(status: 'active' | 'idle' | 'away'): void {
-    this.currentStatus = status;
-
     // Update status indicator color
     const color = status === 'active' ? 0x00ff00 : status === 'idle' ? 0xffff00 : 0xff0000;
     this.statusIndicator.setFillStyle(color);

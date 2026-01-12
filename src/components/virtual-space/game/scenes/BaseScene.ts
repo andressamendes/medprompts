@@ -33,6 +33,9 @@ export abstract class BaseScene extends Phaser.Scene {
     this.cameras.main.setBounds(0, 0, 1600, 1200);
     this.cameras.main.setZoom(GAME_CONFIG.camera.zoom);
 
+    // Create collision zones (walls)
+    this.createCollisionZones();
+
     // Setup network listeners
     this.setupNetworkListeners();
 
@@ -40,6 +43,27 @@ export abstract class BaseScene extends Phaser.Scene {
     this.createUI();
 
     this.initialized = true;
+  }
+
+  protected createCollisionZones(): void {
+    // Create invisible walls around the room
+    const wallThickness = 10;
+    const walls = this.physics.add.staticGroup();
+
+    // Top wall
+    walls.create(800, -wallThickness / 2, undefined).setSize(1600, wallThickness).setVisible(false);
+
+    // Bottom wall
+    walls.create(800, 1200 + wallThickness / 2, undefined).setSize(1600, wallThickness).setVisible(false);
+
+    // Left wall
+    walls.create(-wallThickness / 2, 600, undefined).setSize(wallThickness, 1200).setVisible(false);
+
+    // Right wall
+    walls.create(1600 + wallThickness / 2, 600, undefined).setSize(wallThickness, 1200).setVisible(false);
+
+    // Store walls for collision with players
+    (this as any).walls = walls;
   }
 
   protected createBackground(): void {
@@ -147,6 +171,11 @@ export abstract class BaseScene extends Phaser.Scene {
       true
     );
 
+    // Add collision with walls
+    if ((this as any).walls) {
+      this.physics.add.collider(this.localPlayer, (this as any).walls);
+    }
+
     // Camera follows local player
     this.cameras.main.startFollow(this.localPlayer, true, GAME_CONFIG.camera.smoothing, GAME_CONFIG.camera.smoothing);
   }
@@ -194,9 +223,9 @@ export abstract class BaseScene extends Phaser.Scene {
   }
 
   protected removeRemotePlayer(userId: string): void {
-    const player = this.remotePlayers.get(userId);
-    if (player) {
-      player.destroy();
+    const remotePlayer = this.remotePlayers.get(userId);
+    if (remotePlayer) {
+      remotePlayer.destroy();
       this.remotePlayers.delete(userId);
     }
   }

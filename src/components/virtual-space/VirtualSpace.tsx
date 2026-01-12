@@ -3,7 +3,9 @@ import { PhaserGame } from './game/PhaserGame';
 import { ChatOverlay } from './ui/ChatOverlay';
 import { PlayerList } from './ui/PlayerList';
 import { RoomSelector } from './ui/RoomSelector';
-import { useAuth } from '@/hooks/useAuth';
+import { XPNotification } from './ui/XPNotification';
+import { OnlineCounter } from './ui/OnlineCounter';
+import { useAuth } from '@/contexts/AuthContext';
 import { useNavigate } from 'react-router-dom';
 
 export const VirtualSpace: React.FC = () => {
@@ -151,8 +153,10 @@ export const VirtualSpace: React.FC = () => {
       {isInitialized && gameRef.current && (
         <>
           <RoomSelector currentRoom={currentRoom} onRoomChange={handleRoomChange} />
+          <OnlineCounter networkManager={gameRef.current.getNetworkManager()} />
           <PlayerList networkManager={gameRef.current.getNetworkManager()} />
           <ChatOverlay networkManager={gameRef.current.getNetworkManager()} />
+          <XPNotification networkManager={gameRef.current.getNetworkManager()} />
         </>
       )}
 
