@@ -745,7 +745,7 @@ const Ferramentas = () => {
       {/* Skip to Content Link (acessibilidade) */}
       <a
         href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-16 focus:left-4 focus:z-50 focus:bg-purple-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-md"
+        className="sr-only focus:not-sr-only focus:absolute focus:top-16 focus:left-4 focus:z-50 focus:bg-blue-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-md"
       >
         Pular para conteúdo principal
       </a>
@@ -753,11 +753,11 @@ const Ferramentas = () => {
       <main id="main-content" className="max-w-7xl mx-auto px-4 py-16">
         {/* Header */}
         <header className="text-center mb-16">
-          <div className="inline-flex items-center gap-2 px-4 py-2 bg-gradient-to-r from-indigo-600 to-purple-600 text-white rounded-full shadow-lg mb-6">
+          <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full shadow-lg mb-6">
             <span className="text-2xl">⚡</span>
             <span className="text-sm font-semibold">Atualizado Janeiro 2026</span>
           </div>
-          <h1 className="text-5xl font-bold mb-4 bg-gradient-to-r from-purple-600 via-pink-500 to-blue-600 bg-clip-text text-transparent">
+          <h1 className="text-5xl font-bold mb-4 text-blue-600 dark:text-blue-400">
             Hub de Ferramentas para Medicina
           </h1>
           <p className="text-xl text-gray-600 max-w-3xl mx-auto mb-6">
@@ -767,29 +767,29 @@ const Ferramentas = () => {
           {/* Estatísticas */}
           <div className="flex items-center justify-center gap-8 mt-8">
             <div className="text-center">
-              <div className="text-3xl font-bold text-purple-600">50+</div>
-              <div className="text-sm text-gray-600">Ferramentas</div>
+              <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">50+</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Ferramentas</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-pink-600">10+</div>
-              <div className="text-sm text-gray-600">Categorias</div>
+              <div className="text-3xl font-bold text-green-600 dark:text-green-400">10+</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Categorias</div>
             </div>
             <div className="text-center">
-              <div className="text-3xl font-bold text-blue-600">20+</div>
-              <div className="text-sm text-gray-600">Gratuitas</div>
+              <div className="text-3xl font-bold text-blue-600 dark:text-blue-400">20+</div>
+              <div className="text-sm text-gray-600 dark:text-gray-400">Gratuitas</div>
             </div>
           </div>
         </header>
 
         {/* Banner de novidades 2026 */}
-        <div className="mb-12 bg-gradient-to-r from-indigo-50 to-purple-50 border-2 border-indigo-200 rounded-2xl p-6">
-          <h2 className="text-xl font-bold text-gray-900 mb-3 flex items-center gap-2">
+        <div className="mb-12 bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-950/20 dark:to-green-950/20 border-2 border-blue-200 dark:border-blue-800 rounded-2xl p-6">
+          <h2 className="text-xl font-bold text-gray-900 dark:text-white mb-3 flex items-center gap-2">
             🆕 Novidades 2026
           </h2>
           <div className="grid md:grid-cols-3 gap-4">
-            <div className="bg-white p-4 rounded-lg">
-              <h3 className="font-bold text-sm text-indigo-700 mb-1">NotebookLM</h3>
-              <p className="text-xs text-gray-600">Podcasts interativos, slides automáticos, infográficos e mapas mentais</p>
+            <div className="bg-white dark:bg-gray-800 p-4 rounded-lg">
+              <h3 className="font-bold text-sm text-blue-700 dark:text-blue-400 mb-1">NotebookLM</h3>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Podcasts interativos, slides automáticos, infográficos e mapas mentais</p>
             </div>
             <div className="bg-white p-4 rounded-lg">
               <h3 className="font-bold text-sm text-green-700 mb-1">o3-mini e o4-mini</h3>
@@ -834,7 +834,7 @@ const Ferramentas = () => {
                 placeholder="Buscar ferramentas por nome ou descrição..."
                 value={busca}
                 onChange={(e) => setBusca(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none transition-colors"
+                className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
               />
             </div>
           </div>
@@ -849,7 +849,7 @@ const Ferramentas = () => {
                   onClick={() => setFiltroPreco("todos")}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     filtroPreco === "todos"
-                      ? "bg-purple-600 text-white shadow-md"
+                      ? "bg-blue-600 text-white shadow-md"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
@@ -894,7 +894,7 @@ const Ferramentas = () => {
               <select
                 value={filtroCategoria}
                 onChange={(e) => setFiltroCategoria(e.target.value)}
-                className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-purple-500 focus:outline-none text-sm font-medium"
+                className="w-full px-4 py-2 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none text-sm font-medium"
               >
                 <option value="todos">Todas as Categorias</option>
                 {categorias.map((cat, idx) => (
@@ -911,7 +911,7 @@ const Ferramentas = () => {
                   onClick={() => setFiltroPais("todos")}
                   className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
                     filtroPais === "todos"
-                      ? "bg-purple-600 text-white shadow-md"
+                      ? "bg-blue-600 text-white shadow-md"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
                   }`}
                 >
@@ -945,7 +945,7 @@ const Ferramentas = () => {
           {hasFiltrosAtivos && (
             <div className="mt-6 pt-6 border-t border-gray-200">
               <p className="text-center text-sm text-gray-600">
-                <strong className="text-purple-600 text-lg">{totalFerramentasFiltradas}</strong> {totalFerramentasFiltradas === 1 ? 'ferramenta encontrada' : 'ferramentas encontradas'}
+                <strong className="text-blue-600 text-lg">{totalFerramentasFiltradas}</strong> {totalFerramentasFiltradas === 1 ? 'ferramenta encontrada' : 'ferramentas encontradas'}
               </p>
             </div>
           )}
@@ -959,7 +959,7 @@ const Ferramentas = () => {
             <p className="text-gray-600 mb-6">Tente ajustar os filtros ou a busca</p>
             <button
               onClick={resetarFiltros}
-              className="px-6 py-3 bg-purple-600 text-white rounded-lg font-medium hover:bg-purple-700 transition-colors"
+              className="px-6 py-3 bg-blue-600 text-white rounded-lg font-medium hover:bg-blue-700 transition-colors"
             >
               Limpar Filtros
             </button>
@@ -1103,7 +1103,7 @@ const Ferramentas = () => {
                                 <ul className="space-y-1">
                                   {ferramenta.detalhes.alternativas.map((alt: string, i: number) => (
                                     <li key={i} className="text-xs text-gray-700 flex items-start gap-2">
-                                      <span className="text-purple-600 mt-0.5">→</span>
+                                      <span className="text-blue-600 mt-0.5">→</span>
                                       <span>{alt}</span>
                                     </li>
                                   ))}
@@ -1119,7 +1119,7 @@ const Ferramentas = () => {
                       href={ferramenta.url}
                       target="_blank"
                       rel="noopener noreferrer"
-                      className="inline-flex items-center gap-2 text-sm font-medium text-purple-600 hover:text-purple-700 transition-colors"
+                      className="inline-flex items-center gap-2 text-sm font-medium text-blue-600 hover:text-purple-700 transition-colors"
                       aria-label={`Acessar ${ferramenta.name}`}
                     >
                       Acessar <ExternalLink size={14} aria-hidden="true" />
@@ -1242,7 +1242,7 @@ const Ferramentas = () => {
           <div className="text-center">
             <a
               href="/medprompts/prompts"
-              className="inline-flex items-center gap-2 px-6 py-3 bg-white text-purple-600 rounded-lg font-medium hover:shadow-lg transition-all"
+              className="inline-flex items-center gap-2 px-6 py-3 bg-white text-blue-600 rounded-lg font-medium hover:shadow-lg transition-all"
             >
               Ver Biblioteca de Prompts →
             </a>
