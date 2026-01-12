@@ -9,6 +9,7 @@ interface AuthContextType {
   register: (name: string, email: string, password: string) => Promise<void>;
   logout: () => Promise<void>;
   refreshAuth: () => void;
+  getToken: () => string | null;
 }
 
 const AuthContext = createContext<AuthContextType | undefined>(undefined);
@@ -47,6 +48,10 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     setUser(null);
   };
 
+  const getToken = () => {
+    return localStorage.getItem('medprompts_access_token');
+  };
+
   return (
     <AuthContext.Provider
       value={{
@@ -57,6 +62,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         register,
         logout,
         refreshAuth,
+        getToken,
       }}
     >
       {children}

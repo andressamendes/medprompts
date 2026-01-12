@@ -64,6 +64,14 @@ export default defineConfig(({ command }) => {
             if (id.includes('node_modules/scheduler')) {
               return 'react-vendor';
             }
+            // Phaser 3 (game engine - ~800KB)
+            if (id.includes('node_modules/phaser')) {
+              return 'phaser-vendor';
+            }
+            // Colyseus (multiplayer client - ~50KB)
+            if (id.includes('node_modules/colyseus.js')) {
+              return 'colyseus-vendor';
+            }
             // Other large node_modules
             if (id.includes('node_modules')) {
               return 'vendor';
@@ -74,7 +82,7 @@ export default defineConfig(({ command }) => {
           assetFileNames: 'assets/[name]-[hash].[ext]'
         },
       },
-      chunkSizeWarningLimit: 1000,
+      chunkSizeWarningLimit: 1200, // Increased to accommodate Phaser (~800KB)
       sourcemap: false, // Desabilita sourcemaps em produção para menor bundle
     },
     // ✅ Garante que assets sejam servidos corretamente

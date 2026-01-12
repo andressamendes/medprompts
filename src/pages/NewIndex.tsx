@@ -14,7 +14,8 @@ import {
   Timer,
   Library,
   Stethoscope,
-  Heart
+  Heart,
+  Users
 } from 'lucide-react';
 
 /**
@@ -121,6 +122,15 @@ export default function NewIndex() {
       tags: ['Produtividade', 'XP'],
       color: 'green',
       link: '/focus-zone'
+    },
+    {
+      icon: Users,
+      title: 'Virtual Space',
+      description: 'Espaço multiplayer para estudar com colegas em salas temáticas (Lobby, Emergência, Enfermaria, UTI, Centro Cirúrgico)',
+      badge: 'Multiplayer',
+      tags: ['Colaboração', 'XP', 'Comunidade'],
+      color: 'indigo',
+      link: '/virtual-space'
     },
     {
       icon: Library,
@@ -492,11 +502,19 @@ export default function NewIndex() {
                   </button>
                 </li>
                 <li>
-                  <button 
-                    onClick={() => navigate('/focus-zone')} 
+                  <button
+                    onClick={() => navigate('/focus-zone')}
                     className="text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
                   >
                     Focus Zone
+                  </button>
+                </li>
+                <li>
+                  <button
+                    onClick={() => navigate('/virtual-space')}
+                    className="text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+                  >
+                    Virtual Space
                   </button>
                 </li>
               </ul>

@@ -22,6 +22,7 @@ import NotFound from '@/pages/NotFound';
 const Prompts = lazy(() => import('@/pages/Prompts'));
 const Profile = lazy(() => import('@/pages/Profile'));
 const StudySchedule = lazy(() => import('@/pages/StudySchedule'));
+const VirtualSpace = lazy(() => import('@/pages/VirtualSpace'));
 
 // Páginas educacionais públicas
 const GuiaIAs = lazy(() => import('@/pages/GuiaIAs'));
@@ -100,13 +101,23 @@ function App() {
 
 
                       {/* Perfil do usuário */}
-                      <Route 
-                        path="/profile" 
+                      <Route
+                        path="/profile"
                         element={
                           <ProtectedRoute>
                             <Profile />
                           </ProtectedRoute>
-                        } 
+                        }
+                      />
+
+                      {/* Virtual Space - Multiplayer */}
+                      <Route
+                        path="/virtual-space"
+                        element={
+                          <ProtectedRoute>
+                            <VirtualSpace />
+                          </ProtectedRoute>
+                        }
                       />
 
                       {/* ==================== ROTA 404 ==================== */}
