@@ -6,7 +6,6 @@ import { useToast } from '@/hooks/use-toast';
 import {
   Menu,
   X,
-  BookText,
   User,
   LogOut,
   Gamepad2
@@ -30,7 +29,6 @@ export function AuthenticatedNavbar() {
 
   const navItems = [
     { path: '/virtual-space', label: 'Virtual Space', icon: Gamepad2 },
-    { path: '/prompts', label: 'Biblioteca', icon: BookText },
     { path: '/profile', label: 'Perfil', icon: User },
   ];
 
