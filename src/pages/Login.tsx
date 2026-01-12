@@ -59,7 +59,7 @@ export default function Login() {
 
       // Pequeno delay para garantir que o estado foi atualizado
       setTimeout(() => {
-        navigate('/', { replace: true });
+        navigate('/virtual-space', { replace: true });
       }, 100);
     } catch (error: any) {
       // Registra tentativa falha
