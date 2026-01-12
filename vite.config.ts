@@ -37,42 +37,11 @@ export default defineConfig(({ command }) => {
       rollupOptions: {
         output: {
           manualChunks(id) {
-            // React core (mais específico primeiro)
-            if (id.includes('node_modules/react-dom')) {
-              return 'react-vendor';
-            }
-            if (id.includes('node_modules/react/') && !id.includes('node_modules/react-')) {
-              return 'react-vendor';
-            }
-            // React Router
-            if (id.includes('node_modules/react-router')) {
-              return 'router-vendor';
-            }
-            // UI libraries
-            if (id.includes('node_modules/lucide-react')) {
-              return 'icons-vendor';
-            }
-            // Driver.js (tutorial) - lazy loaded
-            if (id.includes('node_modules/driver.js')) {
-              return 'tutorial-vendor';
-            }
-            // Recharts (dashboard)
-            if (id.includes('node_modules/recharts')) {
-              return 'charts-vendor';
-            }
-            // Scheduler (React dependency)
-            if (id.includes('node_modules/scheduler')) {
-              return 'react-vendor';
-            }
-            // Phaser 3 (game engine - ~800KB)
+            // Phaser 3 (game engine - ~800KB) - separate because it's huge
             if (id.includes('node_modules/phaser')) {
               return 'phaser-vendor';
             }
-            // Colyseus (multiplayer client - ~50KB)
-            if (id.includes('node_modules/colyseus.js')) {
-              return 'colyseus-vendor';
-            }
-            // Other large node_modules
+            // All other node_modules together (avoids circular dependencies)
             if (id.includes('node_modules')) {
               return 'vendor';
             }
