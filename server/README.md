@@ -282,6 +282,67 @@ server/
 
 ## Production Deployment
 
+### ☁️ Deploy to Render.com (Recommended)
+
+The easiest way to deploy the Colyseus server is using [Render.com](https://render.com).
+
+**Quick Start:**
+
+1. **Push code to GitHub** (already done!)
+
+2. **Create Render account** and connect GitHub repository
+
+3. **Deploy using Blueprint**
+   - Click "New +" → "Blueprint"
+   - Select `medprompts` repository
+   - Render will detect `render.yaml` automatically
+
+4. **Add Environment Variables**
+   ```
+   FRONTEND_URL=https://andressamendes.github.io
+   ```
+   (Other vars are auto-configured by render.yaml)
+
+5. **Copy server URL**
+   - Will be: `https://medprompts-colyseus.onrender.com`
+   - Use WebSocket version: `wss://medprompts-colyseus.onrender.com`
+
+6. **Configure GitHub Actions**
+   - Go to GitHub repo → Settings → Secrets → Actions
+   - Add secret: `VITE_COLYSEUS_URL` = `wss://medprompts-colyseus.onrender.com`
+   - Update `.github/workflows/deploy.yml`:
+     ```yaml
+     - name: Build
+       env:
+         VITE_COLYSEUS_URL: ${{ secrets.VITE_COLYSEUS_URL }}
+       run: npm run build
+     ```
+
+**What Render does automatically:**
+- ✅ Installs dependencies
+- ✅ Compiles TypeScript
+- ✅ Creates PostgreSQL database
+- ✅ Generates JWT_SECRET
+- ✅ Auto-deploy on push to main
+- ✅ Health checks
+- ✅ HTTPS + WSS support
+
+**Free Tier Limitations:**
+- Server sleeps after 15min inactivity
+- First connection takes 30-60s (cold start)
+- 750 hours/month free
+- PostgreSQL: 90 days free trial
+
+**Troubleshooting:**
+- If server is "sleeping", first connection will be slow
+- Check logs in Render dashboard
+- Verify `DATABASE_URL` is set
+- Ensure `FRONTEND_URL` matches your GitHub Pages URL
+
+---
+
+### 🔧 Traditional VPS Deployment
+
 1. Set `NODE_ENV=production`
 2. Use a process manager (PM2, systemd)
 3. Configure reverse proxy (nginx) for WebSocket support
