@@ -20,7 +20,6 @@ import NotFound from '@/pages/NotFound';
 
 // Páginas com lazy loading
 const Prompts = lazy(() => import('@/pages/Prompts'));
-const UserTools = lazy(() => import('@/pages/UserTools'));
 const Profile = lazy(() => import('@/pages/Profile'));
 const StudySchedule = lazy(() => import('@/pages/StudySchedule'));
 
@@ -99,15 +98,6 @@ function App() {
                         } 
                       />
 
-                      {/* Ferramentas do usuário */}
-                      <Route 
-                        path="/minhas-ferramentas" 
-                        element={
-                          <ProtectedRoute>
-                            <UserTools />
-                          </ProtectedRoute>
-                        } 
-                      />
 
                       {/* Perfil do usuário */}
                       <Route 

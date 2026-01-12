@@ -6,7 +6,6 @@ import { useToast } from '@/hooks/use-toast';
 import {
   Menu,
   X,
-  Wrench,
   BookText,
   User,
   LogOut
@@ -29,7 +28,6 @@ export function AuthenticatedNavbar() {
   };
 
   const navItems = [
-    { path: '/minhas-ferramentas', label: 'Ferramentas', icon: Wrench },
     { path: '/prompts', label: 'Biblioteca', icon: BookText },
     { path: '/profile', label: 'Perfil', icon: User },
   ];

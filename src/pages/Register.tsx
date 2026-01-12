@@ -63,7 +63,7 @@ export default function Register() {
       
       // Pequeno delay para garantir que o estado foi atualizado
       setTimeout(() => {
-        navigate('/minhas-ferramentas', { replace: true });
+        navigate('/prompts', { replace: true });
       }, 100);
       
     } catch (error: any) {
