@@ -19,7 +19,7 @@ export interface JoinOptions {
 
 export abstract class BaseRoom extends Room<RoomState> {
   protected roomType: string;
-  protected maxClients: number;
+  public maxClients: number;
   private sessionStartTimes = new Map<string, number>(); // Track session start times
   private playerInteractions = new Map<string, number>(); // Track interactions per player
 

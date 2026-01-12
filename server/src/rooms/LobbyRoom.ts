@@ -19,10 +19,10 @@ export class LobbyRoom extends BaseRoom {
     this.onMessage('request_room_info', (client) => {
       client.send('room_info', {
         activeRooms: {
-          emergency: this.presence.channels.get('emergency') || 0,
-          ward: this.presence.channels.get('ward') || 0,
-          icu: this.presence.channels.get('icu') || 0,
-          surgical: this.presence.channels.get('surgical') || 0,
+          emergency: 0, // TODO: Implement room counting
+          ward: 0,
+          icu: 0,
+          surgical: 0,
         },
       });
     });

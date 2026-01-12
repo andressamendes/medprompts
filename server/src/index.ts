@@ -35,7 +35,6 @@ const server = http.createServer(app);
 // Create Colyseus server
 const gameServer = new Server({
   server,
-  express: app,
 });
 
 // Register room handlers
