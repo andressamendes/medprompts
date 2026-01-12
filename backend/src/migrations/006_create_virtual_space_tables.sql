@@ -49,8 +49,9 @@ CREATE TABLE IF NOT EXISTS user_presence (
 CREATE INDEX idx_user_presence_user_id ON user_presence(user_id);
 CREATE INDEX idx_user_presence_room_type ON user_presence(room_type);
 CREATE INDEX idx_user_presence_last_heartbeat ON user_presence(last_heartbeat DESC);
-CREATE INDEX idx_user_presence_active ON user_presence(last_heartbeat)
-  WHERE last_heartbeat > NOW() - INTERVAL '5 minutes';
+-- Index for active users (without NOW() function for PostgreSQL 18 compatibility)
+-- Removed: CREATE INDEX idx_user_presence_active ON user_presence(last_heartbeat)
+--   WHERE last_heartbeat > NOW() - INTERVAL '5 minutes';
 
 -- ===================
 -- collaboration_events: Track interactions between players

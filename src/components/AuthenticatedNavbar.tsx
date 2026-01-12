@@ -8,7 +8,8 @@ import {
   X,
   BookText,
   User,
-  LogOut
+  LogOut,
+  Gamepad2
 } from 'lucide-react';
 
 export function AuthenticatedNavbar() {
@@ -28,6 +29,7 @@ export function AuthenticatedNavbar() {
   };
 
   const navItems = [
+    { path: '/virtual-space', label: 'Virtual Space', icon: Gamepad2 },
     { path: '/prompts', label: 'Biblioteca', icon: BookText },
     { path: '/profile', label: 'Perfil', icon: User },
   ];

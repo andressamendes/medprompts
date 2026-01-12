@@ -116,6 +116,11 @@ export abstract class BaseScene extends Phaser.Scene {
   }
 
   protected setupNetworkListeners(): void {
+    if (!this.networkManager) {
+      console.error('NetworkManager not initialized in scene');
+      return;
+    }
+
     // State change - update all players
     this.networkManager.on('stateChange', (state: any) => {
       if (!this.initialized) {

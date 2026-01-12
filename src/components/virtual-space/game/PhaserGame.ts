@@ -17,11 +17,11 @@ export class PhaserGame {
   }
 
   async initialize(containerId: string, token: string, userData: any): Promise<void> {
-    // Configure Phaser with scenes
+    // Configure Phaser without auto-starting scenes
     const config: Phaser.Types.Core.GameConfig = {
       ...PHASER_CONFIG,
       parent: containerId,
-      scene: [LobbyScene, EmergencyScene, WardScene, ICUScene, SurgicalScene],
+      scene: [], // Empty scene array - we'll add them manually
     };
 
     // Create game instance
@@ -31,6 +31,13 @@ export class PhaserGame {
     await new Promise((resolve) => {
       this.game!.events.once('ready', resolve);
     });
+
+    // Add scenes manually
+    this.game.scene.add('LobbyScene', LobbyScene, false);
+    this.game.scene.add('EmergencyScene', EmergencyScene, false);
+    this.game.scene.add('WardScene', WardScene, false);
+    this.game.scene.add('ICUScene', ICUScene, false);
+    this.game.scene.add('SurgicalScene', SurgicalScene, false);
 
     // Connect to lobby by default
     await this.joinRoom('lobby', token, userData);

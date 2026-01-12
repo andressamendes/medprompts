@@ -34,22 +34,32 @@ export class NetworkManager {
 
   async joinRoom(roomType: string, token: string, x: number = 400, y: number = 300): Promise<Room> {
     try {
-      console.log(`Joining room: ${roomType}`);
+      console.log(`[NetworkManager] Connecting to server: ${GAME_CONFIG.network.serverUrl}`);
+      console.log(`[NetworkManager] Joining room: ${roomType}`);
 
-      this.room = await this.client.joinOrCreate(roomType, {
+      // Add timeout to prevent infinite waiting
+      const joinPromise = this.client.joinOrCreate(roomType, {
         token,
         x,
         y,
         avatar: 'default',
       });
 
+      const timeoutPromise = new Promise<never>((_, reject) => {
+        setTimeout(() => {
+          reject(new Error('Connection timeout - Server is not responding. Make sure the Colyseus server is running.'));
+        }, 10000); // 10 second timeout
+      });
+
+      this.room = await Promise.race([joinPromise, timeoutPromise]);
+
       this.setupRoomListeners();
       this.startHeartbeat();
 
-      console.log(`Successfully joined room: ${roomType} (${this.room.sessionId})`);
+      console.log(`[NetworkManager] Successfully joined room: ${roomType} (${this.room.sessionId})`);
       return this.room;
     } catch (error) {
-      console.error('Failed to join room:', error);
+      console.error('[NetworkManager] Failed to join room:', error);
       throw error;
     }
   }
