@@ -2,10 +2,9 @@ services:
   # Colyseus Multiplayer Server
   - type: web
     name: medprompts-colyseus
-    runtime: node
     env: node
-    region: oregon # ou escolha a região mais próxima
-    plan: free # plano gratuito
+    region: oregon
+    plan: free
     buildCommand: cd server && npm install && npm run build
     startCommand: cd server && npm start
     envVars:
@@ -14,18 +13,18 @@ services:
       - key: PORT
         value: 2567
       - key: FRONTEND_URL
-        sync: false # você vai configurar manualmente no Render dashboard
+        value: https://andressamendes.github.io
+      - key: JWT_SECRET
+        generateValue: true
+      - key: LOG_LEVEL
+        value: info
       - key: DATABASE_URL
         fromDatabase:
           name: medprompts-db
           property: connectionString
-      - key: JWT_SECRET
-        generateValue: true
 
-  # PostgreSQL Database
-  - type: pserv
-    name: medprompts-db
-    region: oregon
-    plan: free # 90 dias grátis, depois $7/mês ou use outro serviço
+databases:
+  - name: medprompts-db
     databaseName: medprompts
-    databaseUser: medprompts
+    user: medprompts
+    plan: free
