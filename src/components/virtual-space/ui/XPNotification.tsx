@@ -64,7 +64,7 @@ export const XPNotification: React.FC<XPNotificationProps> = ({ networkManager }
 
   return (
     <div className="fixed top-20 right-4 z-50 space-y-2 pointer-events-none">
-      {notifications.map((notification, index) => (
+      {notifications.map((notification) => (
         <div
           key={notification.id}
           className="animate-slide-in-right pointer-events-auto"

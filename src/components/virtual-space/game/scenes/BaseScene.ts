@@ -220,7 +220,7 @@ export abstract class BaseScene extends Phaser.Scene {
     });
 
     // Remove players no longer in state
-    this.remotePlayers.forEach((player, userId) => {
+    this.remotePlayers.forEach((_player, userId) => {
       if (!currentPlayerIds.has(userId)) {
         this.removeRemotePlayer(userId);
       }

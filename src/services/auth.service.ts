@@ -30,6 +30,7 @@ export interface User {
   university?: string;
   graduationYear?: number;
   avatar?: string;
+  level?: number; // Virtual Space level
   createdAt: string;
   isEmailVerified: boolean; // NOVO: Verificação de email
 }
