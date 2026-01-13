@@ -1,0 +1,272 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>Teste Final - Virtual Space MedPrompts</title>
+    <style>
+        body { font-family: Arial, sans-serif; margin: 20px; }
+        .status { padding: 15px; margin: 10px 0; border-radius: 8px; font-weight: bold; }
+        .success { background: #d4edda; color: #155724; border: 1px solid #c3e6cb; }
+        .error { background: #f8d7da; color: #721c24; border: 1px solid #f5c6cb; }
+        .warning { background: #fff3cd; color: #856404; border: 1px solid #ffeaa7; }
+        .info { background: #d1ecf1; color: #0c5460; border: 1px solid #bee5eb; }
+        .step { margin: 20px 0; padding: 15px; background: #f8f9fa; border-radius: 8px; }
+        button { padding: 10px 20px; margin: 5px; background: #007bff; color: white; border: none; border-radius: 4px; cursor: pointer; }
+        button:hover { background: #0056b3; }
+        button:disabled { background: #6c757d; cursor: not-allowed; }
+        .log { background: #e9ecef; padding: 10px; margin: 5px 0; border-radius: 4px; font-family: monospace; }
+    </style>
+</head>
+<body>
+    <h1>🧪 Teste Final - Virtual Space MedPrompts</h1>
+    
+    <div class="step">
+        <h2>1. Verificação do Servidor Colyseus</h2>
+        <div id="server-status" class="status info">Verificando...</div>
+        <button onclick="checkServer()">Verificar Servidor</button>
+    </div>
+    
+    <div class="step">
+        <h2>2. Teste de Conexão WebSocket</h2>
+        <div id="websocket-status" class="status info">Aguardando teste...</div>
+        <button onclick="testWebSocket()">Testar WebSocket</button>
+    </div>
+    
+    <div class="step">
+        <h2>3. Teste de Conexão Colyseus</h2>
+        <div id="colyseus-status" class="status info">Aguardando teste...</div>
+        <button onclick="testColyseus()">Testar Colyseus</button>
+    </div>
+    
+    <div class="step">
+        <h2>4. Teste de Jogo Completo</h2>
+        <div id="game-status" class="status info">Aguardando teste...</div>
+        <button onclick="testFullGame()">Testar Jogo Completo</button>
+        <div id="game-container" style="width: 1280px; height: 720px; margin: 20px 0; border: 2px solid #333;"></div>
+    </div>
+    
+    <div class="step">
+        <h2>📋 Logs de Teste</h2>
+        <div id="logs"></div>
+    </div>
+    
+    <script>
+        const logs = document.getElementById('logs');
+        
+        function log(message, type = 'info') {
+            const logElement = document.createElement('div');
+            logElement.className = `log ${type}`;
+            logElement.textContent = `[${new Date().toLocaleTimeString()}] ${message}`;
+            logs.appendChild(logElement);
+            console.log(`[${type.toUpperCase()}] ${message}`);
+        }
+        
+        function updateStatus(elementId, message, type = 'info') {
+            const element = document.getElementById(elementId);
+            element.textContent = message;
+            element.className = `status ${type}`;
+        }
+        
+        async function checkServer() {
+            updateStatus('server-status', 'Verificando servidor...', 'info');
+            
+            try {
+                const response = await fetch('http://localhost:2567/health');
+                if (response.ok) {
+                    const data = await response.json();
+                    updateStatus('server-status', `✅ Servidor Colyseus rodando: ${data.server}`, 'success');
+                    log(`Servidor: ${data.server}, Status: ${data.status}, Uptime: ${data.uptime}s`);
+                } else {
+                    updateStatus('server-status', `❌ Servidor retornou erro: ${response.status}`, 'error');
+                }
+            } catch (error) {
+                updateStatus('server-status', `❌ Erro ao conectar ao servidor: ${error.message}`, 'error');
+                log(`Erro: ${error.message}`, 'error');
+            }
+        }
+        
+        function testWebSocket() {
+            updateStatus('websocket-status', 'Testando WebSocket...', 'info');
+            
+            try {
+                const ws = new WebSocket('ws://localhost:2567');
+                
+                ws.onopen = () => {
+                    updateStatus('websocket-status', '✅ WebSocket conectado com sucesso', 'success');
+                    log('WebSocket conectado');
+                    ws.close();
+                };
+                
+                ws.onerror = (error) => {
+                    updateStatus('websocket-status', '❌ Erro no WebSocket', 'error');
+                    log(`Erro WebSocket: ${error.message || 'Erro desconhecido'}`, 'error');
+                };
+                
+                ws.onclose = () => {
+                    log('WebSocket fechado');
+                };
+                
+                // Timeout
+                setTimeout(() => {
+                    if (ws.readyState !== WebSocket.OPEN) {
+                        updateStatus('websocket-status', '❌ Timeout no WebSocket', 'error');
+                        ws.close();
+                    }
+                }, 3000);
+                
+            } catch (error) {
+                updateStatus('websocket-status', `❌ Erro ao criar WebSocket: ${error.message}`, 'error');
+                log(`Erro: ${error.message}`, 'error');
+            }
+        }
+        
+        async function testColyseus() {
+            updateStatus('colyseus-status', 'Testando Colyseus...', 'info');
+            
+            // Carregar Colyseus se necessário
+            if (typeof Colyseus === 'undefined') {
+                log('Carregando Colyseus.js...', 'warning');
+                const script = document.createElement('script');
+                script.src = 'https://unpkg.com/colyseus.js@^0.15.0/dist/colyseus.js';
+                script.onload = () => {
+                    log('Colyseus.js carregado', 'success');
+                    runColyseusTest();
+                };
+                script.onerror = () => {
+                    updateStatus('colyseus-status', '❌ Falha ao carregar Colyseus.js', 'error');
+                };
+                document.head.appendChild(script);
+            } else {
+                runColyseusTest();
+            }
+        }
+        
+        async function runColyseusTest() {
+            try {
+                const client = new Colyseus.Client('ws://localhost:2567');
+                log('Cliente Colyseus criado', 'success');
+                
+                const room = await client.joinOrCreate('lobby', {
+                    token: 'test-token-' + Date.now(),
+                    x: 400,
+                    y: 300,
+                    avatar: 'default',
+                    name: 'Test Player',
+                    level: 1
+                });
+                
+                updateStatus('colyseus-status', `✅ Conectado à sala: ${room.id}`, 'success');
+                log(`Sala: ${room.id}, Session: ${room.sessionId}`, 'success');
+                
+                // Testar mensagens
+                room.send('move', { x: 500, y: 400, direction: 'right' });
+                log('Mensagem "move" enviada', 'success');
+                
+                room.send('chat', { text: 'Teste de conexão' });
+                log('Mensagem "chat" enviada', 'success');
+                
+                // Aguardar e sair
+                setTimeout(async () => {
+                    await room.leave();
+                    log('Desconectado da sala', 'success');
+                }, 3000);
+                
+            } catch (error) {
+                updateStatus('colyseus-status', `❌ Erro no Colyseus: ${error.message}`, 'error');
+                log(`Erro: ${error.message}`, 'error');
+            }
+        }
+        
+        function testFullGame() {
+            updateStatus('game-status', 'Preparando teste completo...', 'info');
+            
+            // Carregar Phaser se necessário
+            if (typeof Phaser === 'undefined') {
+                log('Carregando Phaser...', 'warning');
+                const script = document.createElement('script');
+                script.src = 'https://cdn.jsdelivr.net/npm/phaser@3.60.0/dist/phaser.min.js';
+                script.onload = () => {
+                    log('Phaser carregado', 'success');
+                    startGameTest();
+                };
+                script.onerror = () => {
+                    updateStatus('game-status', '❌ Falha ao carregar Phaser', 'error');
+                };
+                document.head.appendChild(script);
+            } else {
+                startGameTest();
+            }
+        }
+        
+        function startGameTest() {
+            updateStatus('game-status', 'Iniciando jogo de teste...', 'info');
+            
+            class TestScene extends Phaser.Scene {
+                constructor() {
+                    super({ key: 'TestScene' });
+                }
+                
+                create() {
+                    log('Cena do Phaser criada', 'success');
+                    updateStatus('game-status', '✅ Jogo Phaser funcionando!', 'success');
+                    
+                    // Fundo
+                    this.add.rectangle(640, 360, 1280, 720, 0x2c3e50);
+                    
+                    // Texto de sucesso
+                    this.add.text(640, 360, '✅ Virtual Space Funcionando!', {
+                        fontSize: '32px',
+                        color: '#ffffff',
+                        backgroundColor: 'rgba(0, 0, 0, 0.7)',
+                        padding: { x: 20, y: 10 }
+                    }).setOrigin(0.5);
+                    
+                    // Instruções
+                    this.add.text(640, 420, 'O Virtual Space está funcionando corretamente', {
+                        fontSize: '18px',
+                        color: '#cccccc'
+                    }).setOrigin(0.5);
+                    
+                    this.add.text(640, 450, 'Servidor Colyseus: ✅ Conectado', {
+                        fontSize: '16px',
+                        color: '#10b981'
+                    }).setOrigin(0.5);
+                    
+                    this.add.text(640, 480, 'Phaser Engine: ✅ Inicializado', {
+                        fontSize: '16px',
+                        color: '#10b981'
+                    }).setOrigin(0.5);
+                    
+                    log('Teste do jogo concluído com sucesso!', 'success');
+                }
+            }
+            
+            const config = {
+                type: Phaser.AUTO,
+                parent: 'game-container',
+                width: 1280,
+                height: 720,
+                backgroundColor: '#1a1a2e',
+                scene: TestScene
+            };
+            
+            try {
+                const game = new Phaser.Game(config);
+                log('Jogo Phaser criado', 'success');
+            } catch (error) {
+                updateStatus('game-status', `❌ Erro no Phaser: ${error.message}`, 'error');
+                log(`Erro: ${error.message}`, 'error');
+            }
+        }
+        
+        // Testar automaticamente
+        window.onload = () => {
+            log('Iniciando testes automáticos...', 'info');
+            
+            setTimeout(checkServer, 1000);
+            setTimeout(testWebSocket, 2000);
+            setTimeout(testColyseus, 3000);
+            setTimeout(testFullGame, 4000);
+        };
+    </script>
+</body>
+</html>

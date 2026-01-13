@@ -12,6 +12,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private wasd: any = null;
   private lastDirection: string = 'down';
   private isLocalPlayer: boolean;
+  private fallbackGraphics: Phaser.GameObjects.Graphics | null = null;
 
   constructor(
     scene: Phaser.Scene,
@@ -75,14 +76,35 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   private createImprovedSprite(): void {
-    // Check if texture already exists
-    if (!this.scene.textures.exists('player-local') && this.isLocalPlayer) {
-      SpriteGenerator.createDoctorSprite(this.scene, true);
-    } else if (!this.scene.textures.exists('player-remote') && !this.isLocalPlayer) {
-      SpriteGenerator.createDoctorSprite(this.scene, false);
-    }
-
     const textureName = this.isLocalPlayer ? 'player-local' : 'player-remote';
+    
+    // Verificar se textura existe
+    if (!this.scene.textures.exists(textureName)) {
+      try {
+        SpriteGenerator.createDoctorSprite(this.scene, this.isLocalPlayer);
+      } catch (error) {
+        console.error('Failed to create sprite, using fallback:', error);
+        // Usar círculo como fallback
+        this.createFallbackSprite();
+        return;
+      }
+    }
+    
+    this.setTexture(textureName);
+  }
+
+  private createFallbackSprite(): void {
+    // Criar um círculo simples como fallback
+    const color = this.isLocalPlayer ? 0x10b981 : 0x3b82f6;
+    const graphics = this.scene.add.graphics();
+    graphics.fillStyle(color, 1);
+    graphics.fillCircle(0, 0, 16);
+    
+    // Gerar textura temporária
+    const textureName = `player-fallback-${this.isLocalPlayer ? 'local' : 'remote'}`;
+    graphics.generateTexture(textureName, 32, 32);
+    graphics.destroy();
+    
     this.setTexture(textureName);
   }
 
@@ -180,6 +202,7 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   destroy(fromScene?: boolean): void {
     this.nameText?.destroy();
     this.levelBadge?.destroy();
+    this.fallbackGraphics?.destroy();
     super.destroy(fromScene);
   }
 }

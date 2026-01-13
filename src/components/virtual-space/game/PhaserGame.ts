@@ -17,30 +17,46 @@ export class PhaserGame {
   }
 
   async initialize(containerId: string, token: string, userData: any): Promise<void> {
-    // Configure Phaser without auto-starting scenes
-    const config: Phaser.Types.Core.GameConfig = {
-      ...PHASER_CONFIG,
-      parent: containerId,
-      scene: [], // Empty scene array - we'll add them manually
-    };
+    try {
+      // Configure Phaser without auto-starting scenes
+      const config: Phaser.Types.Core.GameConfig = {
+        ...PHASER_CONFIG,
+        parent: containerId,
+        scene: [], // Empty scene array - we'll add them manually
+      };
 
-    // Create game instance
-    this.game = new Phaser.Game(config);
+      // Create game instance
+      this.game = new Phaser.Game(config);
 
-    // Wait for game to be ready
-    await new Promise((resolve) => {
-      this.game!.events.once('ready', resolve);
-    });
+      // Wait for game to be ready
+      await new Promise<void>((resolve, reject) => {
+        this.game!.events.once('ready', () => {
+          console.log('✅ Phaser game ready');
+          resolve();
+        });
+        
+        // Timeout para evitar espera infinita
+        setTimeout(() => {
+          reject(new Error('Phaser initialization timeout (10 seconds)'));
+        }, 10000);
+      });
 
-    // Add scenes manually
-    this.game.scene.add('LobbyScene', LobbyScene, false);
-    this.game.scene.add('EmergencyScene', EmergencyScene, false);
-    this.game.scene.add('WardScene', WardScene, false);
-    this.game.scene.add('ICUScene', ICUScene, false);
-    this.game.scene.add('SurgicalScene', SurgicalScene, false);
+      // Add scenes manually
+      this.game.scene.add('LobbyScene', LobbyScene, false);
+      this.game.scene.add('EmergencyScene', EmergencyScene, false);
+      this.game.scene.add('WardScene', WardScene, false);
+      this.game.scene.add('ICUScene', ICUScene, false);
+      this.game.scene.add('SurgicalScene', SurgicalScene, false);
 
-    // Connect to lobby by default
-    await this.joinRoom('lobby', token, userData);
+      console.log('✅ Scenes added to Phaser');
+
+      // Connect to lobby by default
+      await this.joinRoom('lobby', token, userData);
+      
+    } catch (error) {
+      console.error('Failed to initialize Phaser game:', error);
+      throw error;
+    }
   }
 
   async joinRoom(roomType: string, token: string, userData: any): Promise<void> {

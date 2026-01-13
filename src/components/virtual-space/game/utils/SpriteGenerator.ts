@@ -9,6 +9,12 @@ export class SpriteGenerator {
    * Cria sprite de médico/estudante com jaleco
    */
   static createDoctorSprite(scene: Phaser.Scene, isLocal: boolean = false): void {
+    // Verificar se a cena está pronta
+    if (!scene || !scene.make || !scene.make.graphics) {
+      console.error('Scene not ready for sprite generation');
+      return;
+    }
+    
     const size = 32;
     const graphics = scene.make.graphics({ x: 0, y: 0 });
 
@@ -55,14 +61,24 @@ export class SpriteGenerator {
 
     // Gera textura
     const textureName = isLocal ? 'player-local' : 'player-remote';
-    graphics.generateTexture(textureName, size, size);
-    graphics.destroy();
+    try {
+      graphics.generateTexture(textureName, size, size);
+    } catch (error) {
+      console.error('Failed to generate texture:', error);
+    } finally {
+      graphics.destroy();
+    }
   }
 
   /**
    * Cria sprite de enfermeiro com cores diferentes
    */
   static createNurseSprite(scene: Phaser.Scene): void {
+    if (!scene || !scene.make || !scene.make.graphics) {
+      console.error('Scene not ready for sprite generation');
+      return;
+    }
+    
     const size = 32;
     const graphics = scene.make.graphics({ x: 0, y: 0 });
 
@@ -88,8 +104,13 @@ export class SpriteGenerator {
     graphics.fillRect(size / 2 - 1, size / 2, 2, 6);
     graphics.fillRect(size / 2 - 3, size / 2 + 2, 6, 2);
 
-    graphics.generateTexture('player-nurse', size, size);
-    graphics.destroy();
+    try {
+      graphics.generateTexture('player-nurse', size, size);
+    } catch (error) {
+      console.error('Failed to generate texture:', error);
+    } finally {
+      graphics.destroy();
+    }
   }
 
   /**
@@ -99,6 +120,11 @@ export class SpriteGenerator {
     scene: Phaser.Scene,
     specialty: 'surgeon' | 'emergency' | 'icu'
   ): void {
+    if (!scene || !scene.make || !scene.make.graphics) {
+      console.error('Scene not ready for sprite generation');
+      return;
+    }
+    
     const size = 32;
     const graphics = scene.make.graphics({ x: 0, y: 0 });
 
@@ -142,8 +168,13 @@ export class SpriteGenerator {
     graphics.fillStyle(0xffffff, 1);
     graphics.fillCircle(size / 2, size / 2 + 3, 1.5);
 
-    graphics.generateTexture(`player-${specialty}`, size, size);
-    graphics.destroy();
+    try {
+      graphics.generateTexture(`player-${specialty}`, size, size);
+    } catch (error) {
+      console.error('Failed to generate texture:', error);
+    } finally {
+      graphics.destroy();
+    }
   }
 
   /**
@@ -191,6 +222,11 @@ export class SpriteGenerator {
    * Cria textura de partícula de XP
    */
   static createXPParticleTexture(scene: Phaser.Scene): void {
+    if (!scene || !scene.make || !scene.make.graphics) {
+      console.error('Scene not ready for sprite generation');
+      return;
+    }
+    
     const graphics = scene.make.graphics({ x: 0, y: 0 });
 
     // Partícula dourada
@@ -201,8 +237,13 @@ export class SpriteGenerator {
     graphics.fillStyle(0xfde047, 1);
     graphics.fillCircle(4, 4, 2);
 
-    graphics.generateTexture('particle-xp', 8, 8);
-    graphics.destroy();
+    try {
+      graphics.generateTexture('particle-xp', 8, 8);
+    } catch (error) {
+      console.error('Failed to generate texture:', error);
+    } finally {
+      graphics.destroy();
+    }
   }
 
   /**
@@ -239,6 +280,11 @@ export class SpriteGenerator {
     scene: Phaser.Scene,
     type: 'computer' | 'bed' | 'equipment' | 'desk'
   ): void {
+    if (!scene || !scene.make || !scene.make.graphics) {
+      console.error('Scene not ready for sprite generation');
+      return;
+    }
+    
     const size = 48;
     const graphics = scene.make.graphics({ x: 0, y: 0 });
 
@@ -287,7 +333,12 @@ export class SpriteGenerator {
         break;
     }
 
-    graphics.generateTexture(`object-${type}`, size, size);
-    graphics.destroy();
+    try {
+      graphics.generateTexture(`object-${type}`, size, size);
+    } catch (error) {
+      console.error('Failed to generate texture:', error);
+    } finally {
+      graphics.destroy();
+    }
   }
 }
