@@ -8,6 +8,8 @@ export const VirtualSpaceSinglePlayer: React.FC = () => {
   const containerRef = useRef<HTMLDivElement>(null);
   const [currentRoom, setCurrentRoom] = useState('lobby');
   const [isLoading, setIsLoading] = useState(true);
+  const [error, setError] = useState<string | null>(null);
+  const [initializationStep, setInitializationStep] = useState('Starting game engine...');
 
   const { user } = useAuth();
   const navigate = useNavigate();
@@ -22,9 +24,20 @@ export const VirtualSpaceSinglePlayer: React.FC = () => {
     const initializeGame = () => {
       try {
         setIsLoading(true);
+        setError(null);
+        setInitializationStep('Checking container...');
 
+        // Check if container exists
+        if (!containerRef.current) {
+          throw new Error('Game container not found');
+        }
+
+        setInitializationStep('Creating game instance...');
+        
         // Create and initialize game
         const game = new PhaserGameSinglePlayer();
+        
+        setInitializationStep('Initializing Phaser engine...');
         game.initialize('phaser-game', {
           userId: user.id,
           name: user.name,
@@ -32,7 +45,18 @@ export const VirtualSpaceSinglePlayer: React.FC = () => {
         });
 
         gameRef.current = game;
+        
+        // Check if game initialized successfully after a delay
+        setTimeout(() => {
+          if (game.isGameInitialized && !game.isGameInitialized()) {
+            console.warn('Game initialization may have failed');
+            setInitializationStep('Game initialization may be stuck...');
+          }
+        }, 3000);
+        
         setIsLoading(false);
+        setInitializationStep('Game ready!');
+        
       } catch (err) {
         console.error('Failed to initialize game:', err);
         
@@ -41,13 +65,15 @@ export const VirtualSpaceSinglePlayer: React.FC = () => {
         if (err instanceof Error) {
           if (err.message.includes('Phaser')) {
             errorMessage = 'Game engine failed to initialize. Please try refreshing the page.';
+          } else if (err.message.includes('container')) {
+            errorMessage = 'Game container not found. Please refresh the page.';
           } else {
             errorMessage = err.message;
           }
         }
         
+        setError(errorMessage);
         setIsLoading(false);
-        alert(`Error: ${errorMessage}`);
       }
     };
 
@@ -75,7 +101,7 @@ export const VirtualSpaceSinglePlayer: React.FC = () => {
       setCurrentRoom(roomKey);
     } catch (err) {
       console.error('Failed to change room:', err);
-      alert('Failed to change room');
+      setError('Failed to change room');
     }
   };
 
@@ -83,13 +109,84 @@ export const VirtualSpaceSinglePlayer: React.FC = () => {
     navigate('/');
   };
 
+  const handleRetry = () => {
+    setError(null);
+    setIsLoading(true);
+    setInitializationStep('Retrying initialization...');
+    
+    // Force re-initialization
+    if (gameRef.current) {
+      gameRef.current.destroy();
+      gameRef.current = null;
+    }
+    
+    // Small delay before retry
+    setTimeout(() => {
+      if (user) {
+        try {
+          const game = new PhaserGameSinglePlayer();
+          game.initialize('phaser-game', {
+            userId: user.id,
+            name: user.name,
+            level: user.level || 1,
+          });
+          gameRef.current = game;
+          setIsLoading(false);
+        } catch (err) {
+          console.error('Retry failed:', err);
+          setError('Retry failed. Please refresh the page.');
+          setIsLoading(false);
+        }
+      }
+    }, 500);
+  };
+
   if (isLoading) {
     return (
       <div className="fixed inset-0 bg-slate-950 flex items-center justify-center">
-        <div className="text-center">
+        <div className="text-center max-w-md">
           <div className="w-16 h-16 border-4 border-blue-600 border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-white text-lg">Loading Virtual Space...</p>
-          <p className="text-slate-400 text-sm mt-2">Loading game assets</p>
+          <p className="text-white text-lg mb-2">Loading Virtual Space...</p>
+          <p className="text-slate-400 text-sm mb-4">{initializationStep}</p>
+          <div className="text-slate-500 text-xs space-y-1">
+            <p>• Make sure JavaScript is enabled</p>
+            <p>• Check your browser console for errors</p>
+            <p>• Try refreshing if this takes too long</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="fixed inset-0 bg-slate-950 flex items-center justify-center">
+        <div className="max-w-md w-full bg-slate-900 rounded-lg p-8 border border-red-600">
+          <h2 className="text-2xl font-bold text-red-500 mb-4">Game Error</h2>
+          <p className="text-white mb-6">{error}</p>
+          <div className="space-y-3">
+            <button
+              onClick={handleRetry}
+              className="w-full px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 transition-colors"
+            >
+              Retry Connection
+            </button>
+            <button
+              onClick={handleBack}
+              className="w-full px-4 py-2 bg-slate-700 text-white rounded hover:bg-slate-600 transition-colors"
+            >
+              Go Back to Hub
+            </button>
+          </div>
+          <div className="mt-6 text-sm text-slate-400">
+            <p className="font-semibold mb-1">Troubleshooting:</p>
+            <ul className="list-disc list-inside space-y-1">
+              <li>Refresh the page (F5 or Ctrl+R)</li>
+              <li>Check browser console for errors</li>
+              <li>Try a different browser</li>
+              <li>Disable browser extensions</li>
+            </ul>
+          </div>
         </div>
       </div>
     );
@@ -129,6 +226,14 @@ export const VirtualSpaceSinglePlayer: React.FC = () => {
         ref={containerRef}
         className="w-full h-full flex items-center justify-center"
       />
+
+      {/* Debug info */}
+      <div className="fixed top-16 left-4 bg-slate-900/80 rounded-lg p-3 text-sm text-slate-300">
+        <p className="font-semibold mb-1">Debug Info:</p>
+        <p>Status: <span className="text-green-400">Running</span></p>
+        <p>Room: <span className="text-blue-400">{currentRoom}</span></p>
+        <p>Engine: <span className="text-yellow-400">Phaser 3</span></p>
+      </div>
 
       {/* Controls hint */}
       <div className="fixed bottom-4 right-4 bg-slate-900/80 rounded-lg p-3 text-sm text-slate-300">

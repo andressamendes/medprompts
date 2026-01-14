@@ -11,6 +11,7 @@ export class PlayerSinglePlayer extends Phaser.Physics.Arcade.Sprite {
   private wasd: any = null;
   private lastDirection: string = 'down';
   private isLocalPlayer: boolean;
+  private fallbackGraphics: Phaser.GameObjects.Graphics | null = null;
 
   constructor(
     scene: Phaser.Scene,
@@ -69,27 +70,43 @@ export class PlayerSinglePlayer extends Phaser.Physics.Arcade.Sprite {
       };
     }
 
-    // Create simple player sprite
+    // Create simple player sprite with better error handling
     this.createSimpleSprite();
   }
 
   private createSimpleSprite(): void {
-    // Create a simple colored circle for the player
-    const color = this.isLocalPlayer ? 0x10b981 : 0x3b82f6; // Green for local, blue for others
-    const graphics = this.scene.add.graphics();
-    graphics.fillStyle(color, 1);
-    graphics.fillCircle(0, 0, GAME_CONFIG.player.size / 2);
-    
-    // Add a white border
-    graphics.lineStyle(2, 0xffffff, 1);
-    graphics.strokeCircle(0, 0, GAME_CONFIG.player.size / 2);
-    
-    // Generate texture
-    const textureName = `player-simple-${this.isLocalPlayer ? 'local' : 'remote'}`;
-    graphics.generateTexture(textureName, GAME_CONFIG.player.size, GAME_CONFIG.player.size);
-    graphics.destroy();
-    
-    this.setTexture(textureName);
+    try {
+      // Create a simple colored circle for the player
+      const color = this.isLocalPlayer ? 0x10b981 : 0x3b82f6; // Green for local, blue for others
+      const graphics = this.scene.add.graphics();
+      graphics.fillStyle(color, 1);
+      graphics.fillCircle(0, 0, GAME_CONFIG.player.size / 2);
+      
+      // Add a white border
+      graphics.lineStyle(2, 0xffffff, 1);
+      graphics.strokeCircle(0, 0, GAME_CONFIG.player.size / 2);
+      
+      // Generate texture
+      const textureName = `player-simple-${this.isLocalPlayer ? 'local' : 'remote'}-${Date.now()}`;
+      graphics.generateTexture(textureName, GAME_CONFIG.player.size, GAME_CONFIG.player.size);
+      graphics.destroy();
+      
+      this.setTexture(textureName);
+      console.log(`✅ Player sprite created: ${textureName}`);
+      
+    } catch (error) {
+      console.error('Failed to create player sprite:', error);
+      
+      // Fallback: use a colored rectangle
+      this.fallbackGraphics = this.scene.add.graphics();
+      const color = this.isLocalPlayer ? 0x10b981 : 0x3b82f6;
+      this.fallbackGraphics.fillStyle(color, 1);
+      this.fallbackGraphics.fillRect(-GAME_CONFIG.player.size/2, -GAME_CONFIG.player.size/2, GAME_CONFIG.player.size, GAME_CONFIG.player.size);
+      
+      // Make the sprite invisible since we're using graphics directly
+      this.setVisible(false);
+      console.log('⚠️ Using fallback graphics for player');
+    }
   }
 
   update(): void {
@@ -137,6 +154,11 @@ export class PlayerSinglePlayer extends Phaser.Physics.Arcade.Sprite {
 
     // Update name and level badge positions
     this.updateLabels();
+    
+    // Update fallback graphics position if used
+    if (this.fallbackGraphics) {
+      this.fallbackGraphics.setPosition(this.x, this.y);
+    }
   }
 
   private updateRotation(direction: string): void {
@@ -169,6 +191,7 @@ export class PlayerSinglePlayer extends Phaser.Physics.Arcade.Sprite {
   destroy(fromScene?: boolean): void {
     this.nameText?.destroy();
     this.levelBadge?.destroy();
+    this.fallbackGraphics?.destroy();
     super.destroy(fromScene);
   }
 }
