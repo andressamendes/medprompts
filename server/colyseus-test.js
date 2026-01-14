@@ -43,13 +43,6 @@ const server = http.createServer(app);
 // Criar servidor Colyseus
 const gameServer = new Server({ server });
 
-// Middleware para ignorar validação de token (apenas para testes)
-gameServer.define('lobby', VirtualSpaceTestRoom).on('create', (room) => {
-  room.onMessage('*', (client, type, message) => {
-    console.warn(`[${client.sessionId}] ${type}:`, message);
-  });
-});
-
 // Sala que o Virtual Space espera
 class VirtualSpaceTestRoom extends Room {
   // Sobrescrever o método onAuth para aceitar qualquer token (apenas para testes)
@@ -170,6 +163,13 @@ class VirtualSpaceTestRoom extends Room {
     console.warn(`[${this.roomId}] Sala destruída`);
   }
 }
+
+// Middleware para logging (apenas para testes)
+gameServer.define('lobby', VirtualSpaceTestRoom).on('create', (room) => {
+  room.onMessage('*', (client, type, message) => {
+    console.warn(`[${client.sessionId}] ${type}:`, message);
+  });
+});
 
 // Registrar salas que o Virtual Space tenta acessar
 gameServer.define('lobby', VirtualSpaceTestRoom);
