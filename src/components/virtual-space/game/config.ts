@@ -21,20 +21,13 @@ export const GAME_CONFIG = {
     smoothing: 0.1,
   },
 
-  // Network settings
-  network: {
-    serverUrl: import.meta.env.VITE_COLYSEUS_URL || 'ws://localhost:2567',
-    reconnectDelay: 3000,
-    heartbeatInterval: 30000, // 30 seconds
-  },
-
-  // Room capacities
+  // Room capacities (not used in single player, but kept for UI)
   rooms: {
-    lobby: { max: 100, name: 'Lobby' },
-    emergency: { max: 50, name: 'Emergency Room' },
-    ward: { max: 50, name: 'General Ward' },
-    icu: { max: 30, name: 'ICU' },
-    surgical: { max: 20, name: 'Surgical Room' },
+    lobby: { max: 1, name: 'Lobby' },
+    emergency: { max: 1, name: 'Emergency Room' },
+    ward: { max: 1, name: 'General Ward' },
+    icu: { max: 1, name: 'ICU' },
+    surgical: { max: 1, name: 'Surgical Room' },
   },
 
   // Colors

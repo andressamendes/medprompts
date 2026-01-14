@@ -1,8 +1,8 @@
-import { BaseScene } from './BaseScene';
+import { BaseSceneSinglePlayer } from './BaseSceneSinglePlayer';
 
-export class LobbyScene extends BaseScene {
+export class LobbySceneSinglePlayer extends BaseSceneSinglePlayer {
   constructor() {
-    super('LobbyScene', 'lobby');
+    super('LobbySceneSinglePlayer', 'lobby');
   }
 
   protected decorateRoom(graphics: Phaser.GameObjects.Graphics): void {

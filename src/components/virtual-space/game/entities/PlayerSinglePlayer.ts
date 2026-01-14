@@ -1,8 +1,7 @@
 import Phaser from 'phaser';
 import { GAME_CONFIG } from '../config';
-import { SpriteGenerator } from '../utils/SpriteGenerator';
 
-export class Player extends Phaser.Physics.Arcade.Sprite {
+export class PlayerSinglePlayer extends Phaser.Physics.Arcade.Sprite {
   public userId: string;
   public playerName: string;
   public level: number;
@@ -12,7 +11,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   private wasd: any = null;
   private lastDirection: string = 'down';
   private isLocalPlayer: boolean;
-  private fallbackGraphics: Phaser.GameObjects.Graphics | null = null;
 
   constructor(
     scene: Phaser.Scene,
@@ -44,19 +42,19 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
 
     // Create name text
     this.nameText = scene.add.text(x, y - 40, name, {
-      fontSize: '14px',
+      fontSize: '16px',
       color: isLocal ? '#FFD700' : '#FFFFFF',
       backgroundColor: 'rgba(0, 0, 0, 0.6)',
-      padding: { x: 6, y: 3 },
+      padding: { x: 8, y: 4 },
     });
     this.nameText.setOrigin(0.5);
 
     // Create level badge
-    this.levelBadge = scene.add.text(x, y - 55, `Lv.${level}`, {
+    this.levelBadge = scene.add.text(x, y - 60, `Level ${level}`, {
       fontSize: '12px',
       color: '#FFD700',
       backgroundColor: 'rgba(0, 0, 0, 0.7)',
-      padding: { x: 4, y: 2 },
+      padding: { x: 6, y: 3 },
     });
     this.levelBadge.setOrigin(0.5);
 
@@ -71,38 +69,24 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
       };
     }
 
-    // Create improved doctor sprite
-    this.createImprovedSprite();
+    // Create simple player sprite
+    this.createSimpleSprite();
   }
 
-  private createImprovedSprite(): void {
-    const textureName = this.isLocalPlayer ? 'player-local' : 'player-remote';
-    
-    // Verificar se textura existe
-    if (!this.scene.textures.exists(textureName)) {
-      try {
-        SpriteGenerator.createDoctorSprite(this.scene, this.isLocalPlayer);
-      } catch (error) {
-        console.error('Failed to create sprite, using fallback:', error);
-        // Usar círculo como fallback
-        this.createFallbackSprite();
-        return;
-      }
-    }
-    
-    this.setTexture(textureName);
-  }
-
-  private createFallbackSprite(): void {
-    // Criar um círculo simples como fallback
-    const color = this.isLocalPlayer ? 0x10b981 : 0x3b82f6;
+  private createSimpleSprite(): void {
+    // Create a simple colored circle for the player
+    const color = this.isLocalPlayer ? 0x10b981 : 0x3b82f6; // Green for local, blue for others
     const graphics = this.scene.add.graphics();
     graphics.fillStyle(color, 1);
-    graphics.fillCircle(0, 0, 16);
+    graphics.fillCircle(0, 0, GAME_CONFIG.player.size / 2);
     
-    // Gerar textura temporária
-    const textureName = `player-fallback-${this.isLocalPlayer ? 'local' : 'remote'}`;
-    graphics.generateTexture(textureName, 32, 32);
+    // Add a white border
+    graphics.lineStyle(2, 0xffffff, 1);
+    graphics.strokeCircle(0, 0, GAME_CONFIG.player.size / 2);
+    
+    // Generate texture
+    const textureName = `player-simple-${this.isLocalPlayer ? 'local' : 'remote'}`;
+    graphics.generateTexture(textureName, GAME_CONFIG.player.size, GAME_CONFIG.player.size);
     graphics.destroy();
     
     this.setTexture(textureName);
@@ -156,43 +140,26 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   }
 
   private updateRotation(direction: string): void {
+    // Simple rotation based on direction
     switch (direction) {
       case 'up':
-        this.setAngle(-90);
-        break;
-      case 'down':
-        this.setAngle(90);
-        break;
-      case 'left':
-        this.setAngle(180);
-        break;
-      case 'right':
         this.setAngle(0);
         break;
-    }
-  }
-
-  updatePosition(x: number, y: number, direction?: string): void {
-    if (this.isLocalPlayer) return; // Don't update local player from network
-
-    // Smooth movement for remote players
-    this.scene.tweens.add({
-      targets: this,
-      x,
-      y,
-      duration: 100,
-      ease: 'Linear',
-    });
-
-    if (direction) {
-      this.lastDirection = direction;
-      this.updateRotation(direction);
+      case 'down':
+        this.setAngle(180);
+        break;
+      case 'left':
+        this.setAngle(270);
+        break;
+      case 'right':
+        this.setAngle(90);
+        break;
     }
   }
 
   private updateLabels(): void {
     this.nameText.setPosition(this.x, this.y - 40);
-    this.levelBadge.setPosition(this.x, this.y - 55);
+    this.levelBadge.setPosition(this.x, this.y - 60);
   }
 
   getDirection(): string {
@@ -202,7 +169,6 @@ export class Player extends Phaser.Physics.Arcade.Sprite {
   destroy(fromScene?: boolean): void {
     this.nameText?.destroy();
     this.levelBadge?.destroy();
-    this.fallbackGraphics?.destroy();
     super.destroy(fromScene);
   }
 }

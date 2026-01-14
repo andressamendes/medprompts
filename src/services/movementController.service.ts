@@ -1,14 +1,12 @@
 import { User } from '../types/studyRoom.types';
 import { Position, Direction, MovementCommand } from '../types/movement.types';
 import { HospitalMap } from '../types/tile.types';
-import { Pathfinder } from './pathfinding.service';
 import { CollisionDetector } from './collision.service';
 
 /**
- * Controlador de movimento para avatares
+ * Controlador de movimento simplificado para avatares (sem pathfinding)
  */
 export class MovementController {
-  private pathfinder: Pathfinder;
   private collisionDetector: CollisionDetector;
   private map: HospitalMap;
 
@@ -16,10 +14,9 @@ export class MovementController {
   private readonly MOVE_SPEED = 3; // tiles por segundo
   private readonly TILE_SIZE = 16;
 
-  constructor(map: HospitalMap, collisionDetector: CollisionDetector, pathfinder: Pathfinder) {
+  constructor(map: HospitalMap, collisionDetector: CollisionDetector) {
     this.map = map;
     this.collisionDetector = collisionDetector;
-    this.pathfinder = pathfinder;
   }
 
   /**
@@ -99,82 +96,61 @@ export class MovementController {
   }
 
   /**
-   * Processa comando de movimento
+   * Processa comando de movimento (versão simplificada sem pathfinding)
    */
   processMovementCommand(command: MovementCommand, user: User): void {
     if (!command.targetPosition) return;
 
-    const currentX = Math.floor(user.position.x);
-    const currentY = Math.floor(user.position.y);
+    // Movimento direto sem pathfinding complexo
+    // Apenas define a posição alvo
+    user.targetPosition = command.targetPosition;
+    user.movementState = 'walking';
 
-    // Calcular caminho
-    const path = this.pathfinder.findPath(
-      currentX,
-      currentY,
-      command.targetPosition.x,
-      command.targetPosition.y
-    );
-
-    if (path && path.length > 0) {
-      // Remover primeiro ponto (posição atual)
-      if (path.length > 1) {
-        path.shift();
-      }
-
-      user.currentPath = path;
-      user.targetPosition = command.targetPosition;
-      user.movementState = 'walking';
-
-      // Se é comando de interação, guardar ID do móvel
-      if (command.type === 'interact' && command.targetId) {
-        user.interactingWith = command.targetId;
-      } else {
-        user.interactingWith = undefined;
-      }
+    // Se é comando de interação, guardar ID do móvel
+    if (command.type === 'interact' && command.targetId) {
+      user.interactingWith = command.targetId;
+    } else {
+      user.interactingWith = undefined;
     }
   }
 
   /**
-   * Atualiza a posição do usuário ao longo do caminho
+   * Atualiza a posição do usuário em direção ao alvo
    */
   updatePosition(user: User, deltaTime: number): void {
     // Se não está se movendo, não faz nada
-    if (user.movementState !== 'walking' || !user.currentPath || user.currentPath.length === 0) {
+    if (user.movementState !== 'walking' || !user.targetPosition) {
       if (user.movementState === 'walking') {
         user.movementState = 'idle';
       }
       return;
     }
 
-    const nextWaypoint = user.currentPath[0];
+    const targetX = user.targetPosition.x;
+    const targetY = user.targetPosition.y;
     const distanceToMove = (this.MOVE_SPEED * deltaTime) / 1000; // tiles por frame
 
     // Calcular direção
-    const dx = nextWaypoint.x - user.position.x;
-    const dy = nextWaypoint.y - user.position.y;
+    const dx = targetX - user.position.x;
+    const dy = targetY - user.position.y;
     const distance = Math.sqrt(dx * dx + dy * dy);
 
     // Atualizar direção do sprite
-    user.direction = this.calculateDirection(user.position, nextWaypoint);
+    user.direction = this.calculateDirection(user.position, user.targetPosition);
 
     if (distance <= distanceToMove) {
-      // Chegou ao waypoint
-      user.position.x = nextWaypoint.x;
-      user.position.y = nextWaypoint.y;
-      user.currentPath.shift();
+      // Chegou ao destino
+      user.position.x = targetX;
+      user.position.y = targetY;
+      user.movementState = 'idle';
+      user.targetPosition = undefined;
 
-      // Verificar se chegou ao destino final
-      if (user.currentPath.length === 0) {
-        user.movementState = 'idle';
-        user.targetPosition = undefined;
-
-        // Se estava indo interagir com algo
-        if (user.interactingWith) {
-          this.handleInteraction(user);
-        }
+      // Se estava indo interagir com algo
+      if (user.interactingWith) {
+        this.handleInteraction(user);
       }
     } else {
-      // Move em direção ao waypoint
+      // Move em direção ao destino
       const ratio = distanceToMove / distance;
       user.position.x += dx * ratio;
       user.position.y += dy * ratio;
@@ -242,7 +218,6 @@ export class MovementController {
    * Para o movimento do usuário
    */
   stopMovement(user: User): void {
-    user.currentPath = undefined;
     user.targetPosition = undefined;
     user.movementState = 'idle';
   }
@@ -283,7 +258,9 @@ export class MovementController {
    * Verifica se usuário está próximo a outro usuário
    */
   isNearUser(user1: User, user2: User, maxDistance: number = 2): boolean {
-    const distance = this.pathfinder.getEuclideanDistance(user1.position, user2.position);
+    const dx = user1.position.x - user2.position.x;
+    const dy = user1.position.y - user2.position.y;
+    const distance = Math.sqrt(dx * dx + dy * dy);
     return distance <= maxDistance;
   }
 
@@ -316,5 +293,14 @@ export class MovementController {
     if (speed > 0 && speed <= 10) {
       (this as any).MOVE_SPEED = speed;
     }
+  }
+
+  /**
+   * Calcula distância euclidiana entre duas posições
+   */
+  getEuclideanDistance(pos1: Position, pos2: Position): number {
+    const dx = pos1.x - pos2.x;
+    const dy = pos1.y - pos2.y;
+    return Math.sqrt(dx * dx + dy * dy);
   }
 }

@@ -1,5 +1,5 @@
-import { VirtualSpace as VirtualSpaceComponent } from '@/components/virtual-space/VirtualSpace';
+import { VirtualSpaceSinglePlayer } from '@/components/virtual-space/VirtualSpaceSinglePlayer';
 
 export default function VirtualSpace() {
-  return <VirtualSpaceComponent />;
+  return <VirtualSpaceSinglePlayer />;
 }
