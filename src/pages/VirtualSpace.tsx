@@ -1,5 +1,5 @@
-import { VirtualSpaceSinglePlayer } from '@/components/virtual-space/VirtualSpaceSinglePlayer';
+import { VirtualSpaceCDN } from '@/components/virtual-space/VirtualSpaceCDN';
 
 export default function VirtualSpace() {
-  return <VirtualSpaceSinglePlayer />;
+  return <VirtualSpaceCDN />;
 }
