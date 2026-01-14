@@ -2,8 +2,11 @@
 import http from 'http';
 import express from 'express';
 import cors from 'cors';
-import { Server, Room } from 'colyseus';
-import { monitor } from '@colyseus/monitor';
+// Importar CommonJS modules corretamente
+import pkg from 'colyseus';
+const { Server, Room } = pkg;
+import monitorPkg from '@colyseus/monitor';
+const { monitor } = monitorPkg;
 
 console.warn('🚀 Iniciando servidor Colyseus de teste para Virtual Space...');
 
