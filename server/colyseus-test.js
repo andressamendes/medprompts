@@ -8,12 +8,28 @@ import { monitor } from '@colyseus/monitor';
 console.warn('🚀 Iniciando servidor Colyseus de teste para Virtual Space...');
 
 const PORT = 2567;
-const FRONTEND_URL = 'http://localhost:5173';
+// Permitir conexões do GitHub Pages e localhost
+const ALLOWED_ORIGINS = [
+  'http://localhost:5173',
+  'https://localhost:5173',
+  'https://andressamendes.github.io',
+  'http://andressamendes.github.io'
+];
 
 // Configurar Express
 const app = express();
 app.use(cors({
-  origin: FRONTEND_URL,
+  origin: (origin, callback) => {
+    // Permitir requisições sem origin (como mobile apps ou curl)
+    if (!origin) return callback(null, true);
+    
+    if (ALLOWED_ORIGINS.includes(origin)) {
+      callback(null, true);
+    } else {
+      console.warn(`Bloqueada origem não permitida: ${origin}`);
+      callback(new Error('Not allowed by CORS'));
+    }
+  },
   credentials: true
 }));
 app.use(express.json());
@@ -24,8 +40,24 @@ const server = http.createServer(app);
 // Criar servidor Colyseus
 const gameServer = new Server({ server });
 
+// Middleware para ignorar validação de token (apenas para testes)
+gameServer.define('lobby', VirtualSpaceTestRoom).on('create', (room) => {
+  room.onMessage('*', (client, type, message) => {
+    console.warn(`[${client.sessionId}] ${type}:`, message);
+  });
+});
+
 // Sala que o Virtual Space espera
 class VirtualSpaceTestRoom extends Room {
+  // Sobrescrever o método onAuth para aceitar qualquer token (apenas para testes)
+  async onAuth(client, options, request) {
+    console.warn(`[${client.sessionId}] Tentativa de conexão com options:`, options);
+    
+    // Para testes, aceitar qualquer conexão
+    // Em produção, você deve validar o token JWT aqui
+    return true;
+  }
+  
   onCreate(_options) {
     console.warn(`[${this.roomId}] Sala criada: ${this.roomName || 'virtualspace'}`);
     
@@ -159,12 +191,23 @@ app.get('/health', (req, res) => {
   });
 });
 
+// Rota de teste para verificar se o servidor está acessível
+app.get('/test', (req, res) => {
+  res.json({
+    message: 'Colyseus test server is running',
+    timestamp: new Date().toISOString(),
+    allowedOrigins: ALLOWED_ORIGINS
+  });
+});
+
 // Iniciar servidor
 gameServer.listen(PORT);
 console.warn(`✅ Servidor Colyseus rodando na porta ${PORT}`);
 console.warn(`📊 Monitor: http://localhost:${PORT}/colyseus`);
 console.warn(`🏥 Health: http://localhost:${PORT}/health`);
+console.warn(`🧪 Test: http://localhost:${PORT}/test`);
 console.warn(`🎮 Salas disponíveis: lobby, emergency, ward, icu, surgical, virtualspace`);
+console.warn(`🌐 Origens permitidas: ${ALLOWED_ORIGINS.join(', ')}`);
 console.warn('\nPressione Ctrl+C para parar\n');
 
 // Tratamento de erros
