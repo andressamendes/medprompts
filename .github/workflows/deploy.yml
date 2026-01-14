@@ -31,27 +31,41 @@ jobs:
         run: npm ci
 
       - name: Build
-        env:
-          VITE_COLYSEUS_URL: ${{ secrets.VITE_COLYSEUS_URL || 'ws://localhost:2567' }}
         run: npm run build
 
       - name: Verify build output
         run: |
           echo "📦 Build completed. Verifying output..."
-          ls -lh dist/assets/index-*.js || echo "No index bundle found"
-          BUNDLE_SIZE=$(stat -c%s dist/assets/index-*.js 2>/dev/null || echo "0")
-          echo "Bundle size: $BUNDLE_SIZE bytes"
-          if [ "$BUNDLE_SIZE" -lt 300000 ]; then
-            echo "⚠️ WARNING: Bundle smaller than expected ($BUNDLE_SIZE bytes)"
+          echo "📁 Listing dist directory:"
+          ls -la dist/ || echo "dist directory not found"
+          echo "\n📁 Listing assets directory:"
+          ls -la dist/assets/ || echo "assets directory not found"
+
+          # Check for critical files
+          echo "\n🔍 Checking for critical files:"
+          if [ -f "dist/index.html" ]; then
+            echo "✅ index.html found"
+            echo "\n📄 First few lines of index.html:"
+            head -20 dist/index.html
           else
-            echo "✅ Bundle size OK ($BUNDLE_SIZE bytes)"
+            echo "❌ index.html not found"
           fi
-          FOCUMON_COUNT=$(grep -o "focumon" dist/assets/index-*.js 2>/dev/null | wc -l || echo "0")
-          echo "Focumon occurrences in bundle: $FOCUMON_COUNT"
-          if [ "$FOCUMON_COUNT" -eq "0" ]; then
-            echo "⚠️ WARNING: Focumon code not found in bundle"
+
+          if [ -f "dist/.nojekyll" ]; then
+            echo "✅ .nojekyll found"
           else
-            echo "✅ Focumon code present in bundle ($FOCUMON_COUNT occurrences)"
+            echo "⚠️ .nojekyll not found - creating it"
+            touch dist/.nojekyll
+          fi
+
+          # Check for Phaser bundle
+          PHASER_FILES=$(find dist/assets -name "*phaser*" -type f | wc -l)
+          echo "\n🎮 Phaser files found: $PHASER_FILES"
+          if [ "$PHASER_FILES" -gt 0 ]; then
+            echo "✅ Phaser bundles found"
+            find dist/assets -name "*phaser*" -type f -exec echo "  - {}" \;
+          else
+            echo "❌ No Phaser bundles found"
           fi
 
       - name: Setup Pages
@@ -72,3 +86,4 @@ jobs:
       - name: Deploy to GitHub Pages
         id: deployment
         uses: actions/deploy-pages@v4
+
