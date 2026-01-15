@@ -1,5 +1,5 @@
-import { VirtualSpaceCDN } from '@/components/virtual-space/VirtualSpaceCDN';
+import { VirtualSpaceFinal } from '@/components/virtual-space/VirtualSpaceFinal';
 
 export default function VirtualSpace() {
-  return <VirtualSpaceCDN />;
+  return <VirtualSpaceFinal />;
 }
