@@ -1,5 +1,5 @@
-import { VirtualSpaceFinal } from '@/components/virtual-space/VirtualSpaceFinal';
+import { VirtualSpaceEmergency } from '@/components/virtual-space/VirtualSpaceEmergency';
 
 export default function VirtualSpace() {
-  return <VirtualSpaceFinal />;
+  return <VirtualSpaceEmergency />;
 }
