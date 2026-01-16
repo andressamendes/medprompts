@@ -51,7 +51,6 @@ export interface Prompt {
   description: string
   content: string
   category: PromptCategory
-  tags: string[]
   variables?: PromptVariable[]
   isSystemPrompt?: boolean
   isFavorite?: boolean
@@ -60,14 +59,13 @@ export interface Prompt {
   userId?: string
   createdAt?: string
   updatedAt?: string
-  
+
   // Compatibilidade UI
   icon?: string
   usageCount?: number
   studyLevel?: StudyLevel | StudyLevel[]
   academicLevel?: StudyLevel | StudyLevel[]
   estimatedTime?: string | number
-  prerequisites?: string[]
   tips?: string[]
 }
 
@@ -76,9 +74,10 @@ export interface CreatePromptDTO {
   description?: string
   content: string
   category: PromptCategory
-  tags?: string[]
   variables?: PromptVariable[]
   recommendedAI?: string
+  academicLevel?: StudyLevel | StudyLevel[]
+  estimatedTime?: string | number
 }
 
 export interface UpdatePromptDTO extends Partial<CreatePromptDTO> {

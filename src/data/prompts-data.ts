@@ -66,7 +66,6 @@ Ao final, liste separadamente quais flashcards utilizam mnemônicos e indique qu
 • Use comparações sempre que possível
 • Inclua contexto clínico realista quando aplicável
 • Utilize mnemônicos sempre que forem naturais, pois aumentam a retenção em 30 a 40 por cento`,
-    tags: ['flashcards', 'Anki', 'memorização', 'spaced repetition'],
     academicLevel: 'Todos os níveis',
     estimatedTime: 25,
     recommendedAI: {
@@ -153,7 +152,6 @@ Legenda de cores com significado semântico explícito.
 • Priorize conceitos com componentes espaciais, temporais ou processuais
 • Mantenha consistência semântica das cores ao longo do material
 • A descrição visual deve ser clara o suficiente para servir como guia de desenho`,
-    tags: ['codificação dupla', 'visual', 'neurociência cognitiva'],
     academicLevel: 'Todos os níveis',
     estimatedTime: 20,
     recommendedAI: {
@@ -244,7 +242,6 @@ Agora, explique este conceito como se estivesse ensinando a um colega.
 • Use perguntas como "O que te levou a essa conclusão?" para tornar o pensamento visível
 • Quando o estudante travar, introduza analogias, contraexemplos ou cenários hipotéticos, sem resolver o problema
 • Priorize sempre a qualidade da explicação, não a velocidade da resposta`,
-    tags: ['autoexplicação', 'metacognição', 'aprendizagem ativa'],
     academicLevel: 'Todos os níveis',
     estimatedTime: 30,
     recommendedAI: {
@@ -338,7 +335,6 @@ Frase ou acrônimo com explicação de cada elemento.
 • Inclua detalhes sensoriais como cor, som, textura ou sensação quando aplicável
 • O contraexemplo deve refletir a confusão mais frequente entre estudantes
 • Pense sempre em facilitar reconhecimento, não apenas memorização`,
-    tags: ['exemplos concretos', 'analogias', 'casos clínicos'],
     academicLevel: '1º-2º ano',
     estimatedTime: 15,
     recommendedAI: {
@@ -424,10 +420,8 @@ Descrição do mapa conceitual com o novo tema no centro e conexões explícitas
 • Use as conexões para revelar e corrigir misconceptions de forma explícita
 • Conexões transversais tendem a enriquecer mais a compreensão do que conexões redundantes
 • Priorize qualidade das conexões, não quantidade`,
-    tags: ['integração', 'conhecimento prévio', 'aprendizagem significativa'],
     academicLevel: 'Todos os níveis',
     estimatedTime: 25,
-    prerequisites: ['Conhecimento prévio do sistema/área relacionada'],
     recommendedAI: {
       primary: 'NotebookLM',
       reason: 'Especialista em síntese de múltiplas fontes. Identifica conexões profundas entre conceitos de diferentes documentos.',
@@ -519,7 +513,6 @@ Explique claramente o significado de cada letra ou palavra.
 • Pense sempre em como a informação apareceria em uma questão de prova
 • Destaque armadilhas comuns e erros frequentes dos estudantes
 • Organize o texto para leitura rápida e revisão de última hora`,
-    tags: ['resumo', 'alto rendimento', 'residência médica'],
     academicLevel: '3º-4º ano',
     estimatedTime: 20,
     recommendedAI: {
@@ -609,10 +602,8 @@ Repetir o formato para todas as 10 questões.
 • Variar o tipo de raciocínio exigido: diagnóstico, terapêutico, prognóstico e conduta inicial
 • Quando pertinente ao tema, incluir uma questão envolvendo ética médica ou comunicação clínica
 • Pense sempre em como a questão apareceria em uma prova real de residência`,
-    tags: ['questões', 'residência médica', 'prova', 'banco de questões'],
     academicLevel: '3º-4º ano',
     estimatedTime: 40,
-    prerequisites: ['Conhecimento do tema avaliado'],
     recommendedAI: {
       primary: 'Perplexity',
       reason: 'Acesso a questões reais atualizadas e padrões de provas recentes. Valida informações com citações confiáveis.',
@@ -704,7 +695,6 @@ Discuta:
 • Inclua pelo menos uma armadilha clínica comum ao tema
 • Varie o tipo de feedback: validação, redirecionamento ou aprofundamento
 • Priorize cases que desenvolvam raciocínio diagnóstico, não memorização`,
-    tags: ['caso clínico', 'simulação', 'raciocínio clínico', 'interativo'],
     academicLevel: 'Todos os níveis',
     estimatedTime: 35,
     recommendedAI: {
@@ -796,7 +786,6 @@ Regras claras para aumentar, manter ou reduzir intervalos.
 • Revisões devem ser curtas e focadas
 • Priorize qualidade da recuperação sobre quantidade de revisões
 • Reforce que pular revisões compromete todo o sistema`,
-    tags: ['revisão espaçada', 'repetição', 'retenção', 'memória'],
     academicLevel: 'Todos os níveis',
     estimatedTime: 15,
     recommendedAI: {
@@ -878,7 +867,6 @@ Cenário curto no qual o mnemônico seria útil.
 • Imagens bizarras ou exageradas fixam melhor
 • Conectar ao conhecimento prévio aumenta retenção
 • Teste o mnemônico perguntando se é fácil de lembrar sem consultar`,
-    tags: ['mnemônicos', 'memorização', 'técnicas de memória'],
     academicLevel: 'Todos os níveis',
     estimatedTime: 10,
     recommendedAI: {
@@ -968,7 +956,6 @@ Solicite ao estudante:
 • Incentive o estudante a fazer anotações durante a leitura
 • Sínteses com as próprias palavras são essenciais
 • Use feedback para corrigir equívocos imediatamente`,
-    tags: ['leitura ativa', 'compreensão', 'síntese'],
     academicLevel: 'Todos os níveis',
     estimatedTime: 30,
     recommendedAI: {
@@ -1059,10 +1046,8 @@ Ações específicas para corrigir a lacuna.
 • Foco deve ser no processo de raciocínio, não apenas no resultado
 • Incentive o estudante a refazer a questão após a correção
 • Sugira revisão apenas do conteúdo diretamente relacionado ao erro`,
-    tags: ['correção', 'feedback', 'análise de erros', 'questões'],
     academicLevel: 'Todos os níveis',
     estimatedTime: 10,
-    prerequisites: ['Questão completa com gabarito'],
     recommendedAI: {
       primary: 'Claude',
       reason: 'Excelente em análise detalhada de raciocínio. Identifica padrões de erro e fornece feedback construtivo profundo.',
@@ -1166,7 +1151,6 @@ Solicite ao estudante que explique o raciocínio completo de forma estruturada.
 • Use contraexemplos para revelar inconsistências
 • Priorize processo de pensamento, não velocidade de resposta
 • Quando o estudante travar, forneça uma pequena pista na forma de pergunta`,
-    tags: ['método socrático', 'raciocínio clínico', 'pensamento crítico'],
     academicLevel: 'Todos os níveis',
     estimatedTime: 25,
     recommendedAI: {
@@ -1266,10 +1250,8 @@ Solicite ao estudante:
 • Enfatize importância de descrever antes de concluir
 • Use terminologia radiológica correta
 • Erros de sistematização são mais comuns que erros de reconhecimento`,
-    tags: ['imagem médica', 'radiologia', 'interpretação sistemática'],
     academicLevel: '3º-4º ano',
     estimatedTime: 20,
-    prerequisites: ['Anatomia básica da região avaliada'],
     recommendedAI: {
       primary: 'ChatGPT',
       reason: 'Guia análise sistemática progressiva. Mantém checklist estruturado e adapta perguntas conforme respostas.',
@@ -1365,7 +1347,6 @@ Hipóteses principais com justificativa breve e plano proposto.
 • Priorize clareza e objetividade sobre detalhes excessivos
 • Antecipe perguntas que podem ser feitas
 • Sempre termine com raciocínio diagnóstico explícito`,
-    tags: ['apresentação', 'caso clínico', 'comunicação médica', 'round'],
     academicLevel: '3º-4º ano',
     estimatedTime: 15,
     recommendedAI: {
@@ -1469,7 +1450,6 @@ Sinais de sobrecarga.
 • Revisões espaçadas devem ser priorizadas
 • Qualidade do estudo importa mais que quantidade de horas
 • Reavalie e ajuste semanalmente`,
-    tags: ['organização', 'rotina', 'cronograma', 'planejamento'],
     academicLevel: 'Todos os níveis',
     estimatedTime: 20,
     recommendedAI: {
@@ -1571,7 +1551,6 @@ Datas de simulados e revisões programadas.
 • Simulados revelam lacunas e calibram ritmo de prova
 • Ajuste o plano semanalmente conforme progresso real
 • Evite estudar conteúdo novo nos últimos 3 dias`,
-    tags: ['planejamento', 'prova', 'cronograma reverso', 'preparação'],
     academicLevel: 'Todos os níveis',
     estimatedTime: 25,
     recommendedAI: {
@@ -1665,7 +1644,6 @@ Instruções claras para usar as anotações em revisões futuras.
 • Síntese deve ser escrita sem consultar as notas principais
 • Revisões com as pistas são mais eficazes que releitura passiva
 • Método Cornell combina anotação ativa com revisão estruturada`,
-    tags: ['anotações', 'método Cornell', 'organização', 'revisão'],
     academicLevel: 'Todos os níveis',
     estimatedTime: 20,
     recommendedAI: {
@@ -1754,7 +1732,6 @@ Implicações práticas para saúde e vida cotidiana.
 • Use exemplos do corpo humano sempre que possível
 • Conceitos visuais e concretos são mais memoráveis
 • Priorize compreensão funcional sobre detalhes técnicos`,
-    tags: ['comunicação', 'linguagem simples', 'paciente', 'analogias'],
     academicLevel: 'Todos os níveis',
     estimatedTime: 10,
     recommendedAI: {
@@ -1851,10 +1828,8 @@ Parágrafo 4: Implicações e conclusões.
 • Introdução justifica por que a pesquisa é necessária
 • Discussão conecta achados com literatura prévia
 • Seja objetivo e direto; evite linguagem rebuscada`,
-    tags: ['artigo científico', 'IMRAD', 'pesquisa', 'publicação'],
     academicLevel: '3º-4º ano',
     estimatedTime: 30,
-    prerequisites: ['Dados de pesquisa disponíveis'],
     recommendedAI: {
       primary: 'ChatGPT',
       reason: 'Estrutura informações complexas em formato IMRAD. Organiza lógica científica com clareza.',
@@ -1951,10 +1926,8 @@ Perguntas para o estudante refletir sobre o caso.
 • Divergências são oportunidades de aprendizado
 • Conduta final deve equilibrar urgência e viabilidade
 • Discussão multidisciplinar reflete prática médica real`,
-    tags: ['multidisciplinar', 'discussão clínica', 'integração', 'especialidades'],
     academicLevel: '3º-4º ano',
     estimatedTime: 25,
-    prerequisites: ['Conhecimento básico das especialidades envolvidas'],
     recommendedAI: {
       primary: 'Claude',
       reason: 'Excelente em simular múltiplas perspectivas simultaneamente. Equilibra visões de diferentes especialidades.',
@@ -2046,7 +2019,6 @@ Listar todos os pontos finais possíveis com condutas claras.
 • Use linguagem direta e ações específicas
 • Teste a árvore com casos reais para validar lógica
 • Fluxogramas funcionam melhor que textos longos em situações de pressão`,
-    tags: ['árvore de decisão', 'fluxograma', 'protocolo', 'decisão clínica'],
     academicLevel: '3º-4º ano',
     estimatedTime: 20,
     recommendedAI: {
@@ -2152,10 +2124,8 @@ ida o estudo
 • Significância estatística sem relevância clínica tem valor limitado
 • Pergunte sempre: "Isso muda o que eu faço com meus pacientes?"
 • Prática baseada em evidências equilibra evidências, experiência e valores do paciente`,
-    tags: ['medicina baseada em evidências', 'PICO', 'análise crítica', 'artigos científicos'],
     academicLevel: '3º-4º ano',
     estimatedTime: 30,
-    prerequisites: ['Artigo científico completo'],
     recommendedAI: {
       primary: 'Perplexity',
       reason: 'Acessa artigos científicos atualizados e valida informações com citações. Analisa metodologia com rigor acadêmico.',
@@ -2258,10 +2228,8 @@ Citar a diretriz original completa.
 • Números e valores críticos devem ser precisos
 • Protocolo deve ser consultável em segundos
 • Atualize sempre que houver nova versão da diretriz`,
-    tags: ['diretrizes', 'guidelines', 'protocolo', 'prática clínica'],
     academicLevel: '3º-4º ano',
     estimatedTime: 25,
-    prerequisites: ['Acesso à diretriz completa'],
     recommendedAI: {
       primary: 'Perplexity',
       reason: 'Acessa diretrizes atualizadas online. Extrai recomendações principais com citações precisas.',
@@ -2366,7 +2334,6 @@ Adicione lembretes específicos ao contexto:
 • Use formato de checkbox para facilitar uso
 • Atualize periodicamente com base em erros identificados
 • Checklist não substitui raciocínio clínico, previne omissões`,
-    tags: ['checklist', 'admissão', 'alta', 'segurança do paciente'],
     academicLevel: '3º-4º ano',
     estimatedTime: 15,
     recommendedAI: {
@@ -2457,7 +2424,6 @@ Para cada hipótese prioritária, sugira:
 • Pistas diferenciadoras evitam viés de ancoragem
 • Diagnóstico diferencial guia investigação, não é decorativo
 • Reavaliar diagnóstico diferencial conforme novos dados surgem`,
-    tags: ['diagnóstico diferencial', 'raciocínio clínico', 'priorização'],
     academicLevel: '3º-4º ano',
     estimatedTime: 20,
     recommendedAI: {

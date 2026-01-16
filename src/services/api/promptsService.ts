@@ -20,7 +20,6 @@ export class PromptsService {
   static async listPrompts(params?: {
     search?: string;
     category?: string;
-    tags?: string;
     isFavorite?: boolean;
     sortBy?: string;
     limit?: number;
@@ -148,20 +147,6 @@ static async recordUsage(promptId: string): Promise<Prompt> {
     }
   }
 
-  /**
-   * Lista tags populares do usuário
-   */
-  static async getPopularTags(): Promise<string[]> {
-    try {
-      const response = await api.get<{ success: boolean; tags: string[] }>(
-        `${this.baseURL}/tags`
-      );
-      return response.data.tags || [];
-    } catch (error) {
-      console.error('Erro ao buscar tags:', error);
-      return [];
-    }
-  }
 }
 
 export default PromptsService;

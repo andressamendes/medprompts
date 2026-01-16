@@ -7,7 +7,6 @@ export interface Prompt {
   title: string;
   content: string;
   category: string;
-  tags: string[];
   isFavorite: boolean;
   timesUsed: number;
   createdAt: string;
@@ -18,20 +17,17 @@ export interface CreatePromptData {
   title: string;
   content: string;
   category: string;
-  tags?: string[];
 }
 
 export interface UpdatePromptData {
   title?: string;
   content?: string;
   category?: string;
-  tags?: string[];
 }
 
 export interface PromptsFilters {
   search?: string;
   category?: string;
-  tags?: string[];
   isFavorite?: boolean;
   sortBy?: 'recent' | 'popular' | 'alphabetical';
 }
@@ -56,7 +52,6 @@ export const usePrompts = () => {
       const params = new URLSearchParams();
       if (filters?.search) params.append('search', filters.search);
       if (filters?.category) params.append('category', filters.category);
-      if (filters?.tags?.length) params.append('tags', filters.tags.join(','));
       if (filters?.isFavorite !== undefined) params.append('isFavorite', String(filters.isFavorite));
       if (filters?.sortBy) params.append('sortBy', filters.sortBy);
 
@@ -218,19 +213,6 @@ export const usePrompts = () => {
   };
 
   /**
-   * Busca tags populares
-   */
-  const fetchPopularTags = async (): Promise<string[]> => {
-    try {
-      const response = await api.get<{ tags: string[] }>('/prompts/tags');
-      return response.data.tags;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.error || 'Erro ao buscar tags';
-      throw new Error(errorMsg);
-    }
-  };
-
-  /**
    * Busca prompts favoritos
    */
   const fetchFavoritePrompts = async (): Promise<Prompt[]> => {
@@ -276,7 +258,6 @@ export const usePrompts = () => {
     toggleFavorite,
     usePrompt,
     fetchCategories,
-    fetchPopularTags,
     fetchFavoritePrompts,
     fetchPopularPrompts,
     fetchRecentPrompts,

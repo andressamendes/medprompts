@@ -12,12 +12,12 @@ export interface AnkiCard {
 export function promptToAnkiCard(prompt: Prompt): AnkiCard {
   // Frente: Título + Descrição
   const front = `${prompt.title}\n\n${prompt.description}`;
-  
+
   // Verso: Conteúdo do prompt
   const back = prompt.content;
-  
-  // Tags: Categoria + tags do prompt
-  const tags = [prompt.category, ...prompt.tags].join(' ');
+
+  // Tags: Categoria do prompt
+  const tags = prompt.category;
 
   return {
     front,

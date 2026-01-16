@@ -403,13 +403,11 @@ class SanitizationService {
   sanitizePromptContent(data: {
     title: string;
     content: string;
-    tags?: string[];
   }): {
     isValid: boolean;
     sanitized?: {
       title: string;
       content: string;
-      tags: string[];
     };
     errors: string[];
   } {
@@ -433,24 +431,13 @@ class SanitizationService {
       errors.push('Conteúdo muito longo (máx: 50.000 caracteres)');
     }
 
-    // Tags (opcional)
-    const tags: string[] = [];
-    if (data.tags && Array.isArray(data.tags)) {
-      for (const tag of data.tags.slice(0, 10)) { // Máx 10 tags
-        const sanitizedTag = this.sanitizeText(tag).toLowerCase();
-        if (sanitizedTag && sanitizedTag.length <= 20) {
-          tags.push(sanitizedTag);
-        }
-      }
-    }
-
     if (errors.length > 0) {
       return { isValid: false, errors };
     }
 
     return {
       isValid: true,
-      sanitized: { title, content, tags },
+      sanitized: { title, content },
       errors: [],
     };
   }

@@ -170,7 +170,7 @@ const copyPrompt = useCallback((prompt: Prompt) => {
         (p) =>
           p.title.toLowerCase().includes(term) ||
           p.description.toLowerCase().includes(term) ||
-          p.tags.some((tag) => tag.toLowerCase().includes(term))
+          p.category.toLowerCase().includes(term)
       );
     }
 
@@ -462,21 +462,6 @@ const copyPrompt = useCallback((prompt: Prompt) => {
 
 
                       <CardContent className="space-y-3 relative z-10">
-                        {/* Tags compactas */}
-                        <div className="flex flex-wrap gap-1.5">
-                          {prompt.tags.slice(0, 2).map((tag) => (
-                            <Badge key={tag} variant="secondary" className="text-xs px-2 py-0.5">
-                              {tag}
-                            </Badge>
-                          ))}
-                          {prompt.tags.length > 2 && (
-                            <Badge variant="secondary" className="text-xs px-2 py-0.5">
-                              +{prompt.tags.length - 2}
-                            </Badge>
-                          )}
-                        </div>
-
-
                         {/* Ações minimalistas */}
                         <div className="flex gap-2 pt-3 border-t dark:border-gray-800">
                           {extractVariables(prompt.content).length > 0 ? (
@@ -653,16 +638,6 @@ const copyPrompt = useCallback((prompt: Prompt) => {
 
 
               <div className="space-y-6 mt-6">
-                <div>
-                  <h4 className="font-semibold mb-3">Tags</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {selectedPrompt.tags.map((tag) => (
-                      <Badge key={tag} variant="secondary">{tag}</Badge>
-                    ))}
-                  </div>
-                </div>
-
-
                 <div>
                   <div className="flex items-center justify-between mb-3">
                     <h4 className="font-semibold flex items-center gap-2">

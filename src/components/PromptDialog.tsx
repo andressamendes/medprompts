@@ -90,11 +90,6 @@ export function PromptDialog({ prompt, open, onOpenChange }: PromptDialogProps) 
               <Star className="w-3 h-3" />
               {prompt.academicLevel}
             </Badge>
-            {prompt.tags.slice(0, 3).map((tag) => (
-              <Badge key={tag} variant="outline">
-                {tag}
-              </Badge>
-            ))}
           </div>
 
           {/* Seção de Recomendação de IA */}
@@ -118,20 +113,6 @@ export function PromptDialog({ prompt, open, onOpenChange }: PromptDialogProps) 
                   )}
                 </div>
               </div>
-            </div>
-          )}
-
-          {/* Pré-requisitos */}
-          {prompt.prerequisites && prompt.prerequisites.length > 0 && (
-            <div className="bg-amber-50 dark:bg-amber-950 border border-amber-200 dark:border-amber-800 rounded-lg p-4">
-              <p className="text-sm font-semibold text-amber-900 dark:text-amber-100 mb-2">
-                📋 Pré-requisitos
-              </p>
-              <ul className="text-xs text-amber-700 dark:text-amber-300 space-y-1 list-disc list-inside">
-                {prompt.prerequisites.map((prereq, index) => (
-                  <li key={index}>{prereq}</li>
-                ))}
-              </ul>
             </div>
           )}
 
