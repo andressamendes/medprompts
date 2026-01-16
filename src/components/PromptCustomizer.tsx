@@ -1,4 +1,5 @@
 import { useState, useEffect, useMemo, useCallback } from 'react';
+import DOMPurify from 'dompurify';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -235,66 +236,32 @@ export function PromptCustomizer({ prompt, open, onOpenChange }: PromptCustomize
       return;
     }
 
+    // URLs das IAs (sem query params - não funcionam de forma confiável)
+    const aiUrls: Record<string, string> = {
+      chatgpt: 'https://chat.openai.com',
+      claude: 'https://claude.ai/new',
+      perplexity: 'https://www.perplexity.ai',
+      gemini: 'https://gemini.google.com/app',
+    };
+
     const readyPrompt = getExecutionReadyPrompt();
 
-    // Copiar para clipboard como backup (algumas IAs não suportam query params longos)
-    navigator.clipboard.writeText(readyPrompt).catch(() => {});
+    // Copiar prompt para clipboard
+    navigator.clipboard.writeText(readyPrompt).then(() => {
+      toast({
+        title: '📋 Prompt copiado!',
+        description: `Cole com Ctrl+V no ${aiName}`,
+      });
+    }).catch(() => {
+      toast({
+        title: '⚠️ Erro ao copiar',
+        description: 'Copie o prompt manualmente',
+        variant: 'destructive',
+      });
+    });
 
-    const encodedPrompt = encodeURIComponent(readyPrompt);
-    let url = '';
-
-    switch (aiName.toLowerCase()) {
-      case 'chatgpt':
-        // ChatGPT suporta query param, mas com limite de caracteres
-        // Se o prompt for muito longo, só abre a página (o prompt já está no clipboard)
-        if (readyPrompt.length > 4000) {
-          url = 'https://chat.openai.com';
-          toast({
-            title: '📋 Prompt copiado!',
-            description: 'Cole o prompt no ChatGPT (Ctrl+V)',
-          });
-        } else {
-          url = `https://chat.openai.com/?q=${encodedPrompt}`;
-        }
-        break;
-      case 'claude':
-        // Claude não suporta query param de forma confiável
-        url = 'https://claude.ai/new';
-        toast({
-          title: '📋 Prompt copiado!',
-          description: 'Cole o prompt no Claude (Ctrl+V)',
-        });
-        break;
-      case 'perplexity':
-        if (readyPrompt.length > 4000) {
-          url = 'https://www.perplexity.ai';
-          toast({
-            title: '📋 Prompt copiado!',
-            description: 'Cole o prompt no Perplexity (Ctrl+V)',
-          });
-        } else {
-          url = `https://www.perplexity.ai/?q=${encodedPrompt}`;
-        }
-        break;
-      case 'gemini':
-        if (readyPrompt.length > 4000) {
-          url = 'https://gemini.google.com';
-          toast({
-            title: '📋 Prompt copiado!',
-            description: 'Cole o prompt no Gemini (Ctrl+V)',
-          });
-        } else {
-          url = `https://gemini.google.com/app?text=${encodedPrompt}`;
-        }
-        break;
-      default:
-        url = 'https://chat.openai.com';
-    }
-
+    const url = aiUrls[aiName.toLowerCase()] || aiUrls.chatgpt;
     window.open(url, '_blank');
-    if (!['claude'].includes(aiName.toLowerCase()) && readyPrompt.length <= 4000) {
-      toast({ title: `🚀 Abrindo ${aiName} com o prompt...` });
-    }
   };
 
   // Se não tem variáveis, mostrar interface simplificada com campo de contexto adicional
@@ -534,11 +501,13 @@ export function PromptCustomizer({ prompt, open, onOpenChange }: PromptCustomize
                       /\*\*([^*]+)\*\*/g,
                       '<strong class="font-semibold text-gray-900 dark:text-white">$1</strong>'
                     );
+                    // Sanitizar HTML para prevenir XSS
+                    const sanitizedHtml = DOMPurify.sanitize(highlightedText);
                     return (
                       <p
                         key={idx}
                         className="text-sm text-gray-700 dark:text-gray-300 mb-3 leading-relaxed whitespace-pre-wrap"
-                        dangerouslySetInnerHTML={{ __html: highlightedText }}
+                        dangerouslySetInnerHTML={{ __html: sanitizedHtml }}
                       />
                     );
                   })}

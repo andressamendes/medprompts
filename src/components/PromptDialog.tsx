@@ -29,29 +29,18 @@ export function PromptDialog({ prompt, open, onOpenChange }: PromptDialogProps) 
   };
 
   const openInAI = (aiName: string) => {
+    // URLs das IAs (sem query params - não funcionam de forma confiável)
+    const aiUrls: Record<string, string> = {
+      ChatGPT: 'https://chat.openai.com',
+      Claude: 'https://claude.ai/new',
+      Perplexity: 'https://www.perplexity.ai',
+      Gemini: 'https://gemini.google.com/app',
+    };
+
     // Copiar prompt para clipboard primeiro
     navigator.clipboard.writeText(prompt.content).catch(() => {});
 
-    const encodedPrompt = encodeURIComponent(prompt.content);
-    let url = '';
-
-    switch (aiName) {
-      case 'ChatGPT':
-        url = `https://chat.openai.com/?q=${encodedPrompt}`;
-        break;
-      case 'Claude':
-        url = 'https://claude.ai/new';
-        break;
-      case 'Perplexity':
-        url = `https://www.perplexity.ai/?q=${encodedPrompt}`;
-        break;
-      case 'Gemini':
-        url = `https://gemini.google.com/app?text=${encodedPrompt}`;
-        break;
-      default:
-        url = `https://chat.openai.com/?q=${encodedPrompt}`;
-    }
-
+    const url = aiUrls[aiName] || aiUrls.ChatGPT;
     window.open(url, '_blank');
   };
 

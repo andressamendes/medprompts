@@ -1,7 +1,9 @@
 import { useState, useEffect, useCallback, useMemo } from 'react';
 import { useNavigate } from 'react-router-dom';
+import DOMPurify from 'dompurify';
 import { Prompt } from '@/types/prompt';
 import { PublicNavbar } from '@/components/PublicNavbar';
+import { prompts as systemPrompts } from '@/data/prompts-data';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -21,7 +23,11 @@ import { extractVariables } from '@/lib/promptVariables';
 
 // Build: 2026-01-16 - Versão standalone sem backend
 
-
+/**
+ * Renderiza markdown básico para HTML com sanitização XSS
+ * @param markdown - Texto com formatação markdown
+ * @returns HTML sanitizado
+ */
 function renderMarkdown(markdown: string): string {
   let html = markdown;
   html = html.replace(/^\*\*(.+?)\*\*$/gm, '<h3 class="font-bold text-lg mt-4 mb-2 text-gray-900 dark:text-white">$1</h3>');
@@ -29,19 +35,20 @@ function renderMarkdown(markdown: string): string {
   html = html.replace(/\n\n/g, '</p><p class="mb-3 text-gray-700 dark:text-gray-300">');
   html = html.replace(/\n/g, '<br>');
   html = '<p class="mb-3 text-gray-700 dark:text-gray-300">' + html + '</p>';
-  return html;
+  // Sanitizar HTML para prevenir XSS
+  return DOMPurify.sanitize(html);
 }
 
 
 /**
- * ✨ Página Prompts v4.0 - Integração com Backend
- * 
- * Novidades:
- * - Integração completa com API do backend
- * - Suporte a prompts do sistema + prompts do usuário
- * - Preenchimento de variáveis personalizadas
- * - Sincronização de favoritos com backend
- * - Design minimalista mantido
+ * Página de Prompts Médicos v4.1
+ *
+ * Features:
+ * - Biblioteca de prompts otimizados para IAs
+ * - Personalização de variáveis
+ * - Sistema de favoritos (localStorage)
+ * - Filtros e busca
+ * - Design minimalista
  */
 export default function Prompts() {
   const navigate = useNavigate();
@@ -60,45 +67,33 @@ export default function Prompts() {
   const [customizerPrompt, setCustomizerPrompt] = useState<Prompt | null>(null);
   const ITEMS_PER_PAGE = 12;
 
-  // Carregar prompts do sistema (dados locais)
+  // Carregar prompts e favoritos na inicialização
   useEffect(() => {
-    const loadPrompts = async () => {
-      try {
-        setIsLoading(true);
-
-        // Carregar prompts do sistema (built-in database)
-        const promptsModule = await import('@/data/prompts-data');
-        const systemPrompts = promptsModule.prompts || [];
-
-        if (systemPrompts.length > 0) {
-          setPrompts(systemPrompts);
-
-          // Carregar favoritos do localStorage
-          const stored = localStorage.getItem('medprompts-favorites');
-          if (stored) {
-            try {
-              setFavorites(new Set(JSON.parse(stored)));
-            } catch (e) {
-              console.warn('Erro ao carregar favoritos:', e);
-            }
-          }
-        } else {
-          throw new Error('Dados do sistema não encontrados');
-        }
-
-      } catch (error) {
-        console.error('Erro ao carregar prompts:', error);
-        toast({
-          title: '❌ Erro ao carregar prompts',
-          description: 'Não foi possível carregar os prompts',
-          variant: 'destructive'
-        });
-      } finally {
-        setIsLoading(false);
+    try {
+      // Usar prompts importados estaticamente (mais rápido)
+      if (systemPrompts.length > 0) {
+        setPrompts(systemPrompts);
       }
-    };
 
-    loadPrompts();
+      // Carregar favoritos do localStorage
+      const stored = localStorage.getItem('medprompts-favorites');
+      if (stored) {
+        try {
+          setFavorites(new Set(JSON.parse(stored)));
+        } catch (e) {
+          console.warn('Erro ao carregar favoritos:', e);
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao carregar prompts:', error);
+      toast({
+        title: '❌ Erro ao carregar prompts',
+        description: 'Não foi possível carregar os prompts',
+        variant: 'destructive'
+      });
+    } finally {
+      setIsLoading(false);
+    }
   }, []);
 
 
@@ -134,49 +129,32 @@ const copyPrompt = useCallback((prompt: Prompt) => {
 
 
   const openAI = useCallback((aiName: string, promptContent?: string) => {
-    // Se tem conteúdo do prompt, copiar para clipboard e abrir IA com instrução
+    // URLs das IAs (sem query params - não funcionam de forma confiável)
+    const aiUrls: Record<string, string> = {
+      ChatGPT: 'https://chat.openai.com',
+      Claude: 'https://claude.ai/new',
+      Perplexity: 'https://www.perplexity.ai',
+      NotebookLM: 'https://notebooklm.google.com',
+      Gemini: 'https://gemini.google.com/app',
+    };
+
+    // Se tem conteúdo do prompt, copiar para clipboard primeiro
     if (promptContent) {
-      // Copiar prompt para clipboard primeiro
       navigator.clipboard.writeText(promptContent).then(() => {
-        toast({ title: '📋 Prompt copiado! Cole na IA que será aberta.' });
+        toast({
+          title: '📋 Prompt copiado!',
+          description: `Cole com Ctrl+V no ${aiName}`,
+        });
       }).catch(() => {
-        // Se falhar a cópia, continua abrindo a IA
+        toast({
+          title: '⚠️ Não foi possível copiar',
+          description: 'Copie o prompt manualmente',
+          variant: 'destructive',
+        });
       });
     }
 
-    const encodedPrompt = promptContent ? encodeURIComponent(promptContent) : '';
-    let url = '';
-
-    switch (aiName) {
-      case 'ChatGPT':
-        // ChatGPT suporta query parameter para iniciar conversa
-        url = promptContent
-          ? `https://chat.openai.com/?q=${encodedPrompt}`
-          : 'https://chat.openai.com';
-        break;
-      case 'Claude':
-        // Claude não suporta query parameter, abre página nova
-        url = 'https://claude.ai/new';
-        break;
-      case 'Perplexity':
-        // Perplexity suporta query parameter
-        url = promptContent
-          ? `https://www.perplexity.ai/?q=${encodedPrompt}`
-          : 'https://www.perplexity.ai';
-        break;
-      case 'NotebookLM':
-        url = 'https://notebooklm.google.com';
-        break;
-      case 'Gemini':
-        // Gemini suporta query parameter
-        url = promptContent
-          ? `https://gemini.google.com/app?text=${encodedPrompt}`
-          : 'https://gemini.google.com';
-        break;
-      default:
-        url = 'https://chat.openai.com';
-    }
-
+    const url = aiUrls[aiName] || aiUrls.ChatGPT;
     window.open(url, '_blank', 'noopener,noreferrer');
   }, []);
 
