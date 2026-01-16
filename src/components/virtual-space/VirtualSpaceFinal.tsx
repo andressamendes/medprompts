@@ -247,7 +247,7 @@ export const VirtualSpaceFinal: React.FC = () => {
     navigate('/');
   };
 
-  const handleRetry = () => {
+  const handleRetry = async () => {
     setStatus('loading');
     setErrorMessage('');
     
@@ -257,22 +257,15 @@ export const VirtualSpaceFinal: React.FC = () => {
       window.VirtualSpaceGame = null;
     }
     
-    // Reinitialize after a short delay
-    setTimeout(() => {
-      useEffect(() => {
-        async function reinitialize() {
-          try {
-            await loadPhaser();
-            initializePhaserGame();
-            setStatus('ready');
-          } catch (error) {
-            setStatus('error');
-            setErrorMessage('Failed to retry. Please refresh the page.');
-          }
-        }
-        reinitialize();
-      }, []);
-    }, 100);
+    // Reinitialize
+    try {
+      await loadPhaser();
+      initializePhaserGame();
+      setStatus('ready');
+    } catch (error) {
+      setStatus('error');
+      setErrorMessage('Failed to retry. Please refresh the page.');
+    }
   };
 
   const handleRefresh = () => {
