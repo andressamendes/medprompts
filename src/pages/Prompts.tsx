@@ -133,16 +133,51 @@ const copyPrompt = useCallback((prompt: Prompt) => {
 
 
 
-  const openAI = useCallback((aiName: string) => {
-    const urls: Record<string, string> = {
-      ChatGPT: 'https://chat.openai.com',
-      Claude: 'https://claude.ai',
-      Perplexity: 'https://perplexity.ai',
-      NotebookLM: 'https://notebooklm.google.com',
-      Gemini: 'https://gemini.google.com',
-    };
-    const url = urls[aiName];
-    if (url) window.open(url, '_blank', 'noopener,noreferrer');
+  const openAI = useCallback((aiName: string, promptContent?: string) => {
+    // Se tem conteúdo do prompt, copiar para clipboard e abrir IA com instrução
+    if (promptContent) {
+      // Copiar prompt para clipboard primeiro
+      navigator.clipboard.writeText(promptContent).then(() => {
+        toast({ title: '📋 Prompt copiado! Cole na IA que será aberta.' });
+      }).catch(() => {
+        // Se falhar a cópia, continua abrindo a IA
+      });
+    }
+
+    const encodedPrompt = promptContent ? encodeURIComponent(promptContent) : '';
+    let url = '';
+
+    switch (aiName) {
+      case 'ChatGPT':
+        // ChatGPT suporta query parameter para iniciar conversa
+        url = promptContent
+          ? `https://chat.openai.com/?q=${encodedPrompt}`
+          : 'https://chat.openai.com';
+        break;
+      case 'Claude':
+        // Claude não suporta query parameter, abre página nova
+        url = 'https://claude.ai/new';
+        break;
+      case 'Perplexity':
+        // Perplexity suporta query parameter
+        url = promptContent
+          ? `https://www.perplexity.ai/?q=${encodedPrompt}`
+          : 'https://www.perplexity.ai';
+        break;
+      case 'NotebookLM':
+        url = 'https://notebooklm.google.com';
+        break;
+      case 'Gemini':
+        // Gemini suporta query parameter
+        url = promptContent
+          ? `https://gemini.google.com/app?text=${encodedPrompt}`
+          : 'https://gemini.google.com';
+        break;
+      default:
+        url = 'https://chat.openai.com';
+    }
+
+    window.open(url, '_blank', 'noopener,noreferrer');
   }, []);
 
 
@@ -462,88 +497,72 @@ const copyPrompt = useCallback((prompt: Prompt) => {
 
 
                       <CardContent className="space-y-3 relative z-10">
-                        {/* Ações minimalistas */}
+                        {/* Ações minimalistas - Todos os prompts têm Personalizar */}
                         <div className="flex gap-2 pt-3 border-t dark:border-gray-800">
-                          {extractVariables(prompt.content).length > 0 ? (
-                            // Prompt tem variáveis - mostrar botão Personalizar
-                            <>
-                              <Tooltip>
-                                <TooltipTrigger className="flex-1">
-                                  <Button
-                                    variant="default"
-                                    size="sm"
-                                    onClick={() => setCustomizerPrompt(prompt)}
-                                    className="w-full h-9 gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 transition-all duration-300"
-                                  >
-                                    <Sparkles className="w-4 h-4" />
-                                    <span className="text-xs">Personalizar</span>
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>Preencher variáveis do prompt</TooltipContent>
-                              </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger className="flex-1">
+                              <Button
+                                variant="default"
+                                size="sm"
+                                onClick={() => setCustomizerPrompt(prompt)}
+                                className="w-full h-9 gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 transition-all duration-300"
+                              >
+                                <Sparkles className="w-4 h-4" />
+                                <span className="text-xs">Personalizar</span>
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>
+                              {extractVariables(prompt.content).length > 0
+                                ? 'Preencher variáveis do prompt'
+                                : 'Adicionar contexto personalizado'}
+                            </TooltipContent>
+                          </Tooltip>
 
-                              <Tooltip>
-                                <TooltipTrigger>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setSelectedPrompt(prompt)}
-                                    className="h-9 gap-2 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 dark:hover:from-indigo-900/30 dark:hover:to-purple-900/30 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300"
-                                  >
-                                    <BookOpen className="w-4 h-4" />
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>Ver detalhes</TooltipContent>
-                              </Tooltip>
-                            </>
-                          ) : (
-                            // Prompt sem variáveis - mostrar botões tradicionais
-                            <>
-                              <Tooltip>
-                                <TooltipTrigger>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => copyPrompt(prompt)}
-                                    className="flex-1 h-9 gap-2 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 dark:hover:from-indigo-900/30 dark:hover:to-purple-900/30 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300"
-                                  >
-                                    {copiedId === prompt.id ? (
-                                      <>
-                                        <Check className="w-4 h-4 text-green-600" />
-                                        <span className="text-xs">Copiado!</span>
-                                      </>
-                                    ) : (
-                                      <>
-                                        <Copy className="w-4 h-4" />
-                                        <span className="text-xs">Copiar</span>
-                                      </>
-                                    )}
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>Copiar prompt</TooltipContent>
-                              </Tooltip>
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => copyPrompt(prompt)}
+                                className="h-9 gap-2 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 dark:hover:from-indigo-900/30 dark:hover:to-purple-900/30 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300"
+                              >
+                                {copiedId === prompt.id ? (
+                                  <Check className="w-4 h-4 text-green-600" />
+                                ) : (
+                                  <Copy className="w-4 h-4" />
+                                )}
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Copiar prompt</TooltipContent>
+                          </Tooltip>
 
-                              <Tooltip>
-                                <TooltipTrigger>
-                                  <Button
-                                    variant="outline"
-                                    size="sm"
-                                    onClick={() => setSelectedPrompt(prompt)}
-                                    className="flex-1 h-9 gap-2 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 dark:hover:from-indigo-900/30 dark:hover:to-purple-900/30 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300"
-                                  >
-                                    <BookOpen className="w-4 h-4" />
-                                    <span className="text-xs">Ver</span>
-                                  </Button>
-                                </TooltipTrigger>
-                                <TooltipContent>Ver detalhes</TooltipContent>
-                              </Tooltip>
-                            </>
-                          )}
+                          <Tooltip>
+                            <TooltipTrigger>
+                              <Button
+                                variant="outline"
+                                size="sm"
+                                onClick={() => setSelectedPrompt(prompt)}
+                                className="h-9 gap-2 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 dark:hover:from-indigo-900/30 dark:hover:to-purple-900/30 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300"
+                              >
+                                <BookOpen className="w-4 h-4" />
+                              </Button>
+                            </TooltipTrigger>
+                            <TooltipContent>Ver detalhes</TooltipContent>
+                          </Tooltip>
                         </div>
 
 
                         <Button
-                          onClick={() => openAI(aiName)}
+                          onClick={() => {
+                            const hasVars = extractVariables(prompt.content).length > 0;
+                            if (hasVars) {
+                              // Se tem variáveis, abre o customizer
+                              setCustomizerPrompt(prompt);
+                            } else {
+                              // Se não tem variáveis, abre a IA diretamente com o prompt
+                              openAI(aiName, prompt.content);
+                            }
+                          }}
                           className="w-full h-9 text-xs gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300"
                         >
                           <ExternalLink className="w-4 h-4" />
@@ -689,7 +708,17 @@ const copyPrompt = useCallback((prompt: Prompt) => {
                     {favorites.has(selectedPrompt.id) ? 'Favoritado' : 'Favoritar'}
                   </Button>
                   <Button
-                    onClick={() => openAI(getAIName(selectedPrompt))}
+                    onClick={() => {
+                      const hasVars = extractVariables(selectedPrompt.content).length > 0;
+                      if (hasVars) {
+                        // Se tem variáveis, abre o customizer
+                        setSelectedPrompt(null);
+                        setCustomizerPrompt(selectedPrompt);
+                      } else {
+                        // Se não tem variáveis, abre a IA diretamente
+                        openAI(getAIName(selectedPrompt), selectedPrompt.content);
+                      }
+                    }}
                     className="flex-1 h-11 gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
                   >
                     <ExternalLink className="w-4 h-4" />

@@ -28,18 +28,30 @@ export function PromptDialog({ prompt, open, onOpenChange }: PromptDialogProps) 
     }
   };
 
-  const openInChatGPT = () => {
-    const url = `https://chat.openai.com/?q=${encodeURIComponent(prompt.content)}`;
-    window.open(url, '_blank');
-  };
+  const openInAI = (aiName: string) => {
+    // Copiar prompt para clipboard primeiro
+    navigator.clipboard.writeText(prompt.content).catch(() => {});
 
-  const openInClaude = () => {
-    const url = `https://claude.ai/new`;
-    window.open(url, '_blank');
-  };
+    const encodedPrompt = encodeURIComponent(prompt.content);
+    let url = '';
 
-  const openInPerplexity = () => {
-    const url = `https://www.perplexity.ai/`;
+    switch (aiName) {
+      case 'ChatGPT':
+        url = `https://chat.openai.com/?q=${encodedPrompt}`;
+        break;
+      case 'Claude':
+        url = 'https://claude.ai/new';
+        break;
+      case 'Perplexity':
+        url = `https://www.perplexity.ai/?q=${encodedPrompt}`;
+        break;
+      case 'Gemini':
+        url = `https://gemini.google.com/app?text=${encodedPrompt}`;
+        break;
+      default:
+        url = `https://chat.openai.com/?q=${encodedPrompt}`;
+    }
+
     window.open(url, '_blank');
   };
 
@@ -145,7 +157,7 @@ export function PromptDialog({ prompt, open, onOpenChange }: PromptDialogProps) 
               </Button>
 
               <Button
-                onClick={openInChatGPT}
+                onClick={() => openInAI('ChatGPT')}
                 variant={recommendedAI === 'ChatGPT' ? 'default' : 'outline'}
                 className="flex-1"
               >
@@ -155,7 +167,7 @@ export function PromptDialog({ prompt, open, onOpenChange }: PromptDialogProps) 
               </Button>
 
               <Button
-                onClick={openInClaude}
+                onClick={() => openInAI('Claude')}
                 variant={recommendedAI === 'Claude' ? 'default' : 'outline'}
                 className="flex-1"
               >
@@ -165,7 +177,7 @@ export function PromptDialog({ prompt, open, onOpenChange }: PromptDialogProps) 
               </Button>
 
               <Button
-                onClick={openInPerplexity}
+                onClick={() => openInAI('Perplexity')}
                 variant={recommendedAI === 'Perplexity' ? 'default' : 'outline'}
                 className="flex-1"
               >
