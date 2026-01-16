@@ -212,6 +212,44 @@ const copyPrompt = useCallback((prompt: Prompt) => {
 
   const totalPages = Math.ceil(filteredPrompts.length / ITEMS_PER_PAGE);
 
+  // Extrair categorias dinamicamente dos prompts com contagem
+  const categoriesWithCount = useMemo(() => {
+    const categoryMap = new Map<string, number>();
+
+    prompts.forEach((prompt) => {
+      const cat = prompt.category || 'outros';
+      categoryMap.set(cat, (categoryMap.get(cat) || 0) + 1);
+    });
+
+    // Converter para array e ordenar alfabeticamente
+    return Array.from(categoryMap.entries())
+      .map(([name, count]) => ({ name, count }))
+      .sort((a, b) => a.name.localeCompare(b.name));
+  }, [prompts]);
+
+  // Formatar nome da categoria para exibição
+  const formatCategoryName = (category: string): string => {
+    const names: Record<string, string> = {
+      estudos: 'Estudos',
+      clinica: 'Clínica',
+      anamnese: 'Anamnese',
+      diagnostico: 'Diagnóstico',
+      tratamento: 'Tratamento',
+      pediatria: 'Pediatria',
+      ginecologia: 'Ginecologia',
+      cardiologia: 'Cardiologia',
+      neurologia: 'Neurologia',
+      ortopedia: 'Ortopedia',
+      emergencia: 'Emergência',
+      cirurgia: 'Cirurgia',
+      'clinica-medica': 'Clínica Médica',
+      'estudos-caso': 'Estudos de Caso',
+      revisao: 'Revisão',
+      outros: 'Outros',
+    };
+    return names[category] || category.charAt(0).toUpperCase() + category.slice(1);
+  };
+
   const clearFilters = useCallback(() => {
     setSearchTerm('');
     setSelectedCategory('all');
@@ -354,17 +392,19 @@ const copyPrompt = useCallback((prompt: Prompt) => {
 
               <div className="flex gap-2">
                 <Select value={selectedCategory} onValueChange={setSelectedCategory}>
-                  <SelectTrigger className="w-full md:w-[180px] h-12 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-gray-200 dark:border-gray-800">
+                  <SelectTrigger className="w-full md:w-[200px] h-12 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border-gray-200 dark:border-gray-800">
                     <Filter className="h-4 w-4 mr-2" />
-                    <SelectValue />
+                    <SelectValue placeholder="Categoria" />
                   </SelectTrigger>
                   <SelectContent>
-                    <SelectItem value="all">Todas</SelectItem>
-                    <SelectItem value="estudos">Estudos</SelectItem>
-                    <SelectItem value="clinica">Clínica</SelectItem>
-                    <SelectItem value="anamnese">Anamnese</SelectItem>
-                    <SelectItem value="diagnostico">Diagnóstico</SelectItem>
-                    <SelectItem value="tratamento">Tratamento</SelectItem>
+                    <SelectItem value="all">
+                      Todas ({prompts.length})
+                    </SelectItem>
+                    {categoriesWithCount.map(({ name, count }) => (
+                      <SelectItem key={name} value={name}>
+                        {formatCategoryName(name)} ({count})
+                      </SelectItem>
+                    ))}
                   </SelectContent>
                 </Select>
 
@@ -413,7 +453,8 @@ const copyPrompt = useCallback((prompt: Prompt) => {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-5">
                 {paginatedPrompts.map((prompt, index) => {
                   const aiName = getAIName(prompt);
-                  
+                  const variablesCount = extractVariables(prompt.content).length;
+
                   return (
                     <Card
                       key={prompt.id}
@@ -425,13 +466,22 @@ const copyPrompt = useCallback((prompt: Prompt) => {
                       
                       <CardHeader className="pb-3 relative z-10">
                         <div className="flex items-start justify-between gap-3 mb-3">
-                          <div className="flex gap-2">
-                            <Badge 
+                          <div className="flex flex-wrap gap-2">
+                            <Badge
                               variant="outline"
                               className="text-xs font-medium bg-gradient-to-r from-blue-50 to-green-50 dark:from-indigo-900/30 dark:to-purple-900/30 border-blue-200 dark:border-blue-800 text-indigo-700 dark:text-indigo-300"
                             >
                               {aiName}
                             </Badge>
+                            {variablesCount > 0 && (
+                              <Badge
+                                variant="outline"
+                                className="text-xs bg-amber-50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-700 text-amber-700 dark:text-amber-300"
+                              >
+                                <Sparkles className="w-3 h-3 mr-1" />
+                                {variablesCount} {variablesCount === 1 ? 'variável' : 'variáveis'}
+                              </Badge>
+                            )}
                             {prompt.isSystemPrompt && (
                               <Badge variant="outline" className="text-xs">
                                 <Zap className="w-3 h-3 mr-1" />
@@ -532,9 +582,12 @@ const copyPrompt = useCallback((prompt: Prompt) => {
 
                         <Button
                           onClick={() => {
-                            const hasVars = extractVariables(prompt.content).length > 0;
-                            if (hasVars) {
-                              // Se tem variáveis, abre o customizer
+                            if (variablesCount > 0) {
+                              // Se tem variáveis, mostra feedback e abre customizer
+                              toast({
+                                title: '✏️ Personalize o prompt',
+                                description: `Preencha ${variablesCount} ${variablesCount === 1 ? 'campo' : 'campos'} antes de usar`,
+                              });
                               setCustomizerPrompt(prompt);
                             } else {
                               // Se não tem variáveis, abre a IA diretamente com o prompt
@@ -544,7 +597,7 @@ const copyPrompt = useCallback((prompt: Prompt) => {
                           className="w-full h-9 text-xs gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300"
                         >
                           <ExternalLink className="w-4 h-4" />
-                          Abrir {aiName}
+                          {variablesCount > 0 ? 'Personalizar e Abrir' : `Abrir ${aiName}`}
                         </Button>
                       </CardContent>
                     </Card>
@@ -687,9 +740,13 @@ const copyPrompt = useCallback((prompt: Prompt) => {
                   </Button>
                   <Button
                     onClick={() => {
-                      const hasVars = extractVariables(selectedPrompt.content).length > 0;
-                      if (hasVars) {
-                        // Se tem variáveis, abre o customizer
+                      const varsCount = extractVariables(selectedPrompt.content).length;
+                      if (varsCount > 0) {
+                        // Se tem variáveis, mostra feedback e abre customizer
+                        toast({
+                          title: '✏️ Personalize o prompt',
+                          description: `Preencha ${varsCount} ${varsCount === 1 ? 'campo' : 'campos'} antes de usar`,
+                        });
                         setSelectedPrompt(null);
                         setCustomizerPrompt(selectedPrompt);
                       } else {
@@ -700,7 +757,7 @@ const copyPrompt = useCallback((prompt: Prompt) => {
                     className="flex-1 h-11 gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800"
                   >
                     <ExternalLink className="w-4 h-4" />
-                    Abrir IA
+                    {extractVariables(selectedPrompt.content).length > 0 ? 'Personalizar e Abrir' : 'Abrir IA'}
                   </Button>
                 </div>
               </div>
