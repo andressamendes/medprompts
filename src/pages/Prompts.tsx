@@ -379,13 +379,14 @@ const copyPrompt = useCallback((prompt: Prompt) => {
                 {searchTerm && (
                   <button
                     onClick={() => setSearchTerm('')}
+                    aria-label="Limpar busca"
                     className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors"
                   >
-                    <X className="h-4 w-4" />
+                    <X className="h-4 w-4" aria-hidden="true" />
                   </button>
                 )}
                 {isSearching && (
-                  <Loader2 className="absolute right-10 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-indigo-600" />
+                  <Loader2 className="absolute right-10 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-indigo-600" aria-label="Buscando..." role="status" />
                 )}
               </div>
 
@@ -425,8 +426,8 @@ const copyPrompt = useCallback((prompt: Prompt) => {
 
             {(searchTerm || selectedCategory !== 'all' || sortOrder !== 'a-z') && (
               <div className="flex justify-center animate-in fade-in duration-300">
-                <Button variant="ghost" size="sm" onClick={clearFilters} className="gap-2">
-                  <X className="h-4 w-4" />
+                <Button variant="ghost" size="sm" onClick={clearFilters} aria-label="Limpar todos os filtros aplicados" className="gap-2">
+                  <X className="h-4 w-4" aria-hidden="true" />
                   Limpar filtros
                 </Button>
               </div>
@@ -469,16 +470,16 @@ const copyPrompt = useCallback((prompt: Prompt) => {
                           <div className="flex flex-wrap gap-2">
                             <Badge
                               variant="outline"
-                              className="text-xs font-medium bg-gradient-to-r from-blue-50 to-green-50 dark:from-indigo-900/30 dark:to-purple-900/30 border-blue-200 dark:border-blue-800 text-indigo-700 dark:text-indigo-300"
+                              className="text-xs font-semibold bg-blue-100 dark:bg-blue-900/50 border-blue-300 dark:border-blue-700 text-blue-800 dark:text-blue-100"
                             >
                               {aiName}
                             </Badge>
                             {variablesCount > 0 && (
                               <Badge
                                 variant="outline"
-                                className="text-xs bg-amber-50 dark:bg-amber-900/30 border-amber-200 dark:border-amber-700 text-amber-700 dark:text-amber-300"
+                                className="text-xs font-semibold bg-amber-100 dark:bg-amber-900/50 border-amber-300 dark:border-amber-600 text-amber-800 dark:text-amber-100"
                               >
-                                <Sparkles className="w-3 h-3 mr-1" />
+                                <Sparkles className="w-3 h-3 mr-1" aria-hidden="true" />
                                 {variablesCount} {variablesCount === 1 ? 'variável' : 'variáveis'}
                               </Badge>
                             )}
@@ -495,7 +496,8 @@ const copyPrompt = useCallback((prompt: Prompt) => {
                               <button
                                 onClick={() => toggleFavorite(prompt.id)}
                                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all duration-300 group/star"
-                                aria-label={favorites.has(prompt.id) ? 'Remover' : 'Favoritar'}
+                                aria-label={favorites.has(prompt.id) ? `Remover ${prompt.title} dos favoritos` : `Adicionar ${prompt.title} aos favoritos`}
+                                aria-pressed={favorites.has(prompt.id)}
                               >
                                 <Star
                                   className={`w-5 h-5 transition-all duration-300 ${
@@ -503,11 +505,12 @@ const copyPrompt = useCallback((prompt: Prompt) => {
                                       ? 'fill-yellow-400 text-yellow-400 scale-110'
                                       : 'text-gray-400 group-hover/star:text-yellow-400 group-hover/star:scale-110'
                                   }`}
+                                  aria-hidden="true"
                                 />
                               </button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              {favorites.has(prompt.id) ? 'Remover' : 'Favoritar'}
+                              {favorites.has(prompt.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
                             </TooltipContent>
                           </Tooltip>
                         </div>
@@ -533,14 +536,15 @@ const copyPrompt = useCallback((prompt: Prompt) => {
                                 variant="default"
                                 size="sm"
                                 onClick={() => setCustomizerPrompt(prompt)}
+                                aria-label={`Personalizar prompt: ${prompt.title}`}
                                 className="w-full h-9 gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 transition-all duration-300"
                               >
-                                <Sparkles className="w-4 h-4" />
+                                <Sparkles className="w-4 h-4" aria-hidden="true" />
                                 <span className="text-xs">Personalizar</span>
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              {extractVariables(prompt.content).length > 0
+                              {variablesCount > 0
                                 ? 'Preencher variáveis do prompt'
                                 : 'Adicionar contexto personalizado'}
                             </TooltipContent>
@@ -552,12 +556,13 @@ const copyPrompt = useCallback((prompt: Prompt) => {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => copyPrompt(prompt)}
+                                aria-label={copiedId === prompt.id ? 'Prompt copiado' : `Copiar prompt: ${prompt.title}`}
                                 className="h-9 gap-2 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 dark:hover:from-indigo-900/30 dark:hover:to-purple-900/30 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300"
                               >
                                 {copiedId === prompt.id ? (
-                                  <Check className="w-4 h-4 text-green-600" />
+                                  <Check className="w-4 h-4 text-green-600" aria-hidden="true" />
                                 ) : (
-                                  <Copy className="w-4 h-4" />
+                                  <Copy className="w-4 h-4" aria-hidden="true" />
                                 )}
                               </Button>
                             </TooltipTrigger>
@@ -570,9 +575,10 @@ const copyPrompt = useCallback((prompt: Prompt) => {
                                 variant="outline"
                                 size="sm"
                                 onClick={() => setSelectedPrompt(prompt)}
+                                aria-label={`Ver detalhes do prompt: ${prompt.title}`}
                                 className="h-9 gap-2 hover:bg-gradient-to-r hover:from-indigo-50 hover:to-purple-50 dark:hover:from-indigo-900/30 dark:hover:to-purple-900/30 hover:border-indigo-300 dark:hover:border-indigo-700 transition-all duration-300"
                               >
-                                <BookOpen className="w-4 h-4" />
+                                <BookOpen className="w-4 h-4" aria-hidden="true" />
                               </Button>
                             </TooltipTrigger>
                             <TooltipContent>Ver detalhes</TooltipContent>
@@ -594,9 +600,10 @@ const copyPrompt = useCallback((prompt: Prompt) => {
                               openAI(aiName, prompt.content);
                             }
                           }}
+                          aria-label={variablesCount > 0 ? `Personalizar e abrir ${prompt.title} no ${aiName}` : `Abrir ${prompt.title} no ${aiName}`}
                           className="w-full h-9 text-xs gap-2 bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl hover:shadow-blue-500/30 transition-all duration-300"
                         >
-                          <ExternalLink className="w-4 h-4" />
+                          <ExternalLink className="w-4 h-4" aria-hidden="true" />
                           {variablesCount > 0 ? 'Personalizar e Abrir' : `Abrir ${aiName}`}
                         </Button>
                       </CardContent>
@@ -608,17 +615,18 @@ const copyPrompt = useCallback((prompt: Prompt) => {
 
             {/* Pagination Controls */}
             {filteredPrompts.length > ITEMS_PER_PAGE && (
-              <div className="flex items-center justify-center gap-2 mt-8">
+              <nav className="flex items-center justify-center gap-2 mt-8" aria-label="Paginação de prompts" role="navigation">
                 <Button
                   variant="outline"
                   size="sm"
                   onClick={() => setCurrentPage(p => Math.max(1, p - 1))}
                   disabled={currentPage === 1}
+                  aria-label="Ir para página anterior"
                 >
                   Anterior
                 </Button>
 
-                <div className="flex items-center gap-1">
+                <div className="flex items-center gap-1" role="group" aria-label="Páginas">
                   {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => {
                     // Show first, last, current, and adjacent pages
                     if (
@@ -632,6 +640,8 @@ const copyPrompt = useCallback((prompt: Prompt) => {
                           variant={page === currentPage ? "default" : "outline"}
                           size="sm"
                           onClick={() => setCurrentPage(page)}
+                          aria-label={`Ir para página ${page}`}
+                          aria-current={page === currentPage ? "page" : undefined}
                           className="w-10"
                         >
                           {page}
@@ -641,7 +651,7 @@ const copyPrompt = useCallback((prompt: Prompt) => {
                       page === currentPage - 2 ||
                       page === currentPage + 2
                     ) {
-                      return <span key={page} className="px-2">...</span>;
+                      return <span key={page} className="px-2" aria-hidden="true">...</span>;
                     }
                     return null;
                   })}
@@ -652,10 +662,11 @@ const copyPrompt = useCallback((prompt: Prompt) => {
                   size="sm"
                   onClick={() => setCurrentPage(p => Math.min(totalPages, p + 1))}
                   disabled={currentPage === totalPages}
+                  aria-label="Ir para próxima página"
                 >
                   Próxima
                 </Button>
-              </div>
+              </nav>
             )}
           </div>
         </main>
@@ -670,10 +681,12 @@ const copyPrompt = useCallback((prompt: Prompt) => {
                   <div className="flex-1">
                     <DialogTitle className="text-2xl mb-3">{selectedPrompt.title}</DialogTitle>
                     <div className="flex flex-wrap gap-2">
-                      <Badge className="bg-gradient-to-r from-blue-600 to-blue-700">
+                      <Badge className="bg-blue-600 text-white font-semibold">
                         {getAIName(selectedPrompt)}
                       </Badge>
-                      <Badge variant="outline">{selectedPrompt.category}</Badge>
+                      <Badge variant="outline" className="font-semibold bg-gray-100 dark:bg-gray-800 text-gray-800 dark:text-gray-100">
+                        {formatCategoryName(selectedPrompt.category)}
+                      </Badge>
                       {selectedPrompt.isSystemPrompt && (
                         <Badge variant="outline">
                           <Zap className="w-3 h-3 mr-1" />
