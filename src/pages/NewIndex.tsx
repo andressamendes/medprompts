@@ -1,7 +1,6 @@
 import { useNavigate, Link } from 'react-router-dom';
 import { PublicNavbar } from '@/components/PublicNavbar';
 import { Button } from '@/components/ui/button';
-import { Card } from '@/components/ui/card';
 import { AccessibleCard } from '@/components/AccessibleCard';
 import { About } from '@/components/sections/About';
 import {
@@ -14,8 +13,7 @@ import {
   Timer,
   Library,
   Stethoscope,
-  Heart,
-  Users
+  Heart
 } from 'lucide-react';
 
 /**
@@ -122,15 +120,6 @@ export default function NewIndex() {
       tags: ['Produtividade', 'XP'],
       color: 'green',
       link: '/focus-zone'
-    },
-    {
-      icon: Users,
-      title: 'Virtual Space',
-      description: 'Espaço multiplayer para estudar com colegas em salas temáticas (Lobby, Emergência, Enfermaria, UTI, Centro Cirúrgico)',
-      badge: 'Multiplayer',
-      tags: ['Colaboração', 'XP', 'Comunidade'],
-      color: 'indigo',
-      link: '/virtual-space'
     },
     {
       icon: Library,
@@ -418,48 +407,11 @@ export default function NewIndex() {
       {/* SEÇÃO SOBRE O PROJETO */}
       <About />
 
-      {/* CTA EDUCACIONAL (opcional) */}
-      <section className="container mx-auto px-4 sm:px-6 py-12 md:py-16">
-        <Card className="max-w-4xl mx-auto p-8 md:p-12 bg-gradient-to-br from-blue-50 to-green-50 dark:from-blue-900/20 dark:to-green-900/20 border border-blue-200 dark:border-blue-800">
-          <div className="text-center space-y-6">
-            {/* Badge */}
-            <div className="inline-flex items-center gap-2 px-4 py-2 bg-white/80 dark:bg-gray-900/80 rounded-lg text-sm font-medium text-gray-700 dark:text-gray-300 shadow-sm backdrop-blur-sm border border-gray-200 dark:border-gray-700">
-              <Trophy className="h-4 w-4 text-blue-600 dark:text-blue-400" />
-              Recursos Adicionais (Opcional)
-            </div>
-
-            {/* Título */}
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
-              Crie uma conta para recursos extras
-            </h2>
-
-            {/* Descrição */}
-            <p className="text-gray-600 dark:text-gray-400 max-w-2xl mx-auto">
-              Salve seus prompts favoritos, use o timer Pomodoro, acompanhe estatísticas
-              de estudo e organize recursos com tags personalizadas.
-            </p>
-
-            {/* Botões */}
-            <div className="flex flex-col sm:flex-row gap-3 justify-center pt-2">
-              <Button
-                asChild
-                size="lg"
-                className="bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                <Link to="/register">Criar Conta</Link>
-              </Button>
-              <Button asChild size="lg" variant="outline" className="border-gray-300 dark:border-gray-700">
-                <Link to="/prompts">Continuar sem conta</Link>
-              </Button>
-            </div>
-          </div>
-        </Card>
-      </section>
 
       {/* FOOTER INFORMATIVO */}
       <footer className="border-t bg-gray-50 dark:bg-gray-950" role="contentinfo">
         <div className="container mx-auto px-4 sm:px-6 py-12">
-          <div className="grid md:grid-cols-4 gap-8 max-w-6xl mx-auto">
+          <div className="grid md:grid-cols-3 gap-8 max-w-6xl mx-auto">
             {/* Coluna 1: Logo e Descrição */}
             <div className="space-y-4">
               <div className="flex items-center gap-2">
@@ -478,24 +430,24 @@ export default function NewIndex() {
               <h3 className="font-semibold text-gray-900 dark:text-white">Recursos</h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <button 
-                    onClick={() => navigate('/prompts')} 
+                  <button
+                    onClick={() => navigate('/prompts')}
                     className="text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
                   >
                     Biblioteca de Prompts
                   </button>
                 </li>
                 <li>
-                  <button 
-                    onClick={() => navigate('/guia-ias')} 
+                  <button
+                    onClick={() => navigate('/guia-ias')}
                     className="text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
                   >
                     Guia de IAs
                   </button>
                 </li>
                 <li>
-                  <button 
-                    onClick={() => navigate('/ferramentas')} 
+                  <button
+                    onClick={() => navigate('/ferramentas')}
                     className="text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
                   >
                     Ferramentas
@@ -509,41 +461,10 @@ export default function NewIndex() {
                     Focus Zone
                   </button>
                 </li>
-                <li>
-                  <button
-                    onClick={() => navigate('/virtual-space')}
-                    className="text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
-                  >
-                    Virtual Space
-                  </button>
-                </li>
               </ul>
             </div>
 
-            {/* Coluna 3: Conta */}
-            <div className="space-y-3">
-              <h3 className="font-semibold text-gray-900 dark:text-white">Conta</h3>
-              <ul className="space-y-2 text-sm">
-                <li>
-                  <button 
-                    onClick={() => navigate('/register')} 
-                    className="text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
-                  >
-                    Criar Conta
-                  </button>
-                </li>
-                <li>
-                  <button 
-                    onClick={() => navigate('/login')} 
-                    className="text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
-                  >
-                    Fazer Login
-                  </button>
-                </li>
-              </ul>
-            </div>
-
-            {/* Coluna 4: Desenvolvido por */}
+            {/* Coluna 3: Desenvolvido por */}
             <div className="space-y-3">
               <h3 className="font-semibold text-gray-900 dark:text-white">Desenvolvido por</h3>
               <div className="text-sm text-gray-600 dark:text-gray-400 space-y-1">

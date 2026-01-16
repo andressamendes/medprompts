@@ -76,23 +76,6 @@ export const PublicNavbar = () => {
                 <Moon className="h-5 w-5" />
               )}
             </Button>
-
-            {/* Botão Entrar */}
-            <Button
-              variant="ghost"
-              onClick={() => navigate('/login')}
-              className="text-sm text-gray-700 dark:text-gray-300"
-            >
-              Entrar
-            </Button>
-
-            {/* Botão Criar Conta */}
-            <Button
-              onClick={() => navigate('/register')}
-              className="bg-blue-600 hover:bg-blue-700 text-white"
-            >
-              Criar Conta
-            </Button>
           </div>
 
           {/* Mobile Actions */}
@@ -136,23 +119,6 @@ export const PublicNavbar = () => {
                 {link.label}
               </button>
             ))}
-            
-            {/* Botões Mobile */}
-            <div className="flex flex-col gap-2 pt-4 border-t">
-              <Button
-                variant="outline"
-                onClick={() => { navigate('/login'); setMobileMenuOpen(false); }}
-                className="w-full"
-              >
-                Entrar
-              </Button>
-              <Button
-                onClick={() => { navigate('/register'); setMobileMenuOpen(false); }}
-                className="w-full bg-blue-600 hover:bg-blue-700 text-white"
-              >
-                Criar Conta
-              </Button>
-            </div>
           </div>
         )}
       </div>

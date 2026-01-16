@@ -1,11 +1,8 @@
 import { BrowserRouter as Router, Routes, Route } from 'react-router-dom';
 import { Toaster } from '@/components/ui/toaster';
-import { AuthProvider } from '@/contexts/AuthContext';
 import { ThemeProvider } from '@/contexts/ThemeContext';
 import { FavoritesProvider } from '@/contexts/FavoritesContext';
 import { PromptHistoryProvider } from '@/contexts/PromptHistoryContext';
-import { CalendarProvider } from '@/contexts/CalendarContext';
-import ProtectedRoute from '@/components/ProtectedRoute';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
 import { lazy, Suspense, useEffect } from 'react';
 import { logger } from '@/utils/logger';
@@ -14,17 +11,10 @@ import { securityHeadersService } from '@/services/security-headers.service';
 
 // Páginas públicas
 import NewIndex from '@/pages/NewIndex';
-import Login from '@/pages/Login';
-import Register from '@/pages/Register';
 import NotFound from '@/pages/NotFound';
 
 // Páginas com lazy loading
 const Prompts = lazy(() => import('@/pages/Prompts'));
-const Profile = lazy(() => import('@/pages/Profile'));
-const StudySchedule = lazy(() => import('@/pages/StudySchedule'));
-const VirtualSpace = lazy(() => import('@/pages/VirtualSpace'));
-
-// Páginas educacionais públicas
 const GuiaIAs = lazy(() => import('@/pages/GuiaIAs'));
 const Ferramentas = lazy(() => import('@/pages/Ferramentas'));
 const FocusZone = lazy(() => import('@/pages/FocusZone'));
@@ -69,67 +59,26 @@ function App() {
   return (
     <ErrorBoundary>
       <ThemeProvider>
-        <AuthProvider>
-          <CalendarProvider>
-            <FavoritesProvider>
-              <PromptHistoryProvider>
-                <Router basename="/medprompts">
-                  <Suspense fallback={<LoadingScreen />}>
-                    <Routes>
-                      {/* ==================== ROTAS PÚBLICAS ==================== */}
-                      <Route path="/" element={<NewIndex />} />
-                      <Route path="/login" element={<Login />} />
-                      <Route path="/register" element={<Register />} />
-                      <Route path="/guia-ias" element={<GuiaIAs />} />
-                      <Route path="/ferramentas" element={<Ferramentas />} />
-                      <Route path="/focus-zone" element={<FocusZone />} />
-                      
-                      {/* Biblioteca de prompts (pública - acessível por todos) */}
-                      <Route path="/prompts" element={<Prompts />} />
+        <FavoritesProvider>
+          <PromptHistoryProvider>
+            <Router basename="/medprompts">
+              <Suspense fallback={<LoadingScreen />}>
+                <Routes>
+                  {/* ==================== ROTAS PÚBLICAS ==================== */}
+                  <Route path="/" element={<NewIndex />} />
+                  <Route path="/prompts" element={<Prompts />} />
+                  <Route path="/guia-ias" element={<GuiaIAs />} />
+                  <Route path="/ferramentas" element={<Ferramentas />} />
+                  <Route path="/focus-zone" element={<FocusZone />} />
 
-                      {/* ==================== ROTAS PROTEGIDAS ==================== */}
-
-                      {/* Cronograma de estudos (PROTEGIDO) */}
-                      <Route 
-                        path="/study-schedule" 
-                        element={
-                          <ProtectedRoute>
-                            <StudySchedule />
-                          </ProtectedRoute>
-                        } 
-                      />
-
-
-                      {/* Perfil do usuário */}
-                      <Route
-                        path="/profile"
-                        element={
-                          <ProtectedRoute>
-                            <Profile />
-                          </ProtectedRoute>
-                        }
-                      />
-
-                      {/* Virtual Space - Multiplayer */}
-                      <Route
-                        path="/virtual-space"
-                        element={
-                          <ProtectedRoute>
-                            <VirtualSpace />
-                          </ProtectedRoute>
-                        }
-                      />
-
-                      {/* ==================== ROTA 404 ==================== */}
-                      <Route path="*" element={<NotFound />} />
-                    </Routes>
-                  </Suspense>
-                  <Toaster />
-                </Router>
-              </PromptHistoryProvider>
-            </FavoritesProvider>
-          </CalendarProvider>
-        </AuthProvider>
+                  {/* ==================== ROTA 404 ==================== */}
+                  <Route path="*" element={<NotFound />} />
+                </Routes>
+              </Suspense>
+              <Toaster />
+            </Router>
+          </PromptHistoryProvider>
+        </FavoritesProvider>
       </ThemeProvider>
     </ErrorBoundary>
   );

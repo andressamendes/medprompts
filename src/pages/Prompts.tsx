@@ -16,12 +16,10 @@ import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
-import { useAuth } from '@/contexts/AuthContext';
-import PromptsService from '@/services/api/promptsService';
 import { PromptCustomizer } from '@/components/PromptCustomizer';
 import { extractVariables } from '@/lib/promptVariables';
 
-// Build: 2026-01-10 - Personalização de prompts com variáveis
+// Build: 2026-01-16 - Versão standalone sem backend
 
 
 function renderMarkdown(markdown: string): string {
@@ -47,8 +45,7 @@ function renderMarkdown(markdown: string): string {
  */
 export default function Prompts() {
   const navigate = useNavigate();
-  const { user } = useAuth();
-  
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedTab, setSelectedTab] = useState('all');
@@ -59,21 +56,16 @@ export default function Prompts() {
   const [isLoading, setIsLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
   const [isSearching, setIsSearching] = useState(false);
-  const [showLoginBanner, setShowLoginBanner] = useState(true);
   const [currentPage, setCurrentPage] = useState(1);
   const [customizerPrompt, setCustomizerPrompt] = useState<Prompt | null>(null);
   const ITEMS_PER_PAGE = 12;
 
-  // Carregar prompts do sistema (dados locais) com suporte opcional para API
+  // Carregar prompts do sistema (dados locais)
   useEffect(() => {
-  const loadPrompts = async () => {
-    try {
-      setIsLoading(true);
-
-      // Estratégia: Usar dados do sistema primeiro (mais rápido e confiável)
-      // API é opcional e só seria usada se backend estiver configurado
-
+    const loadPrompts = async () => {
       try {
+        setIsLoading(true);
+
         // Carregar prompts do sistema (built-in database)
         const promptsModule = await import('@/data/prompts-data');
         const systemPrompts = promptsModule.prompts || [];
@@ -90,119 +82,54 @@ export default function Prompts() {
               console.warn('Erro ao carregar favoritos:', e);
             }
           }
-
-          // Opcional: tentar sincronizar com API se backend estiver disponível
-          if (user && import.meta.env.VITE_API_URL) {
-            try {
-              const apiData = await PromptsService.listPrompts({ includeSystem: true });
-
-              if (apiData && apiData.length > 0) {
-                // Mesclar prompts do sistema com prompts do usuário da API
-                const userPrompts = apiData.filter(p => !p.isSystemPrompt);
-                const mergedPrompts = [...systemPrompts, ...userPrompts];
-                setPrompts(mergedPrompts);
-
-                // Atualizar favoritos da API
-                const favs = apiData.filter(p => p.isFavorite).map(p => p.id);
-                setFavorites(new Set(favs));
-              }
-            } catch (apiError) {
-              // API indisponível - ignorar silenciosamente e usar dados locais
-              console.info('Backend não disponível, usando dados do sistema');
-            }
-          }
         } else {
           throw new Error('Dados do sistema não encontrados');
         }
 
-      } catch (importError) {
-        console.error('Erro ao carregar dados do sistema:', importError);
+      } catch (error) {
+        console.error('Erro ao carregar prompts:', error);
         toast({
-          title: '❌ Erro crítico',
-          description: 'Não foi possível carregar os prompts do sistema',
+          title: '❌ Erro ao carregar prompts',
+          description: 'Não foi possível carregar os prompts',
           variant: 'destructive'
         });
+      } finally {
+        setIsLoading(false);
       }
+    };
 
-    } catch (error) {
-      console.error('Erro ao carregar prompts:', error);
-      toast({
-        title: '❌ Erro ao carregar prompts',
-        description: 'Não foi possível carregar os prompts',
-        variant: 'destructive'
-      });
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
-  loadPrompts();
-}, [user]);
+    loadPrompts();
+  }, []);
 
 
-  const toggleFavorite = useCallback(async (promptId: string) => {
-    try {
-      if (user) {
-        // Se logado, usar API
-        const updatedPrompt = await PromptsService.toggleFavorite(promptId);
-        
-        setPrompts(prev => 
-          prev.map(p => p.id === promptId ? updatedPrompt : p)
-        );
-        
-        setFavorites(prev => {
-          const newFavorites = new Set(prev);
-          if (updatedPrompt.isFavorite) {
-            newFavorites.add(promptId);
-            toast({ title: '⭐ Adicionado aos favoritos' });
-          } else {
-            newFavorites.delete(promptId);
-            toast({ title: '✨ Removido dos favoritos' });
-          }
-          return newFavorites;
-        });
+  const toggleFavorite = useCallback((promptId: string) => {
+    setFavorites(prev => {
+      const newFavorites = new Set(prev);
+      if (newFavorites.has(promptId)) {
+        newFavorites.delete(promptId);
+        toast({ title: '✨ Removido dos favoritos' });
       } else {
-        // Se não logado, usar localStorage
-        setFavorites(prev => {
-          const newFavorites = new Set(prev);
-          if (newFavorites.has(promptId)) {
-            newFavorites.delete(promptId);
-            toast({ title: '✨ Removido dos favoritos' });
-          } else {
-            newFavorites.add(promptId);
-            toast({ title: '⭐ Adicionado aos favoritos' });
-          }
-          return newFavorites;
-        });
+        newFavorites.add(promptId);
+        toast({ title: '⭐ Adicionado aos favoritos' });
       }
-    } catch (error) {
-      console.error('Erro ao favoritar:', error);
-      toast({ 
-        title: '❌ Erro ao favoritar',
-        variant: 'destructive'
-      });
-    }
-  }, [user]);
+      // Salvar no localStorage
+      localStorage.setItem('medprompts-favorites', JSON.stringify(Array.from(newFavorites)));
+      return newFavorites;
+    });
+  }, []);
 
 
-const copyPrompt = useCallback(async (prompt: Prompt) => {
+const copyPrompt = useCallback((prompt: Prompt) => {
   try {
     navigator.clipboard.writeText(prompt.content);
     setCopiedId(prompt.id);
     toast({ title: '✅ Prompt copiado!' });
-    
-    // Registrar uso (não aguarda para não travar a UI)
-    if (user) {
-      PromptsService.recordUsage(prompt.id).catch((err) => {
-        console.error('Erro ao registrar uso:', err);
-      });
-    }
-    
+
     setTimeout(() => setCopiedId(null), 2000);
   } catch (error) {
     console.error('Erro ao copiar:', error);
   }
-}, [user]);
+}, []);
 
 
 
@@ -366,43 +293,6 @@ const copyPrompt = useCallback(async (prompt: Prompt) => {
         {/* Main Content */}
         <main className="container mx-auto px-4 sm:px-6 py-8 md:py-12">
           <div className="space-y-6 animate-in fade-in slide-in-from-bottom-8 duration-700 delay-200">
-            {/* Banner Login */}
-            {!user && favorites.size > 0 && showLoginBanner && (
-              <div className="bg-gradient-to-r from-blue-50 to-green-50 dark:from-blue-950/30 dark:to-green-950/30 border border-blue-200 dark:border-blue-800 rounded-2xl p-5 shadow-lg backdrop-blur-sm animate-in fade-in slide-in-from-top-4 duration-500">
-                <div className="flex items-start justify-between gap-4">
-                  <div className="flex items-center gap-3 flex-1">
-                    <div className="flex-shrink-0 w-12 h-12 bg-gradient-to-br from-yellow-400 to-orange-500 rounded-full flex items-center justify-center shadow-lg">
-                      <Star className="h-6 w-6 text-white fill-white" />
-                    </div>
-                    <div className="flex-1">
-                      <p className="font-semibold text-gray-900 dark:text-white mb-1">
-                        {favorites.size} {favorites.size === 1 ? 'prompt favorito' : 'prompts favoritos'}
-                      </p>
-                      <p className="text-sm text-muted-foreground">
-                        Crie uma conta para sincronizar em todos os dispositivos
-                      </p>
-                    </div>
-                  </div>
-                  <div className="flex items-center gap-2">
-                    <Button
-                      size="sm"
-                      onClick={() => navigate('/register')}
-                      className="bg-gradient-to-r from-blue-600 to-blue-700 hover:from-blue-700 hover:to-blue-800 shadow-lg hover:shadow-xl transition-all duration-300"
-                    >
-                      Criar Conta
-                    </Button>
-                    <button
-                      onClick={() => setShowLoginBanner(false)}
-                      className="p-1 hover:bg-gray-200 dark:hover:bg-gray-700 rounded-full transition-colors"
-                    >
-                      <X className="h-4 w-4" />
-                    </button>
-                  </div>
-                </div>
-              </div>
-            )}
-
-
             {/* Tabs Minimalistas */}
             <Tabs value={selectedTab} onValueChange={setSelectedTab}>
               <TabsList className="grid w-full max-w-md mx-auto grid-cols-2 h-14 bg-white/50 dark:bg-gray-900/50 backdrop-blur-sm border border-gray-200 dark:border-gray-800">
