@@ -2,7 +2,7 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/vite.svg" />
+    <link rel="icon" type="image/svg+xml" href="/medprompts/vite.svg" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     
     <!-- SEO Meta Tags -->
@@ -35,7 +35,20 @@
     
     <!-- Robots -->
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
-    
+
+    <!-- Security & Performance -->
+    <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+    <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta name="referrer" content="strict-origin-when-cross-origin" />
+
+    <!-- Preconnect to external domains for performance -->
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+
+    <!-- DNS Prefetch for external resources -->
+    <link rel="dns-prefetch" href="https://stream.zeno.fm" />
+    <link rel="dns-prefetch" href="https://accounts.google.com" />
+
     <!-- Start Single Page Apps for GitHub Pages -->
     <script type="text/javascript">
       (function(l) {
@@ -50,11 +63,45 @@
       }(window.location))
     </script>
     <!-- End Single Page Apps for GitHub Pages -->
-    
-    <script type="module" crossorigin src="/medprompts/assets/index-DqfkySVU.js"></script>
-    <link rel="modulepreload" crossorigin href="/medprompts/assets/react-vendor-qWu8xY7P.js">
-    <link rel="modulepreload" crossorigin href="/medprompts/assets/ui-vendor-CjNc_n0u.js">
-    <link rel="stylesheet" crossorigin href="/medprompts/assets/index-CtT-mbOT.css">
+
+    <!-- Schema.org JSON-LD para SEO aprimorado -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "WebSite",
+      "name": "MedPrompts",
+      "url": "https://andressamendes.github.io/medprompts/",
+      "description": "Hub de ferramentas de IA para estudantes de medicina - Claude Opus 4.5, ChatGPT o3-mini, NotebookLM, Perplexity",
+      "creator": {
+        "@type": "Person",
+        "name": "Andressa Mendes",
+        "jobTitle": "Estudante de Medicina",
+        "affiliation": {
+          "@type": "EducationalOrganization",
+          "name": "Afya - Guanambi/BA"
+        }
+      },
+      "about": {
+        "@type": "Thing",
+        "name": "Inteligência Artificial para Educação Médica"
+      },
+      "potentialAction": {
+        "@type": "SearchAction",
+        "target": {
+          "@type": "EntryPoint",
+          "urlTemplate": "https://andressamendes.github.io/medprompts/prompts?q={search_term_string}"
+        },
+        "query-input": "required name=search_term_string"
+      },
+      "inLanguage": "pt-BR",
+      "datePublished": "2026-01-01",
+      "dateModified": "2026-01-09"
+    }
+    </script>
+
+    <script type="module" crossorigin src="/medprompts/assets/index-Bz4th3Xa.js"></script>
+    <link rel="modulepreload" crossorigin href="/medprompts/assets/vendor-DOLpHkWN.js">
+    <link rel="stylesheet" crossorigin href="/medprompts/assets/index-CdDAj6eM.css">
   </head>
   <body>
     <div id="root"></div>
