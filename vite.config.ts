@@ -41,6 +41,14 @@ export default defineConfig(({ command }) => {
             if (id.includes('node_modules/phaser')) {
               return 'phaser-vendor';
             }
+            // PDF.js (~600KB) - separate, loaded only when needed via dynamic import
+            if (id.includes('node_modules/pdfjs-dist')) {
+              return 'pdf-vendor';
+            }
+            // Mammoth (~200KB) - separate, loaded only when needed via dynamic import
+            if (id.includes('node_modules/mammoth')) {
+              return 'docx-vendor';
+            }
             // All other node_modules together (avoids circular dependencies)
             if (id.includes('node_modules')) {
               return 'vendor';
@@ -51,7 +59,7 @@ export default defineConfig(({ command }) => {
           assetFileNames: 'assets/[name]-[hash].[ext]'
         },
       },
-      chunkSizeWarningLimit: 1200, // Increased to accommodate Phaser (~800KB)
+      chunkSizeWarningLimit: 800, // Adjusted for main vendor chunk
       sourcemap: false, // Desabilita sourcemaps em produção para menor bundle
     },
     // ✅ Garante que assets sejam servidos corretamente
