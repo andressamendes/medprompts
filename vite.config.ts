@@ -45,11 +45,8 @@ export default defineConfig(({ command }) => {
             if (id.includes('node_modules/pdfjs-dist')) {
               return 'pdf-vendor';
             }
-            // Mammoth (~200KB) - separate, loaded only when needed via dynamic import
-            if (id.includes('node_modules/mammoth')) {
-              return 'docx-vendor';
-            }
-            // All other node_modules together (avoids circular dependencies)
+            // Mammoth fica no vendor principal para evitar dependência circular
+            // All other node_modules together
             if (id.includes('node_modules')) {
               return 'vendor';
             }
