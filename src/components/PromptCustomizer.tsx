@@ -397,7 +397,7 @@ export function PromptCustomizer({ prompt, open, onOpenChange }: PromptCustomize
     // Se tem conteúdo injetado, remover marcadores de variáveis não preenchidos
     if (hasInjectedContent) {
       // Remover marcadores [VARIÁVEL] não preenchidos do prompt
-      basePrompt = basePrompt.replace(/\[([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ\s]+)\]/g, (_match, varName) => {
+      basePrompt = basePrompt.replace(/\[([A-Za-zÀ-ÖØ-öø-ÿ0-9_\-\s]+)\]/g, (_match, varName) => {
         // Manter apenas se tiver valor preenchido
         const value = values[varName];
         return value && value.trim() ? value : '';
@@ -518,7 +518,7 @@ export function PromptCustomizer({ prompt, open, onOpenChange }: PromptCustomize
     let readyPrompt = customizedPrompt;
 
     // Remover quaisquer marcadores [VARIÁVEL] restantes
-    readyPrompt = readyPrompt.replace(/\[([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ\s]+)\]/g, '');
+    readyPrompt = readyPrompt.replace(/\[([A-Za-zÀ-ÖØ-öø-ÿ0-9_\-\s]+)\]/g, '');
 
     // Limpar formatação markdown para texto puro mais limpo
     // Remove ** mas mantém o texto
@@ -1037,7 +1037,7 @@ export function PromptCustomizer({ prompt, open, onOpenChange }: PromptCustomize
                     }
                     // Renderizar parágrafos normais com destaque para variáveis não preenchidas
                     const highlightedText = paragraph.replace(
-                      /\[([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ\s]+)\]/g,
+                      /\[([A-Za-zÀ-ÖØ-öø-ÿ0-9_\-\s]+)\]/g,
                       '<span class="bg-amber-200 dark:bg-amber-800 text-amber-800 dark:text-amber-200 px-1 rounded font-semibold">[$1]</span>'
                     ).replace(
                       /\*\*([^*]+)\*\*/g,

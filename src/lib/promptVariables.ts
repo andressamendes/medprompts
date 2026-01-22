@@ -4,21 +4,17 @@
  * Detecta variáveis no formato [VARIAVEL] e permite personalização
  */
 
-export interface PromptVariable {
-  name: string; // Nome da variável (ex: "TEMA")
-  placeholder: string; // Placeholder original (ex: "[TEMA]")
-  description?: string; // Descrição extraída do contexto
-  type: 'text' | 'textarea' | 'number' | 'date'; // Tipo de input
-  required: boolean; // Se é obrigatória
-  example?: string; // Exemplo de preenchimento
-  maxLength?: number; // Limite de caracteres
-}
+import type { PromptVariable } from '@/types/prompt';
+
+// Re-exportar para manter compatibilidade com imports existentes
+export type { PromptVariable };
 
 /**
  * Extrai todas as variáveis de um prompt
  */
 export function extractVariables(promptContent: string): PromptVariable[] {
-  const variableRegex = /\[([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ\s]+)\]/g;
+  // Regex expandido para capturar: letras (maiúsc/minúsc), acentos, números, underscore, hífen, espaços
+  const variableRegex = /\[([A-Za-zÀ-ÖØ-öø-ÿ0-9_\-\s]+)\]/g;
   const matches = promptContent.matchAll(variableRegex);
   const variablesMap = new Map<string, PromptVariable>();
 
@@ -204,7 +200,7 @@ export function validateVariables(
  */
 export function highlightVariables(promptContent: string): string {
   return promptContent.replace(
-    /\[([A-ZÁÀÂÃÉÊÍÓÔÕÚÇ\s]+)\]/g,
+    /\[([A-Za-zÀ-ÖØ-öø-ÿ0-9_\-\s]+)\]/g,
     '<span class="variable-highlight font-semibold text-indigo-600 dark:text-indigo-400">[$1]</span>'
   );
 }

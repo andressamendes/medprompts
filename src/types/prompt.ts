@@ -38,11 +38,14 @@ export interface AIRecommendation {
 
 export interface PromptVariable {
   name: string
-  description: string
-  type: 'text' | 'number' | 'select'
-  options?: string[]
+  description?: string
+  placeholder?: string // Placeholder original (ex: "[TEMA]")
+  type: 'text' | 'textarea' | 'number' | 'date' | 'select'
+  options?: string[] // Para type 'select'
   required?: boolean
   defaultValue?: string
+  example?: string // Exemplo de preenchimento
+  maxLength?: number // Limite de caracteres
 }
 
 export interface Prompt {

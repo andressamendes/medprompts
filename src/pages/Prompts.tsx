@@ -4,6 +4,7 @@ import DOMPurify from 'dompurify';
 import { Prompt } from '@/types/prompt';
 import { PublicNavbar } from '@/components/PublicNavbar';
 import { prompts as systemPrompts } from '@/data/prompts-data';
+import { useFavorites } from '@/contexts/FavoritesContext';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -53,12 +54,14 @@ function renderMarkdown(markdown: string): string {
 export default function Prompts() {
   const navigate = useNavigate();
 
+  // Usar o context de favoritos (com criptografia AES-256)
+  const { favorites, toggleFavorite: contextToggleFavorite, isFavorite, count: favoritesCount } = useFavorites();
+
   const [searchTerm, setSearchTerm] = useState('');
   const [selectedCategory, setSelectedCategory] = useState('all');
   const [selectedTab, setSelectedTab] = useState('all');
   const [sortOrder, setSortOrder] = useState('a-z');
   const [prompts, setPrompts] = useState<Prompt[]>([]);
-  const [favorites, setFavorites] = useState<Set<string>>(new Set());
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
@@ -67,27 +70,17 @@ export default function Prompts() {
   const [customizerPrompt, setCustomizerPrompt] = useState<Prompt | null>(null);
   const ITEMS_PER_PAGE = 12;
 
-  // Carregar prompts e favoritos na inicialização
+  // Carregar prompts na inicialização
   useEffect(() => {
     try {
       // Usar prompts importados estaticamente (mais rápido)
       if (systemPrompts.length > 0) {
         setPrompts(systemPrompts);
       }
-
-      // Carregar favoritos do localStorage
-      const stored = localStorage.getItem('medprompts-favorites');
-      if (stored) {
-        try {
-          setFavorites(new Set(JSON.parse(stored)));
-        } catch (e) {
-          console.warn('Erro ao carregar favoritos:', e);
-        }
-      }
     } catch (error) {
       console.error('Erro ao carregar prompts:', error);
       toast({
-        title: '❌ Erro ao carregar prompts',
+        title: 'Erro ao carregar prompts',
         description: 'Não foi possível carregar os prompts',
         variant: 'destructive'
       });
@@ -97,21 +90,14 @@ export default function Prompts() {
   }, []);
 
 
-  const toggleFavorite = useCallback((promptId: string) => {
-    setFavorites(prev => {
-      const newFavorites = new Set(prev);
-      if (newFavorites.has(promptId)) {
-        newFavorites.delete(promptId);
-        toast({ title: '✨ Removido dos favoritos' });
-      } else {
-        newFavorites.add(promptId);
-        toast({ title: '⭐ Adicionado aos favoritos' });
-      }
-      // Salvar no localStorage
-      localStorage.setItem('medprompts-favorites', JSON.stringify(Array.from(newFavorites)));
-      return newFavorites;
+  // Wrapper para toggleFavorite com feedback visual
+  const toggleFavorite = useCallback(async (promptId: string) => {
+    const wasAlreadyFavorite = isFavorite(promptId);
+    await contextToggleFavorite(promptId);
+    toast({
+      title: wasAlreadyFavorite ? 'Removido dos favoritos' : 'Adicionado aos favoritos'
     });
-  }, []);
+  }, [contextToggleFavorite, isFavorite]);
 
 
 const copyPrompt = useCallback((prompt: Prompt) => {
@@ -170,7 +156,7 @@ const copyPrompt = useCallback((prompt: Prompt) => {
     let filtered = [...prompts];
 
     if (selectedTab === 'favorites') {
-      filtered = filtered.filter((p) => favorites.has(p.id));
+      filtered = filtered.filter((p) => isFavorite(p.id));
     }
 
     if (selectedCategory !== 'all') {
@@ -196,7 +182,7 @@ const copyPrompt = useCallback((prompt: Prompt) => {
     });
 
     return filtered;
-  }, [prompts, selectedTab, selectedCategory, searchTerm, sortOrder, favorites]);
+  }, [prompts, selectedTab, selectedCategory, searchTerm, sortOrder, favorites, isFavorite]);
 
   // Reset page when filters change
   useEffect(() => {
@@ -354,9 +340,9 @@ const copyPrompt = useCallback((prompt: Prompt) => {
                 <TabsTrigger value="favorites" className="gap-2 data-[state=active]:bg-gradient-to-r data-[state=active]:from-indigo-600 data-[state=active]:to-purple-600 data-[state=active]:text-white transition-all duration-300">
                   <Star className="h-4 w-4" />
                   <span>Favoritos</span>
-                  {favorites.size > 0 && (
+                  {favoritesCount > 0 && (
                     <Badge className="ml-1 bg-white text-indigo-600 hover:bg-white">
-                      {favorites.size}
+                      {favoritesCount}
                     </Badge>
                   )}
                 </TabsTrigger>
@@ -496,12 +482,12 @@ const copyPrompt = useCallback((prompt: Prompt) => {
                               <button
                                 onClick={() => toggleFavorite(prompt.id)}
                                 className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-all duration-300 group/star"
-                                aria-label={favorites.has(prompt.id) ? `Remover ${prompt.title} dos favoritos` : `Adicionar ${prompt.title} aos favoritos`}
-                                aria-pressed={favorites.has(prompt.id)}
+                                aria-label={isFavorite(prompt.id) ? `Remover ${prompt.title} dos favoritos` : `Adicionar ${prompt.title} aos favoritos`}
+                                aria-pressed={isFavorite(prompt.id)}
                               >
                                 <Star
                                   className={`w-5 h-5 transition-all duration-300 ${
-                                    favorites.has(prompt.id)
+                                    isFavorite(prompt.id)
                                       ? 'fill-yellow-400 text-yellow-400 scale-110'
                                       : 'text-gray-400 group-hover/star:text-yellow-400 group-hover/star:scale-110'
                                   }`}
@@ -510,7 +496,7 @@ const copyPrompt = useCallback((prompt: Prompt) => {
                               </button>
                             </TooltipTrigger>
                             <TooltipContent>
-                              {favorites.has(prompt.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
+                              {isFavorite(prompt.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
                             </TooltipContent>
                           </Tooltip>
                         </div>
@@ -748,8 +734,8 @@ const copyPrompt = useCallback((prompt: Prompt) => {
                     variant="outline"
                     className="flex-1 h-11 gap-2"
                   >
-                    <Star className={favorites.has(selectedPrompt.id) ? 'fill-yellow-400 text-yellow-400' : ''} />
-                    {favorites.has(selectedPrompt.id) ? 'Favoritado' : 'Favoritar'}
+                    <Star className={isFavorite(selectedPrompt.id) ? 'fill-yellow-400 text-yellow-400' : ''} />
+                    {isFavorite(selectedPrompt.id) ? 'Favoritado' : 'Favoritar'}
                   </Button>
                   <Button
                     onClick={() => {
@@ -796,7 +782,7 @@ const copyPrompt = useCallback((prompt: Prompt) => {
                 </Badge>
                 <Badge variant="outline" className="gap-1">
                   <Star className="w-3 h-3" />
-                  {favorites.size} favoritos
+                  {favoritesCount} favoritos
                 </Badge>
               </div>
             </div>
