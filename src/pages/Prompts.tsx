@@ -12,7 +12,7 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
-  Search, Star, Copy, Filter, Loader2, ArrowUpDown, Check,
+  Search, Star, Copy, Filter, ArrowUpDown, Check,
   Sparkles, BookOpen, ArrowLeft, X, ExternalLink, Zap
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -65,7 +65,6 @@ export default function Prompts() {
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [isSearching, setIsSearching] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [customizerPrompt, setCustomizerPrompt] = useState<Prompt | null>(null);
   const ITEMS_PER_PAGE = 12;
@@ -144,13 +143,6 @@ const copyPrompt = useCallback((prompt: Prompt) => {
     window.open(url, '_blank', 'noopener,noreferrer');
   }, []);
 
-
-  // Manage searching state separately from filtering logic
-  useEffect(() => {
-    setIsSearching(true);
-    const timer = setTimeout(() => setIsSearching(false), 200);
-    return () => clearTimeout(timer);
-  }, [searchTerm, selectedCategory, selectedTab]);
 
   const filteredPrompts = useMemo(() => {
     let filtered = [...prompts];
@@ -370,9 +362,6 @@ const copyPrompt = useCallback((prompt: Prompt) => {
                   >
                     <X className="h-4 w-4" aria-hidden="true" />
                   </button>
-                )}
-                {isSearching && (
-                  <Loader2 className="absolute right-10 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-indigo-600" aria-label="Buscando..." role="status" />
                 )}
               </div>
 

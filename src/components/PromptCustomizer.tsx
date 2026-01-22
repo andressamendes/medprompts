@@ -294,7 +294,17 @@ export function PromptCustomizer({ prompt, open, onOpenChange }: PromptCustomize
 
     // Validar URL
     try {
-      new URL(url);
+      const parsedUrl = new URL(url);
+      // Bloquear protocolos perigosos
+      const dangerousProtocols = ['javascript:', 'data:', 'vbscript:', 'file:'];
+      if (dangerousProtocols.some(proto => parsedUrl.protocol === proto)) {
+        toast({
+          title: 'URL nao permitida',
+          description: 'Use apenas URLs http:// ou https://',
+          variant: 'destructive',
+        });
+        return;
+      }
     } catch {
       toast({
         title: 'URL invalida',
@@ -594,6 +604,7 @@ export function PromptCustomizer({ prompt, open, onOpenChange }: PromptCustomize
       claude: 'https://claude.ai/new',
       perplexity: 'https://www.perplexity.ai',
       gemini: 'https://gemini.google.com/app',
+      notebooklm: 'https://notebooklm.google.com',
     };
 
     const readyPrompt = getExecutionReadyPrompt();
@@ -613,7 +624,7 @@ export function PromptCustomizer({ prompt, open, onOpenChange }: PromptCustomize
     });
 
     const url = aiUrls[aiName.toLowerCase()] || aiUrls.chatgpt;
-    window.open(url, '_blank');
+    window.open(url, '_blank', 'noopener,noreferrer');
   };
 
   // Se não tem variáveis, mostrar interface simplificada com campo de contexto adicional
@@ -1103,7 +1114,7 @@ export function PromptCustomizer({ prompt, open, onOpenChange }: PromptCustomize
             <h3 className="text-sm font-semibold text-gray-700 dark:text-gray-300">
               Abrir diretamente em:
             </h3>
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-2">
               <Button
                 variant="outline"
                 size="sm"
@@ -1139,6 +1150,15 @@ export function PromptCustomizer({ prompt, open, onOpenChange }: PromptCustomize
               >
                 <ExternalLink className="w-4 h-4 mr-2" />
                 Gemini
+              </Button>
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => handleOpenAI('NotebookLM')}
+                disabled={!validation.valid}
+              >
+                <ExternalLink className="w-4 h-4 mr-2" />
+                NotebookLM
               </Button>
             </div>
           </div>
