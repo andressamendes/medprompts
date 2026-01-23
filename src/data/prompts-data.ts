@@ -1,5 +1,40 @@
 import { Prompt } from '@/types';
 
+/**
+ * CRITÉRIOS DE SELEÇÃO DE IA POR TIPO DE TAREFA MÉDICA
+ * Atualizado: Janeiro 2026
+ *
+ * PERPLEXITY - Ideal para:
+ * • Pesquisa de evidências científicas e literatura médica
+ * • Busca de guidelines e protocolos atualizados
+ * • Questões que precisam de informação atualizada da internet
+ * • Diagnóstico diferencial (prevalência, epidemiologia)
+ * • Validação com citações e referências verificáveis
+ *
+ * NOTEBOOKLM - Ideal para:
+ * • Síntese de materiais de estudo carregados pelo usuário
+ * • Resumos a partir de notas e documentos específicos
+ * • Integração de múltiplas fontes do próprio estudante
+ * • Anotações e método Cornell
+ * • Leitura ativa de material fornecido
+ *
+ * CLAUDE - Ideal para:
+ * • Raciocínio clínico complexo e multi-step
+ * • Diálogos socráticos (não fornecer respostas diretas)
+ * • Análise detalhada e feedback construtivo
+ * • Casos clínicos interativos
+ * • Escrita acadêmica estruturada
+ * • Árvores de decisão e lógica clínica
+ * • Análise sistemática de imagens
+ *
+ * CHATGPT - Ideal para:
+ * • Geração criativa (mnemônicos, analogias, exemplos)
+ * • Conteúdo estruturado com formatação específica (flashcards)
+ * • Planejamento de estudos e cronogramas
+ * • Checklists e listas estruturadas
+ * • Explicações simplificadas para leigos
+ */
+
 export const prompts: Prompt[] = [
   {
     id: '1',
@@ -155,9 +190,9 @@ Legenda de cores com significado semântico explícito.
     academicLevel: 'Todos os níveis',
     estimatedTime: 20,
     recommendedAI: {
-      primary: 'NotebookLM',
-      reason: 'Superior na criação de diagramas e sínteses visuais. Integra múltiplas fontes e gera representações multimodais complexas.',
-      alternatives: ['Perplexity', 'ChatGPT']
+      primary: 'Claude',
+      reason: 'Excelente em descrições visuais detalhadas e precisas. Mantém coerência entre representação verbal e visual com rigor lógico.',
+      alternatives: ['ChatGPT', 'NotebookLM']
     }
   },
   {
@@ -245,9 +280,9 @@ Agora, explique este conceito como se estivesse ensinando a um colega.
     academicLevel: 'Todos os níveis',
     estimatedTime: 30,
     recommendedAI: {
-      primary: 'ChatGPT',
-      reason: 'Ideal para diálogos socráticos interativos. Ajusta respostas dinamicamente e mantém conversação progressiva.',
-      alternatives: ['Claude']
+      primary: 'Claude',
+      reason: 'Superior em diálogos socráticos que exigem não fornecer respostas diretas. Mantém rigor metodológico e guia por perguntas progressivas.',
+      alternatives: ['ChatGPT']
     }
   },
   {
@@ -698,9 +733,9 @@ Discuta:
     academicLevel: 'Todos os níveis',
     estimatedTime: 35,
     recommendedAI: {
-      primary: 'ChatGPT',
-      reason: 'Excelente em simulações interativas progressivas. Mantém contexto e ajusta feedback dinamicamente.',
-      alternatives: ['Claude']
+      primary: 'Claude',
+      reason: 'Superior em casos clínicos complexos que exigem raciocínio multi-step. Fornece feedback detalhado sem revelar diagnóstico prematuramente.',
+      alternatives: ['ChatGPT']
     }
   },
   {
@@ -1154,9 +1189,9 @@ Solicite ao estudante que explique o raciocínio completo de forma estruturada.
     academicLevel: 'Todos os níveis',
     estimatedTime: 25,
     recommendedAI: {
-      primary: 'ChatGPT',
-      reason: 'Mantém diálogo socrático progressivo e adaptativo. Ajusta perguntas dinamicamente ao raciocínio do estudante.',
-      alternatives: ['Claude']
+      primary: 'Claude',
+      reason: 'Excelente em raciocínio clínico complexo sem fornecer respostas diretas. Guia o estudante com perguntas precisas e feedback construtivo.',
+      alternatives: ['ChatGPT']
     }
   },
   {
@@ -1253,9 +1288,9 @@ Solicite ao estudante:
     academicLevel: '3º-4º ano',
     estimatedTime: 20,
     recommendedAI: {
-      primary: 'ChatGPT',
-      reason: 'Guia análise sistemática progressiva. Mantém checklist estruturado e adapta perguntas conforme respostas.',
-      alternatives: ['Claude']
+      primary: 'Claude',
+      reason: 'Superior em análise sistemática de imagens médicas. Mantém rigor na sequência de avaliação e terminologia radiológica precisa.',
+      alternatives: ['ChatGPT']
     }
   },
   {
@@ -1831,9 +1866,9 @@ Parágrafo 4: Implicações e conclusões.
     academicLevel: '3º-4º ano',
     estimatedTime: 30,
     recommendedAI: {
-      primary: 'ChatGPT',
-      reason: 'Estrutura informações complexas em formato IMRAD. Organiza lógica científica com clareza.',
-      alternatives: ['Claude']
+      primary: 'Claude',
+      reason: 'Excelente em escrita acadêmica estruturada (IMRAD). Mantém precisão científica e organização lógica rigorosa.',
+      alternatives: ['ChatGPT', 'Perplexity']
     }
   },
   {
@@ -2022,9 +2057,9 @@ Listar todos os pontos finais possíveis com condutas claras.
     academicLevel: '3º-4º ano',
     estimatedTime: 20,
     recommendedAI: {
-      primary: 'ChatGPT',
-      reason: 'Constrói fluxogramas lógicos estruturados. Organiza decisões binárias em sequência clara.',
-      alternatives: ['Gemini']
+      primary: 'Claude',
+      reason: 'Superior em lógica de decisão clínica. Constrói árvores com ramificações precisas e critérios bem definidos.',
+      alternatives: ['ChatGPT']
     }
   },
   {
@@ -2427,9 +2462,9 @@ Para cada hipótese prioritária, sugira:
     academicLevel: '3º-4º ano',
     estimatedTime: 20,
     recommendedAI: {
-      primary: 'ChatGPT',
-      reason: 'Organiza informações em categorias lógicas. Prioriza hipóteses de forma estruturada e justificada.',
-      alternatives: ['Claude']
+      primary: 'Perplexity',
+      reason: 'Diagnóstico diferencial requer dados atualizados de prevalência e probabilidades. Acessa evidências para priorização baseada em epidemiologia.',
+      alternatives: ['Claude', 'ChatGPT']
     }
   }
 ];
