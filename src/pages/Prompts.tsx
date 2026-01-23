@@ -525,7 +525,7 @@ export default function Prompts() {
                 <div className="w-20 h-20 mx-auto mb-6 rounded-full bg-gradient-to-br from-gray-100 to-gray-200 dark:from-gray-800 dark:to-gray-900 flex items-center justify-center">
                   <Search className="w-10 h-10 text-gray-400" aria-hidden="true" />
                 </div>
-                <h3 className="text-2xl font-bold mb-3">Nenhum prompt encontrado</h3>
+                <h2 className="text-2xl font-bold mb-3">Nenhum prompt encontrado</h2>
                 <p className="text-muted-foreground mb-6">
                   {selectedTab === 'favorites'
                     ? 'Adicione prompts aos favoritos clicando na estrela'
