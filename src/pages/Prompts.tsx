@@ -273,29 +273,29 @@ export default function Prompts() {
   // Componente de filtros (reutilizado em desktop e mobile)
   const FiltersContent = () => (
     <div className="flex flex-col sm:flex-row gap-3">
-      <div className="relative flex-1">
+      <div className="relative flex-1 min-w-0">
         <Label htmlFor="search" className="sr-only">Buscar prompts</Label>
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4" aria-hidden="true" />
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-400 w-4 h-4 pointer-events-none" aria-hidden="true" />
         <Input
           id="search"
           placeholder="Buscar prompts..."
           value={searchTerm}
           onChange={(e) => handleSearchChange(e.target.value)}
-          className="pl-9 h-10"
+          className="pl-9 pr-9 h-11 sm:h-10 text-base sm:text-sm rounded-lg"
         />
         {searchTerm && (
           <button
             onClick={() => handleSearchChange('')}
             aria-label="Limpar busca"
-            className="absolute right-3 top-1/2 -translate-y-1/2 p-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded"
+            className="absolute right-3 top-1/2 -translate-y-1/2 p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-md transition-colors"
           >
-            <X className="h-4 w-4" aria-hidden="true" />
+            <X className="h-4 w-4 text-gray-500" aria-hidden="true" />
           </button>
         )}
       </div>
 
       <Select value={selectedCategory} onValueChange={handleCategoryChange}>
-        <SelectTrigger className="w-full sm:w-48 h-10" aria-label="Filtrar por categoria">
+        <SelectTrigger className="w-full sm:w-44 lg:w-48 h-11 sm:h-10 text-base sm:text-sm rounded-lg shrink-0" aria-label="Filtrar por categoria">
           <SelectValue placeholder="Categoria" />
         </SelectTrigger>
         <SelectContent>
@@ -314,20 +314,20 @@ export default function Prompts() {
     return (
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <PublicNavbar />
-        <div className="container mx-auto px-4 py-8">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-6 sm:py-8">
           <div className="animate-pulse space-y-6">
-            <div className="h-16 bg-gray-200 dark:bg-gray-800 rounded-lg w-64" />
-            <div className="flex gap-3">
-              <div className="flex-1 h-10 bg-gray-200 dark:bg-gray-800 rounded" />
-              <div className="w-48 h-10 bg-gray-200 dark:bg-gray-800 rounded" />
+            <div className="h-12 sm:h-16 bg-gray-200 dark:bg-gray-800 rounded-lg w-48 sm:w-64" />
+            <div className="flex flex-col sm:flex-row gap-3">
+              <div className="flex-1 h-10 sm:h-11 bg-gray-200 dark:bg-gray-800 rounded-lg" />
+              <div className="w-full sm:w-44 h-10 sm:h-11 bg-gray-200 dark:bg-gray-800 rounded-lg" />
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6">
               {[...Array(6)].map((_, i) => (
-                <div key={i} className="rounded-lg border bg-white dark:bg-gray-900 p-4 space-y-3">
+                <div key={i} className="rounded-xl border bg-white dark:bg-gray-900 p-4 sm:p-5 space-y-3 min-h-[180px]">
                   <div className="h-5 w-16 bg-gray-200 dark:bg-gray-800 rounded" />
                   <div className="h-5 w-3/4 bg-gray-200 dark:bg-gray-800 rounded" />
                   <div className="h-4 w-full bg-gray-200 dark:bg-gray-800 rounded" />
-                  <div className="h-10 bg-gray-200 dark:bg-gray-800 rounded" />
+                  <div className="h-10 bg-gray-200 dark:bg-gray-800 rounded-lg mt-auto" />
                 </div>
               ))}
             </div>
@@ -343,24 +343,24 @@ export default function Prompts() {
         <PublicNavbar />
 
         {/* Hero Section */}
-        <section className="bg-white dark:bg-gray-950 border-b py-8 md:py-12">
-          <div className="container mx-auto px-4 sm:px-6">
+        <section className="bg-white dark:bg-gray-950 border-b py-6 sm:py-8 lg:py-10">
+          <div className="container mx-auto px-4 sm:px-6 lg:px-8">
             <Button
               variant="ghost"
               size="sm"
               onClick={() => navigate('/')}
-              className="mb-6 gap-1"
+              className="mb-4 sm:mb-6 gap-1.5 -ml-2 text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-gray-100"
               aria-label="Voltar para página inicial"
             >
               <ArrowLeft className="h-4 w-4" aria-hidden="true" />
-              Voltar
+              <span className="text-sm">Voltar</span>
             </Button>
 
             <div className="max-w-2xl">
-              <h1 className="text-2xl md:text-3xl font-bold mb-2">
+              <h1 className="text-xl sm:text-2xl lg:text-3xl font-bold mb-1 sm:mb-2 text-gray-900 dark:text-white">
                 Prompts Médicos
               </h1>
-              <p className="text-gray-600 dark:text-gray-400">
+              <p className="text-sm sm:text-base text-gray-600 dark:text-gray-400">
                 {filteredPrompts.length} prompts para ChatGPT, Claude, Perplexity e NotebookLM
               </p>
             </div>
@@ -368,23 +368,23 @@ export default function Prompts() {
         </section>
 
         {/* Main Content */}
-        <main className="container mx-auto px-4 sm:px-6 py-6" id="main-content">
-          <div className="space-y-5">
+        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 lg:py-8" id="main-content">
+          <div className="space-y-4 sm:space-y-5 lg:space-y-6">
             {/* Tabs */}
             <Tabs value={selectedTab} onValueChange={handleTabChange}>
               <TabsList
-                className="grid w-full max-w-xs grid-cols-2 h-10"
+                className="grid w-full max-w-[280px] sm:max-w-xs grid-cols-2 h-11 sm:h-10"
                 aria-label="Filtrar por tipo de prompt"
               >
-                <TabsTrigger value="all" className="gap-1.5 text-sm">
-                  <Sparkles className="h-4 w-4" aria-hidden="true" />
-                  Todos
+                <TabsTrigger value="all" className="gap-1.5 text-sm data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300">
+                  <Sparkles className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span className="truncate">Todos</span>
                 </TabsTrigger>
-                <TabsTrigger value="favorites" className="gap-1.5 text-sm">
-                  <Star className="h-4 w-4" aria-hidden="true" />
-                  Favoritos
+                <TabsTrigger value="favorites" className="gap-1.5 text-sm data-[state=active]:text-indigo-700 dark:data-[state=active]:text-indigo-300">
+                  <Star className="h-4 w-4 shrink-0" aria-hidden="true" />
+                  <span className="truncate">Favoritos</span>
                   {favoritesCount > 0 && (
-                    <span className="ml-1 text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.5 rounded-full">
+                    <span className="ml-1 text-xs bg-indigo-100 dark:bg-indigo-900 text-indigo-700 dark:text-indigo-300 px-1.5 py-0.5 rounded-full shrink-0">
                       {favoritesCount}
                     </span>
                   )}
@@ -407,20 +407,20 @@ export default function Prompts() {
 
             {/* Grid de Cards */}
             {filteredPrompts.length === 0 ? (
-              <div className="text-center py-16" role="status">
-                <Search className="w-12 h-12 mx-auto mb-4 text-gray-300" aria-hidden="true" />
-                <h2 className="text-lg font-semibold mb-2">Nenhum prompt encontrado</h2>
-                <p className="text-gray-500 text-sm mb-4">
+              <div className="text-center py-12 sm:py-16 lg:py-20" role="status">
+                <Search className="w-10 sm:w-12 h-10 sm:h-12 mx-auto mb-3 sm:mb-4 text-gray-300 dark:text-gray-600" aria-hidden="true" />
+                <h2 className="text-base sm:text-lg font-semibold mb-2 text-gray-900 dark:text-white">Nenhum prompt encontrado</h2>
+                <p className="text-gray-500 dark:text-gray-400 text-sm mb-4 max-w-xs mx-auto">
                   {selectedTab === 'favorites'
                     ? 'Clique na estrela para favoritar prompts'
                     : 'Ajuste os filtros para encontrar prompts'}
                 </p>
-                <Button variant="outline" size="sm" onClick={clearFilters}>
+                <Button variant="outline" size="sm" onClick={clearFilters} className="h-10">
                   Limpar filtros
                 </Button>
               </div>
             ) : (
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" role="list">
+              <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5 lg:gap-6" role="list">
                 {paginatedPrompts.map((prompt) => {
                   const aiName = getAIName(prompt);
 
@@ -428,58 +428,57 @@ export default function Prompts() {
                     <Card
                       key={prompt.id}
                       role="listitem"
-                      className="bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:border-indigo-400 dark:hover:border-indigo-600 hover:shadow-lg transition-all"
+                      className="flex flex-col bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:border-indigo-400 dark:hover:border-indigo-600 hover:shadow-md transition-all rounded-xl"
                     >
-
-                      <CardHeader className="pb-3">
+                      <CardHeader className="pb-3 flex-1">
                         <div className="flex items-start justify-between gap-2 mb-2">
-                          <Badge variant="secondary" className="text-xs">
+                          <Badge variant="secondary" className="text-xs shrink-0">
                             {aiName}
                           </Badge>
 
                           <button
                             onClick={() => toggleFavorite(prompt.id)}
-                            className="p-1.5 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full"
+                            className="p-1.5 -mr-1 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-full transition-colors shrink-0"
                             aria-label={isFavorite(prompt.id) ? 'Remover dos favoritos' : 'Adicionar aos favoritos'}
                             aria-pressed={isFavorite(prompt.id)}
                           >
                             <Star
-                              className={`w-5 h-5 ${
+                              className={`w-5 h-5 transition-colors ${
                                 isFavorite(prompt.id)
                                   ? 'fill-yellow-400 text-yellow-400'
-                                  : 'text-gray-400'
+                                  : 'text-gray-400 hover:text-yellow-400'
                               }`}
                               aria-hidden="true"
                             />
                           </button>
                         </div>
 
-                        <CardTitle className="text-base leading-tight line-clamp-2">
+                        <CardTitle className="text-base sm:text-[15px] leading-snug line-clamp-2 text-gray-900 dark:text-white">
                           {prompt.title}
                         </CardTitle>
 
-                        <CardDescription className="text-sm mt-1.5 line-clamp-2">
+                        <CardDescription className="text-sm mt-1.5 line-clamp-2 text-gray-600 dark:text-gray-400">
                           {prompt.description}
                         </CardDescription>
                       </CardHeader>
 
-                      <CardContent className="pt-3 relative z-10">
+                      <CardContent className="pt-0 pb-4 sm:pb-5">
                         <div className="flex gap-2">
                           {/* Botão principal - Copiar Prompt */}
                           <Button
                             onClick={() => copyPrompt(prompt)}
                             aria-label={`Copiar "${prompt.title}"`}
-                            className="flex-1 h-10 gap-2 bg-indigo-600 hover:bg-indigo-700"
+                            className="flex-1 h-11 sm:h-10 gap-2 bg-indigo-600 hover:bg-indigo-700 text-sm font-medium rounded-lg"
                           >
                             {copiedId === prompt.id ? (
                               <>
-                                <Check className="w-4 h-4" aria-hidden="true" />
-                                Copiado!
+                                <Check className="w-4 h-4 shrink-0" aria-hidden="true" />
+                                <span className="truncate">Copiado!</span>
                               </>
                             ) : (
                               <>
-                                <Copy className="w-4 h-4" aria-hidden="true" />
-                                Copiar
+                                <Copy className="w-4 h-4 shrink-0" aria-hidden="true" />
+                                <span className="truncate">Copiar</span>
                               </>
                             )}
                           </Button>
@@ -492,7 +491,7 @@ export default function Prompts() {
                                 size="icon"
                                 onClick={() => setSelectedPrompt(prompt)}
                                 aria-label={`Ver detalhes de "${prompt.title}"`}
-                                className="h-10 w-10"
+                                className="h-11 w-11 sm:h-10 sm:w-10 shrink-0 rounded-lg"
                               >
                                 <BookOpen className="w-4 h-4" aria-hidden="true" />
                               </Button>
@@ -510,7 +509,7 @@ export default function Prompts() {
             {/* Paginação */}
             {filteredPrompts.length > ITEMS_PER_PAGE && (
               <nav
-                className="flex items-center justify-center gap-1 mt-8"
+                className="flex items-center justify-center gap-1 sm:gap-1.5 mt-6 sm:mt-8 lg:mt-10 px-2"
                 aria-label="Navegação de páginas"
               >
                 <Button
@@ -519,17 +518,17 @@ export default function Prompts() {
                   onClick={() => handlePageChange(validPage - 1)}
                   disabled={validPage === 1}
                   aria-label="Ir para página anterior"
-                  className="h-10 px-3"
+                  className="h-11 sm:h-10 px-3 sm:px-4 rounded-lg"
                 >
                   <ChevronLeft className="h-4 w-4" aria-hidden="true" />
-                  <span className="sr-only md:not-sr-only md:ml-1">Anterior</span>
+                  <span className="hidden sm:inline sm:ml-1">Anterior</span>
                 </Button>
 
                 <div className="flex items-center gap-1" role="group" aria-label="Páginas">
                   {getPaginationItems().map((item, index) => {
                     if (item === 'ellipsis') {
                       return (
-                        <span key={`ellipsis-${index}`} className="px-2 text-gray-400" aria-hidden="true">
+                        <span key={`ellipsis-${index}`} className="px-1.5 sm:px-2 text-gray-400" aria-hidden="true">
                           ...
                         </span>
                       );
@@ -542,7 +541,7 @@ export default function Prompts() {
                         onClick={() => handlePageChange(item)}
                         aria-label={`Ir para página ${item}`}
                         aria-current={item === validPage ? "page" : undefined}
-                        className="h-10 w-10"
+                        className="h-11 w-11 sm:h-10 sm:w-10 rounded-lg text-sm"
                       >
                         {item}
                       </Button>
@@ -556,9 +555,9 @@ export default function Prompts() {
                   onClick={() => handlePageChange(validPage + 1)}
                   disabled={validPage === totalPages}
                   aria-label="Ir para próxima página"
-                  className="h-10 px-3"
+                  className="h-11 sm:h-10 px-3 sm:px-4 rounded-lg"
                 >
-                  <span className="sr-only md:not-sr-only md:mr-1">Próxima</span>
+                  <span className="hidden sm:inline sm:mr-1">Próxima</span>
                   <ChevronRight className="h-4 w-4" aria-hidden="true" />
                 </Button>
               </nav>
@@ -569,45 +568,45 @@ export default function Prompts() {
         {/* Modal de Detalhes */}
         {selectedPrompt && (
           <Dialog open={!!selectedPrompt} onOpenChange={() => setSelectedPrompt(null)}>
-            <DialogContent className="max-w-3xl max-h-[85vh] overflow-y-auto">
-              <DialogHeader>
-                <div className="flex items-center gap-2 mb-2">
-                  <Badge variant="secondary">{getAIName(selectedPrompt)}</Badge>
-                  <Badge variant="outline">{formatCategoryName(selectedPrompt.category)}</Badge>
+            <DialogContent className="w-[calc(100%-2rem)] sm:w-full max-w-3xl max-h-[90vh] sm:max-h-[85vh] overflow-y-auto rounded-xl sm:rounded-lg p-4 sm:p-6">
+              <DialogHeader className="space-y-3">
+                <div className="flex flex-wrap items-center gap-2">
+                  <Badge variant="secondary" className="text-xs">{getAIName(selectedPrompt)}</Badge>
+                  <Badge variant="outline" className="text-xs">{formatCategoryName(selectedPrompt.category)}</Badge>
                 </div>
-                <DialogTitle className="text-xl">{selectedPrompt.title}</DialogTitle>
-                <DialogDescription>{selectedPrompt.description}</DialogDescription>
+                <DialogTitle className="text-lg sm:text-xl leading-snug">{selectedPrompt.title}</DialogTitle>
+                <DialogDescription className="text-sm">{selectedPrompt.description}</DialogDescription>
               </DialogHeader>
 
               <div className="mt-4">
                 <div
-                  className="bg-gray-50 dark:bg-gray-900 rounded-lg p-4 border text-sm prose prose-sm dark:prose-invert max-w-none"
+                  className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 sm:p-4 border text-sm prose prose-sm dark:prose-invert max-w-none overflow-x-auto"
                   dangerouslySetInnerHTML={{ __html: renderMarkdown(selectedPrompt.content) }}
                 />
               </div>
 
-              <div className="flex gap-2 mt-4 pt-4 border-t">
+              <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 mt-4 pt-4 border-t">
                 <Button
                   onClick={() => copyPrompt(selectedPrompt)}
                   variant="outline"
-                  className="flex-1 gap-2"
+                  className="flex-1 h-11 sm:h-10 gap-2 rounded-lg order-2 sm:order-1"
                 >
                   {copiedId === selectedPrompt.id ? (
                     <>
-                      <Check className="w-4 h-4 text-green-600" aria-hidden="true" />
-                      Copiado!
+                      <Check className="w-4 h-4 text-green-600 shrink-0" aria-hidden="true" />
+                      <span>Copiado!</span>
                     </>
                   ) : (
                     <>
-                      <Copy className="w-4 h-4" aria-hidden="true" />
-                      Copiar
+                      <Copy className="w-4 h-4 shrink-0" aria-hidden="true" />
+                      <span>Copiar</span>
                     </>
                   )}
                 </Button>
                 <Button
                   onClick={() => toggleFavorite(selectedPrompt.id)}
                   variant="outline"
-                  className="gap-2"
+                  className="h-11 w-11 sm:h-10 sm:w-10 gap-2 rounded-lg shrink-0 order-3 sm:order-2 self-end sm:self-auto"
                 >
                   <Star className={`w-4 h-4 ${isFavorite(selectedPrompt.id) ? 'fill-yellow-400 text-yellow-400' : ''}`} aria-hidden="true" />
                 </Button>
@@ -616,10 +615,10 @@ export default function Prompts() {
                     copyPrompt(selectedPrompt, false);
                     openAI(getAIName(selectedPrompt));
                   }}
-                  className="flex-1 gap-2 bg-indigo-600 hover:bg-indigo-700"
+                  className="flex-1 h-11 sm:h-10 gap-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg order-1 sm:order-3"
                 >
-                  <ExternalLink className="w-4 h-4" aria-hidden="true" />
-                  Usar Prompt
+                  <ExternalLink className="w-4 h-4 shrink-0" aria-hidden="true" />
+                  <span>Usar Prompt</span>
                 </Button>
               </div>
             </DialogContent>
