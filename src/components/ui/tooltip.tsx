@@ -1,5 +1,6 @@
 import * as React from "react"
 import { cn } from "@/lib/utils"
+import { Slot } from "@radix-ui/react-slot"
 
 interface TooltipContextValue {
   open: boolean
@@ -25,14 +26,19 @@ export const Tooltip: React.FC<{ children: React.ReactNode }> = ({ children }) =
   )
 }
 
+interface TooltipTriggerProps extends React.HTMLAttributes<HTMLDivElement> {
+  asChild?: boolean
+}
+
 export const TooltipTrigger = React.forwardRef<
   HTMLDivElement,
-  React.HTMLAttributes<HTMLDivElement>
->(({ className, children, ...props }, ref) => {
+  TooltipTriggerProps
+>(({ className, children, asChild = false, ...props }, ref) => {
   const { setOpen } = React.useContext(TooltipContext)
+  const Comp = asChild ? Slot : "div"
 
   return (
-    <div
+    <Comp
       ref={ref}
       className={cn("inline-block", className)}
       onMouseEnter={() => setOpen(true)}
@@ -42,7 +48,7 @@ export const TooltipTrigger = React.forwardRef<
       {...props}
     >
       {children}
-    </div>
+    </Comp>
   )
 })
 TooltipTrigger.displayName = "TooltipTrigger"
