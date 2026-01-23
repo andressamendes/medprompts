@@ -6,7 +6,6 @@ import { PublicNavbar } from '@/components/PublicNavbar';
 import { prompts as systemPrompts } from '@/data/prompts-data';
 import { useFavorites } from '@/contexts/FavoritesContext';
 import { getAIName, formatCategoryName, AI_URLS } from '@/lib/utils';
-import { extractVariables } from '@/lib/promptVariables';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -14,15 +13,14 @@ import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
 import {
-  Search, Star, Copy, Check,
-  Sparkles, BookOpen, ArrowLeft, X, ExternalLink,
+  Search, Star, Copy, Check, Sparkles,
+  BookOpen, ArrowLeft, X, ExternalLink,
   ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
-import { PromptCustomizer } from '@/components/PromptCustomizer';
 
 // Build: 2026-01-23 - Versão com UX melhorada
 
@@ -85,7 +83,6 @@ export default function Prompts() {
   const [selectedPrompt, setSelectedPrompt] = useState<Prompt | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
-  const [customizerPrompt, setCustomizerPrompt] = useState<Prompt | null>(null);
 
   const ITEMS_PER_PAGE = 12;
 
@@ -190,15 +187,6 @@ export default function Prompts() {
     const url = AI_URLS[aiName] || AI_URLS.ChatGPT;
     window.open(url, '_blank', 'noopener,noreferrer');
   }, []);
-
-  // Memoizar contagem de variáveis por prompt
-  const variablesCountMap = useMemo(() => {
-    const map = new Map<string, number>();
-    prompts.forEach(p => {
-      map.set(p.id, extractVariables(p.content).length);
-    });
-    return map;
-  }, [prompts]);
 
   const filteredPrompts = useMemo(() => {
     let filtered = [...prompts];
@@ -435,7 +423,6 @@ export default function Prompts() {
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4" role="list">
                 {paginatedPrompts.map((prompt) => {
                   const aiName = getAIName(prompt);
-                  const variablesCount = variablesCountMap.get(prompt.id) || 0;
 
                   return (
                     <Card
@@ -474,37 +461,20 @@ export default function Prompts() {
                         <CardDescription className="text-sm mt-1.5 line-clamp-2">
                           {prompt.description}
                         </CardDescription>
-
-                        {variablesCount > 0 && (
-                          <p className="text-xs text-amber-600 dark:text-amber-400 mt-2">
-                            {variablesCount} {variablesCount === 1 ? 'campo' : 'campos'} para preencher
-                          </p>
-                        )}
                       </CardHeader>
 
                       <CardContent className="pt-3 relative z-10">
                         <div className="flex gap-2">
-                          {/* Botão principal - Usar Prompt */}
+                          {/* Botão principal - Copiar Prompt */}
                           <Button
-                            onClick={() => {
-                              if (variablesCount > 0) {
-                                setCustomizerPrompt(prompt);
-                              } else {
-                                copyPrompt(prompt);
-                              }
-                            }}
-                            aria-label={variablesCount > 0 ? `Personalizar "${prompt.title}"` : `Copiar "${prompt.title}"`}
+                            onClick={() => copyPrompt(prompt)}
+                            aria-label={`Copiar "${prompt.title}"`}
                             className="flex-1 h-10 gap-2 bg-indigo-600 hover:bg-indigo-700"
                           >
                             {copiedId === prompt.id ? (
                               <>
                                 <Check className="w-4 h-4" aria-hidden="true" />
                                 Copiado!
-                              </>
-                            ) : variablesCount > 0 ? (
-                              <>
-                                <Sparkles className="w-4 h-4" aria-hidden="true" />
-                                Personalizar
                               </>
                             ) : (
                               <>
@@ -643,19 +613,13 @@ export default function Prompts() {
                 </Button>
                 <Button
                   onClick={() => {
-                    const varsCount = variablesCountMap.get(selectedPrompt.id) || 0;
-                    if (varsCount > 0) {
-                      setSelectedPrompt(null);
-                      setCustomizerPrompt(selectedPrompt);
-                    } else {
-                      copyPrompt(selectedPrompt, false);
-                      openAI(getAIName(selectedPrompt));
-                    }
+                    copyPrompt(selectedPrompt, false);
+                    openAI(getAIName(selectedPrompt));
                   }}
                   className="flex-1 gap-2 bg-indigo-600 hover:bg-indigo-700"
                 >
                   <ExternalLink className="w-4 h-4" aria-hidden="true" />
-                  {(variablesCountMap.get(selectedPrompt.id) || 0) > 0 ? 'Personalizar' : 'Usar Prompt'}
+                  Usar Prompt
                 </Button>
               </div>
             </DialogContent>
@@ -668,15 +632,6 @@ export default function Prompts() {
             <p>MedPrompts © 2026 • Por Andressa Mendes</p>
           </div>
         </footer>
-
-        {/* Customizer Modal */}
-        {customizerPrompt && (
-          <PromptCustomizer
-            prompt={customizerPrompt}
-            open={!!customizerPrompt}
-            onOpenChange={(open) => !open && setCustomizerPrompt(null)}
-          />
-        )}
       </div>
     </TooltipProvider>
   );
