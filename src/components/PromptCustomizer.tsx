@@ -18,6 +18,7 @@ import {
   X,
 } from 'lucide-react';
 import type { Prompt } from '@/types/prompt';
+import { extractVariables } from '@/lib/promptVariables';
 
 const HISTORY_KEY = 'medprompts_variable_history';
 
@@ -29,18 +30,6 @@ interface PromptCustomizerProps {
 
 interface VariableHistory {
   [varName: string]: string[];
-}
-
-function extractVariables(content: string): string[] {
-  const regex = /\[([A-Za-zÀ-ÖØ-öø-ÿ0-9_\-\s]+)\]/g;
-  const variables: string[] = [];
-  let match;
-  while ((match = regex.exec(content)) !== null) {
-    if (!variables.includes(match[1])) {
-      variables.push(match[1]);
-    }
-  }
-  return variables;
 }
 
 function getPlaceholder(varName: string): string {
@@ -108,7 +97,9 @@ export function PromptCustomizer({ prompt, open, onOpenChange }: PromptCustomize
     }
   }, [open, prompt.id]);
 
-  const variables = useMemo(() => extractVariables(prompt.content), [prompt.content]);
+  const variables = useMemo(() =>
+    extractVariables(prompt.content).map(v => v.name)
+  , [prompt.content]);
   const history = useMemo(() => getHistory(), [open]);
 
   const filledCount = useMemo(() =>
