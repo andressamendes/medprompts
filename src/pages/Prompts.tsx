@@ -11,10 +11,10 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Badge } from '@/components/ui/badge';
 import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
-import { Tooltip, TooltipContent, TooltipProvider, TooltipTrigger } from '@/components/ui/tooltip';
+import { TooltipProvider } from '@/components/ui/tooltip';
 import {
   Search, Star, Copy, Check, Sparkles,
-  BookOpen, ArrowLeft, X, ExternalLink,
+  Eye, ArrowLeft, X, ExternalLink,
   ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
@@ -484,20 +484,15 @@ export default function Prompts() {
                           </Button>
 
                           {/* Ver detalhes */}
-                          <Tooltip>
-                            <TooltipTrigger asChild>
-                              <Button
-                                variant="outline"
-                                size="icon"
-                                onClick={() => setSelectedPrompt(prompt)}
-                                aria-label={`Ver detalhes de "${prompt.title}"`}
-                                className="h-11 w-11 sm:h-10 sm:w-10 shrink-0 rounded-lg"
-                              >
-                                <BookOpen className="w-4 h-4" aria-hidden="true" />
-                              </Button>
-                            </TooltipTrigger>
-                            <TooltipContent>Ver prompt completo</TooltipContent>
-                          </Tooltip>
+                          <Button
+                            variant="outline"
+                            onClick={() => setSelectedPrompt(prompt)}
+                            aria-label={`Ver detalhes de "${prompt.title}"`}
+                            className="h-11 sm:h-10 px-3 sm:px-4 gap-2 shrink-0 rounded-lg border-indigo-200 dark:border-indigo-800 text-indigo-600 dark:text-indigo-400 hover:bg-indigo-50 dark:hover:bg-indigo-950 hover:border-indigo-300 dark:hover:border-indigo-700"
+                          >
+                            <Eye className="w-4 h-4 shrink-0" aria-hidden="true" />
+                            <span className="hidden sm:inline text-sm font-medium">Ver</span>
+                          </Button>
                         </div>
                       </CardContent>
                     </Card>
