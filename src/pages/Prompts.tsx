@@ -1,4 +1,4 @@
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import DOMPurify from 'dompurify';
 import { Prompt } from '@/types/prompt';
@@ -84,6 +84,10 @@ export default function Prompts() {
   const [isLoading, setIsLoading] = useState(true);
   const [copiedId, setCopiedId] = useState<string | null>(null);
 
+  // Estado local para input de busca (feedback imediato)
+  const [localSearchTerm, setLocalSearchTerm] = useState(searchTerm);
+  const searchTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
   const ITEMS_PER_PAGE = 12;
 
   // Atualizar URL params
@@ -101,9 +105,33 @@ export default function Prompts() {
     setSearchParams(newParams, { replace: true });
   }, [searchParams, setSearchParams]);
 
-  // Handlers para filtros
+  // Sincronizar estado local com URL
+  useEffect(() => {
+    setLocalSearchTerm(searchTerm);
+  }, [searchTerm]);
+
+  // Cleanup do timeout ao desmontar
+  useEffect(() => {
+    return () => {
+      if (searchTimeoutRef.current) {
+        clearTimeout(searchTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  // Handlers para filtros (com debounce na busca)
   const handleSearchChange = useCallback((value: string) => {
-    updateParams({ q: value, page: '1' });
+    // Atualiza estado local imediatamente (feedback visual)
+    setLocalSearchTerm(value);
+
+    // Debounce a atualização da URL (300ms)
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
+
+    searchTimeoutRef.current = setTimeout(() => {
+      updateParams({ q: value, page: '1' });
+    }, 300);
   }, [updateParams]);
 
   const handleCategoryChange = useCallback((value: string) => {
@@ -238,11 +266,15 @@ export default function Prompts() {
   }, [prompts]);
 
   const clearFilters = useCallback(() => {
+    setLocalSearchTerm(''); // Limpar estado local imediatamente
+    if (searchTimeoutRef.current) {
+      clearTimeout(searchTimeoutRef.current);
+    }
     setSearchParams({});
     toast({ title: '🔄 Filtros limpos' });
   }, [setSearchParams]);
 
-  const hasActiveFilters = searchTerm || selectedCategory !== 'all';
+  const hasActiveFilters = localSearchTerm || selectedCategory !== 'all';
 
   // Paginação com ellipsis melhorada
   const getPaginationItems = useCallback(() => {
@@ -279,11 +311,11 @@ export default function Prompts() {
         <Input
           id="search"
           placeholder="Buscar prompts..."
-          value={searchTerm}
+          value={localSearchTerm}
           onChange={(e) => handleSearchChange(e.target.value)}
           className="pl-9 pr-9 h-11 sm:h-10 text-base sm:text-sm rounded-lg"
         />
-        {searchTerm && (
+        {localSearchTerm && (
           <button
             onClick={() => handleSearchChange('')}
             aria-label="Limpar busca"

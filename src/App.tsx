@@ -4,6 +4,7 @@ import { ThemeProvider } from '@/contexts/ThemeContext';
 import { FavoritesProvider } from '@/contexts/FavoritesContext';
 import { PromptHistoryProvider } from '@/contexts/PromptHistoryContext';
 import { ErrorBoundary } from '@/components/ErrorBoundary';
+import { SkipLinks } from '@/components/SkipLinks';
 import { lazy, Suspense, useEffect } from 'react';
 import { logger } from '@/utils/logger';
 import { cspService } from '@/services/csp.service';
@@ -62,6 +63,7 @@ function App() {
         <FavoritesProvider>
           <PromptHistoryProvider>
             <Router basename="/medprompts">
+              <SkipLinks />
               <Suspense fallback={<LoadingScreen />}>
                 <Routes>
                   {/* ==================== ROTAS PÚBLICAS ==================== */}

@@ -84,25 +84,26 @@ export default function FocusZone() {
   const audioRef = useRef<HTMLAudioElement>(null);
 
   // ========== Estados do Checklist ==========
-  const [tasks, setTasks] = useState<Task[]>([]);
+  // Inicializar tarefas diretamente do localStorage para evitar race condition
+  const [tasks, setTasks] = useState<Task[]>(() => {
+    try {
+      const stored = localStorage.getItem(TASKS_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (Array.isArray(parsed)) {
+          return parsed;
+        }
+      }
+    } catch {
+      // Silenciar erros de parsing
+    }
+    return [];
+  });
   const [newTaskText, setNewTaskText] = useState('');
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
   const [celebratingTaskId, setCelebratingTaskId] = useState<string | null>(null);
   const newTaskInputRef = useRef<HTMLInputElement>(null);
-
-  // ========== Carregar tarefas do localStorage ==========
-  useEffect(() => {
-    try {
-      const stored = localStorage.getItem(TASKS_STORAGE_KEY);
-      if (stored) {
-        const parsed = JSON.parse(stored);
-        setTasks(parsed);
-      }
-    } catch {
-      // Silenciar erros de parsing
-    }
-  }, []);
 
   // ========== Salvar tarefas no localStorage ==========
   useEffect(() => {
@@ -219,6 +220,26 @@ export default function FocusZone() {
       audioRef.current.volume = volume / 100;
     }
   }, [volume]);
+
+  // ========== Cleanup ao sair da página ==========
+  useEffect(() => {
+    return () => {
+      // Parar música ao desmontar componente
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.currentTime = 0;
+      }
+      // Parar alarme
+      if (audioAlarmRef.current) {
+        audioAlarmRef.current.pause();
+        audioAlarmRef.current.currentTime = 0;
+      }
+      // Limpar timer
+      if (intervalRef.current) {
+        clearInterval(intervalRef.current);
+      }
+    };
+  }, []);
 
   // ========== Funções do Checklist ==========
 
