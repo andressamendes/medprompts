@@ -1,6 +1,7 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
 import DOMPurify from 'dompurify';
+import { marked } from 'marked';
 import { Prompt } from '@/types/prompt';
 import { PublicNavbar } from '@/components/PublicNavbar';
 import { prompts as systemPrompts } from '@/data/prompts-data';
@@ -24,38 +25,38 @@ import { toast } from '@/hooks/use-toast';
 
 // Build: 2026-01-23 - Versão com UX melhorada
 
+// Configurar marked para parsing otimizado
+marked.setOptions({
+  breaks: true,
+  gfm: true
+});
+
+// Cache para markdown renderizado (memoização)
+const markdownCache = new Map<string, string>();
+
 /**
- * Renderiza markdown básico para HTML com sanitização XSS
+ * Renderiza markdown para HTML com sanitização XSS
+ * Usa marked (mais rápido que regex) + cache para performance
  */
 function renderMarkdown(markdown: string): string {
-  let html = markdown;
+  // Verificar cache primeiro
+  const cached = markdownCache.get(markdown);
+  if (cached) return cached;
 
-  // Headers
-  html = html.replace(/^### (.+)$/gm, '<h4 class="font-semibold text-base mt-3 mb-1 text-gray-900 dark:text-white">$1</h4>');
-  html = html.replace(/^## (.+)$/gm, '<h3 class="font-bold text-lg mt-4 mb-2 text-gray-900 dark:text-white">$1</h3>');
-  html = html.replace(/^# (.+)$/gm, '<h2 class="font-bold text-xl mt-4 mb-2 text-gray-900 dark:text-white">$1</h2>');
+  // Renderizar com marked
+  const html = marked.parse(markdown, { async: false }) as string;
 
-  // Bold (standalone line and inline)
-  html = html.replace(/^\*\*(.+?)\*\*$/gm, '<h3 class="font-bold text-lg mt-4 mb-2 text-gray-900 dark:text-white">$1</h3>');
-  html = html.replace(/\*\*(.+?)\*\*/g, '<strong class="font-semibold text-gray-900 dark:text-white">$1</strong>');
+  // Sanitizar e cachear
+  const sanitized = DOMPurify.sanitize(html);
+  markdownCache.set(markdown, sanitized);
 
-  // Inline code
-  html = html.replace(/`([^`]+)`/g, '<code class="px-1 py-0.5 bg-gray-100 dark:bg-gray-800 rounded text-sm font-mono">$1</code>');
+  // Limitar tamanho do cache (máx 100 entradas)
+  if (markdownCache.size > 100) {
+    const firstKey = markdownCache.keys().next().value;
+    if (firstKey) markdownCache.delete(firstKey);
+  }
 
-  // Lists
-  html = html.replace(/^- (.+)$/gm, '<li class="ml-4 list-disc text-gray-700 dark:text-gray-300">$1</li>');
-  html = html.replace(/^\* (.+)$/gm, '<li class="ml-4 list-disc text-gray-700 dark:text-gray-300">$1</li>');
-  html = html.replace(/^(\d+)\. (.+)$/gm, '<li class="ml-4 list-decimal text-gray-700 dark:text-gray-300">$2</li>');
-
-  // Links
-  html = html.replace(/\[([^\]]+)\]\(([^)]+)\)/g, '<a href="$2" target="_blank" rel="noopener noreferrer" class="text-indigo-600 dark:text-indigo-400 underline hover:text-indigo-800 dark:hover:text-indigo-300">$1</a>');
-
-  // Paragraphs
-  html = html.replace(/\n\n/g, '</p><p class="mb-3 text-gray-700 dark:text-gray-300">');
-  html = html.replace(/\n/g, '<br>');
-  html = '<p class="mb-3 text-gray-700 dark:text-gray-300">' + html + '</p>';
-
-  return DOMPurify.sanitize(html);
+  return sanitized;
 }
 
 /**

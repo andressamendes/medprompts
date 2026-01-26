@@ -1,7 +1,7 @@
 import { PublicNavbar } from "@/components/PublicNavbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, ArrowLeft, BookOpen, Zap, Search, Brain, DollarSign, Users, Filter, X } from "lucide-react";
+import { ExternalLink, ArrowLeft, BookOpen, Zap, Search, Brain, DollarSign, Users, Filter, X, Table2, Check, Minus } from "lucide-react";
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
@@ -510,6 +510,117 @@ const GuiaIAs = () => {
                   </p>
                 </div>
               )}
+            </CardContent>
+          </Card>
+
+          {/* Tabela Comparativa Interativa */}
+          <Card className="bg-white/80 backdrop-blur-sm border-gray-200 shadow-xl overflow-hidden">
+            <CardHeader>
+              <div className="flex items-center gap-3">
+                <div className="w-10 h-10 bg-gradient-to-r from-indigo-500 to-purple-500 rounded-lg flex items-center justify-center">
+                  <Table2 className="h-5 w-5 text-white" />
+                </div>
+                <div>
+                  <CardTitle className="text-xl">Comparativo Rápido de IAs</CardTitle>
+                  <CardDescription>Visão geral das principais características</CardDescription>
+                </div>
+              </div>
+            </CardHeader>
+            <CardContent className="p-0">
+              <div className="overflow-x-auto">
+                <table className="w-full text-sm">
+                  <thead className="bg-gray-50 border-y border-gray-200">
+                    <tr>
+                      <th className="text-left p-3 font-semibold text-gray-900 min-w-[140px]">IA</th>
+                      <th className="text-left p-3 font-semibold text-gray-900 min-w-[100px]">Preço</th>
+                      <th className="text-center p-3 font-semibold text-gray-900">Gratuito</th>
+                      <th className="text-center p-3 font-semibold text-gray-900">Medicina</th>
+                      <th className="text-center p-3 font-semibold text-gray-900">Raciocínio</th>
+                      <th className="text-center p-3 font-semibold text-gray-900">Pesquisa</th>
+                      <th className="text-left p-3 font-semibold text-gray-900 min-w-[180px]">Melhor Para</th>
+                    </tr>
+                  </thead>
+                  <tbody className="divide-y divide-gray-100">
+                    <tr className="hover:bg-rose-50/50 transition-colors">
+                      <td className="p-3 font-medium text-gray-900">ChatGPT Health</td>
+                      <td className="p-3 text-gray-700">US$ 20/mês</td>
+                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" /></td>
+                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" /></td>
+                      <td className="p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" /></td>
+                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" /></td>
+                      <td className="p-3 text-gray-700">Casos clínicos, diagnóstico</td>
+                    </tr>
+                    <tr className="hover:bg-orange-50/50 transition-colors">
+                      <td className="p-3 font-medium text-gray-900">Claude Opus 4.5</td>
+                      <td className="p-3 text-gray-700">US$ 20/mês</td>
+                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" /></td>
+                      <td className="p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" /></td>
+                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" /></td>
+                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" /></td>
+                      <td className="p-3 text-gray-700">Análise profunda, código</td>
+                    </tr>
+                    <tr className="hover:bg-green-50/50 transition-colors bg-green-50/30">
+                      <td className="p-3 font-medium text-gray-900">o4-mini ⭐</td>
+                      <td className="p-3 text-green-600 font-semibold">Gratuito</td>
+                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" /></td>
+                      <td className="p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" /></td>
+                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" /></td>
+                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" /></td>
+                      <td className="p-3 text-gray-700">Questões complexas, lógica</td>
+                    </tr>
+                    <tr className="hover:bg-blue-50/50 transition-colors bg-blue-50/30">
+                      <td className="p-3 font-medium text-gray-900">NotebookLM ⭐</td>
+                      <td className="p-3 text-green-600 font-semibold">Gratuito</td>
+                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" /></td>
+                      <td className="p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" /></td>
+                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" /></td>
+                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" /></td>
+                      <td className="p-3 text-gray-700">Revisão, podcasts, estudo</td>
+                    </tr>
+                    <tr className="hover:bg-purple-50/50 transition-colors">
+                      <td className="p-3 font-medium text-gray-900">Gemini 2.5 Pro</td>
+                      <td className="p-3 text-gray-700">US$ 20/mês</td>
+                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" /></td>
+                      <td className="p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" /></td>
+                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" /></td>
+                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" /></td>
+                      <td className="p-3 text-gray-700">Múltiplos artigos, 1M tokens</td>
+                    </tr>
+                    <tr className="hover:bg-purple-50/50 transition-colors bg-green-50/30">
+                      <td className="p-3 font-medium text-gray-900">Gemini Flash-Lite ⭐</td>
+                      <td className="p-3 text-green-600 font-semibold">Gratuito</td>
+                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" /></td>
+                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" /></td>
+                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" /></td>
+                      <td className="p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" /></td>
+                      <td className="p-3 text-gray-700">Consultas rápidas, resumos</td>
+                    </tr>
+                    <tr className="hover:bg-teal-50/50 transition-colors">
+                      <td className="p-3 font-medium text-gray-900">Perplexity AI</td>
+                      <td className="p-3 text-gray-700">Grátis/US$ 20</td>
+                      <td className="p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" /></td>
+                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" /></td>
+                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" /></td>
+                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" /></td>
+                      <td className="p-3 text-gray-700">Pesquisa com citações</td>
+                    </tr>
+                  </tbody>
+                </table>
+              </div>
+              <div className="p-4 bg-gray-50 border-t border-gray-200">
+                <p className="text-xs text-gray-600 flex items-center gap-2">
+                  <span className="inline-flex items-center gap-1">
+                    <Check className="h-3 w-3 text-green-600" /> Forte
+                  </span>
+                  <span className="inline-flex items-center gap-1">
+                    <Check className="h-3 w-3 text-green-500" /> Bom
+                  </span>
+                  <span className="inline-flex items-center gap-1">
+                    <Minus className="h-3 w-3 text-gray-400" /> Limitado
+                  </span>
+                  <span className="ml-2">⭐ = Melhor custo-benefício</span>
+                </p>
+              </div>
             </CardContent>
           </Card>
 

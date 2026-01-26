@@ -149,9 +149,30 @@ select:focus-visible {
   top: 0;
 }
 
-/* Melhor contraste para textos secundários */
+/* Melhor contraste para textos secundários - WCAG AA (4.5:1) */
 .text-muted-foreground {
-  color: hsl(215 16% 45%); /* Aumenta contraste de 47% para 45% */
+  color: hsl(215 16% 40%); /* Aumenta contraste para atingir 4.5:1 */
+}
+
+/* Override para gray-500/400 com melhor contraste em light mode */
+@layer utilities {
+  /* Textos secundários com contraste 4.5:1 */
+  .text-gray-500 {
+    color: rgb(107 114 128); /* gray-500 padrão OK */
+  }
+
+  .text-gray-400 {
+    color: rgb(107 114 128); /* Upgrade para gray-500 em light mode */
+  }
+
+  /* Dark mode: manter cores mais claras para contraste */
+  .dark .text-gray-400 {
+    color: rgb(156 163 175); /* gray-400 em dark mode */
+  }
+
+  .dark .text-gray-500 {
+    color: rgb(156 163 175); /* gray-400 em dark mode para melhor contraste */
+  }
 }
 
 /* Reduz animações para usuários com preferência de movimento reduzido */
