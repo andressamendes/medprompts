@@ -105,6 +105,11 @@ export default function FocusZone() {
   const [celebratingTaskId, setCelebratingTaskId] = useState<string | null>(null);
   const newTaskInputRef = useRef<HTMLInputElement>(null);
 
+  // SEO: Definir título da página
+  useEffect(() => {
+    document.title = "Focus Zone - Pomodoro | MedPrompts";
+  }, []);
+
   // ========== Salvar tarefas no localStorage ==========
   useEffect(() => {
     try {
@@ -374,7 +379,7 @@ export default function FocusZone() {
 
   // ========== RENDER ==========
   return (
-    <main className="relative min-h-screen overflow-hidden">
+    <main id="main-content" className="relative min-h-screen overflow-hidden">
       {/* Fundo gradiente médico profissional */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900" />
 
@@ -414,7 +419,7 @@ export default function FocusZone() {
         </header>
 
         {/* CONTEÚDO PRINCIPAL - Layout de duas colunas */}
-        <section className="flex-1 flex items-start justify-center px-3 sm:px-6 pb-6 pt-2">
+        <section className="flex-1 flex items-start justify-center px-3 sm:px-6 pb-6 pt-2" aria-label="Timer Pomodoro e lista de tarefas">
           <div className="w-full max-w-6xl">
             <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
 
@@ -425,9 +430,10 @@ export default function FocusZone() {
                 <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-5 sm:p-8 space-y-5 border border-white/20">
 
                   {/* Seletor de Modos */}
-                  <div className="flex gap-2 justify-center flex-wrap">
+                  <div className="flex gap-2 justify-center flex-wrap" role="group" aria-label="Selecionar modo do timer">
                     <button
                       onClick={() => changeMode('focus')}
+                      aria-pressed={mode === 'focus'}
                       className={`px-3 sm:px-4 py-2 rounded-xl font-semibold text-sm transition-all ${
                         mode === 'focus'
                           ? 'bg-blue-600 text-white shadow-lg scale-105'
@@ -438,6 +444,7 @@ export default function FocusZone() {
                     </button>
                     <button
                       onClick={() => changeMode('shortBreak')}
+                      aria-pressed={mode === 'shortBreak'}
                       className={`px-3 sm:px-4 py-2 rounded-xl font-semibold text-sm transition-all ${
                         mode === 'shortBreak'
                           ? 'bg-green-600 text-white shadow-lg scale-105'
@@ -448,6 +455,7 @@ export default function FocusZone() {
                     </button>
                     <button
                       onClick={() => changeMode('longBreak')}
+                      aria-pressed={mode === 'longBreak'}
                       className={`px-3 sm:px-4 py-2 rounded-xl font-semibold text-sm transition-all ${
                         mode === 'longBreak'
                           ? 'bg-green-600 text-white shadow-lg scale-105'
@@ -468,7 +476,7 @@ export default function FocusZone() {
                   {/* TIMER POMODORO */}
                   <div className="flex flex-col items-center">
                     <div className="relative">
-                      <svg width={200} height={200} viewBox="0 0 200 200" className="transform -rotate-90">
+                      <svg width={200} height={200} viewBox="0 0 200 200" className="transform -rotate-90" role="img" aria-hidden="true">
                         <circle
                           cx={100}
                           cy={100}
@@ -493,10 +501,14 @@ export default function FocusZone() {
 
                       <div className="absolute inset-0 flex items-center justify-center">
                         <p
+                          role="timer"
+                          aria-live="polite"
+                          aria-atomic="true"
                           className="text-5xl sm:text-6xl font-bold tabular-nums"
                           style={{ color: modeColors[mode].bg }}
                         >
-                          {minutes}:{seconds}
+                          <span className="sr-only">{`${minutes} minutos e ${seconds} segundos restantes`}</span>
+                          <span aria-hidden="true">{minutes}:{seconds}</span>
                         </p>
                       </div>
                     </div>
@@ -507,10 +519,11 @@ export default function FocusZone() {
                     <p className="text-sm text-gray-600">
                       Ciclos completados: <span className="font-bold text-blue-600">{completedCycles}</span>
                     </p>
-                    <div className="flex justify-center gap-1 mt-2">
+                    <div className="flex justify-center gap-1 mt-2" role="img" aria-label={`Progresso: ${completedCycles % 4} de 4 ciclos para pausa longa`}>
                       {[...Array(4)].map((_, i) => (
                         <div
                           key={i}
+                          aria-hidden="true"
                           className={`w-2 h-2 rounded-full transition-all ${
                             i < (completedCycles % 4)
                               ? 'bg-blue-600 scale-125'
@@ -537,7 +550,7 @@ export default function FocusZone() {
                     <button
                       className="bg-gray-100 hover:bg-gray-200 text-blue-700 font-semibold rounded-xl px-5 py-3 sm:px-6 sm:py-3 transition-all shadow-lg hover:scale-105"
                       onClick={resetTimer}
-                      title="Resetar timer"
+                      aria-label={`Resetar timer para ${mode === 'focus' ? '50' : mode === 'shortBreak' ? '5' : '15'} minutos`}
                     >
                       Reset
                     </button>
@@ -547,7 +560,8 @@ export default function FocusZone() {
                   <div className={`bg-gradient-to-br ${STATIONS[stationIndex].color} rounded-2xl shadow-inner p-4 sm:p-5 border border-blue-200/30 backdrop-blur-sm`}>
                     <div className="flex flex-col gap-3 items-center">
                       <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${playing ? 'bg-red-500 animate-pulse' : 'bg-gray-400'}`} />
+                        <div className={`w-2 h-2 rounded-full ${playing ? 'bg-red-500 animate-pulse' : 'bg-gray-400'}`} aria-hidden="true" />
+                        <span className="sr-only">{playing ? 'Reproduzindo:' : 'Pausado:'}</span>
                         <span className="font-semibold text-blue-900 text-sm sm:text-base">
                           {STATIONS[stationIndex].name}
                         </span>
@@ -636,20 +650,20 @@ export default function FocusZone() {
                   {/* Header do Checklist */}
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center gap-2">
-                      <ListTodo className="w-5 h-5 text-indigo-600" />
+                      <ListTodo className="w-5 h-5 text-indigo-600" aria-hidden="true" />
                       <h2 className="text-lg font-bold text-gray-800">Tarefas</h2>
                     </div>
 
                     {/* Contador de tarefas */}
                     {totalCount > 0 && (
                       <div className="flex items-center gap-2">
-                        <div className="text-sm font-medium text-gray-600">
-                          <span className="text-green-600">{completedCount}</span>
-                          <span className="text-gray-400">/</span>
-                          <span>{totalCount}</span>
+                        <div className="text-sm font-medium text-gray-600" aria-label={`${completedCount} de ${totalCount} tarefas concluídas`}>
+                          <span className="text-green-600" aria-hidden="true">{completedCount}</span>
+                          <span className="text-gray-400" aria-hidden="true">/</span>
+                          <span aria-hidden="true">{totalCount}</span>
                         </div>
                         {completedCount === totalCount && totalCount > 0 && (
-                          <Trophy className="w-5 h-5 text-yellow-500 animate-bounce" />
+                          <Trophy className="w-5 h-5 text-yellow-500 animate-bounce" aria-hidden="true" />
                         )}
                       </div>
                     )}
@@ -700,7 +714,7 @@ export default function FocusZone() {
                   <div className="flex-1 overflow-y-auto space-y-2 min-h-[200px] max-h-[400px] lg:max-h-none">
                     {tasks.length === 0 ? (
                       <div className="flex flex-col items-center justify-center h-full py-8 text-gray-400">
-                        <ListTodo className="w-12 h-12 mb-3 opacity-50" />
+                        <ListTodo className="w-12 h-12 mb-3 opacity-50" aria-hidden="true" />
                         <p className="text-sm">Nenhuma tarefa ainda</p>
                         <p className="text-xs mt-1">Pressione N para adicionar</p>
                       </div>
@@ -757,9 +771,9 @@ export default function FocusZone() {
                             </span>
                           )}
 
-                          {/* Ações */}
+                          {/* Ações - Visíveis em touch, hover em desktop */}
                           {!editingTaskId && (
-                            <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity">
+                            <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                               <button
                                 onClick={() => startEditing(task)}
                                 className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
@@ -785,7 +799,7 @@ export default function FocusZone() {
                   {tasks.length > 0 && (
                     <div className="mt-4 pt-3 border-t border-gray-200">
                       <p className="text-xs text-gray-500 text-center">
-                        Clique no círculo para concluir • Arraste para reordenar
+                        Clique no círculo para concluir • Duplo clique para editar
                       </p>
                     </div>
                   )}
@@ -799,9 +813,10 @@ export default function FocusZone() {
 
       {/* Confetti Animation (quando todas as tarefas são concluídas) */}
       {completedCount === totalCount && totalCount > 0 && completedCount > 0 && (
-        <div className="fixed inset-0 pointer-events-none z-50">
+        <div className="fixed inset-0 pointer-events-none z-50" role="status" aria-live="polite">
+          <span className="sr-only">Parabéns! Todas as tarefas foram concluídas!</span>
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
-            <div className="text-6xl animate-bounce">🎉</div>
+            <div className="text-6xl animate-bounce" aria-hidden="true">🎉</div>
           </div>
         </div>
       )}
