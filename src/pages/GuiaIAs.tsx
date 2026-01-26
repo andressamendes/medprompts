@@ -1,19 +1,15 @@
 import { PublicNavbar } from "@/components/PublicNavbar";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { ExternalLink, ArrowLeft, BookOpen, Zap, Search, Brain, DollarSign, Users, Filter, X, Table2, Check, Minus } from "lucide-react";
+import { ExternalLink, ArrowLeft, BookOpen, Zap, Search, Brain, DollarSign, Users, Filter, X, Table2, Check, Minus, AlertCircle } from "lucide-react";
 import { useNavigate } from "react-router-dom";
-import { useState } from "react";
+import { useState, useMemo, useEffect } from "react";
 
-const GuiaIAs = () => {
-  const navigate = useNavigate();
+// ============================================================================
+// DADOS ESTÁTICOS (fora do componente para evitar re-criação)
+// ============================================================================
 
-  // Estado dos filtros
-  const [filtroPreco, setFiltroPreco] = useState<string>("todos");
-  const [filtroCategoria, setFiltroCategoria] = useState<string>("todos");
-  const [filtroNovidade, setFiltroNovidade] = useState<string>("todos");
-
-  const ias = [
+const IAS_DATA = [
     {
       name: "Claude Opus 4.5",
       description: "Líder em raciocínio com Deep Think Mode (41% no Humanity's Last Exam) e 80.9% no SWE-bench. Integração MCP Server.",
@@ -144,9 +140,9 @@ const GuiaIAs = () => {
       badge: "Pesquisa Confiável",
       category: "pesquisa"
     }
-  ];
+];
 
-  const categorias = [
+const CATEGORIAS_DATA = [
     {
       title: "🏥 Saúde e Medicina",
       icon: Brain,
@@ -175,9 +171,9 @@ const GuiaIAs = () => {
       color: "from-teal-500 to-cyan-500",
       category: "pesquisa"
     }
-  ];
+];
 
-  const dicas = [
+const DICAS_DATA = [
     {
       icon: "🎯",
       title: "Seja específico nos prompts",
@@ -208,33 +204,28 @@ const GuiaIAs = () => {
       title: "Migre do GPT-4o antes de 16/02/2026",
       description: "GPT-4o será descontinuado. Prefira GPT-4.5, o4-mini ou Claude Opus 4.5"
     }
-  ];
+];
 
-  // Função de filtragem aprimorada
-  const filteredIAs = (category: string) => {
-    return ias.filter(ia => {
-      // Filtro de categoria
-      if (ia.category !== category) return false;
+// ============================================================================
+// COMPONENTE PRINCIPAL
+// ============================================================================
 
-      // Filtro de preço
-      if (filtroPreco !== "todos") {
-        if (filtroPreco === "gratuito" && !ia.price.toLowerCase().includes("gratuito")) return false;
-        if (filtroPreco === "pago" && ia.price.toLowerCase().includes("gratuito")) return false;
-      }
+const GuiaIAs = () => {
+  const navigate = useNavigate();
 
-      // Filtro de novidade
-      if (filtroNovidade !== "todos") {
-        if (filtroNovidade === "novo" && !ia.badge.includes("NOVO 2026")) return false;
-        if (filtroNovidade === "atualizado" && !ia.badge.includes("ATUALIZADO")) return false;
-      }
+  // Estado dos filtros
+  const [filtroPreco, setFiltroPreco] = useState<string>("todos");
+  const [filtroCategoria, setFiltroCategoria] = useState<string>("todos");
+  const [filtroNovidade, setFiltroNovidade] = useState<string>("todos");
 
-      return true;
-    });
-  };
+  // Definir título da página para SEO
+  useEffect(() => {
+    document.title = "Guia de IAs para Medicina 2026 | MedPrompts";
+  }, []);
 
-  // Filtro global (para todas as categorias)
-  const getFilteredIAsGlobal = () => {
-    return ias.filter(ia => {
+  // Filtro global memoizado
+  const filteredIAsGlobal = useMemo(() => {
+    return IAS_DATA.filter(ia => {
       // Filtro de categoria global
       if (filtroCategoria !== "todos" && ia.category !== filtroCategoria) return false;
 
@@ -252,6 +243,11 @@ const GuiaIAs = () => {
 
       return true;
     });
+  }, [filtroPreco, filtroCategoria, filtroNovidade]);
+
+  // Função de filtragem por categoria (usa o filtro global)
+  const getFilteredByCategory = (category: string) => {
+    return filteredIAsGlobal.filter(ia => ia.category === category);
   };
 
   // Resetar filtros
@@ -277,13 +273,7 @@ const GuiaIAs = () => {
     <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/20">
       <PublicNavbar />
 
-      {/* Skip to Content Link (acessibilidade) */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-16 focus:left-4 focus:z-50 focus:bg-blue-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-md"
-      >
-        Pular para conteúdo principal
-      </a>
+      {/* Skip link removido - já existe no App.tsx global */}
 
       <main id="main-content" className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto space-y-12">
@@ -307,7 +297,7 @@ const GuiaIAs = () => {
               <Zap className="h-4 w-4" aria-hidden="true" />
               Atualizado Janeiro 2026
             </div>
-            <h1 className="text-5xl sm:text-6xl font-bold text-blue-600 dark:text-blue-400">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-blue-600 dark:text-blue-400">
               Guia de IAs para Medicina
             </h1>
             <p className="text-xl text-gray-600 max-w-3xl mx-auto">
@@ -318,15 +308,17 @@ const GuiaIAs = () => {
 
           {/* Banner de Destaque - ChatGPT Health */}
           <Card className="bg-gradient-to-r from-rose-600 to-pink-600 text-white border-none shadow-2xl">
-            <CardContent className="p-8">
-              <div className="flex items-start gap-6">
-                <div className="flex-shrink-0">
-                  <div className="w-16 h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
-                    <Brain className="h-8 w-8" aria-hidden="true" />
+            <CardContent className="p-4 sm:p-6 md:p-8">
+              <div className="flex flex-col sm:flex-row items-start gap-4 sm:gap-6">
+                <div className="flex-shrink-0 hidden sm:block">
+                  <div className="w-14 h-14 sm:w-16 sm:h-16 bg-white/20 rounded-2xl flex items-center justify-center backdrop-blur-sm">
+                    <Brain className="h-7 w-7 sm:h-8 sm:w-8" aria-hidden="true" />
                   </div>
                 </div>
                 <div className="flex-1 space-y-3">
-                  <h2 className="text-2xl font-bold">🏥 ChatGPT Health - Lançado 07/01/2026</h2>
+                  <h2 className="text-xl sm:text-2xl font-bold">
+                    <span aria-hidden="true">🏥</span> ChatGPT Health - Lançado 07/01/2026
+                  </h2>
                   <p className="text-lg text-white/90">
                     OpenAI lançou um <strong>espaço dedicado à saúde</strong>! Interface especializada para
                     estudantes e profissionais de medicina, incluído no plano Plus (US$ 20/mês).
@@ -506,7 +498,7 @@ const GuiaIAs = () => {
               {hasFiltrosAtivos && (
                 <div className="mt-4 pt-4 border-t border-gray-200">
                   <p className="text-sm text-gray-600">
-                    <strong>{getFilteredIAsGlobal().length}</strong> {getFilteredIAsGlobal().length === 1 ? 'ferramenta encontrada' : 'ferramentas encontradas'}
+                    <strong>{filteredIAsGlobal.length}</strong> {filteredIAsGlobal.length === 1 ? 'ferramenta encontrada' : 'ferramentas encontradas'}
                   </p>
                 </div>
               )}
@@ -527,81 +519,88 @@ const GuiaIAs = () => {
               </div>
             </CardHeader>
             <CardContent className="p-0">
+              {/* Indicador de scroll horizontal em mobile */}
+              <div className="sm:hidden px-4 py-2 bg-gray-100 text-xs text-gray-600 flex items-center gap-2">
+                <span>← Deslize para ver mais →</span>
+              </div>
               <div className="overflow-x-auto">
-                <table className="w-full text-sm">
+                <table className="w-full text-sm" role="table" aria-label="Comparativo de IAs para medicina">
+                  <caption className="sr-only">
+                    Tabela comparativa das principais IAs para estudantes de medicina, incluindo preço, capacidades e uso ideal
+                  </caption>
                   <thead className="bg-gray-50 border-y border-gray-200">
                     <tr>
-                      <th className="text-left p-3 font-semibold text-gray-900 min-w-[140px]">IA</th>
-                      <th className="text-left p-3 font-semibold text-gray-900 min-w-[100px]">Preço</th>
-                      <th className="text-center p-3 font-semibold text-gray-900">Gratuito</th>
-                      <th className="text-center p-3 font-semibold text-gray-900">Medicina</th>
-                      <th className="text-center p-3 font-semibold text-gray-900">Raciocínio</th>
-                      <th className="text-center p-3 font-semibold text-gray-900">Pesquisa</th>
-                      <th className="text-left p-3 font-semibold text-gray-900 min-w-[180px]">Melhor Para</th>
+                      <th scope="col" className="text-left p-3 font-semibold text-gray-900 min-w-[140px]">IA</th>
+                      <th scope="col" className="text-left p-3 font-semibold text-gray-900 min-w-[100px]">Preço</th>
+                      <th scope="col" className="text-center p-3 font-semibold text-gray-900">Gratuito</th>
+                      <th scope="col" className="text-center p-3 font-semibold text-gray-900">Medicina</th>
+                      <th scope="col" className="text-center p-3 font-semibold text-gray-900">Raciocínio</th>
+                      <th scope="col" className="text-center p-3 font-semibold text-gray-900">Pesquisa</th>
+                      <th scope="col" className="text-left p-3 font-semibold text-gray-900 min-w-[180px]">Melhor Para</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     <tr className="hover:bg-rose-50/50 transition-colors">
-                      <td className="p-3 font-medium text-gray-900">ChatGPT Health</td>
+                      <th scope="row" className="p-3 font-medium text-gray-900 text-left">ChatGPT Health</th>
                       <td className="p-3 text-gray-700">US$ 20/mês</td>
-                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" /></td>
-                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" /></td>
-                      <td className="p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" /></td>
-                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" /></td>
+                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Não</span></td>
+                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" aria-hidden="true" /><span className="sr-only">Excelente</span></td>
+                      <td className="p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" aria-hidden="true" /><span className="sr-only">Bom</span></td>
+                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Limitado</span></td>
                       <td className="p-3 text-gray-700">Casos clínicos, diagnóstico</td>
                     </tr>
                     <tr className="hover:bg-orange-50/50 transition-colors">
-                      <td className="p-3 font-medium text-gray-900">Claude Opus 4.5</td>
+                      <th scope="row" className="p-3 font-medium text-gray-900 text-left">Claude Opus 4.5</th>
                       <td className="p-3 text-gray-700">US$ 20/mês</td>
-                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" /></td>
-                      <td className="p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" /></td>
-                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" /></td>
-                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" /></td>
+                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Não</span></td>
+                      <td className="p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" aria-hidden="true" /><span className="sr-only">Bom</span></td>
+                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" aria-hidden="true" /><span className="sr-only">Excelente</span></td>
+                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Limitado</span></td>
                       <td className="p-3 text-gray-700">Análise profunda, código</td>
                     </tr>
                     <tr className="hover:bg-green-50/50 transition-colors bg-green-50/30">
-                      <td className="p-3 font-medium text-gray-900">o4-mini ⭐</td>
+                      <th scope="row" className="p-3 font-medium text-gray-900 text-left">o4-mini <span aria-label="Melhor custo-benefício">⭐</span></th>
                       <td className="p-3 text-green-600 font-semibold">Gratuito</td>
-                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" /></td>
-                      <td className="p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" /></td>
-                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" /></td>
-                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" /></td>
+                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" aria-hidden="true" /><span className="sr-only">Sim</span></td>
+                      <td className="p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" aria-hidden="true" /><span className="sr-only">Bom</span></td>
+                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" aria-hidden="true" /><span className="sr-only">Excelente</span></td>
+                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Limitado</span></td>
                       <td className="p-3 text-gray-700">Questões complexas, lógica</td>
                     </tr>
                     <tr className="hover:bg-blue-50/50 transition-colors bg-blue-50/30">
-                      <td className="p-3 font-medium text-gray-900">NotebookLM ⭐</td>
+                      <th scope="row" className="p-3 font-medium text-gray-900 text-left">NotebookLM <span aria-label="Melhor custo-benefício">⭐</span></th>
                       <td className="p-3 text-green-600 font-semibold">Gratuito</td>
-                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" /></td>
-                      <td className="p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" /></td>
-                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" /></td>
-                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" /></td>
+                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" aria-hidden="true" /><span className="sr-only">Sim</span></td>
+                      <td className="p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" aria-hidden="true" /><span className="sr-only">Bom</span></td>
+                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Limitado</span></td>
+                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Limitado</span></td>
                       <td className="p-3 text-gray-700">Revisão, podcasts, estudo</td>
                     </tr>
                     <tr className="hover:bg-purple-50/50 transition-colors">
-                      <td className="p-3 font-medium text-gray-900">Gemini 2.5 Pro</td>
+                      <th scope="row" className="p-3 font-medium text-gray-900 text-left">Gemini 2.5 Pro</th>
                       <td className="p-3 text-gray-700">US$ 20/mês</td>
-                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" /></td>
-                      <td className="p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" /></td>
-                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" /></td>
-                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" /></td>
+                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Não</span></td>
+                      <td className="p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" aria-hidden="true" /><span className="sr-only">Bom</span></td>
+                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" aria-hidden="true" /><span className="sr-only">Excelente</span></td>
+                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" aria-hidden="true" /><span className="sr-only">Excelente</span></td>
                       <td className="p-3 text-gray-700">Múltiplos artigos, 1M tokens</td>
                     </tr>
                     <tr className="hover:bg-purple-50/50 transition-colors bg-green-50/30">
-                      <td className="p-3 font-medium text-gray-900">Gemini Flash-Lite ⭐</td>
+                      <th scope="row" className="p-3 font-medium text-gray-900 text-left">Gemini Flash-Lite <span aria-label="Melhor custo-benefício">⭐</span></th>
                       <td className="p-3 text-green-600 font-semibold">Gratuito</td>
-                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" /></td>
-                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" /></td>
-                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" /></td>
-                      <td className="p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" /></td>
+                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" aria-hidden="true" /><span className="sr-only">Sim</span></td>
+                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Limitado</span></td>
+                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Limitado</span></td>
+                      <td className="p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" aria-hidden="true" /><span className="sr-only">Bom</span></td>
                       <td className="p-3 text-gray-700">Consultas rápidas, resumos</td>
                     </tr>
                     <tr className="hover:bg-teal-50/50 transition-colors">
-                      <td className="p-3 font-medium text-gray-900">Perplexity AI</td>
+                      <th scope="row" className="p-3 font-medium text-gray-900 text-left">Perplexity AI</th>
                       <td className="p-3 text-gray-700">Grátis/US$ 20</td>
-                      <td className="p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" /></td>
-                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" /></td>
-                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" /></td>
-                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" /></td>
+                      <td className="p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" aria-hidden="true" /><span className="sr-only">Parcial</span></td>
+                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Limitado</span></td>
+                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Limitado</span></td>
+                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" aria-hidden="true" /><span className="sr-only">Excelente</span></td>
                       <td className="p-3 text-gray-700">Pesquisa com citações</td>
                     </tr>
                   </tbody>
@@ -625,22 +624,32 @@ const GuiaIAs = () => {
           </Card>
 
           {/* Cards por Categoria */}
-          {categorias.map((cat) => {
+          {CATEGORIAS_DATA.map((cat) => {
             const Icon = cat.icon;
+            const categoryIAs = getFilteredByCategory(cat.category);
+
             return (
-              <div key={cat.category} className="space-y-6">
+              <section key={cat.category} className="space-y-6" aria-labelledby={`heading-${cat.category}`}>
                 <div className="flex items-center gap-4">
                   <div className={`w-12 h-12 bg-gradient-to-r ${cat.color} rounded-xl flex items-center justify-center shadow-lg`}>
                     <Icon className="h-6 w-6 text-white" aria-hidden="true" />
                   </div>
                   <div>
-                    <h2 className="text-3xl font-bold text-gray-900">{cat.title}</h2>
+                    <h2 id={`heading-${cat.category}`} className="text-2xl sm:text-3xl font-bold text-gray-900">{cat.title}</h2>
                     <p className="text-gray-600">{cat.description}</p>
                   </div>
                 </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-                  {filteredIAs(cat.category).map((ia) => (
+                {/* Estado vazio quando filtros não retornam resultados */}
+                {categoryIAs.length === 0 ? (
+                  <div className="flex flex-col items-center justify-center py-12 px-4 bg-gray-50 rounded-xl border-2 border-dashed border-gray-200">
+                    <AlertCircle className="h-10 w-10 text-gray-400 mb-3" aria-hidden="true" />
+                    <p className="text-gray-600 font-medium">Nenhuma IA encontrada</p>
+                    <p className="text-sm text-gray-500 mt-1">Tente ajustar os filtros acima</p>
+                  </div>
+                ) : (
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
+                  {categoryIAs.map((ia) => (
                     <Card
                       key={ia.name}
                       className="hover:shadow-2xl transition-all duration-300 hover:-translate-y-1 bg-white/80 backdrop-blur-sm border-gray-200"
@@ -702,7 +711,8 @@ const GuiaIAs = () => {
                     </Card>
                   ))}
                 </div>
-              </div>
+                )}
+              </section>
             );
           })}
 
@@ -789,10 +799,10 @@ const GuiaIAs = () => {
               </CardTitle>
             </CardHeader>
             <CardContent>
-              <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
-                {dicas.map((dica, index) => (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 sm:gap-6">
+                {DICAS_DATA.map((dica, index) => (
                   <div key={index} className="flex items-start gap-4 p-4 bg-white/80 rounded-xl border border-amber-200">
-                    <div className="text-3xl flex-shrink-0">{dica.icon}</div>
+                    <div className="text-3xl flex-shrink-0" aria-hidden="true">{dica.icon}</div>
                     <div>
                       <h4 className="font-bold text-gray-900 mb-1">{dica.title}</h4>
                       <p className="text-sm text-gray-700">{dica.description}</p>
@@ -954,10 +964,10 @@ const GuiaIAs = () => {
             <p className="text-xs text-gray-500">
               Informações verificadas e atualizadas com dados oficiais de Janeiro 2026
             </p>
-            <div className="flex items-center justify-center gap-4 text-xs text-gray-500">
-              <span>✅ ChatGPT Health adicionado</span>
-              <span>✅ Novos modelos 2026</span>
-              <span>✅ Benchmarks atualizados</span>
+            <div className="flex items-center justify-center gap-2 sm:gap-4 text-xs text-gray-500 flex-wrap">
+              <span><span aria-hidden="true">✅</span> ChatGPT Health adicionado</span>
+              <span><span aria-hidden="true">✅</span> Novos modelos 2026</span>
+              <span><span aria-hidden="true">✅</span> Benchmarks atualizados</span>
             </div>
           </div>
         </div>
