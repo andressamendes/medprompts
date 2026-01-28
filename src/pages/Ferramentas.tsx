@@ -1,4 +1,6 @@
+import { Link } from "react-router-dom";
 import { PublicNavbar } from "@/components/PublicNavbar";
+import { SEOHead } from "@/components/SEOHead";
 import { ExternalLink, DollarSign, Info, Filter, X, Search, Smartphone, Globe, Monitor } from "lucide-react";
 import { useState, useMemo } from "react";
 
@@ -739,20 +741,20 @@ const Ferramentas = () => {
   const totalFerramentasFiltradas = categoriasFiltradas.reduce((acc, cat) => acc + cat.ferramentas.length, 0);
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
-      <PublicNavbar />
+    <>
+      <SEOHead
+        title="Hub de Ferramentas para Medicina"
+        description={`Curadoria de ${totalFerramentasFiltradas}+ ferramentas gratuitas e pagas para estudantes de medicina. IAs, calculadoras, referencias clinicas e mais.`}
+        canonical="https://andressamendes.github.io/medprompts/ferramentas"
+      />
+      <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
+        <PublicNavbar />
 
-      {/* Skip to Content Link (acessibilidade) */}
-      <a
-        href="#main-content"
-        className="sr-only focus:not-sr-only focus:absolute focus:top-16 focus:left-4 focus:z-50 focus:bg-blue-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-md"
-      >
-        Pular para conteúdo principal
-      </a>
+        {/* Skip link removido - já existe no App.tsx via SkipLinks global */}
 
       <main id="main-content" className="max-w-7xl mx-auto px-4 py-16">
         {/* Header */}
-        <header className="text-center mb-16">
+        <header className="text-center mb-16" aria-labelledby="ferramentas-heading">
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-600 text-white rounded-full shadow-lg mb-6">
             <span className="text-2xl">⚡</span>
             <span className="text-sm font-semibold">Atualizado Janeiro 2026</span>
@@ -1240,12 +1242,12 @@ const Ferramentas = () => {
           </div>
 
           <div className="text-center">
-            <a
-              href="/medprompts/prompts"
+            <Link
+              to="/prompts"
               className="inline-flex items-center gap-2 px-6 py-3 bg-white text-blue-600 rounded-lg font-medium hover:shadow-lg transition-all"
             >
               Ver Biblioteca de Prompts →
-            </a>
+            </Link>
           </div>
         </div>
 
@@ -1267,6 +1269,7 @@ const Ferramentas = () => {
         </div>
       </main>
     </div>
+    </>
   );
 };
 

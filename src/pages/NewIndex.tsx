@@ -1,6 +1,6 @@
-import { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { PublicNavbar } from '@/components/PublicNavbar';
+import { SEOHead } from '@/components/SEOHead';
 import { Button } from '@/components/ui/button';
 import { AccessibleCard } from '@/components/AccessibleCard';
 import { About } from '@/components/sections/About';
@@ -50,37 +50,37 @@ const COLOR_CLASSES: Record<ColorKey, {
       bg: 'bg-purple-100 dark:bg-purple-900/30',
       text: 'text-purple-600 dark:text-purple-400',
       border: 'hover:border-purple-300 dark:hover:border-purple-700',
-      badge: 'bg-purple-50 text-purple-600'
+      badge: 'bg-purple-50 text-purple-700 dark:bg-purple-900/50 dark:text-purple-200'
     },
     blue: {
       bg: 'bg-blue-100 dark:bg-blue-900/30',
       text: 'text-blue-600 dark:text-blue-400',
       border: 'hover:border-blue-300 dark:hover:border-blue-700',
-      badge: 'bg-blue-50 text-blue-600'
+      badge: 'bg-blue-50 text-blue-700 dark:bg-blue-900/50 dark:text-blue-200'
     },
     green: {
       bg: 'bg-green-100 dark:bg-green-900/30',
       text: 'text-green-600 dark:text-green-400',
       border: 'hover:border-green-300 dark:hover:border-green-700',
-      badge: 'bg-green-50 text-green-600'
+      badge: 'bg-green-50 text-green-700 dark:bg-green-900/50 dark:text-green-200'
     },
     orange: {
       bg: 'bg-orange-100 dark:bg-orange-900/30',
       text: 'text-orange-600 dark:text-orange-400',
       border: 'hover:border-orange-300 dark:hover:border-orange-700',
-      badge: 'bg-orange-50 text-orange-600'
+      badge: 'bg-orange-50 text-orange-700 dark:bg-orange-900/50 dark:text-orange-200'
     },
     indigo: {
       bg: 'bg-indigo-100 dark:bg-indigo-900/30',
       text: 'text-indigo-600 dark:text-indigo-400',
       border: 'hover:border-indigo-300 dark:hover:border-indigo-700',
-      badge: 'bg-indigo-50 text-indigo-600'
+      badge: 'bg-indigo-50 text-indigo-700 dark:bg-indigo-900/50 dark:text-indigo-200'
     },
     rose: {
       bg: 'bg-rose-100 dark:bg-rose-900/30',
       text: 'text-rose-600 dark:text-rose-400',
       border: 'hover:border-rose-300 dark:hover:border-rose-700',
-      badge: 'bg-rose-50 text-rose-600'
+      badge: 'bg-rose-50 text-rose-700 dark:bg-rose-900/50 dark:text-rose-200'
     }
 };
 
@@ -194,17 +194,18 @@ const FEATURES: Array<{
 export default function NewIndex() {
   const navigate = useNavigate();
 
-  // SEO: Definir título da página
-  useEffect(() => {
-    document.title = "MedPrompts - Recursos de IA para Estudantes de Medicina";
-  }, []);
-
   return (
-    <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900">
-      {/* NAVBAR UNIFICADO */}
-      <PublicNavbar />
+    <>
+      <SEOHead
+        title="Recursos de IA para Estudantes de Medicina"
+        description="Portal academico com prompts otimizados, guias de IAs e ferramentas para potencializar seus estudos em medicina. ChatGPT, Claude, Perplexity e mais."
+        canonical="https://andressamendes.github.io/medprompts/"
+      />
+      <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900">
+        {/* NAVBAR UNIFICADO */}
+        <PublicNavbar />
 
-      {/* Skip link removido - já existe no App.tsx via SkipLinks */}
+        {/* Skip link removido - já existe no App.tsx via SkipLinks */}
 
       {/* HERO DIRETO E EDUCACIONAL */}
       <main id="main-content" className="container mx-auto px-4 sm:px-6 py-12 md:py-16">
@@ -267,7 +268,7 @@ export default function NewIndex() {
           <div className="grid md:grid-cols-2 gap-6">
             {TOOLS_HUB.map((tool, index) => (
               <AccessibleCard
-                key={index}
+                key={tool.link}
                 onClick={() => navigate(tool.link)}
                 ariaLabel={`Acessar ${tool.title}: ${tool.description}`}
                 className={`group p-6 cursor-pointer hover:shadow-xl transition-all duration-300 border-2 ${COLOR_CLASSES[tool.color].border} animate-in fade-in slide-in-from-bottom-4`}
@@ -292,12 +293,12 @@ export default function NewIndex() {
                     <p className="text-gray-600 dark:text-gray-300 text-sm mb-3">
                       {tool.description}
                     </p>
-                    
+
                     {/* Tags */}
                     <div className="flex flex-wrap gap-2 mb-4">
-                      {tool.tags.map((tag, tagIndex) => (
+                      {tool.tags.map((tag) => (
                         <span
-                          key={tagIndex}
+                          key={`${tool.link}-${tag}`}
                           className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-md"
                         >
                           {tag}
@@ -485,5 +486,6 @@ export default function NewIndex() {
         </div>
       </footer>
     </div>
+    </>
   );
 }

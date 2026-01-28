@@ -1,4 +1,5 @@
 import { PublicNavbar } from "@/components/PublicNavbar";
+import { SEOHead } from "@/components/SEOHead";
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { ExternalLink, ArrowLeft, BookOpen, Zap, Search, Brain, DollarSign, Users, Filter, X, Table2, Check, Minus, AlertCircle } from "lucide-react";
@@ -270,10 +271,16 @@ const GuiaIAs = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/20">
-      <PublicNavbar />
+    <>
+      <SEOHead
+        title="Guia de IAs para Medicina"
+        description="Comparativo completo das melhores IAs para estudantes de medicina. Claude, ChatGPT, Gemini, Perplexity e NotebookLM com precos e recursos."
+        canonical="https://andressamendes.github.io/medprompts/guia-ias"
+      />
+      <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/20">
+        <PublicNavbar />
 
-      {/* Skip link removido - já existe no App.tsx global */}
+        {/* Skip link removido - já existe no App.tsx global */}
 
       <main id="main-content" className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto space-y-12">
@@ -973,6 +980,7 @@ const GuiaIAs = () => {
         </div>
       </main>
     </div>
+    </>
   );
 };
 

@@ -13,6 +13,8 @@ import {
   ListTodo,
   Trophy
 } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
+import { SEOHead } from "@/components/SEOHead";
 
 // ============================================================================
 // CONSTANTES
@@ -105,18 +107,28 @@ export default function FocusZone() {
   const [celebratingTaskId, setCelebratingTaskId] = useState<string | null>(null);
   const newTaskInputRef = useRef<HTMLInputElement>(null);
 
-  // SEO: Definir título da página
-  useEffect(() => {
-    document.title = "Focus Zone - Pomodoro | MedPrompts";
-  }, []);
+  // ========== Salvar tarefas no localStorage (com debounce) ==========
+  const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
-  // ========== Salvar tarefas no localStorage ==========
   useEffect(() => {
-    try {
-      localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(tasks));
-    } catch {
-      // Silenciar erros de storage
+    // Debounce de 500ms para evitar writes excessivos durante edição rápida
+    if (saveTimeoutRef.current) {
+      clearTimeout(saveTimeoutRef.current);
     }
+
+    saveTimeoutRef.current = setTimeout(() => {
+      try {
+        localStorage.setItem(TASKS_STORAGE_KEY, JSON.stringify(tasks));
+      } catch {
+        // Silenciar erros de storage
+      }
+    }, 500);
+
+    return () => {
+      if (saveTimeoutRef.current) {
+        clearTimeout(saveTimeoutRef.current);
+      }
+    };
   }, [tasks]);
 
   // ========== Funções do Pomodoro ==========
@@ -205,14 +217,23 @@ export default function FocusZone() {
     }
   };
 
-  const togglePlay = useCallback(() => {
-    if (audioRef.current) {
+  const togglePlay = useCallback(async () => {
+    if (!audioRef.current) return;
+
+    try {
       if (!playing) {
-        audioRef.current.play();
+        await audioRef.current.play();
       } else {
         audioRef.current.pause();
       }
       setPlaying((p) => !p);
+    } catch (error) {
+      console.error('Erro ao reproduzir audio:', error);
+      toast({
+        title: 'Erro ao reproduzir',
+        description: 'Não foi possível iniciar a música. Verifique sua conexão.',
+        variant: 'destructive'
+      });
     }
   }, [playing]);
 
@@ -379,8 +400,14 @@ export default function FocusZone() {
 
   // ========== RENDER ==========
   return (
-    <main id="main-content" className="relative min-h-screen overflow-hidden">
-      {/* Fundo gradiente médico profissional */}
+    <>
+      <SEOHead
+        title="Focus Zone - Pomodoro"
+        description="Timer Pomodoro com musica lo-fi para estudos focados. Gerencie tarefas e mantenha o foco durante suas sessoes de estudo."
+        canonical="https://andressamendes.github.io/medprompts/focus-zone"
+      />
+      <main id="main-content" className="relative min-h-screen overflow-hidden">
+        {/* Fundo gradiente médico profissional */}
       <div className="absolute inset-0 bg-gradient-to-br from-slate-900 via-blue-950 to-slate-900" />
 
       {/* Overlay com padrão de grade médica sutil */}
@@ -821,5 +848,6 @@ export default function FocusZone() {
         </div>
       )}
     </main>
+    </>
   );
 }

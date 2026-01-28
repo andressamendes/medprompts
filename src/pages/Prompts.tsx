@@ -4,6 +4,7 @@ import DOMPurify from 'dompurify';
 import { marked } from 'marked';
 import { Prompt } from '@/types/prompt';
 import { PublicNavbar } from '@/components/PublicNavbar';
+import { SEOHead } from '@/components/SEOHead';
 import { prompts as systemPrompts } from '@/data/prompts-data';
 import { useFavorites } from '@/contexts/FavoritesContext';
 import { getAIName, formatCategoryName, AI_URLS } from '@/lib/utils';
@@ -372,6 +373,11 @@ export default function Prompts() {
 
   return (
     <TooltipProvider>
+      <SEOHead
+        title="Prompts Medicos"
+        description={`Explore ${filteredPrompts.length} prompts otimizados para ChatGPT, Claude, Perplexity e NotebookLM. Prompts para estudos, clinica e pesquisa medica.`}
+        canonical="https://andressamendes.github.io/medprompts/prompts"
+      />
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <PublicNavbar />
 
@@ -399,6 +405,19 @@ export default function Prompts() {
             </div>
           </div>
         </section>
+
+        {/* Live Region para Acessibilidade - Anuncia resultados para leitores de tela */}
+        <div
+          role="status"
+          aria-live="polite"
+          aria-atomic="true"
+          className="sr-only"
+        >
+          {filteredPrompts.length === 0
+            ? 'Nenhum prompt encontrado com os filtros selecionados'
+            : `${filteredPrompts.length} ${filteredPrompts.length === 1 ? 'prompt encontrado' : 'prompts encontrados'}`
+          }
+        </div>
 
         {/* Main Content */}
         <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 lg:py-8" id="main-content">
