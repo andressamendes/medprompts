@@ -1,3 +1,4 @@
+import { useEffect } from 'react';
 import { useNavigate, Link } from 'react-router-dom';
 import { PublicNavbar } from '@/components/PublicNavbar';
 import { Button } from '@/components/ui/button';
@@ -18,7 +19,7 @@ import {
 
 /**
  * ✨ Home v4.0 - Plataforma Educacional (FOCO EM APRENDIZADO)
- * 
+ *
  * MUDANÇAS v4.0:
  * - ✅ Tom educacional, não comercial
  * - ✅ Hub de ferramentas em destaque
@@ -29,18 +30,17 @@ import {
  * - ✅ Navbar compartilhado (PublicNavbar)
  */
 
-export default function NewIndex() {
-  const navigate = useNavigate();
+// ============================================================================
+// TIPOS E CONSTANTES (fora do componente para evitar re-criação)
+// ============================================================================
 
-  // Tipagem correta para evitar erro TypeScript
-  type ColorKey = 'purple' | 'blue' | 'green' | 'orange' | 'indigo' | 'rose';
-  
-  // Tipo para ícones Lucide
-  type LucideIcon = React.ForwardRefExoticComponent<
-    Omit<React.SVGProps<SVGSVGElement>, "ref"> & React.RefAttributes<SVGSVGElement>
-  >;
+type ColorKey = 'purple' | 'blue' | 'green' | 'orange' | 'indigo' | 'rose';
 
-  const colorClasses: Record<ColorKey, {
+type LucideIcon = React.ForwardRefExoticComponent<
+  Omit<React.SVGProps<SVGSVGElement>, "ref"> & React.RefAttributes<SVGSVGElement>
+>;
+
+const COLOR_CLASSES: Record<ColorKey, {
     bg: string;
     text: string;
     border: string;
@@ -82,130 +82,136 @@ export default function NewIndex() {
       border: 'hover:border-rose-300 dark:hover:border-rose-700',
       badge: 'bg-rose-50 text-rose-600'
     }
-  };
+};
 
-  // Hub de Ferramentas - Destaque Principal
-  const toolsHub: Array<{
-    icon: LucideIcon;
-    title: string;
-    description: string;
-    badge: string;
-    tags: string[];
-    color: ColorKey;
-    link: string;
-  }> = [
-    {
-      icon: Brain,
-      title: 'Biblioteca de Prompts',
-      description: 'Flashcards, resumos, mapas mentais, casos clínicos e questões prontas para usar',
-      badge: '26 prompts',
-      tags: ['Estudos', 'Prática', 'Revisão'],
-      color: 'purple',
-      link: '/prompts'
-    },
-    {
-      icon: Zap,
-      title: 'Guia de IAs',
-      description: 'Compare ChatGPT, Claude, Perplexity e Gemini para escolher a melhor ferramenta',
-      badge: '4 IAs',
-      tags: ['Comparativo', 'Funcionalidades'],
-      color: 'blue',
-      link: '/guia-ias'
-    },
-    {
-      icon: Timer,
-      title: 'Focus Zone',
-      description: 'Timer Pomodoro para sessões de estudo focadas com tracking de progresso',
-      badge: 'Pomodoro',
-      tags: ['Produtividade', 'XP'],
-      color: 'green',
-      link: '/focus-zone'
-    },
-    {
-      icon: Library,
-      title: 'Hub de Recursos',
-      description: 'Mnemônicos, desafios semanais, casos clínicos e sistema de gamificação',
-      badge: '+ ferramentas',
-      tags: ['Conquistas', 'Comunidade'],
-      color: 'orange',
-      link: '/ferramentas'
-    }
-  ];
+// Hub de Ferramentas - Destaque Principal
+const TOOLS_HUB: Array<{
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  badge: string;
+  tags: string[];
+  color: ColorKey;
+  link: string;
+}> = [
+  {
+    icon: Brain,
+    title: 'Biblioteca de Prompts',
+    description: 'Flashcards, resumos, mapas mentais, casos clínicos e questões prontas para usar',
+    badge: '26 prompts',
+    tags: ['Estudos', 'Prática', 'Revisão'],
+    color: 'purple',
+    link: '/prompts'
+  },
+  {
+    icon: Zap,
+    title: 'Guia de IAs',
+    description: 'Compare ChatGPT, Claude, Perplexity e Gemini para escolher a melhor ferramenta',
+    badge: '4 IAs',
+    tags: ['Comparativo', 'Funcionalidades'],
+    color: 'blue',
+    link: '/guia-ias'
+  },
+  {
+    icon: Timer,
+    title: 'Focus Zone',
+    description: 'Timer Pomodoro para sessões de estudo focadas com tracking de progresso',
+    badge: 'Pomodoro',
+    tags: ['Produtividade', 'XP'],
+    color: 'green',
+    link: '/focus-zone'
+  },
+  {
+    icon: Library,
+    title: 'Hub de Recursos',
+    description: 'Mnemônicos, desafios semanais, casos clínicos e sistema de gamificação',
+    badge: '+ ferramentas',
+    tags: ['Conquistas', 'Comunidade'],
+    color: 'orange',
+    link: '/ferramentas'
+  }
+];
 
-  // Categorias de Prompts
-  const categories: Array<{
-    icon: LucideIcon;
-    title: string;
-    description: string;
-    count: string;
-    color: ColorKey;
-    link: string;
-  }> = [
-    {
-      icon: BookOpen,
-      title: 'Estudos',
-      description: 'Flashcards, resumos, mapas mentais, questões e simulados',
-      count: '12 prompts',
-      color: 'indigo',
-      link: '/prompts'
-    },
-    {
-      icon: Stethoscope,
-      title: 'Prática Clínica',
-      description: 'Casos clínicos, diagnóstico diferencial, conduta e prescrição médica',
-      count: '14 prompts',
-      color: 'rose',
-      link: '/prompts'
-    }
-  ];
+// Categorias de Prompts
+const CATEGORIES: Array<{
+  icon: LucideIcon;
+  title: string;
+  description: string;
+  count: string;
+  color: ColorKey;
+  link: string;
+}> = [
+  {
+    icon: BookOpen,
+    title: 'Estudos',
+    description: 'Flashcards, resumos, mapas mentais, questões e simulados',
+    count: '12 prompts',
+    color: 'indigo',
+    link: '/prompts'
+  },
+  {
+    icon: Stethoscope,
+    title: 'Prática Clínica',
+    description: 'Casos clínicos, diagnóstico diferencial, conduta e prescrição médica',
+    count: '14 prompts',
+    color: 'rose',
+    link: '/prompts'
+  }
+];
 
-  // Recursos educacionais (não benefícios comerciais)
-  const features: Array<{
-    icon: LucideIcon;
-    title: string;
-    description: string;
-  }> = [
-    {
-      icon: Target,
-      title: 'Estudo Direcionado',
-      description: 'Prompts organizados por categoria e tipo de uso acadêmico'
-    },
-    {
-      icon: BookOpen,
-      title: 'Copiar e Usar',
-      description: 'Todos os prompts prontos para copiar direto nas IAs'
-    },
-    {
-      icon: Trophy,
-      title: 'Acompanhe Progresso',
-      description: 'Sistema de XP, níveis e conquistas (área logada)'
-    },
-    {
-      icon: Heart,
-      title: 'Organização Pessoal',
-      description: 'Sistema de favoritos e tags personalizadas'
-    }
-  ];
+// Recursos educacionais (não benefícios comerciais)
+const FEATURES: Array<{
+  icon: LucideIcon;
+  title: string;
+  description: string;
+}> = [
+  {
+    icon: Target,
+    title: 'Estudo Direcionado',
+    description: 'Prompts organizados por categoria e tipo de uso acadêmico'
+  },
+  {
+    icon: BookOpen,
+    title: 'Copiar e Usar',
+    description: 'Todos os prompts prontos para copiar direto nas IAs'
+  },
+  {
+    icon: Trophy,
+    title: 'Acompanhe Progresso',
+    description: 'Sistema de XP, níveis e conquistas (área logada)'
+  },
+  {
+    icon: Heart,
+    title: 'Organização Pessoal',
+    description: 'Sistema de favoritos e tags personalizadas'
+  }
+];
+
+// ============================================================================
+// COMPONENTE PRINCIPAL
+// ============================================================================
+
+export default function NewIndex() {
+  const navigate = useNavigate();
+
+  // SEO: Definir título da página
+  useEffect(() => {
+    document.title = "MedPrompts - Recursos de IA para Estudantes de Medicina";
+  }, []);
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-white dark:from-gray-950 dark:to-gray-900">
       {/* NAVBAR UNIFICADO */}
       <PublicNavbar />
 
-      {/* Skip to Content Link (acessibilidade) */}
-      <a
-        href="#main-content"
-        className="skip-to-content sr-only focus:not-sr-only focus:absolute focus:top-16 focus:left-4 focus:z-50 focus:bg-purple-600 focus:text-white focus:px-4 focus:py-2 focus:rounded-md"
-      >
-        Pular para conteúdo principal
-      </a>
+      {/* Skip link removido - já existe no App.tsx via SkipLinks */}
 
       {/* HERO DIRETO E EDUCACIONAL */}
-      <section id="main-content" className="container mx-auto px-4 sm:px-6 py-12 md:py-16">
+      <main id="main-content" className="container mx-auto px-4 sm:px-6 py-12 md:py-16">
         <div className="max-w-4xl mx-auto text-center space-y-6">
           {/* Badge Educacional */}
           <div className="inline-flex items-center gap-2 px-4 py-2 bg-blue-50 dark:bg-blue-900/30 text-blue-700 dark:text-blue-300 rounded-lg text-sm font-medium border border-blue-200 dark:border-blue-800">
-            <BookOpen className="h-4 w-4" />
+            <BookOpen className="h-4 w-4" aria-hidden="true" />
             Portal Acadêmico de IA para Medicina
           </div>
 
@@ -234,7 +240,7 @@ export default function NewIndex() {
             >
               <Link to="/prompts" className="gap-2">
                 Acessar Prompts
-                <ArrowRight className="h-4 w-4" />
+                <ArrowRight className="h-4 w-4" aria-hidden="true" />
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="border-gray-300 dark:border-gray-700">
@@ -242,14 +248,14 @@ export default function NewIndex() {
             </Button>
           </div>
         </div>
-      </section>
+      </main>
 
       {/* HUB DE FERRAMENTAS - DESTAQUE MÁXIMO */}
-      <section className="container mx-auto px-4 sm:px-6 py-12 md:py-16 bg-white/50 dark:bg-gray-900/50">
+      <section id="hub-ferramentas" aria-labelledby="hub-ferramentas-heading" className="container mx-auto px-4 sm:px-6 py-12 md:py-16 bg-white/50 dark:bg-gray-900/50">
         <div className="max-w-6xl mx-auto space-y-8">
           {/* Header da Seção */}
           <div className="text-center space-y-2">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
+            <h2 id="hub-ferramentas-heading" className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
               Hub de Ferramentas
             </h2>
             <p className="text-gray-600 dark:text-gray-300">
@@ -259,21 +265,21 @@ export default function NewIndex() {
 
           {/* Grid 2x2 de Cards Funcionais */}
           <div className="grid md:grid-cols-2 gap-6">
-            {toolsHub.map((tool, index) => (
+            {TOOLS_HUB.map((tool, index) => (
               <AccessibleCard
                 key={index}
                 onClick={() => navigate(tool.link)}
                 ariaLabel={`Acessar ${tool.title}: ${tool.description}`}
-                className={`group p-6 cursor-pointer hover:shadow-xl transition-all duration-300 border-2 ${colorClasses[tool.color].border} animate-in fade-in slide-in-from-bottom-4`}
+                className={`group p-6 cursor-pointer hover:shadow-xl transition-all duration-300 border-2 ${COLOR_CLASSES[tool.color].border} animate-in fade-in slide-in-from-bottom-4`}
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 <div className="space-y-4">
                   {/* Header do Card */}
                   <div className="flex items-start justify-between">
-                    <div className={`p-3 ${colorClasses[tool.color].bg} rounded-lg group-hover:scale-110 transition-transform duration-300`}>
-                      <tool.icon className={`h-7 w-7 ${colorClasses[tool.color].text}`} />
+                    <div className={`p-3 ${COLOR_CLASSES[tool.color].bg} rounded-lg group-hover:scale-110 transition-transform duration-300`}>
+                      <tool.icon className={`h-7 w-7 ${COLOR_CLASSES[tool.color].text}`} aria-hidden="true" />
                     </div>
-                    <span className={`text-sm font-semibold px-3 py-1 rounded-full ${colorClasses[tool.color].badge}`}>
+                    <span className={`text-sm font-semibold px-3 py-1 rounded-full ${COLOR_CLASSES[tool.color].badge}`}>
                       {tool.badge}
                     </span>
                   </div>
@@ -312,11 +318,11 @@ export default function NewIndex() {
       </section>
 
       {/* CATEGORIAS DE PROMPTS */}
-      <section className="container mx-auto px-4 sm:px-6 py-12 md:py-16">
+      <section aria-labelledby="categorias-heading" className="container mx-auto px-4 sm:px-6 py-12 md:py-16">
         <div className="max-w-5xl mx-auto space-y-8">
           {/* Header da Seção */}
           <div className="text-center space-y-2">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
+            <h2 id="categorias-heading" className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
               Categorias de Prompts
             </h2>
             <p className="text-gray-600 dark:text-gray-300">
@@ -326,18 +332,18 @@ export default function NewIndex() {
 
           {/* Cards Horizontais de Categorias */}
           <div className="grid md:grid-cols-2 gap-6">
-            {categories.map((category, index) => (
+            {CATEGORIES.map((category, index) => (
               <AccessibleCard
                 key={index}
                 onClick={() => navigate(category.link)}
                 ariaLabel={`Ver ${category.count} prompts de ${category.title}: ${category.description}`}
-                className={`group p-6 cursor-pointer border-2 ${colorClasses[category.color].border} hover:shadow-lg transition-all duration-300 animate-in fade-in slide-in-from-bottom-4`}
+                className={`group p-6 cursor-pointer border-2 ${COLOR_CLASSES[category.color].border} hover:shadow-lg transition-all duration-300 animate-in fade-in slide-in-from-bottom-4`}
                 style={{ animationDelay: `${index * 150}ms` }}
               >
                 <div className="flex items-start gap-4">
                   {/* Ícone */}
-                  <div className={`p-3 ${colorClasses[category.color].bg} rounded-lg flex-shrink-0 group-hover:scale-110 transition-transform duration-300`}>
-                    <category.icon className={`h-6 w-6 ${colorClasses[category.color].text}`} />
+                  <div className={`p-3 ${COLOR_CLASSES[category.color].bg} rounded-lg flex-shrink-0 group-hover:scale-110 transition-transform duration-300`}>
+                    <category.icon className={`h-6 w-6 ${COLOR_CLASSES[category.color].text}`} aria-hidden="true" />
                   </div>
                   
                   {/* Conteúdo */}
@@ -346,20 +352,17 @@ export default function NewIndex() {
                       <h3 className="text-lg font-bold text-gray-900 dark:text-white group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                         {category.title}
                       </h3>
-                      <span className={`text-xs font-medium px-2 py-1 rounded-full ${colorClasses[category.color].badge}`}>
+                      <span className={`text-xs font-medium px-2 py-1 rounded-full ${COLOR_CLASSES[category.color].badge}`}>
                         {category.count}
                       </span>
                     </div>
                     <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">
                       {category.description}
                     </p>
-                    <Link 
-                      to={category.link} 
-                      className={`text-sm font-medium ${colorClasses[category.color].text} hover:underline inline-flex items-center gap-1`}
-                    >
+                    <span className={`text-sm font-medium ${COLOR_CLASSES[category.color].text} inline-flex items-center gap-1`}>
                       Ver prompts
-                      <ArrowRight className="h-3 w-3" />
-                    </Link>
+                      <ArrowRight className="h-3 w-3" aria-hidden="true" />
+                    </span>
                   </div>
                 </div>
               </AccessibleCard>
@@ -369,11 +372,11 @@ export default function NewIndex() {
       </section>
 
       {/* RECURSOS EDUCACIONAIS */}
-      <section className="container mx-auto px-4 sm:px-6 py-12 md:py-16 bg-white/50 dark:bg-gray-900/50">
+      <section aria-labelledby="recursos-heading" className="container mx-auto px-4 sm:px-6 py-12 md:py-16 bg-white/50 dark:bg-gray-900/50">
         <div className="max-w-5xl mx-auto space-y-8">
           {/* Header da Seção */}
           <div className="text-center space-y-2">
-            <h2 className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
+            <h2 id="recursos-heading" className="text-3xl md:text-4xl font-bold text-gray-900 dark:text-white">
               Recursos da Plataforma
             </h2>
             <p className="text-gray-600 dark:text-gray-300">
@@ -383,14 +386,14 @@ export default function NewIndex() {
 
           {/* Grid de Features */}
           <div className="grid md:grid-cols-2 lg:grid-cols-4 gap-6">
-            {features.map((feature, index) => (
+            {FEATURES.map((feature, index) => (
               <div
                 key={index}
                 className="text-center space-y-3 p-6 rounded-xl bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 hover:border-purple-300 dark:hover:border-purple-700 hover:shadow-md transition-all duration-300 animate-in fade-in slide-in-from-bottom-4"
                 style={{ animationDelay: `${index * 100}ms` }}
               >
                 <div className="w-12 h-12 mx-auto rounded-lg bg-gradient-to-br from-purple-100 to-indigo-100 dark:from-purple-900/30 dark:to-indigo-900/30 flex items-center justify-center">
-                  <feature.icon className="w-6 h-6 text-purple-600 dark:text-purple-400" />
+                  <feature.icon className="w-6 h-6 text-purple-600 dark:text-purple-400" aria-hidden="true" />
                 </div>
                 <h3 className="font-semibold text-gray-900 dark:text-white">
                   {feature.title}
@@ -416,7 +419,7 @@ export default function NewIndex() {
             <div className="space-y-4">
               <div className="flex items-center gap-2">
                 <div className="w-10 h-10 rounded-xl bg-gradient-to-br from-purple-600 to-indigo-600 flex items-center justify-center shadow-md">
-                  <Brain className="w-6 h-6 text-white" />
+                  <Brain className="w-6 h-6 text-white" aria-hidden="true" />
                 </div>
                 <span className="font-bold text-lg text-gray-900 dark:text-white">MedPrompts</span>
               </div>
@@ -426,43 +429,43 @@ export default function NewIndex() {
             </div>
 
             {/* Coluna 2: Recursos */}
-            <div className="space-y-3">
+            <nav aria-label="Links do rodapé" className="space-y-3">
               <h3 className="font-semibold text-gray-900 dark:text-white">Recursos</h3>
               <ul className="space-y-2 text-sm">
                 <li>
-                  <button
-                    onClick={() => navigate('/prompts')}
+                  <Link
+                    to="/prompts"
                     className="text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
                   >
                     Biblioteca de Prompts
-                  </button>
+                  </Link>
                 </li>
                 <li>
-                  <button
-                    onClick={() => navigate('/guia-ias')}
+                  <Link
+                    to="/guia-ias"
                     className="text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
                   >
                     Guia de IAs
-                  </button>
+                  </Link>
                 </li>
                 <li>
-                  <button
-                    onClick={() => navigate('/ferramentas')}
+                  <Link
+                    to="/ferramentas"
                     className="text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
                   >
                     Ferramentas
-                  </button>
+                  </Link>
                 </li>
                 <li>
-                  <button
-                    onClick={() => navigate('/focus-zone')}
+                  <Link
+                    to="/focus-zone"
                     className="text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
                   >
                     Focus Zone
-                  </button>
+                  </Link>
                 </li>
               </ul>
-            </div>
+            </nav>
 
             {/* Coluna 3: Desenvolvido por */}
             <div className="space-y-3">

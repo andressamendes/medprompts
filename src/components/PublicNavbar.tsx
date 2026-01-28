@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { useNavigate, useLocation, Link } from 'react-router-dom';
+import { useLocation, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Brain, Menu, X, Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
@@ -18,7 +18,6 @@ import { useTheme } from '@/contexts/ThemeContext';
  */
 
 export const PublicNavbar = () => {
-  const navigate = useNavigate();
   const location = useLocation();
   const { theme, setTheme } = useTheme();
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
@@ -35,13 +34,13 @@ export const PublicNavbar = () => {
   ];
 
   return (
-    <nav className="sticky top-0 z-50 border-b bg-white/95 dark:bg-gray-950/95 backdrop-blur-sm">
+    <nav aria-label="Navegação principal" className="sticky top-0 z-50 border-b bg-white/95 dark:bg-gray-950/95 backdrop-blur-sm">
       <div className="container mx-auto px-4 sm:px-6">
         <div className="flex h-16 items-center justify-between">
           {/* Logo Acadêmico */}
-          <Link to="/" className="flex items-center gap-2 group">
+          <Link to="/" className="flex items-center gap-2 group" aria-label="MedPrompts - Ir para página inicial">
             <div className="w-10 h-10 rounded-lg bg-blue-600 dark:bg-blue-500 flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-200">
-              <Brain className="w-6 h-6 text-white" />
+              <Brain className="w-6 h-6 text-white" aria-hidden="true" />
             </div>
             <div className="flex flex-col">
               <span className="text-xl font-bold text-gray-900 dark:text-white">MedPrompts</span>
@@ -52,9 +51,10 @@ export const PublicNavbar = () => {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center gap-6">
             {navLinks.map((link) => (
-              <button
+              <Link
                 key={link.path}
-                onClick={() => navigate(link.path)}
+                to={link.path}
+                aria-current={location.pathname === link.path ? 'page' : undefined}
                 className={`text-sm font-medium transition-colors ${
                   location.pathname === link.path
                     ? 'text-purple-600 dark:text-purple-400 font-semibold'
@@ -62,7 +62,7 @@ export const PublicNavbar = () => {
                 }`}
               >
                 {link.label}
-              </button>
+              </Link>
             ))}
           </div>
 
@@ -115,12 +115,11 @@ export const PublicNavbar = () => {
         {mobileMenuOpen && (
           <div className="md:hidden border-t py-4 space-y-3 animate-in fade-in slide-in-from-top-4 duration-300">
             {navLinks.map((link) => (
-              <button
+              <Link
                 key={link.path}
-                onClick={() => {
-                  navigate(link.path);
-                  setMobileMenuOpen(false);
-                }}
+                to={link.path}
+                onClick={() => setMobileMenuOpen(false)}
+                aria-current={location.pathname === link.path ? 'page' : undefined}
                 className={`block w-full text-left px-4 py-2 rounded-lg transition-colors ${
                   location.pathname === link.path
                     ? 'bg-purple-50 dark:bg-purple-900/30 text-purple-600 dark:text-purple-400 font-semibold'
@@ -128,7 +127,7 @@ export const PublicNavbar = () => {
                 }`}
               >
                 {link.label}
-              </button>
+              </Link>
             ))}
           </div>
         )}
