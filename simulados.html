@@ -1,0 +1,549 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <meta name="description" content="Simulados de Medicina - 1º e 2º Período. Links para espaços Perplexity com questões de SOI, HAM, IESC, MCM e Integradora.">
+  <title>Simulados - 1º e 2º Período | MedPrompts</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=Poppins:wght@600;700&display=swap" rel="stylesheet">
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Inter', system-ui, -apple-system, sans-serif;
+      background: linear-gradient(135deg, #f8fafc 0%, #e0e7ff 50%, #dbeafe 100%);
+      min-height: 100vh;
+      color: #1e293b;
+      line-height: 1.6;
+    }
+
+    h1, h2, h3 {
+      font-family: 'Poppins', 'Inter', sans-serif;
+    }
+
+    /* Header */
+    .header {
+      background: white;
+      border-bottom: 1px solid #e2e8f0;
+      padding: 1rem 1.5rem;
+      position: sticky;
+      top: 0;
+      z-index: 50;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .header-content {
+      max-width: 1200px;
+      margin: 0 auto;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      flex-wrap: wrap;
+      gap: 1rem;
+    }
+
+    .logo {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      text-decoration: none;
+      color: inherit;
+    }
+
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      background: #2563eb;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      color: white;
+      font-size: 1.25rem;
+    }
+
+    .logo-text {
+      font-weight: 700;
+      font-size: 1.25rem;
+      color: #1e293b;
+    }
+
+    .logo-subtitle {
+      font-size: 0.75rem;
+      color: #64748b;
+    }
+
+    .back-link {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: #f1f5f9;
+      border-radius: 8px;
+      text-decoration: none;
+      color: #475569;
+      font-size: 0.875rem;
+      font-weight: 500;
+      transition: all 0.2s;
+    }
+
+    .back-link:hover {
+      background: #e2e8f0;
+      color: #1e293b;
+    }
+
+    /* Main Content */
+    .main {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 2rem 1.5rem 4rem;
+    }
+
+    /* Hero Section */
+    .hero {
+      text-align: center;
+      margin-bottom: 3rem;
+    }
+
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.5rem 1rem;
+      background: linear-gradient(135deg, #2563eb, #7c3aed);
+      color: white;
+      border-radius: 9999px;
+      font-size: 0.875rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      box-shadow: 0 4px 14px rgba(37, 99, 235, 0.3);
+    }
+
+    .hero h1 {
+      font-size: clamp(1.75rem, 5vw, 2.5rem);
+      color: #1e293b;
+      margin-bottom: 0.75rem;
+    }
+
+    .hero p {
+      font-size: 1.125rem;
+      color: #64748b;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+
+    /* Sections */
+    .section {
+      margin-bottom: 2.5rem;
+    }
+
+    .section-header {
+      display: flex;
+      align-items: center;
+      gap: 0.75rem;
+      margin-bottom: 1.25rem;
+      padding-bottom: 0.75rem;
+      border-bottom: 2px solid #e2e8f0;
+    }
+
+    .section-icon {
+      width: 48px;
+      height: 48px;
+      border-radius: 12px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.5rem;
+      flex-shrink: 0;
+    }
+
+    .section-icon.periodo-1 {
+      background: linear-gradient(135deg, #dbeafe, #bfdbfe);
+      color: #1d4ed8;
+    }
+
+    .section-icon.periodo-2 {
+      background: linear-gradient(135deg, #ede9fe, #ddd6fe);
+      color: #7c3aed;
+    }
+
+    .section h2 {
+      font-size: 1.5rem;
+      color: #1e293b;
+    }
+
+    .section h2 span {
+      display: block;
+      font-size: 0.875rem;
+      font-weight: 500;
+      color: #64748b;
+      margin-top: 0.25rem;
+    }
+
+    /* Links List */
+    .links-list {
+      display: flex;
+      flex-direction: column;
+      gap: 0.75rem;
+    }
+
+    .link-card {
+      display: flex;
+      align-items: center;
+      gap: 1rem;
+      padding: 1rem 1.25rem;
+      background: white;
+      border: 2px solid #e2e8f0;
+      border-radius: 12px;
+      text-decoration: none;
+      color: inherit;
+      transition: all 0.2s ease;
+      box-shadow: 0 1px 3px rgba(0, 0, 0, 0.05);
+    }
+
+    .link-card:hover {
+      border-color: #2563eb;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+      transform: translateY(-2px);
+    }
+
+    .link-card:focus {
+      outline: 3px solid #2563eb;
+      outline-offset: 2px;
+    }
+
+    .link-card.periodo-1:hover {
+      border-color: #2563eb;
+      box-shadow: 0 4px 12px rgba(37, 99, 235, 0.15);
+    }
+
+    .link-card.periodo-2:hover {
+      border-color: #7c3aed;
+      box-shadow: 0 4px 12px rgba(124, 58, 237, 0.15);
+    }
+
+    .link-icon {
+      width: 44px;
+      height: 44px;
+      border-radius: 10px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 1.25rem;
+      flex-shrink: 0;
+    }
+
+    .link-card.periodo-1 .link-icon {
+      background: #dbeafe;
+      color: #1d4ed8;
+    }
+
+    .link-card.periodo-2 .link-icon {
+      background: #ede9fe;
+      color: #7c3aed;
+    }
+
+    .link-content {
+      flex: 1;
+      min-width: 0;
+    }
+
+    .link-title {
+      font-weight: 600;
+      font-size: 1rem;
+      color: #1e293b;
+      margin-bottom: 0.125rem;
+    }
+
+    .link-subtitle {
+      font-size: 0.813rem;
+      color: #64748b;
+    }
+
+    .link-arrow {
+      color: #94a3b8;
+      font-size: 1.25rem;
+      transition: transform 0.2s;
+    }
+
+    .link-card:hover .link-arrow {
+      transform: translateX(4px);
+      color: #2563eb;
+    }
+
+    .link-card.periodo-2:hover .link-arrow {
+      color: #7c3aed;
+    }
+
+    /* Footer */
+    .footer {
+      text-align: center;
+      padding: 2rem 1.5rem;
+      color: #64748b;
+      font-size: 0.875rem;
+      border-top: 1px solid #e2e8f0;
+      margin-top: 2rem;
+    }
+
+    .footer a {
+      color: #2563eb;
+      text-decoration: none;
+      font-weight: 500;
+    }
+
+    .footer a:hover {
+      text-decoration: underline;
+    }
+
+    /* Responsive */
+    @media (max-width: 640px) {
+      .header-content {
+        justify-content: center;
+      }
+
+      .back-link {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .main {
+        padding: 1.5rem 1rem 3rem;
+      }
+
+      .link-card {
+        padding: 0.875rem 1rem;
+      }
+
+      .link-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.125rem;
+      }
+
+      .link-title {
+        font-size: 0.938rem;
+      }
+
+      .section-icon {
+        width: 40px;
+        height: 40px;
+        font-size: 1.25rem;
+      }
+
+      .section h2 {
+        font-size: 1.25rem;
+      }
+    }
+
+    /* Reduced motion */
+    @media (prefers-reduced-motion: reduce) {
+      .link-card,
+      .link-arrow {
+        transition: none;
+      }
+      .link-card:hover {
+        transform: none;
+      }
+    }
+  </style>
+</head>
+<body>
+  <!-- Header -->
+  <header class="header">
+    <div class="header-content">
+      <a href="/medprompts/" class="logo">
+        <div class="logo-icon">🧠</div>
+        <div>
+          <div class="logo-text">MedPrompts</div>
+          <div class="logo-subtitle">Portal Acadêmico</div>
+        </div>
+      </a>
+      <a href="/medprompts/" class="back-link">
+        ← Voltar ao Início
+      </a>
+    </div>
+  </header>
+
+  <!-- Main Content -->
+  <main class="main" id="main-content">
+    <!-- Hero -->
+    <section class="hero">
+      <div class="badge">
+        📝 Simulados N1
+      </div>
+      <h1>Simulados - 1º e 2º Período</h1>
+      <p>Links para os espaços Perplexity com questões das disciplinas. Clique para acessar cada simulado.</p>
+    </section>
+
+    <!-- 1º Período -->
+    <section class="section" aria-labelledby="periodo-1">
+      <div class="section-header">
+        <div class="section-icon periodo-1">📘</div>
+        <h2 id="periodo-1">
+          1º Período
+          <span>5 simulados disponíveis</span>
+        </h2>
+      </div>
+
+      <div class="links-list">
+        <a href="https://www.perplexity.ai/spaces/n1-soi-i-simulado-G67QN_wmRZylRakl81zDFQ"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="link-card periodo-1"
+           aria-label="Abrir simulado N1 SOI I em nova aba">
+          <div class="link-icon">🔬</div>
+          <div class="link-content">
+            <div class="link-title">N1 - SOI I (SIMULADO)</div>
+            <div class="link-subtitle">Sistemas Orgânicos Integrados I</div>
+          </div>
+          <span class="link-arrow" aria-hidden="true">→</span>
+        </a>
+
+        <a href="https://www.perplexity.ai/spaces/n1-ham-i-simulado-_yrEnui7RjGH2gLPzve2PQ"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="link-card periodo-1"
+           aria-label="Abrir simulado N1 HAM I em nova aba">
+          <div class="link-icon">🦴</div>
+          <div class="link-content">
+            <div class="link-title">N1 - HAM I (SIMULADO)</div>
+            <div class="link-subtitle">Habilidades e Atitudes Médicas I</div>
+          </div>
+          <span class="link-arrow" aria-hidden="true">→</span>
+        </a>
+
+        <a href="https://www.perplexity.ai/spaces/n1-iesc-i-simulado-_Z.iex1PTQa_1hWC5zJgeA"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="link-card periodo-1"
+           aria-label="Abrir simulado N1 IESC I em nova aba">
+          <div class="link-icon">🏥</div>
+          <div class="link-content">
+            <div class="link-title">N1 - IESC I (SIMULADO)</div>
+            <div class="link-subtitle">Interação Ensino-Serviço-Comunidade I</div>
+          </div>
+          <span class="link-arrow" aria-hidden="true">→</span>
+        </a>
+
+        <a href="https://www.perplexity.ai/spaces/n1-mcm-i-simulado-L7CHpXr_RmSB1NgBEv1Qbw"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="link-card periodo-1"
+           aria-label="Abrir simulado N1 MCM I em nova aba">
+          <div class="link-icon">🧬</div>
+          <div class="link-content">
+            <div class="link-title">N1 - MCM I (SIMULADO)</div>
+            <div class="link-subtitle">Mecanismos de Construção Morfofuncional I</div>
+          </div>
+          <span class="link-arrow" aria-hidden="true">→</span>
+        </a>
+
+        <a href="https://www.perplexity.ai/spaces/integradora-i-simulado-azjHrHD3RTS722X50QKY3A"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="link-card periodo-1"
+           aria-label="Abrir simulado Integradora I em nova aba">
+          <div class="link-icon">🎯</div>
+          <div class="link-content">
+            <div class="link-title">INTEGRADORA I (SIMULADO)</div>
+            <div class="link-subtitle">Avaliação Integradora do 1º Período</div>
+          </div>
+          <span class="link-arrow" aria-hidden="true">→</span>
+        </a>
+      </div>
+    </section>
+
+    <!-- 2º Período -->
+    <section class="section" aria-labelledby="periodo-2">
+      <div class="section-header">
+        <div class="section-icon periodo-2">📗</div>
+        <h2 id="periodo-2">
+          2º Período
+          <span>5 simulados disponíveis</span>
+        </h2>
+      </div>
+
+      <div class="links-list">
+        <a href="https://www.perplexity.ai/spaces/n1-soi-ii-simulado-T7x20s0USzG_c6Hfff7mRw"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="link-card periodo-2"
+           aria-label="Abrir simulado N1 SOI II em nova aba">
+          <div class="link-icon">🔬</div>
+          <div class="link-content">
+            <div class="link-title">N1 - SOI II (SIMULADO)</div>
+            <div class="link-subtitle">Sistemas Orgânicos Integrados II</div>
+          </div>
+          <span class="link-arrow" aria-hidden="true">→</span>
+        </a>
+
+        <a href="https://www.perplexity.ai/spaces/n1-ham-ii-simulado-vvK1vHU_SN6bs3mj2aHnRg"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="link-card periodo-2"
+           aria-label="Abrir simulado N1 HAM II em nova aba">
+          <div class="link-icon">🦴</div>
+          <div class="link-content">
+            <div class="link-title">N1 - HAM II (SIMULADO)</div>
+            <div class="link-subtitle">Habilidades e Atitudes Médicas II</div>
+          </div>
+          <span class="link-arrow" aria-hidden="true">→</span>
+        </a>
+
+        <a href="https://www.perplexity.ai/spaces/n1-iesc-ii-simulado-RKADyMtATQGTluUJvwKQJQ"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="link-card periodo-2"
+           aria-label="Abrir simulado N1 IESC II em nova aba">
+          <div class="link-icon">🏥</div>
+          <div class="link-content">
+            <div class="link-title">N1 - IESC II (SIMULADO)</div>
+            <div class="link-subtitle">Interação Ensino-Serviço-Comunidade II</div>
+          </div>
+          <span class="link-arrow" aria-hidden="true">→</span>
+        </a>
+
+        <a href="https://www.perplexity.ai/spaces/n1-mcm-ii-simulado-u0KWMtFxQd.cisF6rFknxw"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="link-card periodo-2"
+           aria-label="Abrir simulado N1 MCM II em nova aba">
+          <div class="link-icon">🧬</div>
+          <div class="link-content">
+            <div class="link-title">N1 - MCM II (SIMULADO)</div>
+            <div class="link-subtitle">Mecanismos de Construção Morfofuncional II</div>
+          </div>
+          <span class="link-arrow" aria-hidden="true">→</span>
+        </a>
+
+        <a href="https://www.perplexity.ai/spaces/integradora-ii-simulado-EfdIkHnMTsu9HdOw7LNItw"
+           target="_blank"
+           rel="noopener noreferrer"
+           class="link-card periodo-2"
+           aria-label="Abrir simulado Integradora II em nova aba">
+          <div class="link-icon">🎯</div>
+          <div class="link-content">
+            <div class="link-title">INTEGRADORA II (SIMULADO)</div>
+            <div class="link-subtitle">Avaliação Integradora do 2º Período</div>
+          </div>
+          <span class="link-arrow" aria-hidden="true">→</span>
+        </a>
+      </div>
+    </section>
+  </main>
+
+  <!-- Footer -->
+  <footer class="footer">
+    <p>
+      Simulados criados com <a href="https://perplexity.ai" target="_blank" rel="noopener noreferrer">Perplexity AI</a> |
+      <a href="/medprompts/">MedPrompts</a> © 2026
+    </p>
+  </footer>
+</body>
+</html>
