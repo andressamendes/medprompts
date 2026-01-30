@@ -176,7 +176,7 @@ const Simulados = () => {
                   <div className="text-sm text-gray-600 dark:text-gray-400">Períodos</div>
                 </div>
                 <div className="text-center">
-                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">5</div>
+                  <div className="text-2xl font-bold text-green-600 dark:text-green-400">4</div>
                   <div className="text-sm text-gray-600 dark:text-gray-400">Disciplinas</div>
                 </div>
               </div>
