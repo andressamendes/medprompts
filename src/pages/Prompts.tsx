@@ -73,7 +73,7 @@ export default function Prompts() {
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
 
-  const { favorites, toggleFavorite: contextToggleFavorite, isFavorite, count: favoritesCount } = useFavorites();
+  const { toggleFavorite: contextToggleFavorite, isFavorite, count: favoritesCount } = useFavorites();
 
   // Estado sincronizado com URL
   const searchTerm = searchParams.get('q') || '';
@@ -243,7 +243,7 @@ export default function Prompts() {
     filtered.sort((a, b) => a.title.localeCompare(b.title));
 
     return filtered;
-  }, [prompts, selectedTab, selectedCategory, searchTerm, favorites, isFavorite]);
+  }, [prompts, selectedTab, selectedCategory, searchTerm, isFavorite]);
 
   const totalPages = Math.ceil(filteredPrompts.length / ITEMS_PER_PAGE);
 

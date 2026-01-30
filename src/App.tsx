@@ -33,7 +33,7 @@ const LoadingScreen = () => (
 function App() {
   useEffect(() => {
     logger.info('MedPrompts iniciado', {
-      version: '2.0.0',
+      version: '1.0.0',
       environment: import.meta.env.MODE,
       timestamp: new Date().toISOString()
     });

@@ -484,7 +484,7 @@ class SanitizationService {
    * Detecta tentativa de Path Traversal
    */
   detectPathTraversal(input: string): boolean {
-    return /\.\.[\/\\]/.test(input);
+    return /\.\.[/\\]/.test(input);
   }
 
   /**

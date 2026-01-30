@@ -100,7 +100,7 @@ export function PromptCustomizer({ prompt, open, onOpenChange }: PromptCustomize
   const variables = useMemo(() =>
     extractVariables(prompt.content).map(v => v.name)
   , [prompt.content]);
-  const history = useMemo(() => getHistory(), [open]);
+  const history = useMemo(() => getHistory(), []);
 
   const filledCount = useMemo(() =>
     variables.filter(v => values[v]?.trim()).length

@@ -23,32 +23,40 @@ export function PromptCustomizerDialog({ prompt, open, onOpenChange }: PromptCus
   const [copied, setCopied] = useState(false);
   const [variables, setVariables] = useState<Record<string, string>>({});
 
-  if (!prompt) return null;
-
   // Detecta variáveis no formato [VARIAVEL] no conteúdo do prompt
+  // NOTA: Hooks devem ser chamados incondicionalmente (antes de qualquer return)
+  const promptContent = prompt?.content ?? '';
+
   const detectedVariables = useMemo(() => {
+    if (!promptContent) return [];
+
     const regex = /\[([A-ZÀ-Ú\s]+)\]/g;
-    const matches = prompt.content.match(regex);
+    const matches = promptContent.match(regex);
     if (!matches) return [];
 
     // Remove duplicatas e formata
     const unique = Array.from(new Set(matches));
     return unique.map(v => ({
-      key: v.replace(/[\[\]]/g, ''),
+      key: v.replace(/[[\]]/g, ''),
       placeholder: v,
-      label: v.replace(/[\[\]]/g, '').toLowerCase().replace(/_/g, ' ')
+      label: v.replace(/[[\]]/g, '').toLowerCase().replace(/_/g, ' ')
     }));
-  }, [prompt.content]);
+  }, [promptContent]);
 
   // Gera o prompt personalizado substituindo as variáveis
   const customizedPrompt = useMemo(() => {
-    let result = prompt.content;
+    if (!promptContent) return '';
+
+    let result = promptContent;
     detectedVariables.forEach(({ placeholder, key }) => {
       const value = variables[key] || placeholder;
       result = result.replace(new RegExp(`\\[${key}\\]`, 'g'), value);
     });
     return result;
-  }, [prompt.content, variables, detectedVariables]);
+  }, [promptContent, variables, detectedVariables]);
+
+  // Early return APÓS os hooks
+  if (!prompt) return null;
 
   const handleVariableChange = (key: string, value: string) => {
     setVariables(prev => ({ ...prev, [key]: value }));

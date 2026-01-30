@@ -244,10 +244,10 @@ class SecureAuthService {
    */
   private removePassword(user: UserWithPassword): User {
     const {
-      password,
-      refreshToken,
-      loginAttempts,
-      lockoutUntil,
+      password: _password,
+      refreshToken: _refreshToken,
+      loginAttempts: _loginAttempts,
+      lockoutUntil: _lockoutUntil,
       ...userWithoutPassword
     } = user;
     return userWithoutPassword;

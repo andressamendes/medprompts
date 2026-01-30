@@ -173,7 +173,8 @@ export async function parseFile(file: File): Promise<ParseResult> {
  */
 function cleanExtractedText(text: string): string {
   return text
-    // Remover caracteres de controle
+    // Remover caracteres de controle (intencional para sanitização)
+    // eslint-disable-next-line no-control-regex
     .replace(/[\x00-\x08\x0B\x0C\x0E-\x1F\x7F]/g, '')
     // Normalizar quebras de linha
     .replace(/\r\n/g, '\n')

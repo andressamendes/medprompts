@@ -21,6 +21,7 @@ interface Periodo {
   titulo: string;
   cor: string;
   corHover: string;
+  focusRing: string;
   bgIcon: string;
   simulados: Simulado[];
 }
@@ -31,6 +32,7 @@ const PERIODOS: Periodo[] = [
     titulo: "1º Período",
     cor: "blue",
     corHover: "hover:border-blue-400",
+    focusRing: "focus:ring-blue-500",
     bgIcon: "bg-blue-100 text-blue-700 dark:bg-blue-900/50 dark:text-blue-300",
     simulados: [
       {
@@ -75,6 +77,7 @@ const PERIODOS: Periodo[] = [
     titulo: "2º Período",
     cor: "purple",
     corHover: "hover:border-purple-400",
+    focusRing: "focus:ring-purple-500",
     bgIcon: "bg-purple-100 text-purple-700 dark:bg-purple-900/50 dark:text-purple-300",
     simulados: [
       {
@@ -216,7 +219,7 @@ const Simulados = () => {
                         transition-all duration-200
                         hover:shadow-md hover:-translate-y-0.5
                         ${periodo.corHover} dark:${periodo.corHover}
-                        focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-${periodo.cor}-500
+                        focus:outline-none focus:ring-2 focus:ring-offset-2 ${periodo.focusRing}
                       `}
                       aria-label={`Abrir ${simulado.titulo} em nova aba`}
                     >

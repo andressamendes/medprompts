@@ -221,8 +221,8 @@ export class SemanticParser {
 
     // Padrões de data específica
     const datePatterns = [
-      /(?:para|ate|até)\s+(?:dia\s+)?(\d{1,2})[\/\-](\d{1,2})/i,
-      /(?:prova|exame)\s+(?:dia\s+)?(\d{1,2})[\/\-](\d{1,2})/i,
+      /(?:para|ate|até)\s+(?:dia\s+)?(\d{1,2})[/\u002D](\d{1,2})/i,
+      /(?:prova|exame)\s+(?:dia\s+)?(\d{1,2})[/\u002D](\d{1,2})/i,
     ];
 
     for (const pattern of datePatterns) {

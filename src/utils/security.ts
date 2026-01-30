@@ -99,7 +99,8 @@ export const isValidDataUrl = (url: string): boolean => {
  * @returns String sanitizada
  */
 export const sanitizeString = (input: string): string => {
-  // Remove caracteres de controle e null bytes
+  // Remove caracteres de controle e null bytes (intencional para sanitização)
+  // eslint-disable-next-line no-control-regex
   return input.replace(/[\x00-\x1F\x7F]/g, '');
 };
 

@@ -249,20 +249,25 @@ export default function FocusZone() {
 
   // ========== Cleanup ao sair da página ==========
   useEffect(() => {
+    // Captura refs no momento do efeito para evitar stale refs no cleanup
+    const audioElement = audioRef.current;
+    const alarmElement = audioAlarmRef.current;
+    const intervalId = intervalRef.current;
+
     return () => {
       // Parar música ao desmontar componente
-      if (audioRef.current) {
-        audioRef.current.pause();
-        audioRef.current.currentTime = 0;
+      if (audioElement) {
+        audioElement.pause();
+        audioElement.currentTime = 0;
       }
       // Parar alarme
-      if (audioAlarmRef.current) {
-        audioAlarmRef.current.pause();
-        audioAlarmRef.current.currentTime = 0;
+      if (alarmElement) {
+        alarmElement.pause();
+        alarmElement.currentTime = 0;
       }
       // Limpar timer
-      if (intervalRef.current) {
-        clearInterval(intervalRef.current);
+      if (intervalId) {
+        clearInterval(intervalId);
       }
     };
   }, []);
