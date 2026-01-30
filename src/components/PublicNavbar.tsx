@@ -30,6 +30,7 @@ export const PublicNavbar = () => {
     { label: 'Prompts', path: '/prompts' },
     { label: 'Ferramentas', path: '/ferramentas' },
     { label: 'Guia de IAs', path: '/guia-ias' },
+    { label: 'Simulados', path: '/simulados' },
     { label: 'Focus Zone', path: '/focus-zone' }
   ];
 

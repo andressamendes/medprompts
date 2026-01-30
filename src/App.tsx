@@ -19,6 +19,7 @@ const Prompts = lazy(() => import('@/pages/Prompts'));
 const GuiaIAs = lazy(() => import('@/pages/GuiaIAs'));
 const Ferramentas = lazy(() => import('@/pages/Ferramentas'));
 const FocusZone = lazy(() => import('@/pages/FocusZone'));
+const Simulados = lazy(() => import('@/pages/Simulados'));
 
 const LoadingScreen = () => (
   <div className="min-h-screen flex items-center justify-center">
@@ -72,6 +73,7 @@ function App() {
                   <Route path="/guia-ias" element={<GuiaIAs />} />
                   <Route path="/ferramentas" element={<Ferramentas />} />
                   <Route path="/focus-zone" element={<FocusZone />} />
+                  <Route path="/simulados" element={<Simulados />} />
 
                   {/* ==================== ROTA 404 ==================== */}
                   <Route path="*" element={<NotFound />} />
