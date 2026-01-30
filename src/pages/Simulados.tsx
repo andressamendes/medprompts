@@ -57,7 +57,7 @@ const PERIODOS: Periodo[] = [
       {
         id: "mcm-1",
         titulo: "N1 - MCM I (SIMULADO)",
-        subtitulo: "Mecanismos de Construção Morfofuncional I",
+        subtitulo: "Métodos Científicos em Medicina I",
         url: "https://www.perplexity.ai/spaces/n1-mcm-i-simulado-L7CHpXr_RmSB1NgBEv1Qbw",
         emoji: "🧬"
       },
@@ -101,7 +101,7 @@ const PERIODOS: Periodo[] = [
       {
         id: "mcm-2",
         titulo: "N1 - MCM II (SIMULADO)",
-        subtitulo: "Mecanismos de Construção Morfofuncional II",
+        subtitulo: "Métodos Científicos em Medicina II",
         url: "https://www.perplexity.ai/spaces/n1-mcm-ii-simulado-u0KWMtFxQd.cisF6rFknxw",
         emoji: "🧬"
       },
