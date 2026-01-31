@@ -1,13 +1,11 @@
 import { useState, useEffect, useCallback, useMemo, useRef } from 'react';
 import { useNavigate, useSearchParams } from 'react-router-dom';
-import DOMPurify from 'dompurify';
-import { marked } from 'marked';
 import { Prompt } from '@/types/prompt';
 import { PublicNavbar } from '@/components/PublicNavbar';
 import { SEOHead } from '@/components/SEOHead';
 import { prompts as systemPrompts } from '@/data/prompts-data';
 import { useFavorites } from '@/contexts/FavoritesContext';
-import { getAIName, formatCategoryName, AI_URLS } from '@/lib/utils';
+import { getAIName, formatCategoryName } from '@/lib/utils';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
@@ -16,49 +14,15 @@ import { Tabs, TabsList, TabsTrigger } from '@/components/ui/tabs';
 import { TooltipProvider } from '@/components/ui/tooltip';
 import {
   Search, Star, Copy, Check, Sparkles,
-  Eye, ArrowLeft, X, ExternalLink,
+  Eye, ArrowLeft, X,
   ChevronLeft, ChevronRight
 } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
-import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from '@/components/ui/dialog';
 import { Label } from '@/components/ui/label';
 import { toast } from '@/hooks/use-toast';
+import { PromptDialog } from '@/components/PromptDialog';
 
-// Build: 2026-01-23 - Versão com UX melhorada
-
-// Configurar marked para parsing otimizado
-marked.setOptions({
-  breaks: true,
-  gfm: true
-});
-
-// Cache para markdown renderizado (memoização)
-const markdownCache = new Map<string, string>();
-
-/**
- * Renderiza markdown para HTML com sanitização XSS
- * Usa marked (mais rápido que regex) + cache para performance
- */
-function renderMarkdown(markdown: string): string {
-  // Verificar cache primeiro
-  const cached = markdownCache.get(markdown);
-  if (cached) return cached;
-
-  // Renderizar com marked
-  const html = marked.parse(markdown, { async: false }) as string;
-
-  // Sanitizar e cachear
-  const sanitized = DOMPurify.sanitize(html);
-  markdownCache.set(markdown, sanitized);
-
-  // Limitar tamanho do cache (máx 100 entradas)
-  if (markdownCache.size > 100) {
-    const firstKey = markdownCache.keys().next().value;
-    if (firstKey) markdownCache.delete(firstKey);
-  }
-
-  return sanitized;
-}
+// Build: 2026-01-31 - Versão com sistema de customização
 
 /**
  * Página de Prompts Médicos v5.0
@@ -196,26 +160,6 @@ export default function Prompts() {
         variant: 'destructive'
       });
     }
-  }, []);
-
-  const openAI = useCallback((aiName: string, promptContent?: string) => {
-    if (promptContent) {
-      navigator.clipboard.writeText(promptContent).then(() => {
-        toast({
-          title: '📋 Prompt copiado!',
-          description: `Abrindo ${aiName}... Cole com Ctrl+V`,
-        });
-      }).catch(() => {
-        toast({
-          title: '⚠️ Não foi possível copiar',
-          description: 'Copie o prompt manualmente',
-          variant: 'destructive',
-        });
-      });
-    }
-
-    const url = AI_URLS[aiName] || AI_URLS.ChatGPT;
-    window.open(url, '_blank', 'noopener,noreferrer');
   }, []);
 
   const filteredPrompts = useMemo(() => {
@@ -616,65 +560,12 @@ export default function Prompts() {
           </div>
         </main>
 
-        {/* Modal de Detalhes */}
-        {selectedPrompt && (
-          <Dialog open={!!selectedPrompt} onOpenChange={() => setSelectedPrompt(null)}>
-            <DialogContent className="w-[calc(100%-2rem)] sm:w-full max-w-3xl max-h-[90vh] sm:max-h-[85vh] overflow-y-auto rounded-xl sm:rounded-lg p-4 sm:p-6">
-              <DialogHeader className="space-y-3">
-                <div className="flex flex-wrap items-center gap-2">
-                  <Badge variant="secondary" className="text-xs">{getAIName(selectedPrompt)}</Badge>
-                  <Badge variant="outline" className="text-xs">{formatCategoryName(selectedPrompt.category)}</Badge>
-                </div>
-                <DialogTitle className="text-lg sm:text-xl leading-snug">{selectedPrompt.title}</DialogTitle>
-                <DialogDescription className="text-sm">{selectedPrompt.description}</DialogDescription>
-              </DialogHeader>
-
-              <div className="mt-4">
-                <div
-                  className="bg-gray-50 dark:bg-gray-900 rounded-lg p-3 sm:p-4 border text-sm prose prose-sm dark:prose-invert max-w-none overflow-x-auto"
-                  dangerouslySetInnerHTML={{ __html: renderMarkdown(selectedPrompt.content) }}
-                />
-              </div>
-
-              <div className="flex flex-col sm:flex-row gap-2 sm:gap-2 mt-4 pt-4 border-t">
-                <Button
-                  onClick={() => copyPrompt(selectedPrompt)}
-                  variant="outline"
-                  className="flex-1 h-11 sm:h-10 gap-2 rounded-lg order-2 sm:order-1"
-                >
-                  {copiedId === selectedPrompt.id ? (
-                    <>
-                      <Check className="w-4 h-4 text-green-600 shrink-0" aria-hidden="true" />
-                      <span>Copiado!</span>
-                    </>
-                  ) : (
-                    <>
-                      <Copy className="w-4 h-4 shrink-0" aria-hidden="true" />
-                      <span>Copiar</span>
-                    </>
-                  )}
-                </Button>
-                <Button
-                  onClick={() => toggleFavorite(selectedPrompt.id)}
-                  variant="outline"
-                  className="h-11 w-11 sm:h-10 sm:w-10 gap-2 rounded-lg shrink-0 order-3 sm:order-2 self-end sm:self-auto"
-                >
-                  <Star className={`w-4 h-4 ${isFavorite(selectedPrompt.id) ? 'fill-yellow-400 text-yellow-400' : ''}`} aria-hidden="true" />
-                </Button>
-                <Button
-                  onClick={() => {
-                    copyPrompt(selectedPrompt, false);
-                    openAI(getAIName(selectedPrompt));
-                  }}
-                  className="flex-1 h-11 sm:h-10 gap-2 bg-indigo-600 hover:bg-indigo-700 rounded-lg order-1 sm:order-3"
-                >
-                  <ExternalLink className="w-4 h-4 shrink-0" aria-hidden="true" />
-                  <span>Usar Prompt</span>
-                </Button>
-              </div>
-            </DialogContent>
-          </Dialog>
-        )}
+        {/* Modal de Detalhes com Customização */}
+        <PromptDialog
+          prompt={selectedPrompt}
+          open={!!selectedPrompt}
+          onOpenChange={(open) => !open && setSelectedPrompt(null)}
+        />
 
         {/* Footer */}
         <footer className="border-t mt-12 py-8">
