@@ -16,7 +16,7 @@ dist-ssr
 
 # Production
 build/
-dist/
+# dist/ - mantido para deploy
 
 # Local files
 *.local
@@ -71,7 +71,6 @@ coverage/
 # Temporary files
 tmp/
 temp/
-dist/
 
 # Runtime data
 pids
