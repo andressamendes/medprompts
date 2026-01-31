@@ -1,14 +1,45 @@
 <!DOCTYPE html>
-<html>
+<html lang="pt-BR">
   <head>
     <meta charset="utf-8">
-    <title>MedPrompts</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Redirecionando... | MedPrompts</title>
+    <meta name="robots" content="noindex, nofollow">
+    <style>
+      * { margin: 0; padding: 0; box-sizing: border-box; }
+      body {
+        font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        min-height: 100vh;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        text-align: center;
+        padding: 20px;
+      }
+      .container { max-width: 400px; }
+      .spinner {
+        width: 48px;
+        height: 48px;
+        border: 4px solid rgba(255,255,255,0.3);
+        border-top-color: white;
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 24px;
+      }
+      @keyframes spin { to { transform: rotate(360deg); } }
+      h1 { font-size: 1.5rem; margin-bottom: 12px; font-weight: 600; }
+      p { opacity: 0.9; font-size: 0.95rem; line-height: 1.5; }
+      noscript .container { background: rgba(255,255,255,0.1); padding: 32px; border-radius: 12px; }
+      noscript h1 { color: #fbbf24; }
+      a { color: white; text-decoration: underline; }
+      a:hover { text-decoration: none; }
+    </style>
     <script type="text/javascript">
       // Single Page Apps for GitHub Pages
-      // MIT License
-      // https://github.com/rafgraph/spa-github-pages
+      // MIT License - https://github.com/rafgraph/spa-github-pages
       var pathSegmentsToKeep = 1;
-
       var l = window.location;
       l.replace(
         l.protocol + '//' + l.hostname + (l.port ? ':' + l.port : '') +
@@ -20,5 +51,20 @@
     </script>
   </head>
   <body>
+    <div class="container" role="status" aria-live="polite">
+      <div class="spinner" aria-hidden="true"></div>
+      <h1>Redirecionando...</h1>
+      <p>Aguarde enquanto carregamos a pagina.</p>
+    </div>
+    <noscript>
+      <div class="container">
+        <h1>JavaScript Necessario</h1>
+        <p>
+          Esta pagina requer JavaScript para funcionar corretamente.
+          <br><br>
+          <a href="https://andressamendes.github.io/medprompts/">Ir para a pagina inicial</a>
+        </p>
+      </div>
+    </noscript>
   </body>
 </html>

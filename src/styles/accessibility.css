@@ -13,12 +13,14 @@
    ==================================== */
 
 /**
- * Remove outline padrão do navegador
- * Será substituído por :focus-visible
+ * IMPORTANTE: NÃO remover outline globalmente!
+ * Isso viola WCAG 2.4.7 (Focus Visible)
+ *
+ * Navegadores modernos suportam :focus-visible nativamente,
+ * que mostra outline apenas para navegação por teclado.
+ *
+ * Se precisar customizar, use :focus-visible em vez de :focus
  */
-*:focus {
-  outline: none;
-}
 
 /**
  * Focus visible apenas para navegação por teclado

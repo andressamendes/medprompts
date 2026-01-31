@@ -35,7 +35,7 @@ export const PublicNavbar = () => {
   ];
 
   return (
-    <nav aria-label="Navegação principal" className="sticky top-0 z-50 border-b bg-white/95 dark:bg-gray-950/95 backdrop-blur-sm">
+    <nav id="main-navigation" aria-label="Navegação principal" className="sticky top-0 z-50 border-b bg-white/95 dark:bg-gray-950/95 backdrop-blur-sm" tabIndex={-1}>
       <div className="container mx-auto px-4 sm:px-6">
         <div className="flex h-16 items-center justify-between">
           {/* Logo Acadêmico */}

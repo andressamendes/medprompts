@@ -318,8 +318,8 @@ export default function Prompts() {
   return (
     <TooltipProvider>
       <SEOHead
-        title="Prompts Medicos"
-        description={`Explore ${filteredPrompts.length} prompts otimizados para ChatGPT, Claude, Perplexity e NotebookLM. Prompts para estudos, clinica e pesquisa medica.`}
+        title="Prompts Médicos"
+        description={`Explore ${filteredPrompts.length} prompts otimizados para ChatGPT, Claude, Perplexity e NotebookLM. Prompts para estudos, clínica e pesquisa médica.`}
         canonical="https://andressamendes.github.io/medprompts/prompts"
         breadcrumbs={[
           { name: 'Home', url: 'https://andressamendes.github.io/medprompts/' },
@@ -570,7 +570,7 @@ export default function Prompts() {
         {/* Footer */}
         <footer className="border-t mt-12 py-8">
           <div className="container mx-auto px-4 text-center text-sm text-gray-500">
-            <p>MedPrompts © 2026 • Por Andressa Mendes</p>
+            <p>MedPrompts © {new Date().getFullYear()} • Por Andressa Mendes</p>
           </div>
         </footer>
       </div>

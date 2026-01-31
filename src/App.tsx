@@ -22,10 +22,19 @@ const FocusZone = lazy(() => import('@/pages/FocusZone'));
 const Simulados = lazy(() => import('@/pages/Simulados'));
 
 const LoadingScreen = () => (
-  <div className="min-h-screen flex items-center justify-center">
+  <div
+    className="min-h-screen flex items-center justify-center"
+    role="status"
+    aria-live="polite"
+    aria-busy="true"
+  >
     <div className="text-center">
-      <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"></div>
+      <div
+        className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"
+        aria-hidden="true"
+      ></div>
       <p className="text-muted-foreground">Carregando...</p>
+      <span className="sr-only">Aguarde enquanto o conteúdo é carregado</span>
     </div>
   </div>
 );
