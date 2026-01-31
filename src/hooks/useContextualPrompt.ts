@@ -176,7 +176,7 @@ export function useContextualPrompt(options: UseContextualPromptOptions): UseCon
     if (input.trim()) {
       processInput(input);
     }
-  }, [attachedContent, manualValues, selectedPrompt]);
+  }, [attachedContent, manualValues, selectedPrompt, input, processInput]);
 
   // Cleanup do timer
   useEffect(() => {

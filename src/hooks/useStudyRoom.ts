@@ -64,6 +64,8 @@ export const useStudyRoom = (
   }, [room]);
 
   // Atualizar status do usuário atual
+  // generatePomodoroSuggestion é definido após este useCallback mas é estável
+   
   const updateUserStatus = useCallback((newStatus: UserStatus) => {
     studyRoomService.updateCurrentUserStatus(newStatus);
     const updatedRoom = studyRoomService.getRoom();

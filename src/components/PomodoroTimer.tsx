@@ -28,7 +28,8 @@ export function PomodoroTimer() {
   const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
 
-  // Log inicial quando componente é montado
+  // Log inicial quando componente é montado (executa apenas uma vez)
+   
   useEffect(() => {
     logger.info('PomodoroTimer inicializado', {
       component: 'PomodoroTimer',
@@ -50,13 +51,15 @@ export function PomodoroTimer() {
         wasRunning: isRunning,
         unmountTimestamp: new Date().toISOString(),
       });
-      
+
       if (intervalRef.current) {
         clearInterval(intervalRef.current);
       }
     };
   }, []);
 
+  // Timer interval - handleTimerComplete é estável pois usa setters de estado
+   
   useEffect(() => {
     if (isRunning) {
       intervalRef.current = setInterval(() => {

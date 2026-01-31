@@ -39,7 +39,8 @@ export function DailyMissionsCard() {
     },
   ]);
 
-  // Log inicial quando missões são carregadas
+  // Log inicial quando missões são carregadas (apenas uma vez ao montar)
+   
   useEffect(() => {
     const completedCount = missions.filter(m => m.completed).length;
     const totalPoints = missions.reduce((sum, m) => sum + m.points, 0);
@@ -59,7 +60,7 @@ export function DailyMissionsCard() {
       },
       loadTimestamp: new Date().toISOString(),
     });
-  }, []); // Executa apenas uma vez ao montar
+  }, []);
 
   const completedCount = missions.filter(m => m.completed).length;
   const progress = (completedCount / missions.length) * 100;

@@ -13,7 +13,9 @@ const Ferramentas = () => {
   const [filtroPais, setFiltroPais] = useState<string>("todos");
   const [busca, setBusca] = useState<string>("");
 
-  const categorias = [
+  // Array estático de categorias - memoizado para evitar recriação a cada render
+   
+  const categorias = useMemo(() => [
     {
       nome: "IAs Especializadas",
       emoji: "🤖",
@@ -654,7 +656,7 @@ const Ferramentas = () => {
         }
       ]
     }
-  ];
+  ], []);
 
   const getCorBadge = (cor: string) => {
     const cores: Record<string, string> = {
