@@ -16,9 +16,9 @@ export type { PromptVariable };
 export function extractVariables(promptContent: string): PromptVariable[] {
   const variablesMap = new Map<string, PromptVariable>();
 
-  // Tenta extrair apenas da seção CAMPO DE ENTRADA
+  // Tenta extrair apenas da seção CAMPO(S) DE ENTRADA
   const inputSectionMatch = promptContent.match(
-    /\*\*CAMPO DE ENTRADA\*\*[\s\S]*?(?=\*\*PROCESSO|\*\*FORMATO|\*\*RESTRIÇÕES|$)/i
+    /\*\*CAMPOS? DE ENTRADA\*\*[\s\S]*?(?=\*\*PROCESSO|\*\*FORMATO|\*\*RESTRIÇÕES|$)/i
   );
 
   // Se encontrou seção de entrada, extrai apenas dela
