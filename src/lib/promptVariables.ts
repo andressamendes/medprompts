@@ -11,19 +11,29 @@ export type { PromptVariable };
 
 /**
  * Extrai todas as variáveis de um prompt
+ * Foca na seção CAMPO DE ENTRADA para evitar capturar placeholders de saída
  */
 export function extractVariables(promptContent: string): PromptVariable[] {
-  // Regex expandido para capturar: letras (maiúsc/minúsc), acentos, números, underscore, hífen, espaços
-  const variableRegex = /\[([A-Za-zÀ-ÖØ-öø-ÿ0-9_\-\s]+)\]/g;
-  const matches = promptContent.matchAll(variableRegex);
   const variablesMap = new Map<string, PromptVariable>();
 
+  // Tenta extrair apenas da seção CAMPO DE ENTRADA
+  const inputSectionMatch = promptContent.match(
+    /\*\*CAMPO DE ENTRADA\*\*[\s\S]*?(?=\*\*PROCESSO|\*\*FORMATO|\*\*RESTRIÇÕES|$)/i
+  );
+
+  // Se encontrou seção de entrada, extrai apenas dela
+  const searchContent = inputSectionMatch ? inputSectionMatch[0] : promptContent;
+
+  // Regex para capturar variáveis: [VARIAVEL] seguido de : (padrão de campo de entrada)
+  // Prioriza variáveis no formato [VAR]: descrição
+  const inputFieldRegex = /\[([A-Za-zÀ-ÖØ-öø-ÿ0-9_\-]+)\]\s*:/g;
+  let matches = searchContent.matchAll(inputFieldRegex);
+
   for (const match of matches) {
-    const fullMatch = match[0]; // [TEMA]
-    const varName = match[1]; // TEMA
+    const fullMatch = `[${match[1]}]`;
+    const varName = match[1];
 
     if (!variablesMap.has(varName)) {
-      // Extrair descrição do contexto (linha seguinte ao placeholder)
       const description = extractDescription(promptContent, fullMatch);
       const example = extractExample(promptContent, fullMatch);
 
@@ -32,10 +42,40 @@ export function extractVariables(promptContent: string): PromptVariable[] {
         placeholder: fullMatch,
         description,
         type: inferType(varName, promptContent),
-        required: true, // Por padrão, todas são obrigatórias
+        required: true,
         example,
         maxLength: inferMaxLength(varName),
       });
+    }
+  }
+
+  // Se não encontrou nenhuma variável no formato [VAR]:, tenta o formato simples
+  // mas apenas para variáveis em MAIÚSCULAS simples (sem espaços longos)
+  if (variablesMap.size === 0) {
+    const simpleVarRegex = /\[([A-ZÀ-Ú][A-ZÀ-Ú0-9_\-\s]{0,20})\]/g;
+    matches = searchContent.matchAll(simpleVarRegex);
+
+    for (const match of matches) {
+      const fullMatch = match[0];
+      const varName = match[1].trim();
+
+      // Ignora se parece ser um placeholder de saída (contém muitas palavras)
+      if (varName.split(/\s+/).length > 3) continue;
+
+      if (!variablesMap.has(varName)) {
+        const description = extractDescription(promptContent, fullMatch);
+        const example = extractExample(promptContent, fullMatch);
+
+        variablesMap.set(varName, {
+          name: varName,
+          placeholder: fullMatch,
+          description,
+          type: inferType(varName, promptContent),
+          required: true,
+          example,
+          maxLength: inferMaxLength(varName),
+        });
+      }
     }
   }
 
