@@ -64,7 +64,7 @@ export function PromptDialog({ prompt, open, onOpenChange }: PromptDialogProps) 
   const alternatives = getAIAlternatives(prompt.recommendedAI);
 
   // Detecta se o prompt tem variáveis personalizáveis [TEMA], [CONTEXTO], etc
-  const hasVariables = /\[([A-ZÀ-Ú\s]+)\]/.test(prompt.content);
+  const hasVariables = /\[([A-Za-zÀ-ÖØ-öø-ÿ0-9_\-\s]+)\]/.test(prompt.content);
 
   return (
     <>
