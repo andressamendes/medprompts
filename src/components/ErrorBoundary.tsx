@@ -44,23 +44,23 @@ export class ErrorBoundary extends Component<Props, State> {
       }
 
       return (
-        <div className="error-boundary-fallback" style={{
-          padding: '2rem',
-          textAlign: 'center',
-          maxWidth: '600px',
-          margin: '0 auto',
-        }}>
-          <h2>⚠️ Algo deu errado</h2>
-          <p>Ocorreu um erro inesperado. Nossa equipe foi notificada.</p>
+        <div
+          className="p-8 text-center max-w-xl mx-auto"
+          role="alert"
+          aria-live="assertive"
+        >
+          <h2 className="text-xl font-semibold text-gray-900 dark:text-white mb-2">
+            ⚠️ Algo deu errado
+          </h2>
+          <p className="text-gray-600 dark:text-gray-400 mb-4">
+            Ocorreu um erro inesperado. Nossa equipe foi notificada.
+          </p>
           {this.state.error && (
-            <details style={{ marginTop: '1rem', textAlign: 'left' }}>
-              <summary>Detalhes técnicos</summary>
-              <pre style={{
-                backgroundColor: '#f5f5f5',
-                padding: '1rem',
-                borderRadius: '4px',
-                overflow: 'auto',
-              }}>
+            <details className="mt-4 text-left">
+              <summary className="cursor-pointer text-sm text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-300">
+                Detalhes técnicos
+              </summary>
+              <pre className="mt-2 p-4 bg-gray-100 dark:bg-gray-800 rounded overflow-auto text-xs text-gray-800 dark:text-gray-200">
                 {this.state.error.toString()}
                 {'\n\n'}
                 {this.state.error.stack}
@@ -69,15 +69,7 @@ export class ErrorBoundary extends Component<Props, State> {
           )}
           <button
             onClick={this.handleReset}
-            style={{
-              marginTop: '1rem',
-              padding: '0.5rem 1rem',
-              backgroundColor: '#3B82F6',
-              color: 'white',
-              border: 'none',
-              borderRadius: '4px',
-              cursor: 'pointer',
-            }}
+            className="mt-4 px-4 py-2 bg-blue-500 hover:bg-blue-600 text-white rounded cursor-pointer transition-colors focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2"
           >
             Tentar novamente
           </button>
