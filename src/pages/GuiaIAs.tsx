@@ -276,6 +276,10 @@ const GuiaIAs = () => {
         title="Guia de IAs para Medicina"
         description="Comparativo completo das melhores IAs para estudantes de medicina. Claude, ChatGPT, Gemini, Perplexity e NotebookLM com precos e recursos."
         canonical="https://andressamendes.github.io/medprompts/guia-ias"
+        breadcrumbs={[
+          { name: 'Home', url: 'https://andressamendes.github.io/medprompts/' },
+          { name: 'Guia de IAs', url: 'https://andressamendes.github.io/medprompts/guia-ias' }
+        ]}
       />
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-green-50/20">
         <PublicNavbar />

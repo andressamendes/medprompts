@@ -410,6 +410,10 @@ export default function FocusZone() {
         title="Focus Zone - Pomodoro"
         description="Timer Pomodoro com musica lo-fi para estudos focados. Gerencie tarefas e mantenha o foco durante suas sessoes de estudo."
         canonical="https://andressamendes.github.io/medprompts/focus-zone"
+        breadcrumbs={[
+          { name: 'Home', url: 'https://andressamendes.github.io/medprompts/' },
+          { name: 'Focus Zone', url: 'https://andressamendes.github.io/medprompts/focus-zone' }
+        ]}
       />
       <main id="main-content" className="relative min-h-screen overflow-hidden">
         {/* Fundo gradiente médico profissional */}

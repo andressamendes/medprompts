@@ -748,6 +748,10 @@ const Ferramentas = () => {
         title="Hub de Ferramentas para Medicina"
         description={`Curadoria de ${totalFerramentasFiltradas}+ ferramentas gratuitas e pagas para estudantes de medicina. IAs, calculadoras, referencias clinicas e mais.`}
         canonical="https://andressamendes.github.io/medprompts/ferramentas"
+        breadcrumbs={[
+          { name: 'Home', url: 'https://andressamendes.github.io/medprompts/' },
+          { name: 'Ferramentas', url: 'https://andressamendes.github.io/medprompts/ferramentas' }
+        ]}
       />
       <div className="min-h-screen bg-gradient-to-br from-purple-50 via-white to-blue-50">
         <PublicNavbar />

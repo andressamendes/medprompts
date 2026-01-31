@@ -377,6 +377,10 @@ export default function Prompts() {
         title="Prompts Medicos"
         description={`Explore ${filteredPrompts.length} prompts otimizados para ChatGPT, Claude, Perplexity e NotebookLM. Prompts para estudos, clinica e pesquisa medica.`}
         canonical="https://andressamendes.github.io/medprompts/prompts"
+        breadcrumbs={[
+          { name: 'Home', url: 'https://andressamendes.github.io/medprompts/' },
+          { name: 'Prompts', url: 'https://andressamendes.github.io/medprompts/prompts' }
+        ]}
       />
       <div className="min-h-screen bg-gray-50 dark:bg-gray-950">
         <PublicNavbar />
