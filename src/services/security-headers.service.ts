@@ -1,16 +1,11 @@
+/* eslint-disable no-console */
 /**
- * 🛡️ Security Headers Service
+ * Security Headers Service
  *
- * FASE 8: Configuração de headers de segurança HTTP
+ * Configuração de headers de segurança HTTP
  * Implementa OWASP A05:2021 (Security Misconfiguration)
  *
- * Headers implementados:
- * - X-Content-Type-Options
- * - X-Frame-Options
- * - X-XSS-Protection
- * - Referrer-Policy
- * - Permissions-Policy
- * - Strict-Transport-Security (HSTS)
+ * @note Console statements são usados para reportar configurações de segurança
  */
 
 import { securityConfig } from '../config/security.config';

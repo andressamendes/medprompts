@@ -1,7 +1,10 @@
+/* eslint-disable no-console */
 /**
  * 🛡️ Rate Limiter - Proteção contra Brute Force e Spam
  *
  * Implementa rate limiting para prevenir ataques (OWASP A07:2021 - Auth Failures)
+ *
+ * @note Console statements são usados para logging de segurança
  *
  * Features:
  * - Rate limiting por operação e usuário

@@ -1,8 +1,9 @@
+/* eslint-disable no-console */
 /**
  * Content Security Policy (CSP) Configuration
  * Define políticas de segurança do navegador
- * 
- * ⚠️ IMPORTANTE: CSP é diferente para DEV e PRODUÇÃO
+ *
+ * @note Console statements são intencionais para reportar violações de CSP
  */
 
 /**

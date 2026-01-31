@@ -1,15 +1,10 @@
+/* eslint-disable no-console */
 /**
- * 💾 Avatar Storage - IndexedDB
+ * Avatar Storage - IndexedDB
  *
- * Gerencia armazenamento de avatares usando IndexedDB (OWASP A04:2021 - Insecure Design)
+ * Gerencia armazenamento de avatares usando IndexedDB
  *
- * Vantagens sobre localStorage:
- * - Capacidade: 50MB+ vs 5-10MB
- * - Performance: Não bloqueia thread principal
- * - Segurança: Isolamento por origem
- * - Tipagem: Suporta Blob nativo (não precisa base64)
- *
- * @see https://developer.mozilla.org/en-US/docs/Web/API/IndexedDB_API
+ * @note Console statements são usados para debug de operações IndexedDB
  */
 
 const DB_NAME = 'medprompts_storage';

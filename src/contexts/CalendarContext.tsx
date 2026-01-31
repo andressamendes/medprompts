@@ -1,4 +1,4 @@
-import { createContext, useContext, useState, useEffect, ReactNode } from 'react';
+import { createContext, useContext, useState, useEffect, useCallback, ReactNode } from 'react';
 import calendarService from '@/services/api/calendar';
 
 interface CalendarContextType {
@@ -10,12 +10,18 @@ interface CalendarContextType {
 
 const CalendarContext = createContext<CalendarContextType | undefined>(undefined);
 
+/**
+ * Provider para gerenciar autenticação do Google Calendar
+ */
 export function CalendarProvider({ children }: { children: ReactNode }) {
   const [isCalendarAuthenticated, setIsCalendarAuthenticated] = useState(false);
   const [isCalendarLoading, setIsCalendarLoading] = useState(true);
 
   useEffect(() => {
-    const loadGoogleScriptsInline = (): Promise<void> => {
+    let mounted = true;
+    const scriptsAdded: HTMLScriptElement[] = [];
+
+    const loadGoogleScripts = (): Promise<void> => {
       return new Promise((resolve) => {
         // Verificar se scripts já foram carregados
         if (document.querySelector('script[src*="apis.google.com"]')) {
@@ -44,24 +50,36 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
         script1.onload = checkLoaded;
         script2.onload = checkLoaded;
 
+        // Fallback caso o script falhe ao carregar
+        script1.onerror = checkLoaded;
+        script2.onerror = checkLoaded;
+
         document.body.appendChild(script1);
         document.body.appendChild(script2);
+
+        scriptsAdded.push(script1, script2);
       });
     };
 
     const initializeCalendar = async () => {
+      if (!mounted) return;
       setIsCalendarLoading(true);
+
       try {
         // Carregar scripts do Google
-        await loadGoogleScriptsInline();
+        await loadGoogleScripts();
+        if (!mounted) return;
 
         // Inicializar Google API
         await calendarService.initGoogleApi();
+        if (!mounted) return;
 
         // Inicializar Google Identity Services
         calendarService.initGoogleIdentity(() => {
-          setIsCalendarAuthenticated(true);
-          localStorage.setItem('calendar_connected', 'true');
+          if (mounted) {
+            setIsCalendarAuthenticated(true);
+            localStorage.setItem('calendar_connected', 'true');
+          }
         });
 
         // Verificar se já estava conectado
@@ -69,32 +87,34 @@ export function CalendarProvider({ children }: { children: ReactNode }) {
         if (wasConnected && calendarService.isAuthenticated()) {
           setIsCalendarAuthenticated(true);
         }
-      } catch (error) {
-        console.error('Erro ao inicializar Calendar:', error);
+      } catch {
+        // Erro silencioso - não bloqueia a aplicação
       } finally {
-        setIsCalendarLoading(false);
+        if (mounted) {
+          setIsCalendarLoading(false);
+        }
       }
     };
 
     initializeCalendar();
+
+    // Cleanup
+    return () => {
+      mounted = false;
+    };
   }, []);
 
-  const connectCalendar = async () => {
-    try {
-      await calendarService.login();
-      setIsCalendarAuthenticated(true);
-      localStorage.setItem('calendar_connected', 'true');
-    } catch (error) {
-      console.error('Erro ao conectar Calendar:', error);
-      throw error;
-    }
-  };
+  const connectCalendar = useCallback(async () => {
+    await calendarService.login();
+    setIsCalendarAuthenticated(true);
+    localStorage.setItem('calendar_connected', 'true');
+  }, []);
 
-  const disconnectCalendar = () => {
+  const disconnectCalendar = useCallback(() => {
     calendarService.logout();
     setIsCalendarAuthenticated(false);
     localStorage.removeItem('calendar_connected');
-  };
+  }, []);
 
   return (
     <CalendarContext.Provider

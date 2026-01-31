@@ -1,4 +1,4 @@
-import api from '../api';
+import api, { getErrorMessage } from '../api';
 
 /**
  * Interface para dados de XP do usuário
@@ -25,7 +25,7 @@ export interface BadgeData {
   };
   isUnlocked: boolean;
   unlockedAt?: string;
-  progress?:  number;
+  progress?: number;
 }
 
 /**
@@ -49,7 +49,7 @@ export interface DailyMissionData {
   target: number;
   isCompleted: boolean;
   completedAt?: string;
-  expiresAt:  string;
+  expiresAt: string;
 }
 
 /**
@@ -74,9 +74,9 @@ class GamificationService {
     try {
       const response = await api.get('/gamification');
       return response.data.data || response.data;
-    } catch (error: any) {
-      console.error('❌ Erro ao buscar dados de gamificação:', error);
-      throw new Error(error.response?.data?.error || 'Erro ao buscar gamificação');
+    } catch (error: unknown) {
+      console.error('Erro ao buscar dados de gamificação:', error);
+      throw new Error(getErrorMessage(error, 'Erro ao buscar gamificação'));
     }
   }
 
@@ -87,9 +87,9 @@ class GamificationService {
     try {
       const response = await api.get('/gamification/xp');
       return response.data.data || response.data;
-    } catch (error:  any) {
-      console.error('❌ Erro ao buscar XP:', error);
-      throw new Error(error.response?. data?.error || 'Erro ao buscar XP');
+    } catch (error: unknown) {
+      console.error('Erro ao buscar XP:', error);
+      throw new Error(getErrorMessage(error, 'Erro ao buscar XP'));
     }
   }
 
@@ -100,9 +100,9 @@ class GamificationService {
     try {
       const response = await api.post('/gamification/xp', { amount, source });
       return response.data.data || response.data;
-    } catch (error:  any) {
-      console.error('❌ Erro ao adicionar XP:', error);
-      throw new Error(error.response?. data?.error || 'Erro ao adicionar XP');
+    } catch (error: unknown) {
+      console.error('Erro ao adicionar XP:', error);
+      throw new Error(getErrorMessage(error, 'Erro ao adicionar XP'));
     }
   }
 
@@ -115,9 +115,9 @@ class GamificationService {
         params: { days },
       });
       return response.data.data || response.data || [];
-    } catch (error:  any) {
-      console.error('❌ Erro ao buscar histórico de XP:', error);
-      throw new Error(error.response?.data?.error || 'Erro ao buscar histórico');
+    } catch (error: unknown) {
+      console.error('Erro ao buscar histórico de XP:', error);
+      throw new Error(getErrorMessage(error, 'Erro ao buscar histórico'));
     }
   }
 
@@ -127,10 +127,10 @@ class GamificationService {
   async getStreak(): Promise<StreakData> {
     try {
       const response = await api.get('/gamification/streak');
-      return response.data.data || response. data;
-    } catch (error: any) {
-      console.error('❌ Erro ao buscar streak:', error);
-      throw new Error(error.response?. data?.error || 'Erro ao buscar streak');
+      return response.data.data || response.data;
+    } catch (error: unknown) {
+      console.error('Erro ao buscar streak:', error);
+      throw new Error(getErrorMessage(error, 'Erro ao buscar streak'));
     }
   }
 
@@ -141,9 +141,9 @@ class GamificationService {
     try {
       const response = await api.post('/gamification/streak');
       return response.data.data || response.data;
-    } catch (error: any) {
-      console.error('❌ Erro ao atualizar streak:', error);
-      throw new Error(error.response?.data?.error || 'Erro ao atualizar streak');
+    } catch (error: unknown) {
+      console.error('Erro ao atualizar streak:', error);
+      throw new Error(getErrorMessage(error, 'Erro ao atualizar streak'));
     }
   }
 
@@ -154,9 +154,9 @@ class GamificationService {
     try {
       const response = await api.get('/gamification/badges');
       return response.data.data || response.data || [];
-    } catch (error: any) {
-      console.error('❌ Erro ao buscar badges:', error);
-      throw new Error(error.response?. data?.error || 'Erro ao buscar badges');
+    } catch (error: unknown) {
+      console.error('Erro ao buscar badges:', error);
+      throw new Error(getErrorMessage(error, 'Erro ao buscar badges'));
     }
   }
 
@@ -165,11 +165,11 @@ class GamificationService {
    */
   async unlockBadge(badgeId: string): Promise<BadgeData> {
     try {
-      const response = await api. post(`/gamification/badges/${badgeId}/unlock`);
+      const response = await api.post(`/gamification/badges/${badgeId}/unlock`);
       return response.data.data || response.data;
-    } catch (error: any) {
-      console.error('❌ Erro ao desbloquear badge:', error);
-      throw new Error(error.response?.data?.error || 'Erro ao desbloquear badge');
+    } catch (error: unknown) {
+      console.error('Erro ao desbloquear badge:', error);
+      throw new Error(getErrorMessage(error, 'Erro ao desbloquear badge'));
     }
   }
 
@@ -179,10 +179,10 @@ class GamificationService {
   async getDailyMissions(): Promise<DailyMissionData[]> {
     try {
       const response = await api.get('/gamification/daily-missions');
-      return response. data.data || response.data || [];
-    } catch (error:  any) {
-      console.error('❌ Erro ao buscar missões:', error);
-      throw new Error(error.response?.data?.error || 'Erro ao buscar missões');
+      return response.data.data || response.data || [];
+    } catch (error: unknown) {
+      console.error('Erro ao buscar missões:', error);
+      throw new Error(getErrorMessage(error, 'Erro ao buscar missões'));
     }
   }
 
@@ -193,9 +193,9 @@ class GamificationService {
     try {
       const response = await api.post(`/gamification/daily-missions/${missionId}/complete`);
       return response.data.data || response.data;
-    } catch (error: any) {
-      console.error('❌ Erro ao completar missão:', error);
-      throw new Error(error. response?.data?.error || 'Erro ao completar missão');
+    } catch (error: unknown) {
+      console.error('Erro ao completar missão:', error);
+      throw new Error(getErrorMessage(error, 'Erro ao completar missão'));
     }
   }
 
@@ -208,9 +208,9 @@ class GamificationService {
         params: { limit },
       });
       return response.data.data || response.data || [];
-    } catch (error: any) {
-      console.error('❌ Erro ao buscar leaderboard:', error);
-      throw new Error(error.response?.data?.error || 'Erro ao buscar leaderboard');
+    } catch (error: unknown) {
+      console.error('Erro ao buscar leaderboard:', error);
+      throw new Error(getErrorMessage(error, 'Erro ao buscar leaderboard'));
     }
   }
 }

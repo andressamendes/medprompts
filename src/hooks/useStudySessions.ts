@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import api from '../services/api';
+import api, { getErrorMessage } from '../services/api';
 
 // Interfaces
 export interface StudySession {
@@ -92,8 +92,8 @@ export const useStudySessions = () => {
 
       setSessions(response.data.sessions);
       return response.data.sessions;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.error || 'Erro ao buscar sessões';
+    } catch (err: unknown) {
+      const errorMsg = getErrorMessage(err, 'Erro ao buscar sessões');
       setError(errorMsg);
       throw new Error(errorMsg);
     } finally {
@@ -111,8 +111,8 @@ export const useStudySessions = () => {
     try {
       const response = await api.get<{ session: StudySession }>(`/study-sessions/${sessionId}`);
       return response.data.session;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.error || 'Erro ao buscar sessão';
+    } catch (err: unknown) {
+      const errorMsg = getErrorMessage(err, 'Erro ao buscar sessão');
       setError(errorMsg);
       throw new Error(errorMsg);
     } finally {
@@ -136,8 +136,8 @@ export const useStudySessions = () => {
 
       setSessions((prev) => [newSession, ...prev]);
       return newSession;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.error || 'Erro ao criar sessão';
+    } catch (err: unknown) {
+      const errorMsg = getErrorMessage(err, 'Erro ao criar sessão');
       setError(errorMsg);
       throw new Error(errorMsg);
     } finally {
@@ -164,8 +164,8 @@ export const useStudySessions = () => {
       );
 
       return updatedSession;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.error || 'Erro ao atualizar sessão';
+    } catch (err: unknown) {
+      const errorMsg = getErrorMessage(err, 'Erro ao atualizar sessão');
       setError(errorMsg);
       throw new Error(errorMsg);
     } finally {
@@ -184,8 +184,8 @@ export const useStudySessions = () => {
       await api.delete(`/study-sessions/${sessionId}`);
 
       setSessions((prev) => prev.filter((s) => s.id !== sessionId));
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.error || 'Erro ao deletar sessão';
+    } catch (err: unknown) {
+      const errorMsg = getErrorMessage(err, 'Erro ao deletar sessão');
       setError(errorMsg);
       throw new Error(errorMsg);
     } finally {
@@ -203,8 +203,8 @@ export const useStudySessions = () => {
     try {
       const response = await api.get<StudyStats>('/study-sessions/stats');
       return response.data;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.error || 'Erro ao buscar estatísticas';
+    } catch (err: unknown) {
+      const errorMsg = getErrorMessage(err, 'Erro ao buscar estatísticas');
       setError(errorMsg);
       throw new Error(errorMsg);
     } finally {
@@ -221,8 +221,8 @@ export const useStudySessions = () => {
         '/study-sessions/weekly'
       );
       return response.data.weeklyData;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.error || 'Erro ao buscar dados semanais';
+    } catch (err: unknown) {
+      const errorMsg = getErrorMessage(err, 'Erro ao buscar dados semanais');
       throw new Error(errorMsg);
     }
   };
@@ -236,8 +236,8 @@ export const useStudySessions = () => {
         '/study-sessions/subjects'
       );
       return response.data.distribution;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.error || 'Erro ao buscar distribuição';
+    } catch (err: unknown) {
+      const errorMsg = getErrorMessage(err, 'Erro ao buscar distribuição');
       throw new Error(errorMsg);
     }
   };

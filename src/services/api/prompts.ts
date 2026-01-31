@@ -13,9 +13,30 @@ export interface PromptData {
   tags: string[];
   isFavorite?: boolean;
   usageCount?: number;
-  isSystem?: boolean; // ✅ ADICIONADO: Marca se o prompt é do sistema (protegido contra edição/exclusão)
+  isSystem?: boolean;
   createdAt?: string;
   updatedAt?: string;
+}
+
+/**
+ * Interface para resposta de erro da API
+ */
+interface ApiErrorResponse {
+  message?: string;
+  error?: string;
+}
+
+/**
+ * Extrai mensagem de erro de resposta axios
+ */
+function getErrorMessage(error: unknown, defaultMessage: string): string {
+  if (axios.isAxiosError<ApiErrorResponse>(error)) {
+    return error.response?.data?.message || error.response?.data?.error || defaultMessage;
+  }
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return defaultMessage;
 }
 
 /**
@@ -35,9 +56,9 @@ class PromptsService {
         },
       });
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao buscar prompts:', error);
-      throw new Error(error.response?.data?.message || 'Erro ao buscar prompts');
+      throw new Error(getErrorMessage(error, 'Erro ao buscar prompts'));
     }
   }
 
@@ -53,9 +74,9 @@ class PromptsService {
         },
       });
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao buscar prompt:', error);
-      throw new Error(error.response?.data?.message || 'Erro ao buscar prompt');
+      throw new Error(getErrorMessage(error, 'Erro ao buscar prompt'));
     }
   }
 
@@ -72,9 +93,9 @@ class PromptsService {
         },
       });
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao criar prompt:', error);
-      throw new Error(error.response?.data?.message || 'Erro ao criar prompt');
+      throw new Error(getErrorMessage(error, 'Erro ao criar prompt'));
     }
   }
 
@@ -91,9 +112,9 @@ class PromptsService {
         },
       });
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao atualizar prompt:', error);
-      throw new Error(error.response?.data?.message || 'Erro ao atualizar prompt');
+      throw new Error(getErrorMessage(error, 'Erro ao atualizar prompt'));
     }
   }
 
@@ -108,9 +129,9 @@ class PromptsService {
           Authorization: `Bearer ${token}`,
         },
       });
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao excluir prompt:', error);
-      throw new Error(error.response?.data?.message || 'Erro ao excluir prompt');
+      throw new Error(getErrorMessage(error, 'Erro ao excluir prompt'));
     }
   }
 
@@ -130,9 +151,9 @@ class PromptsService {
         }
       );
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao favoritar prompt:', error);
-      throw new Error(error.response?.data?.message || 'Erro ao favoritar prompt');
+      throw new Error(getErrorMessage(error, 'Erro ao favoritar prompt'));
     }
   }
 
@@ -152,9 +173,9 @@ class PromptsService {
         }
       );
       return response.data;
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Erro ao incrementar uso:', error);
-      throw new Error(error.response?.data?.message || 'Erro ao incrementar uso');
+      throw new Error(getErrorMessage(error, 'Erro ao incrementar uso'));
     }
   }
 }

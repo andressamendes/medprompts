@@ -1,14 +1,11 @@
+/* eslint-disable no-console */
 /**
- * 🔒 RBAC Service - Role-Based Access Control
+ * RBAC Service - Role-Based Access Control
  *
- * FASE 4: Sistema completo de controle de acesso baseado em roles
+ * Sistema completo de controle de acesso baseado em roles
  * Implementa OWASP A01:2021 (Broken Access Control)
  *
- * Arquitetura:
- * - 3 Roles: USER, MODERATOR, ADMIN
- * - Permissões granulares por recurso
- * - Verificação de acesso por role e permissão
- * - Hierarchia de roles (ADMIN > MODERATOR > USER)
+ * @note Console statements são usados para debug de permissões em desenvolvimento
  */
 
 import { UserRole } from './auth.service';

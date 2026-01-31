@@ -1,6 +1,34 @@
-import axios, { AxiosInstance } from 'axios';
+import axios, { AxiosInstance, AxiosError } from 'axios';
 
 const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:3000/api';
+
+/**
+ * Interface para resposta de erro da API
+ */
+export interface ApiErrorResponse {
+  error?: string;
+  message?: string;
+}
+
+/**
+ * Verifica se o erro é um AxiosError
+ */
+export function isAxiosError(error: unknown): error is AxiosError<ApiErrorResponse> {
+  return axios.isAxiosError(error);
+}
+
+/**
+ * Extrai mensagem de erro de qualquer tipo de erro
+ */
+export function getErrorMessage(error: unknown, defaultMessage: string): string {
+  if (isAxiosError(error)) {
+    return error.response?.data?.error || error.response?.data?.message || defaultMessage;
+  }
+  if (error instanceof Error) {
+    return error.message;
+  }
+  return defaultMessage;
+}
 
 // Interface estendida do Axios com nossos métodos customizados
 interface CustomAxiosInstance extends AxiosInstance {

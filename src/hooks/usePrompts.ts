@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import api from '../services/api';
+import api, { getErrorMessage } from '../services/api';
 
 // Interfaces
 export interface Prompt {
@@ -60,8 +60,8 @@ export const usePrompts = () => {
 
       setPrompts(response.data.prompts);
       return response.data.prompts;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.error || 'Erro ao buscar prompts';
+    } catch (err: unknown) {
+      const errorMsg = getErrorMessage(err, 'Erro ao buscar prompts');
       setError(errorMsg);
       throw new Error(errorMsg);
     } finally {
@@ -79,8 +79,8 @@ export const usePrompts = () => {
     try {
       const response = await api.get<{ prompt: Prompt }>(`/prompts/${promptId}`);
       return response.data.prompt;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.error || 'Erro ao buscar prompt';
+    } catch (err: unknown) {
+      const errorMsg = getErrorMessage(err, 'Erro ao buscar prompt');
       setError(errorMsg);
       throw new Error(errorMsg);
     } finally {
@@ -101,8 +101,8 @@ export const usePrompts = () => {
 
       setPrompts((prev) => [newPrompt, ...prev]);
       return newPrompt;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.error || 'Erro ao criar prompt';
+    } catch (err: unknown) {
+      const errorMsg = getErrorMessage(err, 'Erro ao criar prompt');
       setError(errorMsg);
       throw new Error(errorMsg);
     } finally {
@@ -126,8 +126,8 @@ export const usePrompts = () => {
       );
 
       return updatedPrompt;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.error || 'Erro ao atualizar prompt';
+    } catch (err: unknown) {
+      const errorMsg = getErrorMessage(err, 'Erro ao atualizar prompt');
       setError(errorMsg);
       throw new Error(errorMsg);
     } finally {
@@ -146,8 +146,8 @@ export const usePrompts = () => {
       await api.delete(`/prompts/${promptId}`);
 
       setPrompts((prev) => prev.filter((p) => p.id !== promptId));
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.error || 'Erro ao deletar prompt';
+    } catch (err: unknown) {
+      const errorMsg = getErrorMessage(err, 'Erro ao deletar prompt');
       setError(errorMsg);
       throw new Error(errorMsg);
     } finally {
@@ -171,8 +171,8 @@ export const usePrompts = () => {
       );
 
       return updatedPrompt;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.error || 'Erro ao favoritar prompt';
+    } catch (err: unknown) {
+      const errorMsg = getErrorMessage(err, 'Erro ao favoritar prompt');
       setError(errorMsg);
       throw new Error(errorMsg);
     } finally {
@@ -193,8 +193,8 @@ export const usePrompts = () => {
       );
 
       return updatedPrompt;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.error || 'Erro ao registrar uso do prompt';
+    } catch (err: unknown) {
+      const errorMsg = getErrorMessage(err, 'Erro ao registrar uso do prompt');
       throw new Error(errorMsg);
     }
   };
@@ -206,8 +206,8 @@ export const usePrompts = () => {
     try {
       const response = await api.get<{ categories: string[] }>('/prompts/categories');
       return response.data.categories;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.error || 'Erro ao buscar categorias';
+    } catch (err: unknown) {
+      const errorMsg = getErrorMessage(err, 'Erro ao buscar categorias');
       throw new Error(errorMsg);
     }
   };
@@ -237,8 +237,8 @@ export const usePrompts = () => {
       const url = `/prompts?sortBy=recent&limit=${limit}`;
       const response = await api.get<{ prompts: Prompt[] }>(url);
       return response.data.prompts;
-    } catch (err: any) {
-      const errorMsg = err.response?.data?.error || 'Erro ao buscar prompts recentes';
+    } catch (err: unknown) {
+      const errorMsg = getErrorMessage(err, 'Erro ao buscar prompts recentes');
       setError(errorMsg);
       throw new Error(errorMsg);
     } finally {

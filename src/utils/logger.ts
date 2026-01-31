@@ -1,9 +1,12 @@
+/* eslint-disable no-console */
 /**
  * SISTEMA DE LOGGING ESTRUTURADO
- * 
+ *
  * Logger profissional com níveis de severidade, persistência
  * local, formatação consistente, e recursos avançados para
  * debug, monitoramento e análise.
+ *
+ * @note Este arquivo usa console.* intencionalmente como implementação do logger
  */
 
 export enum LogLevel {

@@ -1,3 +1,9 @@
+/* eslint-disable no-console */
+/**
+ * PWA Install Prompt Component
+ *
+ * @note Console statements são usados para logging de eventos PWA
+ */
 import { useState, useEffect } from 'react';
 import { X, Download, Smartphone } from 'lucide-react';
 

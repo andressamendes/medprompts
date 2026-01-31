@@ -1,13 +1,14 @@
+/* eslint-disable no-console */
 /**
- * 🔒 Serviço de Autenticação Seguro - MedPrompts
+ * Serviço de Autenticação Seguro - MedPrompts
  *
- * FASE 3: Implementação de autenticação robusta com:
+ * Implementação de autenticação robusta com:
  * - Bcrypt para hashing de senhas (OWASP A02:2021)
  * - JWT para tokens de sessão (OWASP A07:2021)
  * - Refresh tokens com expiração
  * - Rate limiting para brute force protection
  *
- * Substitui: src/services/auth.service.ts (implementação insegura com Base64)
+ * @note Console statements são usados para debug de autenticação
  */
 
 // ⚠️ REMOVIDO: bcryptjs e jsonwebtoken (bibliotecas Node.js incompatíveis com navegador)
