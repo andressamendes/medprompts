@@ -1,4 +1,4 @@
-import { useEffect, useRef, useCallback } from 'react';
+import { useEffect, useRef, useCallback, useState } from 'react';
 import {
   announceToScreenReader,
   trapFocus,
@@ -160,7 +160,7 @@ export function useAriaId(prefix: string = 'aria') {
  * Hook para gerenciar estado expanded/collapsed
  */
 export function useDisclosure(defaultIsOpen: boolean = false) {
-  const [isOpen, setIsOpen] = React.useState(defaultIsOpen);
+  const [isOpen, setIsOpen] = useState(defaultIsOpen);
   const announce = useAnnounce();
 
   const open = useCallback(() => {
@@ -198,6 +198,3 @@ export function useDisclosure(defaultIsOpen: boolean = false) {
     },
   };
 }
-
-// Import React para useDisclosure
-import React from 'react';
