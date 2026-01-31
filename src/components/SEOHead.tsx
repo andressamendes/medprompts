@@ -1,5 +1,10 @@
 import { useEffect } from 'react';
 
+interface BreadcrumbItem {
+  name: string;
+  url: string;
+}
+
 interface SEOHeadProps {
   /** Titulo da pagina (sera concatenado com " | MedPrompts") */
   title: string;
@@ -11,6 +16,8 @@ interface SEOHeadProps {
   type?: 'website' | 'article';
   /** Imagem para Open Graph (opcional) */
   image?: string;
+  /** Breadcrumbs para structured data (opcional) */
+  breadcrumbs?: BreadcrumbItem[];
 }
 
 /**
@@ -35,7 +42,8 @@ export function SEOHead({
   description,
   canonical,
   type = 'website',
-  image = 'https://andressamendes.github.io/medprompts/og-image.png'
+  image = 'https://andressamendes.github.io/medprompts/og-image.png',
+  breadcrumbs
 }: SEOHeadProps) {
   useEffect(() => {
     // Titulo
@@ -101,11 +109,39 @@ export function SEOHead({
       setMetaTag('twitter:image', image);
     }
 
-    // Cleanup: restaurar titulo padrao ao desmontar (opcional)
+    // BreadcrumbList Structured Data (JSON-LD)
+    const existingBreadcrumb = document.querySelector('script[data-type="breadcrumb"]');
+    if (existingBreadcrumb) {
+      existingBreadcrumb.remove();
+    }
+
+    if (breadcrumbs && breadcrumbs.length > 0) {
+      const breadcrumbSchema = {
+        '@context': 'https://schema.org',
+        '@type': 'BreadcrumbList',
+        'itemListElement': breadcrumbs.map((item, index) => ({
+          '@type': 'ListItem',
+          'position': index + 1,
+          'name': item.name,
+          'item': item.url
+        }))
+      };
+
+      const script = document.createElement('script');
+      script.type = 'application/ld+json';
+      script.setAttribute('data-type', 'breadcrumb');
+      script.textContent = JSON.stringify(breadcrumbSchema);
+      document.head.appendChild(script);
+    }
+
+    // Cleanup: remover script de breadcrumb ao desmontar
     return () => {
-      // Nao limpar - manter ultima configuracao
+      const script = document.querySelector('script[data-type="breadcrumb"]');
+      if (script) {
+        script.remove();
+      }
     };
-  }, [title, description, canonical, type, image]);
+  }, [title, description, canonical, type, image, breadcrumbs]);
 
   // Componente nao renderiza nada visualmente
   return null;

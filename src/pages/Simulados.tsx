@@ -130,6 +130,10 @@ const Simulados = () => {
         title="Simulados - 1º e 2º Período"
         description="Simulados de Medicina para 1º e 2º período. Links para espaços Perplexity com questões de SOI, HAM, IESC, MCM e Integradora."
         canonical="https://andressamendes.github.io/medprompts/simulados"
+        breadcrumbs={[
+          { name: 'Home', url: 'https://andressamendes.github.io/medprompts/' },
+          { name: 'Simulados', url: 'https://andressamendes.github.io/medprompts/simulados' }
+        ]}
       />
 
       <div className="min-h-screen bg-gradient-to-br from-slate-50 via-blue-50/30 to-purple-50/20 dark:from-gray-950 dark:via-gray-900 dark:to-gray-950">
