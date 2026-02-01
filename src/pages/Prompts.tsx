@@ -368,7 +368,7 @@ export default function Prompts() {
         </div>
 
         {/* Main Content */}
-        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 lg:py-8" id="main-content">
+        <main className="container mx-auto px-4 sm:px-6 lg:px-8 py-5 sm:py-6 lg:py-8" id="main-content" role="main">
           <div className="space-y-4 sm:space-y-5 lg:space-y-6">
             {/* Tabs */}
             <Tabs value={selectedTab} onValueChange={handleTabChange}>
@@ -568,9 +568,19 @@ export default function Prompts() {
         />
 
         {/* Footer */}
-        <footer className="border-t mt-12 py-8">
+        <footer className="border-t mt-12 py-8" role="contentinfo">
           <div className="container mx-auto px-4 text-center text-sm text-gray-500">
-            <p>MedPrompts © {new Date().getFullYear()} • Por Andressa Mendes</p>
+            <p>
+              <span aria-label="Copyright">©</span> {new Date().getFullYear()} MedPrompts • Criado por{' '}
+              <a
+                href="https://github.com/andressamendes"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="hover:text-indigo-600 dark:hover:text-indigo-400 transition-colors"
+              >
+                Andressa Mendes
+              </a>
+            </p>
           </div>
         </footer>
       </div>
