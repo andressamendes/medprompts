@@ -26,7 +26,7 @@ export function extractVariables(promptContent: string): PromptVariable[] {
 
   // Regex para capturar variáveis: [VARIAVEL] seguido de : (padrão de campo de entrada)
   // Prioriza variáveis no formato [VAR]: descrição
-  const inputFieldRegex = /\[([A-Za-zÀ-ÖØ-öø-ÿ0-9_\-]+)\]\s*:/g;
+  const inputFieldRegex = /\[([A-Za-zÀ-ÖØ-öø-ÿ0-9_-]+)\]\s*:/g;
   let matches = searchContent.matchAll(inputFieldRegex);
 
   for (const match of matches) {
