@@ -2,9 +2,15 @@
 <html lang="pt-BR">
   <head>
     <meta charset="UTF-8" />
-    <link rel="icon" type="image/svg+xml" href="/medprompts/vite.svg" />
-    <link rel="preload" href="/medprompts/vite.svg" as="image" type="image/svg+xml" />
+    <link rel="icon" type="image/png" sizes="192x192" href="/medprompts/icon-192.png" />
+    <link rel="icon" type="image/png" sizes="512x512" href="/medprompts/icon-512.png" />
+    <link rel="apple-touch-icon" sizes="192x192" href="/medprompts/pwa-192x192.png" />
+    <link rel="manifest" href="/medprompts/manifest.json" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="MedPrompts" />
     
     <!-- SEO Meta Tags -->
     <title>MedPrompts - Guia Completo de IAs para Estudantes de Medicina 2026</title>
@@ -30,6 +36,11 @@
     
     <!-- Canonical URL -->
     <link rel="canonical" href="https://andressamendes.github.io/medprompts/" />
+
+    <!-- Hreflang for international SEO -->
+    <link rel="alternate" hreflang="pt-BR" href="https://andressamendes.github.io/medprompts/" />
+    <link rel="alternate" hreflang="pt" href="https://andressamendes.github.io/medprompts/" />
+    <link rel="alternate" hreflang="x-default" href="https://andressamendes.github.io/medprompts/" />
     
     <!-- Theme Color -->
     <meta name="theme-color" content="#6366f1" />
@@ -37,10 +48,14 @@
     <!-- Robots -->
     <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
 
-    <!-- Security & Performance -->
+    <!-- Security Meta Tags (GitHub Pages não suporta HTTP headers customizados) -->
     <meta http-equiv="X-UA-Compatible" content="IE=edge" />
     <meta http-equiv="X-Content-Type-Options" content="nosniff" />
+    <meta http-equiv="X-Frame-Options" content="DENY" />
+    <meta http-equiv="Permissions-Policy" content="camera=(), microphone=(), geolocation=(), payment=()" />
     <meta name="referrer" content="strict-origin-when-cross-origin" />
+    <!-- CSP via meta tag - mais restritivo que header -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' 'unsafe-inline' https://accounts.google.com; style-src 'self' 'unsafe-inline' https://fonts.googleapis.com; font-src 'self' https://fonts.gstatic.com data:; img-src 'self' data: https:; connect-src 'self' https://stream.zeno.fm https://actions.google.com; media-src 'self' https://stream.zeno.fm https://actions.google.com; object-src 'none'; frame-ancestors 'none'; base-uri 'self'; form-action 'self';" />
 
     <!-- Preconnect to external domains for performance -->
     <link rel="preconnect" href="https://fonts.googleapis.com" />
@@ -107,9 +122,43 @@
     }
     </script>
 
-    <script type="module" crossorigin src="/medprompts/assets/index-C_cCMcmv.js"></script>
+    <!-- FAQ Schema para Rich Results -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Qual a melhor IA para estudar medicina?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Depende do caso de uso: Claude Opus 4.5 para raciocínio clínico complexo, ChatGPT o3-mini (gratuito) para uso diário, NotebookLM para resumos de PDFs e áudios, Perplexity para pesquisa com fontes."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "O ChatGPT o3-mini é gratuito?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sim, o ChatGPT o3-mini é gratuito e oferece raciocínio avançado com capacidade de pensamento lento (chain-of-thought), ideal para estudantes de medicina."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Como usar prompts médicos com IA?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Use prompts estruturados com contexto clínico, dados do paciente e objetivo claro. O MedPrompts oferece mais de 100 templates prontos para diferentes cenários médicos."
+          }
+        }
+      ]
+    }
+    </script>
+
+    <script type="module" crossorigin src="/medprompts/assets/index-1Kbzxsas.js"></script>
     <link rel="modulepreload" crossorigin href="/medprompts/assets/vendor-B4EbuGE7.js">
-    <link rel="stylesheet" crossorigin href="/medprompts/assets/index-Dn42pCui.css">
+    <link rel="stylesheet" crossorigin href="/medprompts/assets/index-DQ-4nryk.css">
   </head>
   <body>
     <div id="root"></div>

@@ -5,7 +5,12 @@
     <link rel="icon" type="image/png" sizes="192x192" href="/medprompts/icon-192.png" />
     <link rel="icon" type="image/png" sizes="512x512" href="/medprompts/icon-512.png" />
     <link rel="apple-touch-icon" sizes="192x192" href="/medprompts/pwa-192x192.png" />
+    <link rel="manifest" href="/medprompts/manifest.json" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="MedPrompts" />
     
     <!-- SEO Meta Tags -->
     <title>MedPrompts - Guia Completo de IAs para Estudantes de Medicina 2026</title>
@@ -31,6 +36,11 @@
     
     <!-- Canonical URL -->
     <link rel="canonical" href="https://andressamendes.github.io/medprompts/" />
+
+    <!-- Hreflang for international SEO -->
+    <link rel="alternate" hreflang="pt-BR" href="https://andressamendes.github.io/medprompts/" />
+    <link rel="alternate" hreflang="pt" href="https://andressamendes.github.io/medprompts/" />
+    <link rel="alternate" hreflang="x-default" href="https://andressamendes.github.io/medprompts/" />
     
     <!-- Theme Color -->
     <meta name="theme-color" content="#6366f1" />
@@ -109,6 +119,40 @@
       "inLanguage": "pt-BR",
       "datePublished": "2026-01-01",
       "dateModified": "2026-01-31"
+    }
+    </script>
+
+    <!-- FAQ Schema para Rich Results -->
+    <script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "FAQPage",
+      "mainEntity": [
+        {
+          "@type": "Question",
+          "name": "Qual a melhor IA para estudar medicina?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Depende do caso de uso: Claude Opus 4.5 para raciocínio clínico complexo, ChatGPT o3-mini (gratuito) para uso diário, NotebookLM para resumos de PDFs e áudios, Perplexity para pesquisa com fontes."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "O ChatGPT o3-mini é gratuito?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Sim, o ChatGPT o3-mini é gratuito e oferece raciocínio avançado com capacidade de pensamento lento (chain-of-thought), ideal para estudantes de medicina."
+          }
+        },
+        {
+          "@type": "Question",
+          "name": "Como usar prompts médicos com IA?",
+          "acceptedAnswer": {
+            "@type": "Answer",
+            "text": "Use prompts estruturados com contexto clínico, dados do paciente e objetivo claro. O MedPrompts oferece mais de 100 templates prontos para diferentes cenários médicos."
+          }
+        }
+      ]
     }
     </script>
 

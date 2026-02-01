@@ -28,7 +28,7 @@
       "name": "Biblioteca de Prompts",
       "short_name": "Prompts",
       "description": "Acessar biblioteca de prompts",
-      "url": "/medprompts/#prompts",
+      "url": "/medprompts/prompts",
       "icons": [
         {
           "src": "/medprompts/icon-192.png",
@@ -37,10 +37,22 @@
       ]
     },
     {
-      "name": "Casos Clínicos",
-      "short_name": "Casos",
-      "description": "Resolver casos clínicos",
-      "url": "/medprompts/#cases",
+      "name": "Guia de IAs",
+      "short_name": "Guia IAs",
+      "description": "Comparativo de IAs para medicina",
+      "url": "/medprompts/guia-ias",
+      "icons": [
+        {
+          "src": "/medprompts/icon-192.png",
+          "sizes": "192x192"
+        }
+      ]
+    },
+    {
+      "name": "Ferramentas",
+      "short_name": "Tools",
+      "description": "Ferramentas de estudo",
+      "url": "/medprompts/ferramentas",
       "icons": [
         {
           "src": "/medprompts/icon-192.png",

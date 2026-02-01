@@ -428,6 +428,8 @@ export default function Prompts() {
                     <Card
                       key={prompt.id}
                       role="listitem"
+                      aria-labelledby={`title-${prompt.id}`}
+                      aria-describedby={`desc-${prompt.id}`}
                       className="flex flex-col bg-white dark:bg-gray-900 border-gray-200 dark:border-gray-800 hover:border-indigo-400 dark:hover:border-indigo-600 hover:shadow-md transition-all rounded-xl"
                     >
                       <CardHeader className="pb-3 flex-1">
@@ -453,11 +455,17 @@ export default function Prompts() {
                           </button>
                         </div>
 
-                        <CardTitle className="text-base sm:text-[15px] leading-snug line-clamp-2 text-gray-900 dark:text-white">
+                        <CardTitle
+                          id={`title-${prompt.id}`}
+                          className="text-base sm:text-[15px] leading-snug line-clamp-2 text-gray-900 dark:text-white"
+                        >
                           {prompt.title}
                         </CardTitle>
 
-                        <CardDescription className="text-sm mt-1.5 line-clamp-2 text-gray-600 dark:text-gray-400">
+                        <CardDescription
+                          id={`desc-${prompt.id}`}
+                          className="text-sm mt-1.5 line-clamp-2 text-gray-600 dark:text-gray-400"
+                        >
                           {prompt.description}
                         </CardDescription>
                       </CardHeader>

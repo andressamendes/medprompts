@@ -21,19 +21,26 @@ const Ferramentas = lazy(() => import('@/pages/Ferramentas'));
 const FocusZone = lazy(() => import('@/pages/FocusZone'));
 const Simulados = lazy(() => import('@/pages/Simulados'));
 
+/**
+ * Loading fallback otimizado para melhor LCP
+ * - Tamanho mínimo reservado para evitar CLS
+ * - Spinner leve com CSS puro
+ * - Acessível para screen readers
+ */
 const LoadingScreen = () => (
   <div
-    className="min-h-screen flex items-center justify-center"
+    className="min-h-screen flex items-center justify-center bg-gray-50 dark:bg-gray-950"
     role="status"
     aria-live="polite"
     aria-busy="true"
   >
-    <div className="text-center">
+    <div className="text-center" style={{ minHeight: '120px', minWidth: '200px' }}>
       <div
-        className="animate-spin rounded-full h-12 w-12 border-b-2 border-indigo-600 mx-auto mb-4"
+        className="w-10 h-10 border-3 border-indigo-200 border-t-indigo-600 rounded-full animate-spin mx-auto mb-3"
+        style={{ borderWidth: '3px' }}
         aria-hidden="true"
-      ></div>
-      <p className="text-muted-foreground">Carregando...</p>
+      />
+      <p className="text-sm text-gray-500 dark:text-gray-400">Carregando...</p>
       <span className="sr-only">Aguarde enquanto o conteúdo é carregado</span>
     </div>
   </div>
