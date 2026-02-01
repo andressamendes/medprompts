@@ -1,14 +1,14 @@
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef } from 'react';
 import { encryptData, decryptData, isCryptoSupported } from '@/lib/crypto';
 
 /**
  * Hook customizado para armazenamento seguro com criptografia AES-256
  * Substitui localStorage com encriptação automática
- * 
+ *
  * @param key - Chave única para identificar o valor no storage
  * @param initialValue - Valor inicial se não houver dado armazenado
  * @returns [value, setValue, removeValue, isLoading, error]
- * 
+ *
  * @example
  * const [user, setUser, removeUser] = useSecureStorage('user', null);
  */
@@ -22,6 +22,10 @@ export function useSecureStorage<T>(
   boolean,
   Error | null
 ] {
+  // Memoiza initialValue para evitar re-execuções do useEffect
+  // quando arrays/objetos são passados como valor inicial
+  const initialValueRef = useRef(initialValue);
+
   const [storedValue, setStoredValue] = useState<T>(initialValue);
   const [isLoading, setIsLoading] = useState(true);
   const [error, setError] = useState<Error | null>(null);
@@ -50,7 +54,7 @@ export function useSecureStorage<T>(
         }
 
         const encryptedItem = window.localStorage.getItem(storageKey);
-        
+
         if (encryptedItem) {
           // Decripta o valor armazenado
           const decryptedValue = await decryptData<T>(encryptedItem);
@@ -61,7 +65,7 @@ export function useSecureStorage<T>(
           if (oldItem) {
             const parsedValue = JSON.parse(oldItem);
             setStoredValue(parsedValue);
-            
+
             // Encripta e migra para novo formato
             const encrypted = await encryptData(parsedValue);
             window.localStorage.setItem(storageKey, encrypted);
@@ -71,7 +75,7 @@ export function useSecureStorage<T>(
       } catch (err) {
         console.error(`Erro ao carregar ${key} do storage:`, err);
         setError(err instanceof Error ? err : new Error('Erro desconhecido'));
-        
+
         // Fallback: tenta carregar versão não encriptada
         try {
           const item = window.localStorage.getItem(key);
@@ -80,7 +84,7 @@ export function useSecureStorage<T>(
           }
         } catch {
           // Se tudo falhar, usa valor inicial
-          setStoredValue(initialValue);
+          setStoredValue(initialValueRef.current);
         }
       } finally {
         setIsLoading(false);
@@ -88,7 +92,7 @@ export function useSecureStorage<T>(
     };
 
     loadStoredValue();
-  }, [key, storageKey, initialValue]);
+  }, [key, storageKey]);
 
   /**
    * Salva valor encriptado no localStorage
@@ -141,7 +145,7 @@ export function useSecureStorage<T>(
    */
   const removeValue = useCallback(() => {
     try {
-      setStoredValue(initialValue);
+      setStoredValue(initialValueRef.current);
       window.localStorage.removeItem(storageKey);
       window.localStorage.removeItem(key); // Remove também versão antiga se existir
 
@@ -155,7 +159,7 @@ export function useSecureStorage<T>(
       console.error(`Erro ao remover ${key} do storage:`, err);
       setError(err instanceof Error ? err : new Error('Erro ao remover dados'));
     }
-  }, [key, storageKey, initialValue]);
+  }, [key, storageKey]);
 
   /**
    * Sincroniza mudanças entre abas/janelas
@@ -175,7 +179,7 @@ export function useSecureStorage<T>(
         // Evento customizado (mesma aba)
         const detail = (e as CustomEvent).detail;
         if (detail.key === key) {
-          setStoredValue(detail.value ?? initialValue);
+          setStoredValue(detail.value ?? initialValueRef.current);
         }
       }
     };
@@ -187,7 +191,7 @@ export function useSecureStorage<T>(
       window.removeEventListener('storage', handleStorageChange as EventListener);
       window.removeEventListener('secure-storage-change', handleStorageChange as EventListener);
     };
-  }, [key, storageKey, initialValue]);
+  }, [key, storageKey]);
 
   return [storedValue, setValue, removeValue, isLoading, error];
 }
