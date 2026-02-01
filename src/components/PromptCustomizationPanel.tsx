@@ -164,7 +164,7 @@ export function PromptCustomizationPanel({
 
   // Destaca placeholders no preview
   const highlightedPreview = useMemo(() => {
-    let html = exportedPrompt.content
+    const html = exportedPrompt.content
       // Escapa HTML
       .replace(/&/g, '&amp;')
       .replace(/</g, '&lt;')
