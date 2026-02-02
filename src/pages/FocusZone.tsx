@@ -56,12 +56,15 @@ const TASKS_STORAGE_KEY = 'focuszone_tasks';
 // TIPOS
 // ============================================================================
 
+type TaskStatus = 'pending' | 'in_progress' | 'completed';
+
 interface Task {
   id: string;
   text: string;
-  completed: boolean;
+  status: TaskStatus;
   createdAt: number;
   completedAt?: number;
+  focusTimeSpent: number; // Tempo dedicado em segundos
 }
 
 // ============================================================================
@@ -93,7 +96,29 @@ export default function FocusZone() {
       if (stored) {
         const parsed = JSON.parse(stored);
         if (Array.isArray(parsed)) {
-          return parsed;
+          // Migrar formato antigo (completed: boolean) para novo (status: TaskStatus)
+          return parsed.map((task: Record<string, unknown>): Task => {
+            const baseTask = {
+              id: task.id as string,
+              text: task.text as string,
+              createdAt: task.createdAt as number,
+              completedAt: task.completedAt as number | undefined,
+              focusTimeSpent: (task.focusTimeSpent as number) ?? 0,
+            };
+
+            // Migrar formato antigo
+            if ('completed' in task && !('status' in task)) {
+              return {
+                ...baseTask,
+                status: task.completed ? 'completed' as TaskStatus : 'pending' as TaskStatus,
+              };
+            }
+
+            return {
+              ...baseTask,
+              status: (task.status as TaskStatus) ?? 'pending',
+            };
+          });
         }
       }
     } catch {
@@ -101,6 +126,9 @@ export default function FocusZone() {
     }
     return [];
   });
+
+  // ========== Estados de Estatísticas ==========
+  const [totalFocusTime, setTotalFocusTime] = useState(0); // Tempo total focado na sessão
   const [newTaskText, setNewTaskText] = useState('');
   const [editingTaskId, setEditingTaskId] = useState<string | null>(null);
   const [editingText, setEditingText] = useState('');
@@ -166,7 +194,7 @@ export default function FocusZone() {
     }
   }, [mode, completedCycles]);
 
-  // Decrementar timer
+  // Decrementar timer e incrementar tempo de foco
   useEffect(() => {
     if (isRunning) {
       intervalRef.current = setInterval(() => {
@@ -178,6 +206,19 @@ export default function FocusZone() {
             return 0;
           }
         });
+
+        // Incrementar tempo de foco apenas no modo foco
+        if (mode === 'focus') {
+          setTotalFocusTime(prev => prev + 1);
+
+          // Atualizar tempo da tarefa em andamento
+          setTasks(prevTasks => prevTasks.map(task => {
+            if (task.status === 'in_progress') {
+              return { ...task, focusTimeSpent: task.focusTimeSpent + 1 };
+            }
+            return task;
+          }));
+        }
       }, 1000);
     } else if (intervalRef.current) {
       clearInterval(intervalRef.current);
@@ -189,7 +230,7 @@ export default function FocusZone() {
         intervalRef.current = null;
       }
     };
-  }, [isRunning, handleTimerComplete]);
+  }, [isRunning, handleTimerComplete, mode]);
 
   const changeMode = (newMode: PomodoroMode) => {
     setMode(newMode);
@@ -283,8 +324,9 @@ export default function FocusZone() {
     const newTask: Task = {
       id: generateId(),
       text,
-      completed: false,
-      createdAt: Date.now()
+      status: 'pending',
+      createdAt: Date.now(),
+      focusTimeSpent: 0
     };
 
     setTasks(prev => [newTask, ...prev]);
@@ -292,21 +334,53 @@ export default function FocusZone() {
     newTaskInputRef.current?.focus();
   };
 
-  const toggleTask = (taskId: string) => {
+  // Ciclar entre estados: pending → in_progress → completed → pending
+  const cycleTaskStatus = (taskId: string) => {
     setTasks(prev => prev.map(task => {
       if (task.id === taskId) {
-        const nowCompleted = !task.completed;
+        let newStatus: TaskStatus;
 
-        // Trigger celebration animation
-        if (nowCompleted) {
+        if (task.status === 'pending') {
+          // Se já existe uma tarefa em andamento, primeiro a pausa
+          const hasInProgress = prev.some(t => t.id !== taskId && t.status === 'in_progress');
+          if (hasInProgress) {
+            // Pausar a outra tarefa
+            prev.forEach(t => {
+              if (t.status === 'in_progress' && t.id !== taskId) {
+                t.status = 'pending';
+              }
+            });
+          }
+          newStatus = 'in_progress';
+        } else if (task.status === 'in_progress') {
+          newStatus = 'completed';
+          // Trigger celebration animation
           setCelebratingTaskId(taskId);
           setTimeout(() => setCelebratingTaskId(null), 600);
+        } else {
+          newStatus = 'pending';
         }
 
         return {
           ...task,
-          completed: nowCompleted,
-          completedAt: nowCompleted ? Date.now() : undefined
+          status: newStatus,
+          completedAt: newStatus === 'completed' ? Date.now() : undefined
+        };
+      }
+      return task;
+    }));
+  };
+
+  // Marcar tarefa diretamente como concluída (atalho)
+  const completeTask = (taskId: string) => {
+    setTasks(prev => prev.map(task => {
+      if (task.id === taskId && task.status !== 'completed') {
+        setCelebratingTaskId(taskId);
+        setTimeout(() => setCelebratingTaskId(null), 600);
+        return {
+          ...task,
+          status: 'completed' as TaskStatus,
+          completedAt: Date.now()
         };
       }
       return task;
@@ -343,9 +417,15 @@ export default function FocusZone() {
   };
 
   // Estatísticas
-  const completedCount = tasks.filter(t => t.completed).length;
+  const completedCount = tasks.filter(t => t.status === 'completed').length;
+  const inProgressCount = tasks.filter(t => t.status === 'in_progress').length;
+  const pendingCount = tasks.filter(t => t.status === 'pending').length;
   const totalCount = tasks.length;
   const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
+  const currentTask = tasks.find(t => t.status === 'in_progress');
+
+  // Calcular tempo total focado (ciclos completos * 50min)
+  const totalFocusMinutes = Math.floor((completedCycles * 50 * 60 + totalFocusTime) / 60);
 
   // ========== Atalhos de teclado ==========
   useEffect(() => {
@@ -444,6 +524,32 @@ export default function FocusZone() {
             </h1>
           </div>
 
+          {/* Estatísticas da Sessão */}
+          <div className="hidden sm:flex items-center gap-3">
+            <div className="flex items-center gap-4 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/20">
+              <div className="text-center">
+                <p className="text-lg font-bold text-white">{completedCycles}</p>
+                <p className="text-[10px] text-gray-300 uppercase tracking-wide">Pomodoros</p>
+              </div>
+              <div className="w-px h-8 bg-white/20" />
+              <div className="text-center">
+                <p className="text-lg font-bold text-white">{totalFocusMinutes}</p>
+                <p className="text-[10px] text-gray-300 uppercase tracking-wide">min focados</p>
+              </div>
+              <div className="w-px h-8 bg-white/20" />
+              <div className="text-center">
+                <div className="flex items-center gap-1 justify-center">
+                  <span className="text-lg font-bold text-green-400">{completedCount}</span>
+                  {inProgressCount > 0 && <span className="text-sm font-bold text-indigo-400">+{inProgressCount}</span>}
+                  <span className="text-gray-400 text-sm">/{totalCount}</span>
+                </div>
+                <p className="text-[10px] text-gray-300 uppercase tracking-wide">
+                  {pendingCount > 0 ? `${pendingCount} pendentes` : 'tarefas'}
+                </p>
+              </div>
+            </div>
+          </div>
+
           <button
             onClick={() => navigate(-1)}
             className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all border border-white/20 hover:scale-105"
@@ -511,8 +617,16 @@ export default function FocusZone() {
 
                   {/* TIMER POMODORO */}
                   <div className="flex flex-col items-center">
-                    <div className="relative">
-                      <svg width={200} height={200} viewBox="0 0 200 200" className="transform -rotate-90" role="img" aria-hidden="true">
+                    <div className={`relative ${isRunning ? 'animate-pulse' : ''}`} style={{ animationDuration: '2s' }}>
+                      {/* Glow effect quando rodando */}
+                      {isRunning && (
+                        <div
+                          className="absolute inset-0 rounded-full blur-xl opacity-30 animate-pulse"
+                          style={{ backgroundColor: modeColors[mode].bg, animationDuration: '1.5s' }}
+                        />
+                      )}
+                      <svg width={200} height={200} viewBox="0 0 200 200" className="transform -rotate-90 relative z-10" role="img" aria-hidden="true">
+                        {/* Círculo de fundo */}
                         <circle
                           cx={100}
                           cy={100}
@@ -521,6 +635,7 @@ export default function FocusZone() {
                           strokeWidth={8}
                           fill="transparent"
                         />
+                        {/* Círculo de progresso */}
                         <circle
                           cx={100}
                           cy={100}
@@ -531,11 +646,21 @@ export default function FocusZone() {
                           strokeDasharray={circumference}
                           strokeDashoffset={offset}
                           strokeLinecap="round"
-                          className="transition-all duration-1000 ease-in-out"
+                          className={`transition-all duration-1000 ease-in-out ${isRunning ? 'drop-shadow-lg' : ''}`}
+                          style={isRunning ? { filter: `drop-shadow(0 0 8px ${modeColors[mode].bg})` } : {}}
                         />
                       </svg>
 
-                      <div className="absolute inset-0 flex items-center justify-center">
+                      <div className="absolute inset-0 flex flex-col items-center justify-center z-10">
+                        {/* Indicador de "rodando" */}
+                        {isRunning && (
+                          <div className="flex items-center gap-1 mb-1">
+                            <span className="w-2 h-2 rounded-full bg-red-500 animate-pulse" />
+                            <span className="text-[10px] font-medium text-gray-500 uppercase tracking-wider">
+                              {mode === 'focus' ? 'Focando' : 'Pausa'}
+                            </span>
+                          </div>
+                        )}
                         <p
                           role="timer"
                           aria-live="polite"
@@ -546,6 +671,12 @@ export default function FocusZone() {
                           <span className="sr-only">{`${minutes} minutos e ${seconds} segundos restantes`}</span>
                           <span aria-hidden="true">{minutes}:{seconds}</span>
                         </p>
+                        {/* Tarefa atual em andamento */}
+                        {currentTask && mode === 'focus' && (
+                          <p className="mt-1 text-xs text-gray-500 max-w-[150px] truncate text-center" title={currentTask.text}>
+                            📌 {currentTask.text}
+                          </p>
+                        )}
                       </div>
                     </div>
                   </div>
@@ -575,12 +706,23 @@ export default function FocusZone() {
                     <button
                       className={`${
                         isRunning
-                          ? "bg-blue-600 hover:bg-blue-700"
+                          ? "bg-amber-500 hover:bg-amber-600 ring-2 ring-amber-300 animate-pulse"
                           : "bg-green-600 hover:bg-green-700"
-                      } text-white font-semibold rounded-xl px-6 py-3 sm:px-8 sm:py-3 transition-all shadow-lg hover:scale-105 flex-1 max-w-[160px]`}
+                      } text-white font-semibold rounded-xl px-6 py-3 sm:px-8 sm:py-3 transition-all shadow-lg hover:scale-105 flex-1 max-w-[180px] flex items-center justify-center gap-2`}
                       onClick={() => setIsRunning(!isRunning)}
+                      aria-label={isRunning ? "Pausar timer" : "Iniciar timer"}
                     >
-                      {isRunning ? "Pausar" : "Iniciar"}
+                      {isRunning ? (
+                        <>
+                          <Pause className="w-5 h-5" />
+                          <span>Pausar</span>
+                        </>
+                      ) : (
+                        <>
+                          <Play className="w-5 h-5" />
+                          <span>Iniciar</span>
+                        </>
+                      )}
                     </button>
 
                     <button
@@ -660,11 +802,31 @@ export default function FocusZone() {
                     />
                   </div>
 
-                  {/* Atalhos de teclado */}
-                  <div className="text-center pt-2 border-t border-gray-200">
-                    <p className="text-xs text-gray-500">
-                      Espaço: Timer • P: Música • M: Mute • N: Nova tarefa • ESC: Sair
-                    </p>
+                  {/* Atalhos de teclado como badges */}
+                  <div className="pt-3 border-t border-gray-200">
+                    <p className="text-xs text-gray-500 text-center mb-2">Atalhos de teclado</p>
+                    <div className="flex flex-wrap gap-2 justify-center">
+                      <kbd className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 border border-gray-300 rounded-md text-xs font-mono shadow-sm">
+                        <span className="text-gray-500">Space</span>
+                        <span className="text-gray-700">Timer</span>
+                      </kbd>
+                      <kbd className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 border border-gray-300 rounded-md text-xs font-mono shadow-sm">
+                        <span className="text-gray-500">P</span>
+                        <span className="text-gray-700">Música</span>
+                      </kbd>
+                      <kbd className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 border border-gray-300 rounded-md text-xs font-mono shadow-sm">
+                        <span className="text-gray-500">M</span>
+                        <span className="text-gray-700">Mute</span>
+                      </kbd>
+                      <kbd className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 border border-gray-300 rounded-md text-xs font-mono shadow-sm">
+                        <span className="text-gray-500">N</span>
+                        <span className="text-gray-700">Tarefa</span>
+                      </kbd>
+                      <kbd className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 border border-gray-300 rounded-md text-xs font-mono shadow-sm">
+                        <span className="text-gray-500">Esc</span>
+                        <span className="text-gray-700">Sair</span>
+                      </kbd>
+                    </div>
                   </div>
 
                   {/* Audio do alarme */}
@@ -759,71 +921,123 @@ export default function FocusZone() {
                         <div
                           key={task.id}
                           className={`
-                            group flex items-center gap-3 p-3 rounded-xl border transition-all duration-300
-                            ${task.completed
-                              ? 'bg-green-50 border-green-200'
-                              : 'bg-white border-gray-200 hover:border-indigo-300 hover:shadow-sm'
-                            }
+                            group flex flex-col gap-2 p-3 rounded-xl border transition-all duration-300
+                            ${task.status === 'completed' && 'bg-green-50 border-green-200'}
+                            ${task.status === 'in_progress' && 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-200'}
+                            ${task.status === 'pending' && 'bg-white border-gray-200 hover:border-indigo-300 hover:shadow-sm'}
                             ${celebratingTaskId === task.id ? 'animate-pulse scale-[1.02]' : ''}
                           `}
                         >
-                          {/* Checkbox */}
-                          <button
-                            onClick={() => toggleTask(task.id)}
-                            className={`
-                              flex-shrink-0 w-6 h-6 rounded-full border-2 flex items-center justify-center transition-all
-                              ${task.completed
-                                ? 'bg-green-500 border-green-500 text-white'
-                                : 'border-gray-300 hover:border-indigo-500'
-                              }
-                            `}
-                            aria-label={task.completed ? 'Desmarcar tarefa' : 'Marcar como concluída'}
-                          >
-                            {task.completed && <Check className="w-4 h-4" />}
-                          </button>
-
-                          {/* Texto da tarefa */}
-                          {editingTaskId === task.id ? (
-                            <input
-                              type="text"
-                              value={editingText}
-                              onChange={(e) => setEditingText(e.target.value)}
-                              onKeyDown={(e) => {
-                                if (e.key === 'Enter') saveEdit();
-                                if (e.key === 'Escape') cancelEdit();
-                              }}
-                              onBlur={saveEdit}
-                              autoFocus
-                              className="flex-1 px-2 py-1 border border-indigo-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
-                            />
-                          ) : (
-                            <span
+                          <div className="flex items-center gap-3">
+                            {/* Botão de estado com três fases */}
+                            <button
+                              onClick={() => cycleTaskStatus(task.id)}
                               className={`
-                                flex-1 text-sm transition-all
-                                ${task.completed ? 'text-gray-500 line-through' : 'text-gray-800'}
+                                flex-shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all
+                                ${task.status === 'completed' && 'bg-green-500 border-green-500 text-white'}
+                                ${task.status === 'in_progress' && 'bg-indigo-500 border-indigo-500 text-white animate-pulse'}
+                                ${task.status === 'pending' && 'border-gray-300 hover:border-indigo-400 hover:bg-indigo-50'}
                               `}
+                              aria-label={
+                                task.status === 'pending' ? 'Iniciar tarefa' :
+                                task.status === 'in_progress' ? 'Concluir tarefa' :
+                                'Reabrir tarefa'
+                              }
+                              title={
+                                task.status === 'pending' ? 'Clique para iniciar' :
+                                task.status === 'in_progress' ? 'Clique para concluir' :
+                                'Clique para reabrir'
+                              }
                             >
-                              {task.text}
-                            </span>
-                          )}
+                              {task.status === 'completed' && <Check className="w-4 h-4" />}
+                              {task.status === 'in_progress' && <Play className="w-3 h-3" />}
+                            </button>
 
-                          {/* Ações - Visíveis em touch, hover em desktop */}
-                          {!editingTaskId && (
-                            <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
-                              <button
-                                onClick={() => startEditing(task)}
-                                className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
-                                aria-label="Editar tarefa"
-                              >
-                                <Edit2 className="w-4 h-4 text-gray-500" />
-                              </button>
-                              <button
-                                onClick={() => deleteTask(task.id)}
-                                className="p-1.5 hover:bg-red-100 rounded-lg transition-colors"
-                                aria-label="Excluir tarefa"
-                              >
-                                <Trash2 className="w-4 h-4 text-red-500" />
-                              </button>
+                            {/* Texto da tarefa */}
+                            {editingTaskId === task.id ? (
+                              <input
+                                type="text"
+                                value={editingText}
+                                onChange={(e) => setEditingText(e.target.value)}
+                                onKeyDown={(e) => {
+                                  if (e.key === 'Enter') saveEdit();
+                                  if (e.key === 'Escape') cancelEdit();
+                                }}
+                                onBlur={saveEdit}
+                                autoFocus
+                                className="flex-1 px-2 py-1 border border-indigo-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-indigo-500 text-sm"
+                              />
+                            ) : (
+                              <div className="flex-1 min-w-0">
+                                <span
+                                  onDoubleClick={() => startEditing(task)}
+                                  className={`
+                                    block text-sm transition-all cursor-pointer
+                                    ${task.status === 'completed' ? 'text-gray-500 line-through' : ''}
+                                    ${task.status === 'in_progress' ? 'text-indigo-800 font-medium' : ''}
+                                    ${task.status === 'pending' ? 'text-gray-800' : ''}
+                                  `}
+                                >
+                                  {task.text}
+                                </span>
+                                {/* Badge de estado */}
+                                {task.status === 'in_progress' && (
+                                  <span className="inline-flex items-center gap-1 mt-1 text-[10px] font-medium text-indigo-600 uppercase tracking-wide">
+                                    <span className="w-1.5 h-1.5 bg-indigo-500 rounded-full animate-pulse" />
+                                    Em andamento
+                                  </span>
+                                )}
+                              </div>
+                            )}
+
+                            {/* Ações - Visíveis em touch, hover em desktop */}
+                            {!editingTaskId && (
+                              <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                                {/* Botão de conclusão rápida para tarefas pendentes */}
+                                {task.status === 'pending' && (
+                                  <button
+                                    onClick={() => completeTask(task.id)}
+                                    className="p-1.5 hover:bg-green-100 rounded-lg transition-colors"
+                                    aria-label="Concluir tarefa"
+                                    title="Concluir direto"
+                                  >
+                                    <Check className="w-4 h-4 text-green-600" />
+                                  </button>
+                                )}
+                                <button
+                                  onClick={() => startEditing(task)}
+                                  className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                                  aria-label="Editar tarefa"
+                                >
+                                  <Edit2 className="w-4 h-4 text-gray-500" />
+                                </button>
+                                <button
+                                  onClick={() => deleteTask(task.id)}
+                                  className="p-1.5 hover:bg-red-100 rounded-lg transition-colors"
+                                  aria-label="Excluir tarefa"
+                                >
+                                  <Trash2 className="w-4 h-4 text-red-500" />
+                                </button>
+                              </div>
+                            )}
+                          </div>
+
+                          {/* Barra de progresso de tempo por tarefa */}
+                          {task.status !== 'pending' && task.focusTimeSpent > 0 && (
+                            <div className="ml-10">
+                              <div className="flex items-center gap-2">
+                                <div className="flex-1 h-1 bg-gray-200 rounded-full overflow-hidden">
+                                  <div
+                                    className={`h-full transition-all ${
+                                      task.status === 'completed' ? 'bg-green-400' : 'bg-indigo-400'
+                                    }`}
+                                    style={{ width: `${Math.min((task.focusTimeSpent / (50*60)) * 100, 100)}%` }}
+                                  />
+                                </div>
+                                <span className="text-[10px] text-gray-500 tabular-nums min-w-[40px]">
+                                  {Math.floor(task.focusTimeSpent / 60)}min
+                                </span>
+                              </div>
                             </div>
                           )}
                         </div>
@@ -831,11 +1045,25 @@ export default function FocusZone() {
                     )}
                   </div>
 
-                  {/* Footer com dica */}
+                  {/* Footer com legenda de estados */}
                   {tasks.length > 0 && (
                     <div className="mt-4 pt-3 border-t border-gray-200">
-                      <p className="text-xs text-gray-500 text-center">
-                        Clique no círculo para concluir • Duplo clique para editar
+                      <div className="flex flex-wrap items-center justify-center gap-3 text-[10px] text-gray-500">
+                        <span className="flex items-center gap-1">
+                          <span className="w-3 h-3 rounded-full border-2 border-gray-300" />
+                          Pendente
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <span className="w-3 h-3 rounded-full bg-indigo-500" />
+                          Em andamento
+                        </span>
+                        <span className="flex items-center gap-1">
+                          <span className="w-3 h-3 rounded-full bg-green-500" />
+                          Concluída
+                        </span>
+                      </div>
+                      <p className="text-[10px] text-gray-400 text-center mt-2">
+                        Clique no círculo para avançar estado • Duplo clique no texto para editar
                       </p>
                     </div>
                   )}
