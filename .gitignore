@@ -149,11 +149,8 @@ public
 *.temp
 nul
 
-# Test files
+# Test server files
 *.cjs
-*.test.js
-*.test.ts
-*.test.tsx
 
 # Debug files
 *.log
@@ -183,8 +180,7 @@ tmpclaude-*-cwd
 # Virtual Space fix patch
 virtual-space-fix.patch
 
-# Package lock
-package-lock.json
+# Package lock (mantido no git para CI)
 
 # Build artifacts
 *.map
