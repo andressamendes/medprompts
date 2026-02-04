@@ -27,21 +27,21 @@ const LONG_BREAK = 15 * 60;
 
 type PomodoroMode = 'focus' | 'shortBreak' | 'longBreak';
 
-// Streams de música Lo-fi funcionais
+// Streams de música Lo-fi (SomaFM - confiáveis e com CORS)
 const STATIONS = [
   {
-    name: "Lofi Hip Hop",
-    url: "https://stream.zeno.fm/f3wvbbqmdg8uv",
+    name: "Groove Salad",
+    url: "https://ice1.somafm.com/groovesalad-128-mp3",
     color: "from-amber-400/20 to-orange-400/20"
   },
   {
-    name: "Chillhop Radio",
-    url: "https://stream.zeno.fm/0r0xa792kwzuv",
+    name: "Groove Salad Classic",
+    url: "https://ice1.somafm.com/gsclassic-128-mp3",
     color: "from-blue-400/20 to-cyan-400/20"
   },
   {
-    name: "Jazzy Beats",
-    url: "https://stream.zeno.fm/f6vhq8qqtg8uv",
+    name: "Space Station",
+    url: "https://ice1.somafm.com/spacestation-128-mp3",
     color: "from-purple-400/20 to-pink-400/20"
   }
 ];
