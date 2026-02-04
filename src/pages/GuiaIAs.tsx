@@ -530,89 +530,95 @@ const GuiaIAs = () => {
               </div>
             </CardHeader>
             <CardContent className="p-0">
-              {/* Indicador de scroll horizontal em mobile */}
-              <div className="sm:hidden px-4 py-2 bg-gray-100 text-xs text-gray-600 flex items-center gap-2">
+              {/* Indicador de scroll horizontal em mobile - WCAG 1.4.10 Reflow */}
+              <div className="sm:hidden px-4 py-2 bg-gray-100 text-xs text-gray-600 flex items-center justify-center gap-2" aria-hidden="true">
                 <span>← Deslize para ver mais →</span>
               </div>
-              <div className="overflow-x-auto">
+              {/* Container com role="region" para navegação por teclado - WCAG 2.1.1 */}
+              <div
+                className="overflow-x-auto focus:outline-none focus:ring-2 focus:ring-inset focus:ring-blue-500"
+                role="region"
+                aria-label="Tabela comparativa de IAs - deslize horizontalmente para ver mais colunas"
+                tabIndex={0}
+              >
                 <table className="w-full text-sm" role="table" aria-label="Comparativo de IAs para medicina">
                   <caption className="sr-only">
                     Tabela comparativa das principais IAs para estudantes de medicina, incluindo preço, capacidades e uso ideal
                   </caption>
                   <thead className="bg-gray-50 border-y border-gray-200">
                     <tr>
-                      <th scope="col" className="text-left p-3 font-semibold text-gray-900 min-w-[140px]">IA</th>
-                      <th scope="col" className="text-left p-3 font-semibold text-gray-900 min-w-[100px]">Preço</th>
-                      <th scope="col" className="text-center p-3 font-semibold text-gray-900">Gratuito</th>
-                      <th scope="col" className="text-center p-3 font-semibold text-gray-900">Medicina</th>
-                      <th scope="col" className="text-center p-3 font-semibold text-gray-900">Raciocínio</th>
-                      <th scope="col" className="text-center p-3 font-semibold text-gray-900">Pesquisa</th>
-                      <th scope="col" className="text-left p-3 font-semibold text-gray-900 min-w-[180px]">Melhor Para</th>
+                      <th scope="col" className="text-left p-2 sm:p-3 font-semibold text-gray-900 whitespace-nowrap">IA</th>
+                      <th scope="col" className="text-left p-2 sm:p-3 font-semibold text-gray-900 whitespace-nowrap">Preço</th>
+                      <th scope="col" className="text-center p-2 sm:p-3 font-semibold text-gray-900 whitespace-nowrap">Gratuito</th>
+                      <th scope="col" className="text-center p-2 sm:p-3 font-semibold text-gray-900 whitespace-nowrap">Medicina</th>
+                      <th scope="col" className="text-center p-2 sm:p-3 font-semibold text-gray-900 whitespace-nowrap">Raciocínio</th>
+                      <th scope="col" className="text-center p-2 sm:p-3 font-semibold text-gray-900 whitespace-nowrap">Pesquisa</th>
+                      <th scope="col" className="text-left p-2 sm:p-3 font-semibold text-gray-900 whitespace-nowrap">Melhor Para</th>
                     </tr>
                   </thead>
                   <tbody className="divide-y divide-gray-100">
                     <tr className="hover:bg-rose-50/50 transition-colors">
-                      <th scope="row" className="p-3 font-medium text-gray-900 text-left">ChatGPT Health</th>
-                      <td className="p-3 text-gray-700">US$ 20/mês</td>
-                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Não</span></td>
-                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" aria-hidden="true" /><span className="sr-only">Excelente</span></td>
-                      <td className="p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" aria-hidden="true" /><span className="sr-only">Bom</span></td>
-                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Limitado</span></td>
-                      <td className="p-3 text-gray-700">Casos clínicos, diagnóstico</td>
+                      <th scope="row" className="p-2 sm:p-3 font-medium text-gray-900 text-left whitespace-nowrap">ChatGPT Health</th>
+                      <td className="p-2 sm:p-3 text-gray-700 text-xs sm:text-sm">US$ 20/mês</td>
+                      <td className="p-2 sm:p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Não</span></td>
+                      <td className="p-2 sm:p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" aria-hidden="true" /><span className="sr-only">Excelente</span></td>
+                      <td className="p-2 sm:p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" aria-hidden="true" /><span className="sr-only">Bom</span></td>
+                      <td className="p-2 sm:p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Limitado</span></td>
+                      <td className="p-2 sm:p-3 text-gray-700 text-xs sm:text-sm">Casos clínicos, diagnóstico</td>
                     </tr>
                     <tr className="hover:bg-orange-50/50 transition-colors">
-                      <th scope="row" className="p-3 font-medium text-gray-900 text-left">Claude Opus 4.5</th>
-                      <td className="p-3 text-gray-700">US$ 20/mês</td>
-                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Não</span></td>
-                      <td className="p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" aria-hidden="true" /><span className="sr-only">Bom</span></td>
-                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" aria-hidden="true" /><span className="sr-only">Excelente</span></td>
-                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Limitado</span></td>
-                      <td className="p-3 text-gray-700">Análise profunda, código</td>
+                      <th scope="row" className="p-2 sm:p-3 font-medium text-gray-900 text-left whitespace-nowrap">Claude Opus 4.5</th>
+                      <td className="p-2 sm:p-3 text-gray-700 text-xs sm:text-sm">US$ 20/mês</td>
+                      <td className="p-2 sm:p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Não</span></td>
+                      <td className="p-2 sm:p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" aria-hidden="true" /><span className="sr-only">Bom</span></td>
+                      <td className="p-2 sm:p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" aria-hidden="true" /><span className="sr-only">Excelente</span></td>
+                      <td className="p-2 sm:p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Limitado</span></td>
+                      <td className="p-2 sm:p-3 text-gray-700 text-xs sm:text-sm">Análise profunda, código</td>
                     </tr>
                     <tr className="hover:bg-green-50/50 transition-colors bg-green-50/30">
-                      <th scope="row" className="p-3 font-medium text-gray-900 text-left">o4-mini <span aria-label="Melhor custo-benefício">⭐</span></th>
-                      <td className="p-3 text-green-600 font-semibold">Gratuito</td>
-                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" aria-hidden="true" /><span className="sr-only">Sim</span></td>
-                      <td className="p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" aria-hidden="true" /><span className="sr-only">Bom</span></td>
-                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" aria-hidden="true" /><span className="sr-only">Excelente</span></td>
-                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Limitado</span></td>
-                      <td className="p-3 text-gray-700">Questões complexas, lógica</td>
+                      <th scope="row" className="p-2 sm:p-3 font-medium text-gray-900 text-left whitespace-nowrap">o4-mini <span aria-label="Melhor custo-benefício">⭐</span></th>
+                      <td className="p-2 sm:p-3 text-green-600 font-semibold text-xs sm:text-sm">Gratuito</td>
+                      <td className="p-2 sm:p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" aria-hidden="true" /><span className="sr-only">Sim</span></td>
+                      <td className="p-2 sm:p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" aria-hidden="true" /><span className="sr-only">Bom</span></td>
+                      <td className="p-2 sm:p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" aria-hidden="true" /><span className="sr-only">Excelente</span></td>
+                      <td className="p-2 sm:p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Limitado</span></td>
+                      <td className="p-2 sm:p-3 text-gray-700 text-xs sm:text-sm">Questões complexas, lógica</td>
                     </tr>
                     <tr className="hover:bg-blue-50/50 transition-colors bg-blue-50/30">
-                      <th scope="row" className="p-3 font-medium text-gray-900 text-left">NotebookLM <span aria-label="Melhor custo-benefício">⭐</span></th>
-                      <td className="p-3 text-green-600 font-semibold">Gratuito</td>
-                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" aria-hidden="true" /><span className="sr-only">Sim</span></td>
-                      <td className="p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" aria-hidden="true" /><span className="sr-only">Bom</span></td>
-                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Limitado</span></td>
-                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Limitado</span></td>
-                      <td className="p-3 text-gray-700">Revisão, podcasts, estudo</td>
+                      <th scope="row" className="p-2 sm:p-3 font-medium text-gray-900 text-left whitespace-nowrap">NotebookLM <span aria-label="Melhor custo-benefício">⭐</span></th>
+                      <td className="p-2 sm:p-3 text-green-600 font-semibold text-xs sm:text-sm">Gratuito</td>
+                      <td className="p-2 sm:p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" aria-hidden="true" /><span className="sr-only">Sim</span></td>
+                      <td className="p-2 sm:p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" aria-hidden="true" /><span className="sr-only">Bom</span></td>
+                      <td className="p-2 sm:p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Limitado</span></td>
+                      <td className="p-2 sm:p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Limitado</span></td>
+                      <td className="p-2 sm:p-3 text-gray-700 text-xs sm:text-sm">Revisão, podcasts, estudo</td>
                     </tr>
                     <tr className="hover:bg-purple-50/50 transition-colors">
-                      <th scope="row" className="p-3 font-medium text-gray-900 text-left">Gemini 2.5 Pro</th>
-                      <td className="p-3 text-gray-700">US$ 20/mês</td>
-                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Não</span></td>
-                      <td className="p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" aria-hidden="true" /><span className="sr-only">Bom</span></td>
-                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" aria-hidden="true" /><span className="sr-only">Excelente</span></td>
-                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" aria-hidden="true" /><span className="sr-only">Excelente</span></td>
-                      <td className="p-3 text-gray-700">Múltiplos artigos, 1M tokens</td>
+                      <th scope="row" className="p-2 sm:p-3 font-medium text-gray-900 text-left whitespace-nowrap">Gemini 2.5 Pro</th>
+                      <td className="p-2 sm:p-3 text-gray-700 text-xs sm:text-sm">US$ 20/mês</td>
+                      <td className="p-2 sm:p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Não</span></td>
+                      <td className="p-2 sm:p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" aria-hidden="true" /><span className="sr-only">Bom</span></td>
+                      <td className="p-2 sm:p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" aria-hidden="true" /><span className="sr-only">Excelente</span></td>
+                      <td className="p-2 sm:p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" aria-hidden="true" /><span className="sr-only">Excelente</span></td>
+                      <td className="p-2 sm:p-3 text-gray-700 text-xs sm:text-sm">Múltiplos artigos, 1M tokens</td>
                     </tr>
                     <tr className="hover:bg-purple-50/50 transition-colors bg-green-50/30">
-                      <th scope="row" className="p-3 font-medium text-gray-900 text-left">Gemini Flash-Lite <span aria-label="Melhor custo-benefício">⭐</span></th>
-                      <td className="p-3 text-green-600 font-semibold">Gratuito</td>
-                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" aria-hidden="true" /><span className="sr-only">Sim</span></td>
-                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Limitado</span></td>
-                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Limitado</span></td>
-                      <td className="p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" aria-hidden="true" /><span className="sr-only">Bom</span></td>
-                      <td className="p-3 text-gray-700">Consultas rápidas, resumos</td>
+                      <th scope="row" className="p-2 sm:p-3 font-medium text-gray-900 text-left whitespace-nowrap">Gemini Flash-Lite <span aria-label="Melhor custo-benefício">⭐</span></th>
+                      <td className="p-2 sm:p-3 text-green-600 font-semibold text-xs sm:text-sm">Gratuito</td>
+                      <td className="p-2 sm:p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" aria-hidden="true" /><span className="sr-only">Sim</span></td>
+                      <td className="p-2 sm:p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Limitado</span></td>
+                      <td className="p-2 sm:p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Limitado</span></td>
+                      <td className="p-2 sm:p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" aria-hidden="true" /><span className="sr-only">Bom</span></td>
+                      <td className="p-2 sm:p-3 text-gray-700 text-xs sm:text-sm">Consultas rápidas, resumos</td>
                     </tr>
                     <tr className="hover:bg-teal-50/50 transition-colors">
-                      <th scope="row" className="p-3 font-medium text-gray-900 text-left">Perplexity AI</th>
-                      <td className="p-3 text-gray-700">Grátis/US$ 20</td>
-                      <td className="p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" aria-hidden="true" /><span className="sr-only">Parcial</span></td>
-                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Limitado</span></td>
-                      <td className="p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Limitado</span></td>
-                      <td className="p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" aria-hidden="true" /><span className="sr-only">Excelente</span></td>
-                      <td className="p-3 text-gray-700">Pesquisa com citações</td>
+                      <th scope="row" className="p-2 sm:p-3 font-medium text-gray-900 text-left whitespace-nowrap">Perplexity AI</th>
+                      <td className="p-2 sm:p-3 text-gray-700 text-xs sm:text-sm">Grátis/US$ 20</td>
+                      <td className="p-2 sm:p-3 text-center"><Check className="h-4 w-4 mx-auto text-green-500" aria-hidden="true" /><span className="sr-only">Parcial</span></td>
+                      <td className="p-2 sm:p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Limitado</span></td>
+                      <td className="p-2 sm:p-3 text-center"><Minus className="h-4 w-4 mx-auto text-gray-400" aria-hidden="true" /><span className="sr-only">Limitado</span></td>
+                      <td className="p-2 sm:p-3 text-center"><Check className="h-5 w-5 mx-auto text-green-600" aria-hidden="true" /><span className="sr-only">Excelente</span></td>
+                      <td className="p-2 sm:p-3 text-gray-700 text-xs sm:text-sm">Pesquisa com citações</td>
                     </tr>
                   </tbody>
                 </table>

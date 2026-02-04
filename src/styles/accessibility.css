@@ -101,15 +101,22 @@ a:focus-visible {
 
 /**
  * WCAG 2.5.5 - Target Size
- * Tamanho mínimo de 44x44px para touch targets
+ * Tamanho mínimo de 44x44px para touch targets em dispositivos móveis
+ * Em desktop (640px+), tamanhos menores são aceitáveis
  */
+@media (max-width: 639px) {
+  button,
+  a,
+  [role="button"],
+  [role="link"] {
+    min-height: 44px;
+  }
+}
+
 button,
 a,
 [role="button"],
 [role="link"] {
-  min-height: 44px;
-  min-width: 44px;
-  padding: 8px 16px;
   display: inline-flex;
   align-items: center;
   justify-content: center;

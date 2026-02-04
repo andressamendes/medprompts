@@ -234,15 +234,8 @@ select:focus-visible {
   --background: 10 10 10;
 }
 
-/* Touch targets mínimos para mobile (WCAG 2.1 AA) */
-@media (max-width: 768px) {
-  button,
-  a,
-  [role="button"] {
-    min-height: 44px;
-    min-width: 44px;
-  }
-}
+/* Touch targets mínimos para mobile (WCAG 2.5.5)
+   Nota: Regra principal está em accessibility.css e nos componentes */
 
 /* Screen reader only utility */
 .sr-only {

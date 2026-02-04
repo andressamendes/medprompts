@@ -833,16 +833,21 @@ const Ferramentas = () => {
             )}
           </div>
 
-          {/* Barra de Busca */}
+          {/* Barra de Busca - WCAG 1.3.1, 4.1.2 */}
           <div className="mb-6">
+            <label htmlFor="busca-ferramentas" className="sr-only">
+              Buscar ferramentas
+            </label>
             <div className="relative">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-5 w-5 text-gray-400" aria-hidden="true" />
               <input
-                type="text"
+                id="busca-ferramentas"
+                type="search"
                 placeholder="Buscar ferramentas por nome ou descrição..."
                 value={busca}
                 onChange={(e) => setBusca(e.target.value)}
-                className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none transition-colors"
+                className="w-full pl-10 pr-4 py-3 border-2 border-gray-200 rounded-lg focus:border-blue-500 focus:outline-none transition-colors min-h-[44px]"
+                aria-describedby="busca-resultados"
               />
             </div>
           </div>
@@ -855,7 +860,7 @@ const Ferramentas = () => {
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setFiltroPreco("todos")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  className={`px-4 py-2 min-h-[44px] rounded-lg text-sm font-medium transition-all ${
                     filtroPreco === "todos"
                       ? "bg-blue-600 text-white shadow-md"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -865,7 +870,7 @@ const Ferramentas = () => {
                 </button>
                 <button
                   onClick={() => setFiltroPreco("gratuito")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  className={`px-4 py-2 min-h-[44px] rounded-lg text-sm font-medium transition-all ${
                     filtroPreco === "gratuito"
                       ? "bg-green-600 text-white shadow-md"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -875,7 +880,7 @@ const Ferramentas = () => {
                 </button>
                 <button
                   onClick={() => setFiltroPreco("freemium")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  className={`px-4 py-2 min-h-[44px] rounded-lg text-sm font-medium transition-all ${
                     filtroPreco === "freemium"
                       ? "bg-blue-600 text-white shadow-md"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -885,7 +890,7 @@ const Ferramentas = () => {
                 </button>
                 <button
                   onClick={() => setFiltroPreco("pago")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  className={`px-4 py-2 min-h-[44px] rounded-lg text-sm font-medium transition-all ${
                     filtroPreco === "pago"
                       ? "bg-orange-600 text-white shadow-md"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -917,7 +922,7 @@ const Ferramentas = () => {
               <div className="flex flex-wrap gap-2">
                 <button
                   onClick={() => setFiltroPais("todos")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  className={`px-4 py-2 min-h-[44px] rounded-lg text-sm font-medium transition-all ${
                     filtroPais === "todos"
                       ? "bg-blue-600 text-white shadow-md"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -927,7 +932,7 @@ const Ferramentas = () => {
                 </button>
                 <button
                   onClick={() => setFiltroPais("brasil")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  className={`px-4 py-2 min-h-[44px] rounded-lg text-sm font-medium transition-all ${
                     filtroPais === "brasil"
                       ? "bg-green-600 text-white shadow-md"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -937,7 +942,7 @@ const Ferramentas = () => {
                 </button>
                 <button
                   onClick={() => setFiltroPais("internacional")}
-                  className={`px-4 py-2 rounded-lg text-sm font-medium transition-all ${
+                  className={`px-4 py-2 min-h-[44px] rounded-lg text-sm font-medium transition-all ${
                     filtroPais === "internacional"
                       ? "bg-blue-600 text-white shadow-md"
                       : "bg-gray-100 text-gray-700 hover:bg-gray-200"
@@ -949,10 +954,15 @@ const Ferramentas = () => {
             </div>
           </div>
 
-          {/* Contador de Resultados */}
+          {/* Contador de Resultados - Live region para leitores de tela */}
           {hasFiltrosAtivos && (
             <div className="mt-6 pt-6 border-t border-gray-200">
-              <p className="text-center text-sm text-gray-600">
+              <p
+                id="busca-resultados"
+                className="text-center text-sm text-gray-600"
+                role="status"
+                aria-live="polite"
+              >
                 <strong className="text-blue-600 text-lg">{totalFerramentasFiltradas}</strong> {totalFerramentasFiltradas === 1 ? 'ferramenta encontrada' : 'ferramentas encontradas'}
               </p>
             </div>

@@ -929,11 +929,11 @@ export default function FocusZone() {
                           `}
                         >
                           <div className="flex items-center gap-3">
-                            {/* Botão de estado com três fases */}
+                            {/* Botão de estado com três fases - Touch target 44x44px (WCAG 2.5.5) */}
                             <button
                               onClick={() => cycleTaskStatus(task.id)}
                               className={`
-                                flex-shrink-0 w-7 h-7 rounded-full border-2 flex items-center justify-center transition-all
+                                flex-shrink-0 w-11 h-11 min-w-[44px] min-h-[44px] rounded-full border-2 flex items-center justify-center transition-all
                                 ${task.status === 'completed' && 'bg-green-500 border-green-500 text-white'}
                                 ${task.status === 'in_progress' && 'bg-indigo-500 border-indigo-500 text-white animate-pulse'}
                                 ${task.status === 'pending' && 'border-gray-300 hover:border-indigo-400 hover:bg-indigo-50'}
@@ -949,8 +949,8 @@ export default function FocusZone() {
                                 'Clique para reabrir'
                               }
                             >
-                              {task.status === 'completed' && <Check className="w-4 h-4" />}
-                              {task.status === 'in_progress' && <Play className="w-3 h-3" />}
+                              {task.status === 'completed' && <Check className="w-5 h-5" />}
+                              {task.status === 'in_progress' && <Play className="w-4 h-4" />}
                             </button>
 
                             {/* Texto da tarefa */}
@@ -991,32 +991,33 @@ export default function FocusZone() {
                             )}
 
                             {/* Ações - Visíveis em touch, hover em desktop */}
+                            {/* Touch targets de 44x44px mínimo para WCAG 2.5.5 */}
                             {!editingTaskId && (
-                              <div className="flex items-center gap-1 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                              <div className="flex items-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
                                 {/* Botão de conclusão rápida para tarefas pendentes */}
                                 {task.status === 'pending' && (
                                   <button
                                     onClick={() => completeTask(task.id)}
-                                    className="p-1.5 hover:bg-green-100 rounded-lg transition-colors"
+                                    className="min-w-[44px] min-h-[44px] p-2.5 hover:bg-green-100 rounded-lg transition-colors flex items-center justify-center"
                                     aria-label="Concluir tarefa"
                                     title="Concluir direto"
                                   >
-                                    <Check className="w-4 h-4 text-green-600" />
+                                    <Check className="w-5 h-5 text-green-600" />
                                   </button>
                                 )}
                                 <button
                                   onClick={() => startEditing(task)}
-                                  className="p-1.5 hover:bg-gray-100 rounded-lg transition-colors"
+                                  className="min-w-[44px] min-h-[44px] p-2.5 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-center"
                                   aria-label="Editar tarefa"
                                 >
-                                  <Edit2 className="w-4 h-4 text-gray-500" />
+                                  <Edit2 className="w-5 h-5 text-gray-500" />
                                 </button>
                                 <button
                                   onClick={() => deleteTask(task.id)}
-                                  className="p-1.5 hover:bg-red-100 rounded-lg transition-colors"
+                                  className="min-w-[44px] min-h-[44px] p-2.5 hover:bg-red-100 rounded-lg transition-colors flex items-center justify-center"
                                   aria-label="Excluir tarefa"
                                 >
-                                  <Trash2 className="w-4 h-4 text-red-500" />
+                                  <Trash2 className="w-5 h-5 text-red-500" />
                                 </button>
                               </div>
                             )}
