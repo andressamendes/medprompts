@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useLocation, Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { Brain, Menu, X, Moon, Sun } from 'lucide-react';
+import { Stethoscope, Menu, X, Moon, Sun } from 'lucide-react';
 import { useTheme } from '@/contexts/ThemeContext';
 
 /**
@@ -41,7 +41,7 @@ export const PublicNavbar = () => {
           {/* Logo Acadêmico */}
           <Link to="/" className="flex items-center gap-2 group" aria-label="MedPrompts - Ir para página inicial">
             <div className="w-10 h-10 rounded-lg bg-blue-600 dark:bg-blue-500 flex items-center justify-center shadow-sm group-hover:shadow-md group-hover:scale-105 transition-all duration-200">
-              <Brain className="w-6 h-6 text-white" aria-hidden="true" />
+              <Stethoscope className="w-6 h-6 text-white" aria-hidden="true" />
             </div>
             <div className="flex flex-col">
               <span className="text-xl font-bold text-gray-900 dark:text-white">MedPrompts</span>
