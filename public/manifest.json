@@ -10,6 +10,12 @@
   "scope": "/medprompts/",
   "icons": [
     {
+      "src": "/medprompts/favicon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any"
+    },
+    {
       "src": "/medprompts/icon-192.png",
       "sizes": "192x192",
       "type": "image/png",
