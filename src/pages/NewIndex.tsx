@@ -216,10 +216,15 @@ export default function NewIndex() {
             Portal Acadêmico de IA para Medicina
           </div>
 
-          {/* Título Direto */}
+          {/* Título com ícone de estetoscópio */}
           <h1 className="text-4xl md:text-5xl lg:text-6xl font-bold text-gray-900 dark:text-white leading-tight">
-            <span className="text-blue-600 dark:text-blue-400">
-              MEDPROMPTS
+            <span className="inline-flex items-center justify-center gap-3">
+              <span className="p-2 md:p-3 bg-gradient-to-br from-blue-500 to-indigo-600 rounded-xl shadow-lg">
+                <Stethoscope className="w-8 h-8 md:w-10 md:h-10 lg:w-12 lg:h-12 text-white" aria-hidden="true" />
+              </span>
+              <span className="text-blue-600 dark:text-blue-400">
+                MEDPROMPTS
+              </span>
             </span>
             <span className="block text-2xl md:text-3xl lg:text-4xl font-normal text-gray-700 dark:text-gray-300 mt-2">
               Recursos de IA para estudantes de medicina
