@@ -2,7 +2,7 @@ import { Link } from "react-router-dom";
 import { PublicNavbar } from "@/components/PublicNavbar";
 import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ExternalLink, BookOpen, GraduationCap } from "lucide-react";
+import { ArrowLeft, ExternalLink, BookOpen, GraduationCap, Target, Clock, Brain, CheckCircle2, Lightbulb } from "lucide-react";
 
 // ============================================================================
 // DADOS DOS SIMULADOS
@@ -197,6 +197,69 @@ const Simulados = () => {
               </dl>
             </header>
 
+            {/* Seção de Objetivos */}
+            <section aria-labelledby="objetivos-heading" className="bg-white dark:bg-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 sm:p-6 shadow-sm">
+              <h2 id="objetivos-heading" className="text-xl font-bold text-gray-900 dark:text-white mb-4 flex items-center gap-2">
+                <Target className="h-5 w-5 text-blue-600 dark:text-blue-400" aria-hidden="true" />
+                Objetivos dos Simulados
+              </h2>
+              <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                <div className="flex items-start gap-3 p-3 bg-blue-50 dark:bg-blue-950/30 rounded-lg">
+                  <Brain className="h-5 w-5 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                  <div>
+                    <h3 className="font-semibold text-sm text-gray-900 dark:text-white">Fixação do Conteúdo</h3>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Reforce conceitos-chave através de questões práticas baseadas no conteúdo das disciplinas.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 bg-purple-50 dark:bg-purple-950/30 rounded-lg">
+                  <Clock className="h-5 w-5 text-purple-600 dark:text-purple-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                  <div>
+                    <h3 className="font-semibold text-sm text-gray-900 dark:text-white">Preparação para Provas</h3>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Simule condições de prova e identifique pontos que precisam de mais revisão.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 bg-green-50 dark:bg-green-950/30 rounded-lg">
+                  <CheckCircle2 className="h-5 w-5 text-green-600 dark:text-green-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                  <div>
+                    <h3 className="font-semibold text-sm text-gray-900 dark:text-white">Autoavaliação</h3>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Identifique lacunas no conhecimento e acompanhe seu progresso ao longo do período.</p>
+                  </div>
+                </div>
+                <div className="flex items-start gap-3 p-3 bg-amber-50 dark:bg-amber-950/30 rounded-lg">
+                  <Lightbulb className="h-5 w-5 text-amber-600 dark:text-amber-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                  <div>
+                    <h3 className="font-semibold text-sm text-gray-900 dark:text-white">Aprendizado Ativo</h3>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Use a IA para explicar respostas e aprofundar o entendimento dos temas.</p>
+                  </div>
+                </div>
+              </div>
+            </section>
+
+            {/* Destaques por Período */}
+            <section aria-labelledby="destaques-heading" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+              <h2 id="destaques-heading" className="sr-only">Simulados disponíveis por período</h2>
+              <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-5 text-white shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-blue-100 text-sm font-medium">1º Período</p>
+                    <p className="text-3xl font-bold mt-1">5 simulados</p>
+                    <p className="text-blue-100 text-xs mt-2">SOI, HAM, IESC, MCM + Integradora</p>
+                  </div>
+                  <div className="text-5xl opacity-80" aria-hidden="true">📘</div>
+                </div>
+              </div>
+              <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-5 text-white shadow-lg">
+                <div className="flex items-center justify-between">
+                  <div>
+                    <p className="text-purple-100 text-sm font-medium">2º Período</p>
+                    <p className="text-3xl font-bold mt-1">5 simulados</p>
+                    <p className="text-purple-100 text-xs mt-2">SOI, HAM, IESC, MCM + Integradora</p>
+                  </div>
+                  <div className="text-5xl opacity-80" aria-hidden="true">📗</div>
+                </div>
+              </div>
+            </section>
+
             {/* Seções dos Períodos */}
             {PERIODOS.map((periodo) => (
               <section key={periodo.numero} aria-labelledby={`periodo-${periodo.numero}`}>
@@ -268,24 +331,65 @@ const Simulados = () => {
               </section>
             ))}
 
-            {/* Dica */}
-            <aside
-              role="note"
-              aria-label="Dica de estudo"
-              className="bg-gradient-to-r from-blue-50 to-purple-50 dark:from-blue-950/30 dark:to-purple-950/30 border border-blue-200 dark:border-blue-800 rounded-xl p-4 sm:p-5"
-            >
-              <div className="flex items-start gap-3">
-                <BookOpen className="h-5 w-5 sm:h-6 sm:w-6 text-blue-600 dark:text-blue-400 flex-shrink-0 mt-0.5" aria-hidden="true" />
-                <div>
-                  <h2 className="font-semibold text-gray-900 dark:text-white mb-1 text-sm sm:text-base">
-                    Dica de Estudo
-                  </h2>
-                  <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 leading-relaxed">
-                    Os simulados são gerados pelo Perplexity AI. Após responder, peça explicações detalhadas das questões que errou para consolidar o aprendizado.
-                  </p>
+            {/* Seção de Orientações Práticas */}
+            <section aria-labelledby="orientacoes-heading" className="bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-800/80 dark:to-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 sm:p-6 shadow-sm">
+              <h2 id="orientacoes-heading" className="text-xl font-bold text-gray-900 dark:text-white mb-5 flex items-center gap-2">
+                <BookOpen className="h-5 w-5 text-indigo-600 dark:text-indigo-400" aria-hidden="true" />
+                Orientações Práticas de Estudo
+              </h2>
+
+              <div className="space-y-4">
+                {/* Passo 1 */}
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-blue-600 text-white flex items-center justify-center font-bold text-sm">1</div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 dark:text-white text-sm">Escolha o simulado da disciplina</h3>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Selecione o módulo que deseja revisar. Comece pelas disciplinas com maior dificuldade ou próximas da prova.</p>
+                  </div>
+                </div>
+
+                {/* Passo 2 */}
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-purple-600 text-white flex items-center justify-center font-bold text-sm">2</div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 dark:text-white text-sm">Responda sem consultar material</h3>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Simule condições reais de prova. Marque as questões que teve dúvida para revisão posterior.</p>
+                  </div>
+                </div>
+
+                {/* Passo 3 */}
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-green-600 text-white flex items-center justify-center font-bold text-sm">3</div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 dark:text-white text-sm">Peça explicações detalhadas à IA</h3>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">Após finalizar, solicite ao Perplexity explicações das questões erradas. Pergunte: "Explique por que a alternativa X está correta".</p>
+                  </div>
+                </div>
+
+                {/* Passo 4 */}
+                <div className="flex gap-4">
+                  <div className="flex-shrink-0 w-8 h-8 rounded-full bg-amber-600 text-white flex items-center justify-center font-bold text-sm">4</div>
+                  <div>
+                    <h3 className="font-semibold text-gray-900 dark:text-white text-sm">Refaça após alguns dias</h3>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">A repetição espaçada consolida a memória. Refaça os simulados após 3-5 dias para verificar a retenção.</p>
+                  </div>
                 </div>
               </div>
-            </aside>
+
+              {/* Dica extra */}
+              <div className="mt-5 p-4 bg-white dark:bg-gray-900/50 rounded-lg border border-blue-200 dark:border-blue-800">
+                <div className="flex items-start gap-3">
+                  <Lightbulb className="h-5 w-5 text-amber-500 flex-shrink-0 mt-0.5" aria-hidden="true" />
+                  <div>
+                    <p className="font-semibold text-gray-900 dark:text-white text-sm">Dica Pro</p>
+                    <p className="text-xs text-gray-600 dark:text-gray-400 mt-1">
+                      Combine os simulados com a <Link to="/focus-zone" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">Focus Zone</Link> para sessões de estudo mais produtivas.
+                      Use também os <Link to="/prompts" className="text-blue-600 dark:text-blue-400 hover:underline font-medium">prompts da biblioteca</Link> para aprofundar temas específicos.
+                    </p>
+                  </div>
+                </div>
+              </div>
+            </section>
 
             {/* Footer */}
             <footer className="text-center pt-6 sm:pt-8 pb-4 border-t border-gray-200 dark:border-gray-700">
