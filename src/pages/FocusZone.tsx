@@ -2,8 +2,6 @@ import { useRef, useState, useEffect, useCallback } from "react";
 import { useNavigate } from "react-router-dom";
 import {
   X,
-  Volume2,
-  VolumeX,
   Play,
   Pause,
   Plus,
@@ -13,8 +11,7 @@ import {
   ListTodo,
   Trophy,
   Settings,
-  RotateCcw,
-  Loader2
+  RotateCcw
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { SEOHead } from "@/components/SEOHead";
@@ -40,66 +37,6 @@ interface PomodoroSettings {
   longBreak: number;          // Pausa longa em minutos
   cyclesBeforeLongBreak: number; // Ciclos antes da pausa longa
 }
-
-// Categorias de áudio para foco e estudo
-// 'generated' = sons gerados via Web Audio API (100% offline, sempre funciona)
-// 'silent' = modo silencioso
-type AudioCategory = 'generated' | 'silent';
-type NoiseType = 'white' | 'pink' | 'brown' | null;
-
-interface AudioStation {
-  name: string;
-  color: string;
-  category: AudioCategory;
-  noiseType?: NoiseType; // Tipo de ruído para geração via Web Audio API
-}
-
-// Estações de áudio disponíveis
-// Todos os sons são gerados via Web Audio API - funcionam 100% offline
-const STATIONS: AudioStation[] = [
-  {
-    name: "Ruído Branco",
-    color: "from-gray-400/20 to-slate-400/20",
-    category: 'generated',
-    noiseType: 'white'
-  },
-  {
-    name: "Ruído Rosa",
-    color: "from-pink-300/20 to-rose-300/20",
-    category: 'generated',
-    noiseType: 'pink'
-  },
-  {
-    name: "Ruído Marrom",
-    color: "from-amber-700/20 to-orange-800/20",
-    category: 'generated',
-    noiseType: 'brown'
-  },
-  {
-    name: "Silêncio",
-    color: "from-slate-300/20 to-gray-300/20",
-    category: 'silent'
-  }
-];
-
-// Labels das categorias para exibição
-const CATEGORY_LABELS: Record<AudioCategory, string> = {
-  generated: '🎧 100% Offline',
-  silent: '🔇 Silêncio'
-};
-
-// Descrições dos tipos de ruído
-const NOISE_DESCRIPTIONS: Record<string, string> = {
-  white: 'Todas as frequências - ideal para mascarar distrações',
-  pink: 'Frequências graves suaves - mais relaxante',
-  brown: 'Frequências muito graves - como ondas do mar'
-};
-
-// Status do player de áudio
-type AudioStatus = 'idle' | 'loading' | 'playing' | 'error';
-
-// Áudio de notificação
-const ALARM_SOUND = "https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg";
 
 // LocalStorage keys
 const TASKS_STORAGE_KEY = 'focuszone_tasks';
@@ -155,134 +92,6 @@ export default function FocusZone() {
   const [isRunning, setIsRunning] = useState(false);
   const [completedCycles, setCompletedCycles] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
-  const audioAlarmRef = useRef<HTMLAudioElement>(null);
-
-  // ========== Estados do Player ==========
-  const [stationIndex, setStationIndex] = useState(0);
-  const [playing, setPlaying] = useState(false);
-  const [volume, setVolume] = useState(50);
-  const [audioStatus, setAudioStatus] = useState<AudioStatus>('idle');
-
-  // ========== Web Audio API para geração de ruído ==========
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const noiseSourceRef = useRef<AudioBufferSourceNode | null>(null);
-  const gainNodeRef = useRef<GainNode | null>(null);
-
-  // Criar buffer de ruído (white, pink ou brown)
-  const createNoiseBuffer = useCallback((type: NoiseType, sampleRate: number, duration: number): AudioBuffer | null => {
-    if (!type) return null;
-
-    const bufferSize = sampleRate * duration;
-    const buffer = audioContextRef.current?.createBuffer(1, bufferSize, sampleRate);
-    if (!buffer) return null;
-
-    const data = buffer.getChannelData(0);
-
-    if (type === 'white') {
-      // Ruído branco: valores aleatórios uniformes
-      for (let i = 0; i < bufferSize; i++) {
-        data[i] = Math.random() * 2 - 1;
-      }
-    } else if (type === 'pink') {
-      // Ruído rosa: filtragem para reduzir altas frequências
-      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
-      for (let i = 0; i < bufferSize; i++) {
-        const white = Math.random() * 2 - 1;
-        b0 = 0.99886 * b0 + white * 0.0555179;
-        b1 = 0.99332 * b1 + white * 0.0750759;
-        b2 = 0.96900 * b2 + white * 0.1538520;
-        b3 = 0.86650 * b3 + white * 0.3104856;
-        b4 = 0.55000 * b4 + white * 0.5329522;
-        b5 = -0.7616 * b5 - white * 0.0168980;
-        data[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11;
-        b6 = white * 0.115926;
-      }
-    } else if (type === 'brown') {
-      // Ruído marrom (brownian): integração de ruído branco
-      let lastOut = 0;
-      for (let i = 0; i < bufferSize; i++) {
-        const white = Math.random() * 2 - 1;
-        lastOut = (lastOut + (0.02 * white)) / 1.02;
-        data[i] = lastOut * 3.5;
-      }
-    }
-
-    return buffer;
-  }, []);
-
-  // Iniciar geração de ruído via Web Audio API
-  const startNoiseGenerator = useCallback((type: NoiseType) => {
-    if (!type) return;
-
-    try {
-      // Criar ou retomar AudioContext
-      if (!audioContextRef.current) {
-        audioContextRef.current = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
-      }
-
-      const ctx = audioContextRef.current;
-
-      // Retomar se suspenso (política de autoplay)
-      if (ctx.state === 'suspended') {
-        ctx.resume();
-      }
-
-      // Parar fonte anterior se existir
-      if (noiseSourceRef.current) {
-        noiseSourceRef.current.stop();
-        noiseSourceRef.current.disconnect();
-      }
-
-      // Criar buffer de ruído (10 segundos, será repetido)
-      const buffer = createNoiseBuffer(type, ctx.sampleRate, 10);
-      if (!buffer) {
-        throw new Error('Falha ao criar buffer de áudio');
-      }
-
-      // Criar source node
-      const source = ctx.createBufferSource();
-      source.buffer = buffer;
-      source.loop = true;
-
-      // Criar gain node para controle de volume
-      if (!gainNodeRef.current) {
-        gainNodeRef.current = ctx.createGain();
-        gainNodeRef.current.connect(ctx.destination);
-      }
-      gainNodeRef.current.gain.value = volume / 100;
-
-      // Conectar e iniciar
-      source.connect(gainNodeRef.current);
-      source.start();
-      noiseSourceRef.current = source;
-
-      setAudioStatus('playing');
-      console.log(`[Audio] Ruído ${type} gerado via Web Audio API`);
-    } catch (error) {
-      console.error('[Audio] Erro ao gerar ruído:', error);
-      setAudioStatus('error');
-    }
-  }, [createNoiseBuffer, volume]);
-
-  // Parar geração de ruído
-  const stopNoiseGenerator = useCallback(() => {
-    if (noiseSourceRef.current) {
-      try {
-        noiseSourceRef.current.stop();
-        noiseSourceRef.current.disconnect();
-      } catch {
-        // Ignorar erros ao parar
-      }
-      noiseSourceRef.current = null;
-    }
-  }, []);
-
-  // Atualizar volume do gerador de ruído
-  useEffect(() => {
-    if (gainNodeRef.current) {
-      gainNodeRef.current.gain.value = volume / 100;
-    }
-  }, [volume]);
 
   // ========== Estados do Checklist ==========
   // Inicializar tarefas diretamente do localStorage para evitar race condition
@@ -419,11 +228,6 @@ export default function FocusZone() {
   const handleTimerComplete = useCallback(() => {
     setIsRunning(false);
 
-    if (audioAlarmRef.current) {
-      audioAlarmRef.current.currentTime = 0;
-      audioAlarmRef.current.play();
-    }
-
     if (mode === 'focus') {
       const newCycles = completedCycles + 1;
       setCompletedCycles(newCycles);
@@ -488,84 +292,14 @@ export default function FocusZone() {
   const resetTimer = () => {
     setIsRunning(false);
     setTimer(getDuration(mode));
-    if (audioAlarmRef.current) {
-      audioAlarmRef.current.pause();
-      audioAlarmRef.current.currentTime = 0;
-    }
   };
-
-  // ========== Funções do Player ==========
-
-  // Obter estação atual
-  const currentStation = STATIONS[stationIndex];
-
-  // Mudar para próxima estação
-  const nextStation = useCallback(() => {
-    stopNoiseGenerator();
-    setStationIndex((idx) => (idx + 1) % STATIONS.length);
-    setPlaying(false);
-    setAudioStatus('idle');
-  }, [stopNoiseGenerator]);
-
-  // Toggle play/pause
-  const togglePlay = useCallback(() => {
-    // Modo silencioso
-    if (currentStation.category === 'silent') {
-      stopNoiseGenerator();
-      setPlaying(prev => !prev);
-      setAudioStatus(playing ? 'idle' : 'playing');
-      return;
-    }
-
-    // Sons gerados via Web Audio API (100% offline)
-    if (currentStation.category === 'generated' && currentStation.noiseType) {
-      if (!playing) {
-        setAudioStatus('loading');
-        setTimeout(() => {
-          startNoiseGenerator(currentStation.noiseType!);
-          setPlaying(true);
-        }, 100);
-      } else {
-        stopNoiseGenerator();
-        setPlaying(false);
-        setAudioStatus('idle');
-      }
-    }
-  }, [playing, currentStation, startNoiseGenerator, stopNoiseGenerator]);
-
-  const toggleMute = useCallback(() => {
-    setVolume(volume > 0 ? 0 : 50);
-  }, [volume]);
 
   // ========== Cleanup ao sair da página ==========
   useEffect(() => {
-    const alarmElement = audioAlarmRef.current;
     const intervalId = intervalRef.current;
-    const noiseSource = noiseSourceRef.current;
-    const audioContext = audioContextRef.current;
-
     return () => {
-      // Parar alarme
-      if (alarmElement) {
-        alarmElement.pause();
-        alarmElement.currentTime = 0;
-      }
-      // Limpar timer
       if (intervalId) {
         clearInterval(intervalId);
-      }
-      // Parar gerador de ruído
-      if (noiseSource) {
-        try {
-          noiseSource.stop();
-          noiseSource.disconnect();
-        } catch {
-          // Ignorar erros
-        }
-      }
-      // Fechar AudioContext
-      if (audioContext && audioContext.state !== 'closed') {
-        audioContext.close();
       }
     };
   }, []);
@@ -703,12 +437,6 @@ export default function FocusZone() {
         e.preventDefault();
         setIsRunning((v) => !v);
       }
-      if (e.key.toLowerCase() === 'm') {
-        toggleMute();
-      }
-      if (e.key.toLowerCase() === 'p') {
-        togglePlay();
-      }
       if (e.key.toLowerCase() === 'n') {
         e.preventDefault();
         newTaskInputRef.current?.focus();
@@ -717,7 +445,7 @@ export default function FocusZone() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [volume, playing, editingTaskId, navigate, toggleMute, togglePlay]);
+  }, [editingTaskId, navigate]);
 
   // ========== Cálculos de renderização ==========
   const minutes = Math.floor(timer / 60).toString().padStart(2, "0");
@@ -745,7 +473,7 @@ export default function FocusZone() {
     <>
       <SEOHead
         title="Focus Zone - Pomodoro"
-        description="Timer Pomodoro com musica lo-fi para estudos focados. Gerencie tarefas e mantenha o foco durante suas sessoes de estudo."
+        description="Timer Pomodoro para estudos focados. Gerencie tarefas e mantenha o foco durante suas sessoes de estudo."
         canonical="https://andressamendes.github.io/medprompts/focus-zone"
         breadcrumbs={[
           { name: 'Home', url: 'https://andressamendes.github.io/medprompts/' },
@@ -833,7 +561,7 @@ export default function FocusZone() {
             <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
 
               {/* ============================================================ */}
-              {/* COLUNA ESQUERDA - Timer Pomodoro + Player (60% em desktop) */}
+              {/* COLUNA ESQUERDA - Timer Pomodoro (60% em desktop) */}
               {/* ============================================================ */}
               <div className="w-full lg:w-[60%]">
                 <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-5 sm:p-8 space-y-5 border border-white/20">
@@ -1001,131 +729,6 @@ export default function FocusZone() {
                     </button>
                   </div>
 
-                  {/* PLAYER DE ÁUDIO */}
-                  <div className={`bg-gradient-to-br ${currentStation.color} rounded-2xl shadow-inner p-4 sm:p-5 border border-blue-200/30 backdrop-blur-sm`}>
-                    <div className="flex flex-col gap-3 items-center">
-                      {/* Categoria badge */}
-                      <div className="flex flex-col items-center gap-1 text-xs">
-                        <span className="px-2 py-0.5 bg-white/50 rounded-full text-gray-700 font-medium">
-                          {CATEGORY_LABELS[currentStation.category]}
-                        </span>
-                        {currentStation.noiseType && NOISE_DESCRIPTIONS[currentStation.noiseType] && (
-                          <span className="text-gray-600 text-center">
-                            {NOISE_DESCRIPTIONS[currentStation.noiseType]}
-                          </span>
-                        )}
-                      </div>
-
-                      {/* Status indicator */}
-                      <div className="flex items-center gap-2">
-                        <div
-                          className={`w-2 h-2 rounded-full transition-colors ${
-                            audioStatus === 'playing' ? 'bg-green-500 animate-pulse' :
-                            audioStatus === 'loading' ? 'bg-yellow-500 animate-pulse' :
-                            audioStatus === 'error' ? 'bg-red-600' :
-                            'bg-gray-400'
-                          }`}
-                          aria-hidden="true"
-                        />
-                        <span className="sr-only">
-                          {audioStatus === 'playing' ? 'Reproduzindo:' :
-                           audioStatus === 'loading' ? 'Carregando:' :
-                           audioStatus === 'error' ? 'Erro:' :
-                           'Pausado:'}
-                        </span>
-                        <span className="font-semibold text-blue-900 text-sm sm:text-base">
-                          {currentStation.name}
-                        </span>
-                      </div>
-
-                      <div className="flex gap-2 sm:gap-3 w-full items-center">
-                        <button
-                          onClick={togglePlay}
-                          disabled={audioStatus === 'loading'}
-                          className={`flex-1 px-4 py-2.5 sm:px-6 sm:py-3 font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 ${
-                            currentStation.category === 'silent'
-                              ? playing
-                                ? 'bg-gray-600 hover:bg-gray-700 text-white hover:scale-105'
-                                : 'bg-gray-500 hover:bg-gray-600 text-white hover:scale-105'
-                              : audioStatus === 'loading'
-                              ? 'bg-blue-400 cursor-wait text-white'
-                              : 'bg-blue-600 hover:bg-blue-700 text-white hover:scale-105'
-                          }`}
-                          aria-label={
-                            currentStation.category === 'silent'
-                              ? playing ? 'Desativar modo silencioso' : 'Ativar modo silencioso'
-                              : audioStatus === 'loading' ? 'Carregando...'
-                              : playing ? 'Pausar áudio' : 'Reproduzir áudio'
-                          }
-                        >
-                          {currentStation.category === 'silent' ? (
-                            playing ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />
-                          ) : audioStatus === 'loading' ? (
-                            <Loader2 className="w-4 h-4 animate-spin" />
-                          ) : playing ? (
-                            <Pause className="w-4 h-4" />
-                          ) : (
-                            <Play className="w-4 h-4" />
-                          )}
-                          <span>
-                            {currentStation.category === 'silent'
-                              ? playing ? 'Silêncio Ativo' : 'Ativar Silêncio'
-                              : audioStatus === 'loading' ? 'Carregando...'
-                              : playing ? 'Pausar' : 'Play'}
-                          </span>
-                        </button>
-
-                        <button
-                          onClick={nextStation}
-                          className="px-4 py-2.5 sm:px-5 sm:py-3 bg-white hover:bg-gray-50 text-blue-700 font-semibold border-2 border-blue-300 rounded-xl shadow-lg transition-all hover:scale-105"
-                          aria-label="Próxima Estação"
-                        >
-                          Trocar
-                        </button>
-                      </div>
-
-                      {/* Controle de Volume - oculto no modo silencioso */}
-                      {currentStation.category !== 'silent' && (
-                        <div className="flex items-center gap-3 w-full">
-                          <button
-                            onClick={toggleMute}
-                            className="p-2 hover:bg-white/20 rounded-lg transition-all"
-                            aria-label={volume === 0 ? "Ativar som" : "Desativar som"}
-                          >
-                            {volume === 0 ? (
-                              <VolumeX className="w-5 h-5 text-blue-900" />
-                            ) : (
-                              <Volume2 className="w-5 h-5 text-blue-900" />
-                            )}
-                          </button>
-                          <input
-                            type="range"
-                            min="0"
-                            max="100"
-                            value={volume}
-                            onChange={(e) => setVolume(Number(e.target.value))}
-                            className="flex-1 h-2 bg-indigo-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                            aria-label="Controle de volume"
-                            aria-valuemin={0}
-                            aria-valuemax={100}
-                            aria-valuenow={volume}
-                            aria-valuetext={`${volume} por cento`}
-                          />
-                          <span className="text-blue-900 font-semibold text-sm min-w-[3ch]">
-                            {volume}%
-                          </span>
-                        </div>
-                      )}
-
-                      {/* Mensagem do modo silencioso */}
-                      {currentStation.category === 'silent' && (
-                        <p className="text-sm text-gray-600 text-center py-2">
-                          🧘 Modo de foco sem distrações sonoras
-                        </p>
-                      )}
-                    </div>
-                  </div>
-
                   {/* Atalhos de teclado como badges */}
                   <div className="pt-3 border-t border-gray-200">
                     <p className="text-xs text-gray-500 text-center mb-2">Atalhos de teclado</p>
@@ -1133,14 +736,6 @@ export default function FocusZone() {
                       <kbd className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 border border-gray-300 rounded-md text-xs font-mono shadow-sm">
                         <span className="text-gray-500">Space</span>
                         <span className="text-gray-700">Timer</span>
-                      </kbd>
-                      <kbd className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 border border-gray-300 rounded-md text-xs font-mono shadow-sm">
-                        <span className="text-gray-500">P</span>
-                        <span className="text-gray-700">Música</span>
-                      </kbd>
-                      <kbd className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 border border-gray-300 rounded-md text-xs font-mono shadow-sm">
-                        <span className="text-gray-500">M</span>
-                        <span className="text-gray-700">Mute</span>
                       </kbd>
                       <kbd className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 border border-gray-300 rounded-md text-xs font-mono shadow-sm">
                         <span className="text-gray-500">N</span>
@@ -1152,14 +747,6 @@ export default function FocusZone() {
                       </kbd>
                     </div>
                   </div>
-
-                  {/* Audio do alarme */}
-                  <audio
-                    ref={audioAlarmRef}
-                    src={ALARM_SOUND}
-                    preload="auto"
-                    className="sr-only"
-                  />
                 </div>
               </div>
 
