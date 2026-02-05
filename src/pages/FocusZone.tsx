@@ -11,7 +11,9 @@ import {
   Trash2,
   Edit2,
   ListTodo,
-  Trophy
+  Trophy,
+  Settings,
+  RotateCcw
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { SEOHead } from "@/components/SEOHead";
@@ -20,12 +22,23 @@ import { SEOHead } from "@/components/SEOHead";
 // CONSTANTES
 // ============================================================================
 
-// Durações em segundos (Técnica Pomodoro padrão)
-const FOCUS_DURATION = 25 * 60; // 25 minutos de foco
-const SHORT_BREAK = 5 * 60;     // 5 minutos de pausa curta
-const LONG_BREAK = 15 * 60;     // 15 minutos de pausa longa
+// Configurações padrão do Pomodoro (em minutos)
+const DEFAULT_SETTINGS: PomodoroSettings = {
+  focusDuration: 25,      // 25 minutos de foco
+  shortBreak: 5,          // 5 minutos de pausa curta
+  longBreak: 15,          // 15 minutos de pausa longa
+  cyclesBeforeLongBreak: 4 // 4 ciclos antes da pausa longa
+};
 
 type PomodoroMode = 'focus' | 'shortBreak' | 'longBreak';
+
+// Configurações customizáveis do Pomodoro
+interface PomodoroSettings {
+  focusDuration: number;      // Duração do foco em minutos
+  shortBreak: number;         // Pausa curta em minutos
+  longBreak: number;          // Pausa longa em minutos
+  cyclesBeforeLongBreak: number; // Ciclos antes da pausa longa
+}
 
 // Streams de música Lo-fi (SomaFM - confiáveis e com CORS)
 const STATIONS = [
@@ -51,6 +64,7 @@ const ALARM_SOUND = "https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg
 
 // LocalStorage keys
 const TASKS_STORAGE_KEY = 'focuszone_tasks';
+const SETTINGS_STORAGE_KEY = 'focuszone_settings';
 
 // ============================================================================
 // TIPOS
@@ -74,9 +88,31 @@ interface Task {
 export default function FocusZone() {
   const navigate = useNavigate();
 
+  // ========== Estados de Configurações ==========
+  const [settings, setSettings] = useState<PomodoroSettings>(() => {
+    try {
+      const stored = localStorage.getItem(SETTINGS_STORAGE_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        // Validar e mesclar com defaults para garantir todas as propriedades
+        return {
+          focusDuration: parsed.focusDuration ?? DEFAULT_SETTINGS.focusDuration,
+          shortBreak: parsed.shortBreak ?? DEFAULT_SETTINGS.shortBreak,
+          longBreak: parsed.longBreak ?? DEFAULT_SETTINGS.longBreak,
+          cyclesBeforeLongBreak: parsed.cyclesBeforeLongBreak ?? DEFAULT_SETTINGS.cyclesBeforeLongBreak
+        };
+      }
+    } catch {
+      // Silenciar erros de parsing
+    }
+    return DEFAULT_SETTINGS;
+  });
+  const [showSettings, setShowSettings] = useState(false);
+  const [tempSettings, setTempSettings] = useState<PomodoroSettings>(settings);
+
   // ========== Estados do Pomodoro ==========
   const [mode, setMode] = useState<PomodoroMode>('focus');
-  const [timer, setTimer] = useState(FOCUS_DURATION);
+  const [timer, setTimer] = useState(settings.focusDuration * 60);
   const [isRunning, setIsRunning] = useState(false);
   const [completedCycles, setCompletedCycles] = useState(0);
   const intervalRef = useRef<NodeJS.Timeout | null>(null);
@@ -159,14 +195,65 @@ export default function FocusZone() {
     };
   }, [tasks]);
 
+  // ========== Salvar configurações no localStorage ==========
+  const saveSettings = useCallback((newSettings: PomodoroSettings) => {
+    try {
+      localStorage.setItem(SETTINGS_STORAGE_KEY, JSON.stringify(newSettings));
+    } catch {
+      // Silenciar erros de storage
+    }
+  }, []);
+
+  // ========== Funções de Configurações ==========
+  const openSettings = () => {
+    setTempSettings(settings);
+    setShowSettings(true);
+  };
+
+  const closeSettings = () => {
+    setShowSettings(false);
+  };
+
+  const applySettings = () => {
+    // Validar valores mínimos
+    const validatedSettings: PomodoroSettings = {
+      focusDuration: Math.max(1, Math.min(120, tempSettings.focusDuration)),
+      shortBreak: Math.max(1, Math.min(60, tempSettings.shortBreak)),
+      longBreak: Math.max(1, Math.min(60, tempSettings.longBreak)),
+      cyclesBeforeLongBreak: Math.max(1, Math.min(10, tempSettings.cyclesBeforeLongBreak))
+    };
+
+    setSettings(validatedSettings);
+    saveSettings(validatedSettings);
+
+    // Atualizar timer se não estiver rodando
+    if (!isRunning) {
+      setTimer(getDurationFromSettings(mode, validatedSettings));
+    }
+
+    setShowSettings(false);
+    toast({
+      title: "Configurações salvas",
+      description: "As novas durações serão aplicadas no próximo ciclo."
+    });
+  };
+
+  const resetToDefaults = () => {
+    setTempSettings(DEFAULT_SETTINGS);
+  };
+
   // ========== Funções do Pomodoro ==========
 
-  const getDuration = (currentMode: PomodoroMode) => {
+  const getDurationFromSettings = (currentMode: PomodoroMode, currentSettings: PomodoroSettings) => {
     switch (currentMode) {
-      case 'focus': return FOCUS_DURATION;
-      case 'shortBreak': return SHORT_BREAK;
-      case 'longBreak': return LONG_BREAK;
+      case 'focus': return currentSettings.focusDuration * 60;
+      case 'shortBreak': return currentSettings.shortBreak * 60;
+      case 'longBreak': return currentSettings.longBreak * 60;
     }
+  };
+
+  const getDuration = (currentMode: PomodoroMode) => {
+    return getDurationFromSettings(currentMode, settings);
   };
 
   const handleTimerComplete = useCallback(() => {
@@ -181,18 +268,18 @@ export default function FocusZone() {
       const newCycles = completedCycles + 1;
       setCompletedCycles(newCycles);
 
-      if (newCycles % 4 === 0) {
+      if (newCycles % settings.cyclesBeforeLongBreak === 0) {
         setMode('longBreak');
-        setTimer(LONG_BREAK);
+        setTimer(settings.longBreak * 60);
       } else {
         setMode('shortBreak');
-        setTimer(SHORT_BREAK);
+        setTimer(settings.shortBreak * 60);
       }
     } else {
       setMode('focus');
-      setTimer(FOCUS_DURATION);
+      setTimer(settings.focusDuration * 60);
     }
-  }, [mode, completedCycles]);
+  }, [mode, completedCycles, settings]);
 
   // Decrementar timer e incrementar tempo de foco
   useEffect(() => {
@@ -424,8 +511,8 @@ export default function FocusZone() {
   const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
   const currentTask = tasks.find(t => t.status === 'in_progress');
 
-  // Calcular tempo total focado (ciclos completos * 25min)
-  const totalFocusMinutes = Math.floor((completedCycles * 25 * 60 + totalFocusTime) / 60);
+  // Calcular tempo total focado (ciclos completos * duração configurada)
+  const totalFocusMinutes = Math.floor((completedCycles * settings.focusDuration * 60 + totalFocusTime) / 60);
 
   // ========== Atalhos de teclado ==========
   useEffect(() => {
@@ -550,14 +637,24 @@ export default function FocusZone() {
             </div>
           </div>
 
-          <button
-            onClick={() => navigate(-1)}
-            className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all border border-white/20 hover:scale-105"
-            aria-label="Sair do Focus Zone"
-          >
-            <X className="w-4 h-4 sm:w-5 sm:h-5" />
-            <span className="text-sm sm:text-base hidden sm:inline">Sair</span>
-          </button>
+          <div className="flex items-center gap-2">
+            <button
+              onClick={openSettings}
+              className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all border border-white/20 hover:scale-105"
+              aria-label="Configurações do Pomodoro"
+            >
+              <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="text-sm sm:text-base hidden sm:inline">Config</span>
+            </button>
+            <button
+              onClick={() => navigate(-1)}
+              className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all border border-white/20 hover:scale-105"
+              aria-label="Sair do Focus Zone"
+            >
+              <X className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="text-sm sm:text-base hidden sm:inline">Sair</span>
+            </button>
+          </div>
         </header>
 
         {/* CONTEÚDO PRINCIPAL - Layout de duas colunas */}
@@ -728,7 +825,7 @@ export default function FocusZone() {
                     <button
                       className="bg-gray-100 hover:bg-gray-200 text-blue-700 font-semibold rounded-xl px-5 py-3 sm:px-6 sm:py-3 transition-all shadow-lg hover:scale-105"
                       onClick={resetTimer}
-                      aria-label={`Resetar timer para ${mode === 'focus' ? '25' : mode === 'shortBreak' ? '5' : '15'} minutos`}
+                      aria-label={`Resetar timer para ${mode === 'focus' ? settings.focusDuration : mode === 'shortBreak' ? settings.shortBreak : settings.longBreak} minutos`}
                     >
                       Reset
                     </button>
@@ -1052,7 +1149,7 @@ export default function FocusZone() {
                                     className={`h-full transition-all ${
                                       task.status === 'completed' ? 'bg-green-400' : 'bg-indigo-400'
                                     }`}
-                                    style={{ width: `${Math.min((task.focusTimeSpent / (25*60)) * 100, 100)}%` }}
+                                    style={{ width: `${Math.min((task.focusTimeSpent / (settings.focusDuration * 60)) * 100, 100)}%` }}
                                   />
                                 </div>
                                 <span className="text-[10px] text-gray-500 tabular-nums min-w-[40px]">
@@ -1102,6 +1199,157 @@ export default function FocusZone() {
           <span className="sr-only">Parabéns! Todas as tarefas foram concluídas!</span>
           <div className="absolute top-1/2 left-1/2 -translate-x-1/2 -translate-y-1/2">
             <div className="text-6xl animate-bounce" aria-hidden="true">🎉</div>
+          </div>
+        </div>
+      )}
+
+      {/* Modal de Configurações */}
+      {showSettings && (
+        <div
+          className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+          onClick={closeSettings}
+          role="dialog"
+          aria-modal="true"
+          aria-labelledby="settings-title"
+        >
+          <div
+            className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 space-y-6 animate-in zoom-in-95 duration-200"
+            onClick={(e) => e.stopPropagation()}
+          >
+            {/* Header do Modal */}
+            <div className="flex items-center justify-between">
+              <h2 id="settings-title" className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+                <Settings className="w-5 h-5 text-indigo-600" aria-hidden="true" />
+                Configurações do Pomodoro
+              </h2>
+              <button
+                onClick={closeSettings}
+                className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                aria-label="Fechar configurações"
+              >
+                <X className="w-5 h-5 text-gray-500" />
+              </button>
+            </div>
+
+            {/* Campos de Configuração */}
+            <div className="space-y-4">
+              {/* Duração do Foco */}
+              <div className="space-y-2">
+                <label htmlFor="focus-duration" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Duração do Foco (minutos)
+                </label>
+                <input
+                  id="focus-duration"
+                  type="number"
+                  min="1"
+                  max="120"
+                  value={tempSettings.focusDuration}
+                  onChange={(e) => setTempSettings(prev => ({ ...prev, focusDuration: parseInt(e.target.value) || 1 }))}
+                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:text-white"
+                  aria-describedby="focus-hint"
+                />
+                <p id="focus-hint" className="text-xs text-gray-500 dark:text-gray-400">
+                  Técnica Pomodoro recomenda 25 minutos (1-120 min)
+                </p>
+              </div>
+
+              {/* Pausa Curta */}
+              <div className="space-y-2">
+                <label htmlFor="short-break" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Pausa Curta (minutos)
+                </label>
+                <input
+                  id="short-break"
+                  type="number"
+                  min="1"
+                  max="60"
+                  value={tempSettings.shortBreak}
+                  onChange={(e) => setTempSettings(prev => ({ ...prev, shortBreak: parseInt(e.target.value) || 1 }))}
+                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:text-white"
+                  aria-describedby="short-break-hint"
+                />
+                <p id="short-break-hint" className="text-xs text-gray-500 dark:text-gray-400">
+                  Recomendado: 5 minutos (1-60 min)
+                </p>
+              </div>
+
+              {/* Pausa Longa */}
+              <div className="space-y-2">
+                <label htmlFor="long-break" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Pausa Longa (minutos)
+                </label>
+                <input
+                  id="long-break"
+                  type="number"
+                  min="1"
+                  max="60"
+                  value={tempSettings.longBreak}
+                  onChange={(e) => setTempSettings(prev => ({ ...prev, longBreak: parseInt(e.target.value) || 1 }))}
+                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:text-white"
+                  aria-describedby="long-break-hint"
+                />
+                <p id="long-break-hint" className="text-xs text-gray-500 dark:text-gray-400">
+                  Recomendado: 15 minutos (1-60 min)
+                </p>
+              </div>
+
+              {/* Ciclos antes da pausa longa */}
+              <div className="space-y-2">
+                <label htmlFor="cycles" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Ciclos antes da pausa longa
+                </label>
+                <input
+                  id="cycles"
+                  type="number"
+                  min="1"
+                  max="10"
+                  value={tempSettings.cyclesBeforeLongBreak}
+                  onChange={(e) => setTempSettings(prev => ({ ...prev, cyclesBeforeLongBreak: parseInt(e.target.value) || 1 }))}
+                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:text-white"
+                  aria-describedby="cycles-hint"
+                />
+                <p id="cycles-hint" className="text-xs text-gray-500 dark:text-gray-400">
+                  Recomendado: 4 ciclos (1-10 ciclos)
+                </p>
+              </div>
+            </div>
+
+            {/* Preview das configurações */}
+            <div className="bg-indigo-50 dark:bg-indigo-900/30 rounded-xl p-4 space-y-2">
+              <p className="text-sm font-medium text-indigo-700 dark:text-indigo-300">Resumo do ciclo:</p>
+              <p className="text-xs text-indigo-600 dark:text-indigo-400">
+                {tempSettings.cyclesBeforeLongBreak}× ({tempSettings.focusDuration} min foco + {tempSettings.shortBreak} min pausa) + {tempSettings.longBreak} min pausa longa
+              </p>
+              <p className="text-xs text-indigo-500 dark:text-indigo-500">
+                Total por bloco: {(tempSettings.focusDuration + tempSettings.shortBreak) * tempSettings.cyclesBeforeLongBreak + tempSettings.longBreak} min
+              </p>
+            </div>
+
+            {/* Botões de Ação */}
+            <div className="flex items-center justify-between pt-2">
+              <button
+                onClick={resetToDefaults}
+                className="flex items-center gap-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                aria-label="Restaurar configurações padrão"
+              >
+                <RotateCcw className="w-4 h-4" />
+                Padrão
+              </button>
+              <div className="flex gap-2">
+                <button
+                  onClick={closeSettings}
+                  className="px-4 py-2 text-sm text-gray-600 dark:text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+                >
+                  Cancelar
+                </button>
+                <button
+                  onClick={applySettings}
+                  className="px-4 py-2 text-sm bg-indigo-600 hover:bg-indigo-700 text-white rounded-lg transition-colors font-medium"
+                >
+                  Salvar
+                </button>
+              </div>
+            </div>
           </div>
         </div>
       )}
