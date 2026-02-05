@@ -44,35 +44,45 @@ interface PomodoroSettings {
   cyclesBeforeLongBreak: number; // Ciclos antes da pausa longa
 }
 
-// Streams de música Lo-fi (SomaFM - confiáveis e com CORS)
-// Cada estação tem URLs de fallback para redundância
+// Streams de música Lo-fi para foco e estudo
+// URLs atualizadas conforme documentação oficial SomaFM (ice5 = principal, ice1 = backup)
+// Fonte: https://somafm.com/groovesalad/directstreamlinks.html
 const STATIONS = [
   {
     name: "Groove Salad",
     urls: [
+      "https://ice5.somafm.com/groovesalad-128-mp3",
       "https://ice1.somafm.com/groovesalad-128-mp3",
-      "https://ice2.somafm.com/groovesalad-128-mp3",
-      "https://ice4.somafm.com/groovesalad-128-mp3"
+      "https://ice2.somafm.com/groovesalad-128-mp3"
     ],
     color: "from-amber-400/20 to-orange-400/20"
   },
   {
-    name: "Groove Salad Classic",
+    name: "Space Station",
     urls: [
-      "https://ice1.somafm.com/gsclassic-128-mp3",
-      "https://ice2.somafm.com/gsclassic-128-mp3",
-      "https://ice4.somafm.com/gsclassic-128-mp3"
+      "https://ice5.somafm.com/spacestation-128-mp3",
+      "https://ice1.somafm.com/spacestation-128-mp3",
+      "https://ice2.somafm.com/spacestation-128-mp3"
+    ],
+    color: "from-purple-400/20 to-pink-400/20"
+  },
+  {
+    name: "Drone Zone",
+    urls: [
+      "https://ice5.somafm.com/dronezone-128-mp3",
+      "https://ice1.somafm.com/dronezone-128-mp3",
+      "https://ice2.somafm.com/dronezone-128-mp3"
     ],
     color: "from-blue-400/20 to-cyan-400/20"
   },
   {
-    name: "Space Station",
+    name: "Deep Space One",
     urls: [
-      "https://ice1.somafm.com/spacestation-128-mp3",
-      "https://ice2.somafm.com/spacestation-128-mp3",
-      "https://ice4.somafm.com/spacestation-128-mp3"
+      "https://ice5.somafm.com/deepspaceone-128-mp3",
+      "https://ice1.somafm.com/deepspaceone-128-mp3",
+      "https://ice2.somafm.com/deepspaceone-128-mp3"
     ],
-    color: "from-purple-400/20 to-pink-400/20"
+    color: "from-indigo-400/20 to-violet-400/20"
   }
 ];
 
@@ -1163,7 +1173,6 @@ export default function FocusZone() {
                       aria-label={`Stream ${STATIONS[stationIndex].name}`}
                       className="sr-only"
                       preload="none"
-                      crossOrigin="anonymous"
                       onEnded={() => {
                         setPlaying(false);
                         setAudioStatus('idle');
