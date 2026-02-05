@@ -349,10 +349,10 @@ const GuiaIAs = () => {
           </Card>
 
           {/* Banner Secundário - Avisos Importantes */}
-          <Card className="bg-gradient-to-r from-amber-600 to-orange-600 text-white border-none shadow-xl">
+          <Card className="bg-gradient-to-r from-amber-600 to-orange-600 text-white border-none shadow-xl" role="region" aria-labelledby="avisos-heading">
             <CardContent className="p-6">
               <div className="space-y-3">
-                <h3 className="text-xl font-bold">⚠️ Avisos Importantes de 2026</h3>
+                <h2 id="avisos-heading" className="text-xl font-bold">⚠️ Avisos Importantes de 2026</h2>
                 <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
                   <div className="bg-white/10 rounded-lg p-4 backdrop-blur-sm">
                     <p className="font-semibold mb-1">🔄 GPT-4o será descontinuado</p>
@@ -363,6 +363,10 @@ const GuiaIAs = () => {
                     <p className="text-sm text-white/90">Previsão de lançamento: 15 de abril de 2026. Atualizações em breve.</p>
                   </div>
                 </div>
+                <p className="text-xs text-white/70 mt-2 flex items-center gap-1">
+                  <AlertCircle className="h-3 w-3" aria-hidden="true" />
+                  Datas são previsões baseadas em anúncios oficiais e podem mudar. Verifique fontes oficiais.
+                </p>
               </div>
             </CardContent>
           </Card>
@@ -396,13 +400,15 @@ const GuiaIAs = () => {
             <CardContent>
               <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {/* Filtro de Preço */}
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700">Por Preço</label>
-                  <div className="flex flex-wrap gap-2">
+                <fieldset className="space-y-2">
+                  <legend className="text-sm font-semibold text-gray-700">Por Preço</legend>
+                  <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Filtrar por preço">
                     <Button
                       variant={filtroPreco === "todos" ? "default" : "outline"}
                       size="sm"
                       onClick={() => setFiltroPreco("todos")}
+                      role="radio"
+                      aria-checked={filtroPreco === "todos"}
                       className={filtroPreco === "todos" ? "bg-blue-600 hover:bg-blue-700" : ""}
                     >
                       Todos
@@ -411,6 +417,8 @@ const GuiaIAs = () => {
                       variant={filtroPreco === "gratuito" ? "default" : "outline"}
                       size="sm"
                       onClick={() => setFiltroPreco("gratuito")}
+                      role="radio"
+                      aria-checked={filtroPreco === "gratuito"}
                       className={filtroPreco === "gratuito" ? "bg-green-600 hover:bg-green-700" : ""}
                     >
                       Gratuitos
@@ -419,21 +427,25 @@ const GuiaIAs = () => {
                       variant={filtroPreco === "pago" ? "default" : "outline"}
                       size="sm"
                       onClick={() => setFiltroPreco("pago")}
+                      role="radio"
+                      aria-checked={filtroPreco === "pago"}
                       className={filtroPreco === "pago" ? "bg-blue-600 hover:bg-blue-700" : ""}
                     >
                       Pagos
                     </Button>
                   </div>
-                </div>
+                </fieldset>
 
                 {/* Filtro de Categoria */}
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700">Por Categoria</label>
-                  <div className="flex flex-wrap gap-2">
+                <fieldset className="space-y-2">
+                  <legend className="text-sm font-semibold text-gray-700">Por Categoria</legend>
+                  <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Filtrar por categoria">
                     <Button
                       variant={filtroCategoria === "todos" ? "default" : "outline"}
                       size="sm"
                       onClick={() => setFiltroCategoria("todos")}
+                      role="radio"
+                      aria-checked={filtroCategoria === "todos"}
                       className={filtroCategoria === "todos" ? "bg-blue-600 hover:bg-blue-700" : ""}
                     >
                       Todas
@@ -442,6 +454,8 @@ const GuiaIAs = () => {
                       variant={filtroCategoria === "saude" ? "default" : "outline"}
                       size="sm"
                       onClick={() => setFiltroCategoria("saude")}
+                      role="radio"
+                      aria-checked={filtroCategoria === "saude"}
                       className={filtroCategoria === "saude" ? "bg-rose-600 hover:bg-rose-700" : ""}
                     >
                       Saúde
@@ -450,6 +464,8 @@ const GuiaIAs = () => {
                       variant={filtroCategoria === "raciocinio" ? "default" : "outline"}
                       size="sm"
                       onClick={() => setFiltroCategoria("raciocinio")}
+                      role="radio"
+                      aria-checked={filtroCategoria === "raciocinio"}
                       className={filtroCategoria === "raciocinio" ? "bg-orange-600 hover:bg-orange-700" : ""}
                     >
                       Raciocínio
@@ -458,6 +474,8 @@ const GuiaIAs = () => {
                       variant={filtroCategoria === "estudos" ? "default" : "outline"}
                       size="sm"
                       onClick={() => setFiltroCategoria("estudos")}
+                      role="radio"
+                      aria-checked={filtroCategoria === "estudos"}
                       className={filtroCategoria === "estudos" ? "bg-purple-600 hover:bg-purple-700" : ""}
                     >
                       Estudos
@@ -466,21 +484,25 @@ const GuiaIAs = () => {
                       variant={filtroCategoria === "pesquisa" ? "default" : "outline"}
                       size="sm"
                       onClick={() => setFiltroCategoria("pesquisa")}
+                      role="radio"
+                      aria-checked={filtroCategoria === "pesquisa"}
                       className={filtroCategoria === "pesquisa" ? "bg-teal-600 hover:bg-teal-700" : ""}
                     >
                       Pesquisa
                     </Button>
                   </div>
-                </div>
+                </fieldset>
 
                 {/* Filtro de Novidade */}
-                <div className="space-y-2">
-                  <label className="text-sm font-semibold text-gray-700">Por Lançamento</label>
-                  <div className="flex flex-wrap gap-2">
+                <fieldset className="space-y-2">
+                  <legend className="text-sm font-semibold text-gray-700">Por Lançamento</legend>
+                  <div className="flex flex-wrap gap-2" role="radiogroup" aria-label="Filtrar por lançamento">
                     <Button
                       variant={filtroNovidade === "todos" ? "default" : "outline"}
                       size="sm"
                       onClick={() => setFiltroNovidade("todos")}
+                      role="radio"
+                      aria-checked={filtroNovidade === "todos"}
                       className={filtroNovidade === "todos" ? "bg-blue-600 hover:bg-blue-700" : ""}
                     >
                       Todos
@@ -489,6 +511,8 @@ const GuiaIAs = () => {
                       variant={filtroNovidade === "novo" ? "default" : "outline"}
                       size="sm"
                       onClick={() => setFiltroNovidade("novo")}
+                      role="radio"
+                      aria-checked={filtroNovidade === "novo"}
                       className={filtroNovidade === "novo" ? "bg-green-600 hover:bg-green-700" : ""}
                     >
                       Novos 2026
@@ -497,12 +521,14 @@ const GuiaIAs = () => {
                       variant={filtroNovidade === "atualizado" ? "default" : "outline"}
                       size="sm"
                       onClick={() => setFiltroNovidade("atualizado")}
+                      role="radio"
+                      aria-checked={filtroNovidade === "atualizado"}
                       className={filtroNovidade === "atualizado" ? "bg-blue-600 hover:bg-blue-700" : ""}
                     >
                       Atualizados
                     </Button>
                   </div>
-                </div>
+                </fieldset>
               </div>
 
               {/* Contador de resultados */}
@@ -686,14 +712,14 @@ const GuiaIAs = () => {
                       
                       <CardContent className="space-y-5">
                         <div>
-                          <h4 className="font-bold text-sm mb-3 flex items-center gap-2 text-gray-900">
+                          <h3 className="font-bold text-sm mb-3 flex items-center gap-2 text-gray-900">
                             <Zap className="h-4 w-4 text-indigo-600" aria-hidden="true" />
                             Pontos Fortes:
-                          </h4>
+                          </h3>
                           <ul className="space-y-2">
                             {ia.pros.map((pro, i) => (
                               <li key={i} className="text-sm text-gray-700 flex items-start gap-2">
-                                <span className="text-indigo-600 font-bold mt-0.5">✓</span>
+                                <span className="text-indigo-600 font-bold mt-0.5" aria-hidden="true">✓</span>
                                 <span>{pro}</span>
                               </li>
                             ))}
@@ -701,10 +727,10 @@ const GuiaIAs = () => {
                         </div>
 
                         <div>
-                          <h4 className="font-bold text-sm mb-2 flex items-center gap-2 text-gray-900">
+                          <h3 className="font-bold text-sm mb-2 flex items-center gap-2 text-gray-900">
                             <BookOpen className="h-4 w-4 text-purple-600" aria-hidden="true" />
                             Ideal Para:
-                          </h4>
+                          </h3>
                           <p className="text-sm text-gray-700 leading-relaxed">{ia.ideal}</p>
                         </div>
 
