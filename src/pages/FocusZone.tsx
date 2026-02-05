@@ -45,66 +45,45 @@ interface PomodoroSettings {
 }
 
 // Categorias de áudio para foco e estudo
-// Inclui streams (podem ser bloqueados) e arquivos estáticos (sempre funcionam)
-type AudioCategory = 'ambient' | 'nature' | 'radio' | 'silent';
+// 'generated' = sons gerados via Web Audio API (100% offline, sempre funciona)
+// 'radio' = streams externos (podem ser bloqueados por firewalls)
+// 'silent' = modo silencioso
+type AudioCategory = 'generated' | 'radio' | 'silent';
+type NoiseType = 'white' | 'pink' | 'brown' | null;
 
 interface AudioStation {
   name: string;
   urls: string[];
   color: string;
   category: AudioCategory;
-  isLoop?: boolean; // Se true, faz loop no arquivo
+  noiseType?: NoiseType; // Tipo de ruído para geração via Web Audio API
+  isLoop?: boolean;
 }
 
-// Sons ambiente e natureza - arquivos MP3 que funcionam em qualquer rede
-// Fontes: Archive.org, Freesound (Creative Commons)
+// Estações de áudio disponíveis
+// Sons gerados via Web Audio API funcionam 100% offline - sem dependência de URLs
 const STATIONS: AudioStation[] = [
-  // === SONS AMBIENTE (arquivos estáticos - sempre funcionam) ===
+  // === SONS GERADOS (Web Audio API - 100% offline, sempre funciona) ===
   {
     name: "Ruído Branco",
-    urls: [
-      "https://cdn.freesound.org/previews/568/568921_2094700-lq.mp3"
-    ],
+    urls: [],
     color: "from-gray-400/20 to-slate-400/20",
-    category: 'ambient',
-    isLoop: true
+    category: 'generated',
+    noiseType: 'white'
   },
   {
     name: "Ruído Rosa",
-    urls: [
-      "https://cdn.freesound.org/previews/131/131048_2337290-lq.mp3"
-    ],
+    urls: [],
     color: "from-pink-300/20 to-rose-300/20",
-    category: 'ambient',
-    isLoop: true
-  },
-  // === SONS DA NATUREZA (arquivos estáticos - sempre funcionam) ===
-  {
-    name: "Chuva Suave",
-    urls: [
-      "https://cdn.freesound.org/previews/346/346170_2623437-lq.mp3"
-    ],
-    color: "from-blue-400/20 to-cyan-400/20",
-    category: 'nature',
-    isLoop: true
+    category: 'generated',
+    noiseType: 'pink'
   },
   {
-    name: "Floresta",
-    urls: [
-      "https://cdn.freesound.org/previews/361/361625_3161595-lq.mp3"
-    ],
-    color: "from-green-400/20 to-emerald-400/20",
-    category: 'nature',
-    isLoop: true
-  },
-  {
-    name: "Ondas do Mar",
-    urls: [
-      "https://cdn.freesound.org/previews/510/510454_10201642-lq.mp3"
-    ],
-    color: "from-blue-500/20 to-teal-400/20",
-    category: 'nature',
-    isLoop: true
+    name: "Ruído Marrom",
+    urls: [],
+    color: "from-amber-700/20 to-orange-800/20",
+    category: 'generated',
+    noiseType: 'brown'
   },
   // === RÁDIO STREAMING (pode ser bloqueado por firewalls) ===
   {
@@ -136,10 +115,16 @@ const STATIONS: AudioStation[] = [
 
 // Labels das categorias para exibição
 const CATEGORY_LABELS: Record<AudioCategory, string> = {
-  ambient: '🎧 Ambiente',
-  nature: '🌿 Natureza',
-  radio: '📻 Rádio',
+  generated: '🎧 Gerado (Offline)',
+  radio: '📻 Rádio (Online)',
   silent: '🔇 Silêncio'
+};
+
+// Descrições dos tipos de ruído
+const NOISE_DESCRIPTIONS: Record<string, string> = {
+  white: 'Todas as frequências - ideal para mascarar distrações',
+  pink: 'Frequências graves suaves - mais relaxante',
+  brown: 'Frequências muito graves - como ondas do mar'
 };
 
 // Status do player de áudio
@@ -214,6 +199,129 @@ export default function FocusZone() {
   const [retryCount, setRetryCount] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
   const MAX_RETRIES = 3;
+
+  // ========== Web Audio API para geração de ruído ==========
+  const audioContextRef = useRef<AudioContext | null>(null);
+  const noiseSourceRef = useRef<AudioBufferSourceNode | null>(null);
+  const gainNodeRef = useRef<GainNode | null>(null);
+
+  // Criar buffer de ruído (white, pink ou brown)
+  const createNoiseBuffer = useCallback((type: NoiseType, sampleRate: number, duration: number): AudioBuffer | null => {
+    if (!type) return null;
+
+    const bufferSize = sampleRate * duration;
+    const buffer = audioContextRef.current?.createBuffer(1, bufferSize, sampleRate);
+    if (!buffer) return null;
+
+    const data = buffer.getChannelData(0);
+
+    if (type === 'white') {
+      // Ruído branco: valores aleatórios uniformes
+      for (let i = 0; i < bufferSize; i++) {
+        data[i] = Math.random() * 2 - 1;
+      }
+    } else if (type === 'pink') {
+      // Ruído rosa: filtragem para reduzir altas frequências
+      let b0 = 0, b1 = 0, b2 = 0, b3 = 0, b4 = 0, b5 = 0, b6 = 0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        b0 = 0.99886 * b0 + white * 0.0555179;
+        b1 = 0.99332 * b1 + white * 0.0750759;
+        b2 = 0.96900 * b2 + white * 0.1538520;
+        b3 = 0.86650 * b3 + white * 0.3104856;
+        b4 = 0.55000 * b4 + white * 0.5329522;
+        b5 = -0.7616 * b5 - white * 0.0168980;
+        data[i] = (b0 + b1 + b2 + b3 + b4 + b5 + b6 + white * 0.5362) * 0.11;
+        b6 = white * 0.115926;
+      }
+    } else if (type === 'brown') {
+      // Ruído marrom (brownian): integração de ruído branco
+      let lastOut = 0;
+      for (let i = 0; i < bufferSize; i++) {
+        const white = Math.random() * 2 - 1;
+        lastOut = (lastOut + (0.02 * white)) / 1.02;
+        data[i] = lastOut * 3.5;
+      }
+    }
+
+    return buffer;
+  }, []);
+
+  // Iniciar geração de ruído via Web Audio API
+  const startNoiseGenerator = useCallback((type: NoiseType) => {
+    if (!type) return;
+
+    try {
+      // Criar ou retomar AudioContext
+      if (!audioContextRef.current) {
+        audioContextRef.current = new (window.AudioContext || (window as typeof window & { webkitAudioContext: typeof AudioContext }).webkitAudioContext)();
+      }
+
+      const ctx = audioContextRef.current;
+
+      // Retomar se suspenso (política de autoplay)
+      if (ctx.state === 'suspended') {
+        ctx.resume();
+      }
+
+      // Parar fonte anterior se existir
+      if (noiseSourceRef.current) {
+        noiseSourceRef.current.stop();
+        noiseSourceRef.current.disconnect();
+      }
+
+      // Criar buffer de ruído (10 segundos, será repetido)
+      const buffer = createNoiseBuffer(type, ctx.sampleRate, 10);
+      if (!buffer) {
+        throw new Error('Falha ao criar buffer de áudio');
+      }
+
+      // Criar source node
+      const source = ctx.createBufferSource();
+      source.buffer = buffer;
+      source.loop = true;
+
+      // Criar gain node para controle de volume
+      if (!gainNodeRef.current) {
+        gainNodeRef.current = ctx.createGain();
+        gainNodeRef.current.connect(ctx.destination);
+      }
+      gainNodeRef.current.gain.value = volume / 100;
+
+      // Conectar e iniciar
+      source.connect(gainNodeRef.current);
+      source.start();
+      noiseSourceRef.current = source;
+
+      setAudioStatus('playing');
+      setAudioError(null);
+      console.log(`[Audio] Ruído ${type} gerado via Web Audio API`);
+    } catch (error) {
+      console.error('[Audio] Erro ao gerar ruído:', error);
+      setAudioStatus('error');
+      setAudioError('Erro ao gerar áudio. Tente novamente.');
+    }
+  }, [createNoiseBuffer, volume]);
+
+  // Parar geração de ruído
+  const stopNoiseGenerator = useCallback(() => {
+    if (noiseSourceRef.current) {
+      try {
+        noiseSourceRef.current.stop();
+        noiseSourceRef.current.disconnect();
+      } catch {
+        // Ignorar erros ao parar
+      }
+      noiseSourceRef.current = null;
+    }
+  }, []);
+
+  // Atualizar volume do gerador de ruído
+  useEffect(() => {
+    if (gainNodeRef.current) {
+      gainNodeRef.current.gain.value = volume / 100;
+    }
+  }, [volume]);
 
   // ========== Estados do Checklist ==========
   // Inicializar tarefas diretamente do localStorage para evitar race condition
@@ -456,6 +564,9 @@ export default function FocusZone() {
 
   // Mudar para próxima estação
   const nextStation = useCallback(() => {
+    // Parar gerador de ruído se estiver ativo
+    stopNoiseGenerator();
+
     setStationIndex((idx) => (idx + 1) % STATIONS.length);
     setUrlIndex(0); // Reset URL index
     setPlaying(false);
@@ -466,7 +577,7 @@ export default function FocusZone() {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
     }
-  }, []);
+  }, [stopNoiseGenerator]);
 
   // Handler de erro do áudio
   const handleAudioError = useCallback((event: React.SyntheticEvent<HTMLAudioElement, Event>) => {
@@ -553,27 +664,40 @@ export default function FocusZone() {
   const togglePlay = useCallback(async () => {
     // Modo silencioso - não reproduz nada
     if (currentStation.category === 'silent') {
-      setPlaying(prev => !prev);
-      setAudioStatus(playing ? 'idle' : 'playing');
+      stopNoiseGenerator();
       if (audioRef.current) {
         audioRef.current.pause();
+      }
+      setPlaying(prev => !prev);
+      setAudioStatus(playing ? 'idle' : 'playing');
+      return;
+    }
+
+    // Sons gerados via Web Audio API (100% offline)
+    if (currentStation.category === 'generated' && currentStation.noiseType) {
+      if (!playing) {
+        setAudioStatus('loading');
+        setAudioError(null);
+        // Pequeno delay para mostrar loading
+        setTimeout(() => {
+          startNoiseGenerator(currentStation.noiseType!);
+          setPlaying(true);
+        }, 100);
+      } else {
+        stopNoiseGenerator();
+        setPlaying(false);
+        setAudioStatus('idle');
       }
       return;
     }
 
+    // Streams de rádio (requerem conexão)
     if (!audioRef.current) return;
 
     try {
       if (!playing) {
         setAudioStatus('loading');
         setAudioError(null);
-
-        // Configurar loop para arquivos estáticos
-        if (currentStation.isLoop) {
-          audioRef.current.loop = true;
-        } else {
-          audioRef.current.loop = false;
-        }
 
         // Garantir que a URL está carregada
         if (audioRef.current.readyState < 2) {
@@ -590,12 +714,20 @@ export default function FocusZone() {
     } catch (error) {
       handlePlayError(error as Error);
     }
-  }, [playing, handlePlayError, currentStation]);
+  }, [playing, handlePlayError, currentStation, startNoiseGenerator, stopNoiseGenerator]);
 
   // Retry manual após erro
   const retryAudio = useCallback(() => {
     // Não faz nada no modo silencioso
     if (currentStation.category === 'silent') return;
+
+    // Para sons gerados, apenas reinicia
+    if (currentStation.category === 'generated' && currentStation.noiseType) {
+      stopNoiseGenerator();
+      startNoiseGenerator(currentStation.noiseType);
+      setPlaying(true);
+      return;
+    }
 
     setRetryCount(0);
     setUrlIndex(0);
@@ -611,7 +743,7 @@ export default function FocusZone() {
         })
         .catch(handlePlayError);
     }
-  }, [handlePlayError, currentStation]);
+  }, [handlePlayError, currentStation, startNoiseGenerator, stopNoiseGenerator]);
 
   // Handlers de eventos do áudio
   const handleAudioLoadStart = useCallback(() => {
@@ -688,6 +820,8 @@ export default function FocusZone() {
     const audioElement = audioRef.current;
     const alarmElement = audioAlarmRef.current;
     const intervalId = intervalRef.current;
+    const noiseSource = noiseSourceRef.current;
+    const audioContext = audioContextRef.current;
 
     return () => {
       // Parar música ao desmontar componente
@@ -703,6 +837,19 @@ export default function FocusZone() {
       // Limpar timer
       if (intervalId) {
         clearInterval(intervalId);
+      }
+      // Parar gerador de ruído
+      if (noiseSource) {
+        try {
+          noiseSource.stop();
+          noiseSource.disconnect();
+        } catch {
+          // Ignorar erros
+        }
+      }
+      // Fechar AudioContext
+      if (audioContext && audioContext.state !== 'closed') {
+        audioContext.close();
       }
     };
   }, []);
@@ -1142,18 +1289,21 @@ export default function FocusZone() {
                   <div className={`bg-gradient-to-br ${currentStation.color} rounded-2xl shadow-inner p-4 sm:p-5 border border-blue-200/30 backdrop-blur-sm`}>
                     <div className="flex flex-col gap-3 items-center">
                       {/* Categoria badge */}
-                      <div className="flex items-center gap-2 text-xs">
-                        <span className="px-2 py-0.5 bg-white/50 rounded-full text-gray-700 font-medium">
-                          {CATEGORY_LABELS[currentStation.category]}
-                        </span>
-                        {currentStation.isLoop && (
-                          <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full font-medium">
-                            🔁 Loop
+                      <div className="flex flex-col items-center gap-1 text-xs">
+                        <div className="flex items-center gap-2">
+                          <span className="px-2 py-0.5 bg-white/50 rounded-full text-gray-700 font-medium">
+                            {CATEGORY_LABELS[currentStation.category]}
                           </span>
-                        )}
-                        {currentStation.category === 'radio' && (
-                          <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full font-medium">
-                            Requer conexão
+                          {currentStation.category === 'radio' && (
+                            <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full font-medium">
+                              Requer conexão
+                            </span>
+                          )}
+                        </div>
+                        {/* Descrição do tipo de ruído */}
+                        {currentStation.noiseType && NOISE_DESCRIPTIONS[currentStation.noiseType] && (
+                          <span className="text-gray-600 text-center">
+                            {NOISE_DESCRIPTIONS[currentStation.noiseType]}
                           </span>
                         )}
                       </div>
@@ -1162,7 +1312,7 @@ export default function FocusZone() {
                       <div className="flex items-center gap-2">
                         <div
                           className={`w-2 h-2 rounded-full transition-colors ${
-                            audioStatus === 'playing' ? 'bg-red-500 animate-pulse' :
+                            audioStatus === 'playing' ? 'bg-green-500 animate-pulse' :
                             audioStatus === 'loading' ? 'bg-yellow-500 animate-pulse' :
                             audioStatus === 'error' || audioStatus === 'blocked' ? 'bg-red-600' :
                             'bg-gray-400'
@@ -1207,7 +1357,7 @@ export default function FocusZone() {
                           </div>
                           {currentStation.category === 'radio' && (
                             <p className="mt-1.5 text-red-600 font-medium">
-                              💡 Experimente os sons Ambiente ou Natureza (funcionam offline)
+                              💡 Experimente Ruído Branco/Rosa/Marrom (funcionam 100% offline)
                             </p>
                           )}
                         </div>
