@@ -13,7 +13,11 @@ import {
   ListTodo,
   Trophy,
   Settings,
-  RotateCcw
+  RotateCcw,
+  Loader2,
+  AlertTriangle,
+  RefreshCw,
+  SkipForward
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { SEOHead } from "@/components/SEOHead";
@@ -41,23 +45,39 @@ interface PomodoroSettings {
 }
 
 // Streams de música Lo-fi (SomaFM - confiáveis e com CORS)
+// Cada estação tem URLs de fallback para redundância
 const STATIONS = [
   {
     name: "Groove Salad",
-    url: "https://ice1.somafm.com/groovesalad-128-mp3",
+    urls: [
+      "https://ice1.somafm.com/groovesalad-128-mp3",
+      "https://ice2.somafm.com/groovesalad-128-mp3",
+      "https://ice4.somafm.com/groovesalad-128-mp3"
+    ],
     color: "from-amber-400/20 to-orange-400/20"
   },
   {
     name: "Groove Salad Classic",
-    url: "https://ice1.somafm.com/gsclassic-128-mp3",
+    urls: [
+      "https://ice1.somafm.com/gsclassic-128-mp3",
+      "https://ice2.somafm.com/gsclassic-128-mp3",
+      "https://ice4.somafm.com/gsclassic-128-mp3"
+    ],
     color: "from-blue-400/20 to-cyan-400/20"
   },
   {
     name: "Space Station",
-    url: "https://ice1.somafm.com/spacestation-128-mp3",
+    urls: [
+      "https://ice1.somafm.com/spacestation-128-mp3",
+      "https://ice2.somafm.com/spacestation-128-mp3",
+      "https://ice4.somafm.com/spacestation-128-mp3"
+    ],
     color: "from-purple-400/20 to-pink-400/20"
   }
 ];
+
+// Status do player de áudio
+type AudioStatus = 'idle' | 'loading' | 'playing' | 'error' | 'blocked';
 
 // Áudio de notificação
 const ALARM_SOUND = "https://actions.google.com/sounds/v1/alarms/alarm_clock.ogg";
@@ -120,9 +140,14 @@ export default function FocusZone() {
 
   // ========== Estados do Player ==========
   const [stationIndex, setStationIndex] = useState(0);
+  const [urlIndex, setUrlIndex] = useState(0); // Índice da URL de fallback atual
   const [playing, setPlaying] = useState(false);
   const [volume, setVolume] = useState(50);
+  const [audioStatus, setAudioStatus] = useState<AudioStatus>('idle');
+  const [audioError, setAudioError] = useState<string | null>(null);
+  const [retryCount, setRetryCount] = useState(0);
   const audioRef = useRef<HTMLAudioElement>(null);
+  const MAX_RETRIES = 3;
 
   // ========== Estados do Checklist ==========
   // Inicializar tarefas diretamente do localStorage para evitar race condition
@@ -336,32 +361,200 @@ export default function FocusZone() {
 
   // ========== Funções do Player ==========
 
-  const nextStation = () => {
+  // Obter URL atual da estação (com fallback)
+  const getCurrentUrl = useCallback(() => {
+    const station = STATIONS[stationIndex];
+    return station.urls[urlIndex] || station.urls[0];
+  }, [stationIndex, urlIndex]);
+
+  // Tentar próxima URL de fallback
+  const tryNextFallback = useCallback(() => {
+    const station = STATIONS[stationIndex];
+    const nextUrlIndex = urlIndex + 1;
+
+    if (nextUrlIndex < station.urls.length) {
+      console.log(`[Audio] Tentando fallback ${nextUrlIndex + 1}/${station.urls.length}: ${station.urls[nextUrlIndex]}`);
+      setUrlIndex(nextUrlIndex);
+      setRetryCount(0);
+      setAudioError(null);
+      return true;
+    }
+    return false;
+  }, [stationIndex, urlIndex]);
+
+  // Mudar para próxima estação
+  const nextStation = useCallback(() => {
     setStationIndex((idx) => (idx + 1) % STATIONS.length);
+    setUrlIndex(0); // Reset URL index
     setPlaying(false);
+    setAudioStatus('idle');
+    setAudioError(null);
+    setRetryCount(0);
     if (audioRef.current) {
       audioRef.current.pause();
       audioRef.current.currentTime = 0;
     }
-  };
+  }, []);
 
+  // Handler de erro do áudio
+  const handleAudioError = useCallback((event: React.SyntheticEvent<HTMLAudioElement, Event>) => {
+    const audio = event.currentTarget;
+    const error = audio.error;
+
+    let errorMessage = 'Erro desconhecido ao carregar áudio';
+    let errorCode = 'UNKNOWN';
+
+    if (error) {
+      switch (error.code) {
+        case MediaError.MEDIA_ERR_ABORTED:
+          errorMessage = 'Reprodução cancelada';
+          errorCode = 'ABORTED';
+          break;
+        case MediaError.MEDIA_ERR_NETWORK:
+          errorMessage = 'Erro de rede - verifique sua conexão';
+          errorCode = 'NETWORK';
+          break;
+        case MediaError.MEDIA_ERR_DECODE:
+          errorMessage = 'Formato de áudio não suportado';
+          errorCode = 'DECODE';
+          break;
+        case MediaError.MEDIA_ERR_SRC_NOT_SUPPORTED:
+          errorMessage = 'Stream indisponível ou bloqueado';
+          errorCode = 'SRC_NOT_SUPPORTED';
+          break;
+      }
+    }
+
+    console.error(`[Audio] Erro (${errorCode}):`, errorMessage, error);
+
+    // Tentar fallback automaticamente
+    if (retryCount < MAX_RETRIES) {
+      console.log(`[Audio] Retry ${retryCount + 1}/${MAX_RETRIES}...`);
+      setRetryCount(prev => prev + 1);
+      setTimeout(() => {
+        if (audioRef.current) {
+          audioRef.current.load();
+          audioRef.current.play().catch(() => {});
+        }
+      }, 1000);
+      return;
+    }
+
+    // Tentar próximo fallback URL
+    if (tryNextFallback()) {
+      return;
+    }
+
+    // Sem mais fallbacks, mostrar erro
+    setAudioStatus('error');
+    setAudioError(errorMessage);
+    setPlaying(false);
+
+    toast({
+      title: 'Erro no stream de áudio',
+      description: `${errorMessage}. Tente outra estação.`,
+      variant: 'destructive'
+    });
+  }, [retryCount, tryNextFallback]);
+
+  // Handler de autoplay bloqueado
+  const handlePlayError = useCallback((error: Error) => {
+    console.error('[Audio] Play error:', error);
+
+    // Detectar bloqueio de autoplay
+    if (error.name === 'NotAllowedError') {
+      setAudioStatus('blocked');
+      setAudioError('Clique para permitir reprodução');
+      toast({
+        title: 'Reprodução bloqueada',
+        description: 'Clique no botão Play para iniciar a música. Seu navegador requer interação do usuário.',
+      });
+      return;
+    }
+
+    // Outros erros
+    setAudioStatus('error');
+    setAudioError(error.message || 'Erro ao reproduzir');
+  }, []);
+
+  // Toggle play/pause com tratamento robusto
   const togglePlay = useCallback(async () => {
     if (!audioRef.current) return;
 
     try {
       if (!playing) {
+        setAudioStatus('loading');
+        setAudioError(null);
+
+        // Garantir que a URL está carregada
+        if (audioRef.current.readyState < 2) {
+          audioRef.current.load();
+        }
+
         await audioRef.current.play();
+        setAudioStatus('playing');
       } else {
         audioRef.current.pause();
+        setAudioStatus('idle');
       }
       setPlaying((p) => !p);
     } catch (error) {
-      console.error('Erro ao reproduzir audio:', error);
-      toast({
-        title: 'Erro ao reproduzir',
-        description: 'Não foi possível iniciar a música. Verifique sua conexão.',
-        variant: 'destructive'
-      });
+      handlePlayError(error as Error);
+    }
+  }, [playing, handlePlayError]);
+
+  // Retry manual após erro
+  const retryAudio = useCallback(() => {
+    setRetryCount(0);
+    setUrlIndex(0);
+    setAudioError(null);
+    setAudioStatus('loading');
+
+    if (audioRef.current) {
+      audioRef.current.load();
+      audioRef.current.play()
+        .then(() => {
+          setAudioStatus('playing');
+          setPlaying(true);
+        })
+        .catch(handlePlayError);
+    }
+  }, [handlePlayError]);
+
+  // Handlers de eventos do áudio
+  const handleAudioLoadStart = useCallback(() => {
+    if (playing) {
+      setAudioStatus('loading');
+    }
+    console.log(`[Audio] Carregando: ${getCurrentUrl()}`);
+  }, [playing, getCurrentUrl]);
+
+  const handleAudioCanPlay = useCallback(() => {
+    console.log('[Audio] Pronto para reproduzir');
+    if (playing) {
+      setAudioStatus('playing');
+    }
+    setAudioError(null);
+    setRetryCount(0);
+  }, [playing]);
+
+  const handleAudioWaiting = useCallback(() => {
+    if (playing) {
+      setAudioStatus('loading');
+    }
+    console.log('[Audio] Buffering...');
+  }, [playing]);
+
+  const handleAudioPlaying = useCallback(() => {
+    setAudioStatus('playing');
+    setAudioError(null);
+    console.log('[Audio] Reproduzindo');
+  }, []);
+
+  const handleAudioStalled = useCallback(() => {
+    console.warn('[Audio] Stream stalled - possível problema de rede');
+    if (playing) {
+      setAudioStatus('loading');
     }
   }, [playing]);
 
@@ -374,6 +567,18 @@ export default function FocusZone() {
       audioRef.current.volume = volume / 100;
     }
   }, [volume]);
+
+  // Atualizar src quando mudar estação ou URL de fallback
+  useEffect(() => {
+    if (audioRef.current && playing) {
+      const url = getCurrentUrl();
+      if (audioRef.current.src !== url) {
+        audioRef.current.src = url;
+        audioRef.current.load();
+        audioRef.current.play().catch(handlePlayError);
+      }
+    }
+  }, [stationIndex, urlIndex, playing, getCurrentUrl, handlePlayError]);
 
   // ========== Cleanup ao sair da página ==========
   useEffect(() => {
@@ -834,22 +1039,81 @@ export default function FocusZone() {
                   {/* PLAYER LO-FI */}
                   <div className={`bg-gradient-to-br ${STATIONS[stationIndex].color} rounded-2xl shadow-inner p-4 sm:p-5 border border-blue-200/30 backdrop-blur-sm`}>
                     <div className="flex flex-col gap-3 items-center">
+                      {/* Status indicator */}
                       <div className="flex items-center gap-2">
-                        <div className={`w-2 h-2 rounded-full ${playing ? 'bg-red-500 animate-pulse' : 'bg-gray-400'}`} aria-hidden="true" />
-                        <span className="sr-only">{playing ? 'Reproduzindo:' : 'Pausado:'}</span>
+                        <div
+                          className={`w-2 h-2 rounded-full transition-colors ${
+                            audioStatus === 'playing' ? 'bg-red-500 animate-pulse' :
+                            audioStatus === 'loading' ? 'bg-yellow-500 animate-pulse' :
+                            audioStatus === 'error' || audioStatus === 'blocked' ? 'bg-red-600' :
+                            'bg-gray-400'
+                          }`}
+                          aria-hidden="true"
+                        />
+                        <span className="sr-only">
+                          {audioStatus === 'playing' ? 'Reproduzindo:' :
+                           audioStatus === 'loading' ? 'Carregando:' :
+                           audioStatus === 'error' ? 'Erro:' :
+                           audioStatus === 'blocked' ? 'Bloqueado:' :
+                           'Pausado:'}
+                        </span>
                         <span className="font-semibold text-blue-900 text-sm sm:text-base">
                           {STATIONS[stationIndex].name}
                         </span>
                       </div>
 
+                      {/* Error message */}
+                      {audioError && (
+                        <div
+                          className="w-full px-3 py-2 bg-red-100 border border-red-300 rounded-lg flex items-center gap-2 text-xs text-red-700"
+                          role="alert"
+                        >
+                          <AlertTriangle className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
+                          <span className="flex-1">{audioError}</span>
+                          <button
+                            onClick={retryAudio}
+                            className="p-1 hover:bg-red-200 rounded transition-colors"
+                            aria-label="Tentar novamente"
+                          >
+                            <RefreshCw className="w-3 h-3" />
+                          </button>
+                          <button
+                            onClick={nextStation}
+                            className="p-1 hover:bg-red-200 rounded transition-colors"
+                            aria-label="Próxima estação"
+                          >
+                            <SkipForward className="w-3 h-3" />
+                          </button>
+                        </div>
+                      )}
+
                       <div className="flex gap-2 sm:gap-3 w-full items-center">
                         <button
                           onClick={togglePlay}
-                          className="flex-1 px-4 py-2.5 sm:px-6 sm:py-3 bg-blue-600 hover:bg-blue-700 text-white font-bold rounded-xl shadow-lg transition-all hover:scale-105 flex items-center justify-center gap-2"
-                          aria-label={playing ? "Pausar Rádio" : "Tocar Rádio"}
+                          disabled={audioStatus === 'loading'}
+                          className={`flex-1 px-4 py-2.5 sm:px-6 sm:py-3 font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 ${
+                            audioStatus === 'loading'
+                              ? 'bg-blue-400 cursor-wait'
+                              : audioStatus === 'error'
+                              ? 'bg-red-600 hover:bg-red-700 text-white hover:scale-105'
+                              : 'bg-blue-600 hover:bg-blue-700 text-white hover:scale-105'
+                          }`}
+                          aria-label={
+                            audioStatus === 'loading' ? 'Carregando...' :
+                            playing ? 'Pausar Rádio' : 'Tocar Rádio'
+                          }
                         >
-                          {playing ? <Pause className="w-4 h-4" /> : <Play className="w-4 h-4" />}
-                          <span>{playing ? "Pausar" : "Play"}</span>
+                          {audioStatus === 'loading' ? (
+                            <Loader2 className="w-4 h-4 animate-spin" />
+                          ) : playing ? (
+                            <Pause className="w-4 h-4" />
+                          ) : (
+                            <Play className="w-4 h-4" />
+                          )}
+                          <span>
+                            {audioStatus === 'loading' ? 'Carregando...' :
+                             playing ? 'Pausar' : 'Play'}
+                          </span>
                         </button>
 
                         <button
@@ -895,11 +1159,21 @@ export default function FocusZone() {
 
                     <audio
                       ref={audioRef}
-                      src={STATIONS[stationIndex].url}
+                      src={getCurrentUrl()}
                       aria-label={`Stream ${STATIONS[stationIndex].name}`}
                       className="sr-only"
                       preload="none"
-                      onEnded={() => setPlaying(false)}
+                      crossOrigin="anonymous"
+                      onEnded={() => {
+                        setPlaying(false);
+                        setAudioStatus('idle');
+                      }}
+                      onError={handleAudioError}
+                      onLoadStart={handleAudioLoadStart}
+                      onCanPlay={handleAudioCanPlay}
+                      onWaiting={handleAudioWaiting}
+                      onPlaying={handleAudioPlaying}
+                      onStalled={handleAudioStalled}
                     />
                   </div>
 
