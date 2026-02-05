@@ -44,47 +44,103 @@ interface PomodoroSettings {
   cyclesBeforeLongBreak: number; // Ciclos antes da pausa longa
 }
 
-// Streams de música Lo-fi para foco e estudo
-// URLs atualizadas conforme documentação oficial SomaFM (ice5 = principal, ice1 = backup)
-// Fonte: https://somafm.com/groovesalad/directstreamlinks.html
-const STATIONS = [
+// Categorias de áudio para foco e estudo
+// Inclui streams (podem ser bloqueados) e arquivos estáticos (sempre funcionam)
+type AudioCategory = 'ambient' | 'nature' | 'radio' | 'silent';
+
+interface AudioStation {
+  name: string;
+  urls: string[];
+  color: string;
+  category: AudioCategory;
+  isLoop?: boolean; // Se true, faz loop no arquivo
+}
+
+// Sons ambiente e natureza - arquivos MP3 que funcionam em qualquer rede
+// Fontes: Archive.org, Freesound (Creative Commons)
+const STATIONS: AudioStation[] = [
+  // === SONS AMBIENTE (arquivos estáticos - sempre funcionam) ===
   {
-    name: "Groove Salad",
+    name: "Ruído Branco",
+    urls: [
+      "https://cdn.freesound.org/previews/568/568921_2094700-lq.mp3"
+    ],
+    color: "from-gray-400/20 to-slate-400/20",
+    category: 'ambient',
+    isLoop: true
+  },
+  {
+    name: "Ruído Rosa",
+    urls: [
+      "https://cdn.freesound.org/previews/131/131048_2337290-lq.mp3"
+    ],
+    color: "from-pink-300/20 to-rose-300/20",
+    category: 'ambient',
+    isLoop: true
+  },
+  // === SONS DA NATUREZA (arquivos estáticos - sempre funcionam) ===
+  {
+    name: "Chuva Suave",
+    urls: [
+      "https://cdn.freesound.org/previews/346/346170_2623437-lq.mp3"
+    ],
+    color: "from-blue-400/20 to-cyan-400/20",
+    category: 'nature',
+    isLoop: true
+  },
+  {
+    name: "Floresta",
+    urls: [
+      "https://cdn.freesound.org/previews/361/361625_3161595-lq.mp3"
+    ],
+    color: "from-green-400/20 to-emerald-400/20",
+    category: 'nature',
+    isLoop: true
+  },
+  {
+    name: "Ondas do Mar",
+    urls: [
+      "https://cdn.freesound.org/previews/510/510454_10201642-lq.mp3"
+    ],
+    color: "from-blue-500/20 to-teal-400/20",
+    category: 'nature',
+    isLoop: true
+  },
+  // === RÁDIO STREAMING (pode ser bloqueado por firewalls) ===
+  {
+    name: "Lo-Fi Radio",
     urls: [
       "https://ice5.somafm.com/groovesalad-128-mp3",
-      "https://ice1.somafm.com/groovesalad-128-mp3",
-      "https://ice2.somafm.com/groovesalad-128-mp3"
+      "https://ice1.somafm.com/groovesalad-128-mp3"
     ],
-    color: "from-amber-400/20 to-orange-400/20"
+    color: "from-amber-400/20 to-orange-400/20",
+    category: 'radio'
   },
   {
-    name: "Space Station",
-    urls: [
-      "https://ice5.somafm.com/spacestation-128-mp3",
-      "https://ice1.somafm.com/spacestation-128-mp3",
-      "https://ice2.somafm.com/spacestation-128-mp3"
-    ],
-    color: "from-purple-400/20 to-pink-400/20"
-  },
-  {
-    name: "Drone Zone",
+    name: "Ambient Space",
     urls: [
       "https://ice5.somafm.com/dronezone-128-mp3",
-      "https://ice1.somafm.com/dronezone-128-mp3",
-      "https://ice2.somafm.com/dronezone-128-mp3"
+      "https://ice1.somafm.com/dronezone-128-mp3"
     ],
-    color: "from-blue-400/20 to-cyan-400/20"
+    color: "from-indigo-400/20 to-violet-400/20",
+    category: 'radio'
   },
+  // === MODO SILENCIOSO ===
   {
-    name: "Deep Space One",
-    urls: [
-      "https://ice5.somafm.com/deepspaceone-128-mp3",
-      "https://ice1.somafm.com/deepspaceone-128-mp3",
-      "https://ice2.somafm.com/deepspaceone-128-mp3"
-    ],
-    color: "from-indigo-400/20 to-violet-400/20"
+    name: "Silêncio",
+    urls: [],
+    color: "from-slate-300/20 to-gray-300/20",
+    category: 'silent'
   }
 ];
+
+// Labels das categorias para exibição
+const CATEGORY_LABELS: Record<AudioCategory, string> = {
+  ambient: '🎧 Ambiente',
+  nature: '🌿 Natureza',
+  radio: '📻 Rádio',
+  silent: '🔇 Silêncio'
+};
 
 // Status do player de áudio
 type AudioStatus = 'idle' | 'loading' | 'playing' | 'error' | 'blocked';
@@ -371,9 +427,15 @@ export default function FocusZone() {
 
   // ========== Funções do Player ==========
 
+  // Obter estação atual
+  const currentStation = STATIONS[stationIndex];
+
   // Obter URL atual da estação (com fallback)
   const getCurrentUrl = useCallback(() => {
     const station = STATIONS[stationIndex];
+    if (station.category === 'silent' || station.urls.length === 0) {
+      return '';
+    }
     return station.urls[urlIndex] || station.urls[0];
   }, [stationIndex, urlIndex]);
 
@@ -489,12 +551,29 @@ export default function FocusZone() {
 
   // Toggle play/pause com tratamento robusto
   const togglePlay = useCallback(async () => {
+    // Modo silencioso - não reproduz nada
+    if (currentStation.category === 'silent') {
+      setPlaying(prev => !prev);
+      setAudioStatus(playing ? 'idle' : 'playing');
+      if (audioRef.current) {
+        audioRef.current.pause();
+      }
+      return;
+    }
+
     if (!audioRef.current) return;
 
     try {
       if (!playing) {
         setAudioStatus('loading');
         setAudioError(null);
+
+        // Configurar loop para arquivos estáticos
+        if (currentStation.isLoop) {
+          audioRef.current.loop = true;
+        } else {
+          audioRef.current.loop = false;
+        }
 
         // Garantir que a URL está carregada
         if (audioRef.current.readyState < 2) {
@@ -511,10 +590,13 @@ export default function FocusZone() {
     } catch (error) {
       handlePlayError(error as Error);
     }
-  }, [playing, handlePlayError]);
+  }, [playing, handlePlayError, currentStation]);
 
   // Retry manual após erro
   const retryAudio = useCallback(() => {
+    // Não faz nada no modo silencioso
+    if (currentStation.category === 'silent') return;
+
     setRetryCount(0);
     setUrlIndex(0);
     setAudioError(null);
@@ -529,7 +611,7 @@ export default function FocusZone() {
         })
         .catch(handlePlayError);
     }
-  }, [handlePlayError]);
+  }, [handlePlayError, currentStation]);
 
   // Handlers de eventos do áudio
   const handleAudioLoadStart = useCallback(() => {
@@ -580,15 +662,25 @@ export default function FocusZone() {
 
   // Atualizar src quando mudar estação ou URL de fallback
   useEffect(() => {
+    // Modo silencioso - parar áudio e resetar estados
+    if (currentStation.category === 'silent') {
+      if (audioRef.current) {
+        audioRef.current.pause();
+        audioRef.current.src = '';
+      }
+      return;
+    }
+
     if (audioRef.current && playing) {
       const url = getCurrentUrl();
-      if (audioRef.current.src !== url) {
+      if (url && audioRef.current.src !== url) {
         audioRef.current.src = url;
+        audioRef.current.loop = currentStation.isLoop || false;
         audioRef.current.load();
         audioRef.current.play().catch(handlePlayError);
       }
     }
-  }, [stationIndex, urlIndex, playing, getCurrentUrl, handlePlayError]);
+  }, [stationIndex, urlIndex, playing, getCurrentUrl, handlePlayError, currentStation]);
 
   // ========== Cleanup ao sair da página ==========
   useEffect(() => {
@@ -1047,8 +1139,25 @@ export default function FocusZone() {
                   </div>
 
                   {/* PLAYER LO-FI */}
-                  <div className={`bg-gradient-to-br ${STATIONS[stationIndex].color} rounded-2xl shadow-inner p-4 sm:p-5 border border-blue-200/30 backdrop-blur-sm`}>
+                  <div className={`bg-gradient-to-br ${currentStation.color} rounded-2xl shadow-inner p-4 sm:p-5 border border-blue-200/30 backdrop-blur-sm`}>
                     <div className="flex flex-col gap-3 items-center">
+                      {/* Categoria badge */}
+                      <div className="flex items-center gap-2 text-xs">
+                        <span className="px-2 py-0.5 bg-white/50 rounded-full text-gray-700 font-medium">
+                          {CATEGORY_LABELS[currentStation.category]}
+                        </span>
+                        {currentStation.isLoop && (
+                          <span className="px-2 py-0.5 bg-green-100 text-green-700 rounded-full font-medium">
+                            🔁 Loop
+                          </span>
+                        )}
+                        {currentStation.category === 'radio' && (
+                          <span className="px-2 py-0.5 bg-amber-100 text-amber-700 rounded-full font-medium">
+                            Requer conexão
+                          </span>
+                        )}
+                      </div>
+
                       {/* Status indicator */}
                       <div className="flex items-center gap-2">
                         <div
@@ -1068,52 +1177,67 @@ export default function FocusZone() {
                            'Pausado:'}
                         </span>
                         <span className="font-semibold text-blue-900 text-sm sm:text-base">
-                          {STATIONS[stationIndex].name}
+                          {currentStation.name}
                         </span>
                       </div>
 
                       {/* Error message */}
                       {audioError && (
                         <div
-                          className="w-full px-3 py-2 bg-red-100 border border-red-300 rounded-lg flex items-center gap-2 text-xs text-red-700"
+                          className="w-full px-3 py-2 bg-red-100 border border-red-300 rounded-lg text-xs text-red-700"
                           role="alert"
                         >
-                          <AlertTriangle className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
-                          <span className="flex-1">{audioError}</span>
-                          <button
-                            onClick={retryAudio}
-                            className="p-1 hover:bg-red-200 rounded transition-colors"
-                            aria-label="Tentar novamente"
-                          >
-                            <RefreshCw className="w-3 h-3" />
-                          </button>
-                          <button
-                            onClick={nextStation}
-                            className="p-1 hover:bg-red-200 rounded transition-colors"
-                            aria-label="Próxima estação"
-                          >
-                            <SkipForward className="w-3 h-3" />
-                          </button>
+                          <div className="flex items-center gap-2">
+                            <AlertTriangle className="w-4 h-4 flex-shrink-0" aria-hidden="true" />
+                            <span className="flex-1">{audioError}</span>
+                            <button
+                              onClick={retryAudio}
+                              className="p-1 hover:bg-red-200 rounded transition-colors"
+                              aria-label="Tentar novamente"
+                            >
+                              <RefreshCw className="w-3 h-3" />
+                            </button>
+                            <button
+                              onClick={nextStation}
+                              className="p-1 hover:bg-red-200 rounded transition-colors"
+                              aria-label="Próxima estação"
+                            >
+                              <SkipForward className="w-3 h-3" />
+                            </button>
+                          </div>
+                          {currentStation.category === 'radio' && (
+                            <p className="mt-1.5 text-red-600 font-medium">
+                              💡 Experimente os sons Ambiente ou Natureza (funcionam offline)
+                            </p>
+                          )}
                         </div>
                       )}
 
                       <div className="flex gap-2 sm:gap-3 w-full items-center">
                         <button
                           onClick={togglePlay}
-                          disabled={audioStatus === 'loading'}
+                          disabled={audioStatus === 'loading' && currentStation.category !== 'silent'}
                           className={`flex-1 px-4 py-2.5 sm:px-6 sm:py-3 font-bold rounded-xl shadow-lg transition-all flex items-center justify-center gap-2 ${
-                            audioStatus === 'loading'
+                            currentStation.category === 'silent'
+                              ? playing
+                                ? 'bg-gray-600 hover:bg-gray-700 text-white hover:scale-105'
+                                : 'bg-gray-500 hover:bg-gray-600 text-white hover:scale-105'
+                              : audioStatus === 'loading'
                               ? 'bg-blue-400 cursor-wait'
                               : audioStatus === 'error'
                               ? 'bg-red-600 hover:bg-red-700 text-white hover:scale-105'
                               : 'bg-blue-600 hover:bg-blue-700 text-white hover:scale-105'
                           }`}
                           aria-label={
-                            audioStatus === 'loading' ? 'Carregando...' :
-                            playing ? 'Pausar Rádio' : 'Tocar Rádio'
+                            currentStation.category === 'silent'
+                              ? playing ? 'Desativar modo silencioso' : 'Ativar modo silencioso'
+                              : audioStatus === 'loading' ? 'Carregando...'
+                              : playing ? 'Pausar Rádio' : 'Tocar Rádio'
                           }
                         >
-                          {audioStatus === 'loading' ? (
+                          {currentStation.category === 'silent' ? (
+                            playing ? <VolumeX className="w-4 h-4" /> : <Volume2 className="w-4 h-4" />
+                          ) : audioStatus === 'loading' ? (
                             <Loader2 className="w-4 h-4 animate-spin" />
                           ) : playing ? (
                             <Pause className="w-4 h-4" />
@@ -1121,8 +1245,10 @@ export default function FocusZone() {
                             <Play className="w-4 h-4" />
                           )}
                           <span>
-                            {audioStatus === 'loading' ? 'Carregando...' :
-                             playing ? 'Pausar' : 'Play'}
+                            {currentStation.category === 'silent'
+                              ? playing ? 'Silêncio Ativo' : 'Ativar Silêncio'
+                              : audioStatus === 'loading' ? 'Carregando...'
+                              : playing ? 'Pausar' : 'Play'}
                           </span>
                         </button>
 
@@ -1135,49 +1261,62 @@ export default function FocusZone() {
                         </button>
                       </div>
 
-                      {/* Controle de Volume */}
-                      <div className="flex items-center gap-3 w-full">
-                        <button
-                          onClick={toggleMute}
-                          className="p-2 hover:bg-white/20 rounded-lg transition-all"
-                          aria-label={volume === 0 ? "Ativar som" : "Desativar som"}
-                        >
-                          {volume === 0 ? (
-                            <VolumeX className="w-5 h-5 text-blue-900" />
-                          ) : (
-                            <Volume2 className="w-5 h-5 text-blue-900" />
-                          )}
-                        </button>
-                        <input
-                          type="range"
-                          min="0"
-                          max="100"
-                          value={volume}
-                          onChange={(e) => setVolume(Number(e.target.value))}
-                          className="flex-1 h-2 bg-indigo-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
-                          aria-label="Controle de volume"
-                          aria-valuemin={0}
-                          aria-valuemax={100}
-                          aria-valuenow={volume}
-                          aria-valuetext={`${volume} por cento`}
-                        />
-                        <span className="text-blue-900 font-semibold text-sm min-w-[3ch]">
-                          {volume}%
-                        </span>
-                      </div>
+                      {/* Controle de Volume - oculto no modo silencioso */}
+                      {currentStation.category !== 'silent' && (
+                        <div className="flex items-center gap-3 w-full">
+                          <button
+                            onClick={toggleMute}
+                            className="p-2 hover:bg-white/20 rounded-lg transition-all"
+                            aria-label={volume === 0 ? "Ativar som" : "Desativar som"}
+                          >
+                            {volume === 0 ? (
+                              <VolumeX className="w-5 h-5 text-blue-900" />
+                            ) : (
+                              <Volume2 className="w-5 h-5 text-blue-900" />
+                            )}
+                          </button>
+                          <input
+                            type="range"
+                            min="0"
+                            max="100"
+                            value={volume}
+                            onChange={(e) => setVolume(Number(e.target.value))}
+                            className="flex-1 h-2 bg-indigo-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
+                            aria-label="Controle de volume"
+                            aria-valuemin={0}
+                            aria-valuemax={100}
+                            aria-valuenow={volume}
+                            aria-valuetext={`${volume} por cento`}
+                          />
+                          <span className="text-blue-900 font-semibold text-sm min-w-[3ch]">
+                            {volume}%
+                          </span>
+                        </div>
+                      )}
+
+                      {/* Mensagem do modo silencioso */}
+                      {currentStation.category === 'silent' && (
+                        <p className="text-sm text-gray-600 text-center py-2">
+                          🧘 Modo de foco sem distrações sonoras
+                        </p>
+                      )}
                     </div>
 
+                    {/* Elemento de áudio - sempre presente para manter ref estável */}
                     <audio
                       ref={audioRef}
-                      src={getCurrentUrl()}
-                      aria-label={`Stream ${STATIONS[stationIndex].name}`}
+                      src={currentStation.category !== 'silent' ? getCurrentUrl() : ''}
+                      aria-label={`Stream ${currentStation.name}`}
                       className="sr-only"
                       preload="none"
+                      loop={currentStation.isLoop}
                       onEnded={() => {
-                        setPlaying(false);
-                        setAudioStatus('idle');
+                        if (!currentStation.isLoop) {
+                          setPlaying(false);
+                          setAudioStatus('idle');
+                        }
                       }}
-                      onError={handleAudioError}
+                      onError={currentStation.category !== 'silent' ? handleAudioError : undefined}
                       onLoadStart={handleAudioLoadStart}
                       onCanPlay={handleAudioCanPlay}
                       onWaiting={handleAudioWaiting}
