@@ -20,10 +20,10 @@ import { SEOHead } from "@/components/SEOHead";
 // CONSTANTES
 // ============================================================================
 
-// Durações em segundos
-const FOCUS_DURATION = 50 * 60;
-const SHORT_BREAK = 5 * 60;
-const LONG_BREAK = 15 * 60;
+// Durações em segundos (Técnica Pomodoro padrão)
+const FOCUS_DURATION = 25 * 60; // 25 minutos de foco
+const SHORT_BREAK = 5 * 60;     // 5 minutos de pausa curta
+const LONG_BREAK = 15 * 60;     // 15 minutos de pausa longa
 
 type PomodoroMode = 'focus' | 'shortBreak' | 'longBreak';
 
@@ -424,8 +424,8 @@ export default function FocusZone() {
   const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
   const currentTask = tasks.find(t => t.status === 'in_progress');
 
-  // Calcular tempo total focado (ciclos completos * 50min)
-  const totalFocusMinutes = Math.floor((completedCycles * 50 * 60 + totalFocusTime) / 60);
+  // Calcular tempo total focado (ciclos completos * 25min)
+  const totalFocusMinutes = Math.floor((completedCycles * 25 * 60 + totalFocusTime) / 60);
 
   // ========== Atalhos de teclado ==========
   useEffect(() => {
@@ -517,7 +517,7 @@ export default function FocusZone() {
       {/* Container principal */}
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* HEADER */}
-        <header className="w-full p-3 sm:p-6 flex justify-between items-center">
+        <header id="main-navigation" className="w-full p-3 sm:p-6 flex justify-between items-center" role="banner">
           <div>
             <h1 className="text-xl sm:text-3xl font-bold text-white drop-shadow-lg">
               Focus Zone
@@ -728,7 +728,7 @@ export default function FocusZone() {
                     <button
                       className="bg-gray-100 hover:bg-gray-200 text-blue-700 font-semibold rounded-xl px-5 py-3 sm:px-6 sm:py-3 transition-all shadow-lg hover:scale-105"
                       onClick={resetTimer}
-                      aria-label={`Resetar timer para ${mode === 'focus' ? '50' : mode === 'shortBreak' ? '5' : '15'} minutos`}
+                      aria-label={`Resetar timer para ${mode === 'focus' ? '25' : mode === 'shortBreak' ? '5' : '15'} minutos`}
                     >
                       Reset
                     </button>
@@ -785,6 +785,10 @@ export default function FocusZone() {
                           onChange={(e) => setVolume(Number(e.target.value))}
                           className="flex-1 h-2 bg-indigo-200 rounded-lg appearance-none cursor-pointer accent-indigo-600"
                           aria-label="Controle de volume"
+                          aria-valuemin={0}
+                          aria-valuemax={100}
+                          aria-valuenow={volume}
+                          aria-valuetext={`${volume} por cento`}
                         />
                         <span className="text-blue-900 font-semibold text-sm min-w-[3ch]">
                           {volume}%
@@ -870,13 +874,21 @@ export default function FocusZone() {
                   {/* Barra de progresso */}
                   {totalCount > 0 && (
                     <div className="mb-4">
-                      <div className="h-2 bg-gray-200 rounded-full overflow-hidden">
+                      <div
+                        className="h-2 bg-gray-200 rounded-full overflow-hidden"
+                        role="progressbar"
+                        aria-valuenow={progressPercent}
+                        aria-valuemin={0}
+                        aria-valuemax={100}
+                        aria-label={`Progresso das tarefas: ${progressPercent}% concluído`}
+                      >
                         <div
                           className="h-full bg-gradient-to-r from-green-500 to-emerald-500 transition-all duration-500 ease-out"
                           style={{ width: `${progressPercent}%` }}
+                          aria-hidden="true"
                         />
                       </div>
-                      <p className="text-xs text-gray-500 mt-1 text-right">
+                      <p className="text-xs text-gray-500 mt-1 text-right" aria-hidden="true">
                         {progressPercent}% concluído
                       </p>
                     </div>
@@ -884,7 +896,11 @@ export default function FocusZone() {
 
                   {/* Input para nova tarefa */}
                   <div className="flex gap-2 mb-4">
+                    <label htmlFor="new-task-input" className="sr-only">
+                      Adicionar nova tarefa
+                    </label>
                     <input
+                      id="new-task-input"
                       ref={newTaskInputRef}
                       type="text"
                       value={newTaskText}
@@ -897,7 +913,11 @@ export default function FocusZone() {
                       }}
                       placeholder="Nova tarefa..."
                       className="flex-1 px-4 py-2.5 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 focus:border-transparent text-sm"
+                      aria-describedby="task-input-hint"
                     />
+                    <span id="task-input-hint" className="sr-only">
+                      Pressione Enter para adicionar ou use o botão ao lado
+                    </span>
                     <button
                       onClick={addTask}
                       disabled={!newTaskText.trim()}
@@ -1032,7 +1052,7 @@ export default function FocusZone() {
                                     className={`h-full transition-all ${
                                       task.status === 'completed' ? 'bg-green-400' : 'bg-indigo-400'
                                     }`}
-                                    style={{ width: `${Math.min((task.focusTimeSpent / (50*60)) * 100, 100)}%` }}
+                                    style={{ width: `${Math.min((task.focusTimeSpent / (25*60)) * 100, 100)}%` }}
                                   />
                                 </div>
                                 <span className="text-[10px] text-gray-500 tabular-nums min-w-[40px]">
