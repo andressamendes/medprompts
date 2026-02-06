@@ -38,6 +38,25 @@ interface PomodoroSettings {
   cyclesBeforeLongBreak: number; // Ciclos antes da pausa longa
 }
 
+// Presets de tempo para seleção rápida
+const TIME_PRESETS: { name: string; emoji: string; settings: PomodoroSettings }[] = [
+  {
+    name: 'Clássico',
+    emoji: '🍅',
+    settings: { focusDuration: 25, shortBreak: 5, longBreak: 15, cyclesBeforeLongBreak: 4 }
+  },
+  {
+    name: 'Estudo Intenso',
+    emoji: '🔥',
+    settings: { focusDuration: 50, shortBreak: 10, longBreak: 30, cyclesBeforeLongBreak: 3 }
+  },
+  {
+    name: 'Sprints Curtos',
+    emoji: '⚡',
+    settings: { focusDuration: 15, shortBreak: 3, longBreak: 10, cyclesBeforeLongBreak: 4 }
+  }
+];
+
 // LocalStorage keys
 const TASKS_STORAGE_KEY = 'focuszone_tasks';
 const SETTINGS_STORAGE_KEY = 'focuszone_settings';
@@ -225,8 +244,33 @@ export default function FocusZone() {
     return getDurationFromSettings(currentMode, settings);
   };
 
+  // Enviar notificação do navegador
+  const sendNotification = useCallback((title: string, body: string) => {
+    if ('Notification' in window && Notification.permission === 'granted') {
+      new Notification(title, {
+        body,
+        icon: '/medprompts/favicon.svg',
+        tag: 'focus-zone-timer'
+      });
+    }
+  }, []);
+
+  // Solicitar permissão de notificação ao iniciar o timer
+  const requestNotificationPermission = useCallback(() => {
+    if ('Notification' in window && Notification.permission === 'default') {
+      Notification.requestPermission();
+    }
+  }, []);
+
   const handleTimerComplete = useCallback(() => {
     setIsRunning(false);
+
+    // Notificação do navegador
+    if (mode === 'focus') {
+      sendNotification('Pomodoro concluído!', 'Hora de fazer uma pausa. Você merece!');
+    } else {
+      sendNotification('Pausa encerrada!', 'Hora de voltar ao foco. Vamos lá!');
+    }
 
     if (mode === 'focus') {
       const newCycles = completedCycles + 1;
@@ -243,7 +287,7 @@ export default function FocusZone() {
       setMode('focus');
       setTimer(settings.focusDuration * 60);
     }
-  }, [mode, completedCycles, settings]);
+  }, [mode, completedCycles, settings, sendNotification]);
 
   // Decrementar timer e incrementar tempo de foco
   useEffect(() => {
@@ -382,6 +426,10 @@ export default function FocusZone() {
     setTasks(prev => prev.filter(task => task.id !== taskId));
   };
 
+  const clearCompletedTasks = () => {
+    setTasks(prev => prev.filter(task => task.status !== 'completed'));
+  };
+
   const startEditing = (task: Task) => {
     setEditingTaskId(task.id);
     setEditingText(task.text);
@@ -446,6 +494,18 @@ export default function FocusZone() {
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
   }, [editingTaskId, navigate]);
+
+  // ========== Título dinâmico na aba do navegador ==========
+  useEffect(() => {
+    const mins = Math.floor(timer / 60).toString().padStart(2, "0");
+    const secs = (timer % 60).toString().padStart(2, "0");
+    const modeLabel = mode === 'focus' ? 'Foco' : mode === 'shortBreak' ? 'Pausa' : 'Pausa Longa';
+    document.title = isRunning
+      ? `${mins}:${secs} - ${modeLabel} | Focus Zone`
+      : 'Focus Zone - Pomodoro | MedPrompts';
+
+    return () => { document.title = 'MedPrompts'; };
+  }, [timer, mode, isRunning]);
 
   // ========== Cálculos de renderização ==========
   const minutes = Math.floor(timer / 60).toString().padStart(2, "0");
@@ -704,7 +764,10 @@ export default function FocusZone() {
                           ? "bg-amber-500 hover:bg-amber-600 ring-2 ring-amber-300 animate-pulse"
                           : "bg-green-600 hover:bg-green-700"
                       } text-white font-semibold rounded-xl px-6 py-3 sm:px-8 sm:py-3 transition-all shadow-lg hover:scale-105 flex-1 max-w-[180px] flex items-center justify-center gap-2`}
-                      onClick={() => setIsRunning(!isRunning)}
+                      onClick={() => {
+                        if (!isRunning) requestNotificationPermission();
+                        setIsRunning(!isRunning);
+                      }}
                       aria-label={isRunning ? "Pausar timer" : "Iniciar timer"}
                     >
                       {isRunning ? (
@@ -763,19 +826,36 @@ export default function FocusZone() {
                       <h2 className="text-lg font-bold text-gray-800">Tarefas</h2>
                     </div>
 
-                    {/* Contador de tarefas */}
-                    {totalCount > 0 && (
-                      <div className="flex items-center gap-2">
-                        <div className="text-sm font-medium text-gray-600" aria-label={`${completedCount} de ${totalCount} tarefas concluídas`}>
-                          <span className="text-green-600" aria-hidden="true">{completedCount}</span>
-                          <span className="text-gray-400" aria-hidden="true">/</span>
-                          <span aria-hidden="true">{totalCount}</span>
+                    <div className="flex items-center gap-2">
+                      {/* Botão limpar concluídas */}
+                      {completedCount > 0 && (
+                        <button
+                          onClick={clearCompletedTasks}
+                          className="text-xs text-gray-500 hover:text-red-500 hover:bg-red-50 px-2 py-1 rounded-lg transition-colors"
+                          aria-label="Remover tarefas concluídas"
+                          title="Limpar concluídas"
+                        >
+                          <span className="flex items-center gap-1">
+                            <Trash2 className="w-3 h-3" />
+                            <span className="hidden sm:inline">Limpar</span>
+                          </span>
+                        </button>
+                      )}
+
+                      {/* Contador de tarefas */}
+                      {totalCount > 0 && (
+                        <div className="flex items-center gap-2">
+                          <div className="text-sm font-medium text-gray-600" aria-label={`${completedCount} de ${totalCount} tarefas concluídas`}>
+                            <span className="text-green-600" aria-hidden="true">{completedCount}</span>
+                            <span className="text-gray-400" aria-hidden="true">/</span>
+                            <span aria-hidden="true">{totalCount}</span>
+                          </div>
+                          {completedCount === totalCount && totalCount > 0 && (
+                            <Trophy className="w-5 h-5 text-yellow-500 animate-bounce" aria-hidden="true" />
+                          )}
                         </div>
-                        {completedCount === totalCount && totalCount > 0 && (
-                          <Trophy className="w-5 h-5 text-yellow-500 animate-bounce" aria-hidden="true" />
-                        )}
-                      </div>
-                    )}
+                      )}
+                    </div>
                   </div>
 
                   {/* Barra de progresso */}
@@ -1039,6 +1119,33 @@ export default function FocusZone() {
               >
                 <X className="w-5 h-5 text-gray-500" />
               </button>
+            </div>
+
+            {/* Presets de Tempo */}
+            <div>
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">Presets</p>
+              <div className="grid grid-cols-3 gap-2">
+                {TIME_PRESETS.map((preset) => {
+                  const isActive = tempSettings.focusDuration === preset.settings.focusDuration
+                    && tempSettings.shortBreak === preset.settings.shortBreak
+                    && tempSettings.longBreak === preset.settings.longBreak;
+                  return (
+                    <button
+                      key={preset.name}
+                      onClick={() => setTempSettings(preset.settings)}
+                      className={`p-2.5 rounded-xl border-2 text-center transition-all hover:scale-105 ${
+                        isActive
+                          ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30'
+                          : 'border-gray-200 dark:border-gray-700 hover:border-indigo-300'
+                      }`}
+                    >
+                      <span className="text-lg" aria-hidden="true">{preset.emoji}</span>
+                      <p className="text-xs font-semibold text-gray-900 dark:text-white mt-1">{preset.name}</p>
+                      <p className="text-[10px] text-gray-500 dark:text-gray-400">{preset.settings.focusDuration}/{preset.settings.shortBreak}min</p>
+                    </button>
+                  );
+                })}
+              </div>
             </div>
 
             {/* Campos de Configuração */}
