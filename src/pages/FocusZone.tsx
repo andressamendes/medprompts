@@ -14,7 +14,8 @@ import {
   RotateCcw,
   Target,
   Flame,
-  BarChart3
+  BarChart3,
+  Award
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { SEOHead } from "@/components/SEOHead";
@@ -67,9 +68,25 @@ const DAILY_GOAL_KEY = 'focuszone_daily_goal';
 const AUTO_TRANSITION_KEY = 'focuszone_auto_transition';
 const DAILY_STATS_KEY = 'focuszone_daily_stats';
 const STREAK_KEY = 'focuszone_streak';
+const HISTORY_KEY = 'focuszone_history';
+const ACHIEVEMENTS_KEY = 'focuszone_achievements';
 
 // Helper para data atual
 const getToday = () => new Date().toISOString().split('T')[0];
+
+// Conquistas disponíveis
+const ACHIEVEMENTS: { id: string; name: string; desc: string; emoji: string }[] = [
+  { id: 'first_pomo', name: 'Primeiro Passo', desc: 'Complete seu primeiro pomodoro', emoji: '🌱' },
+  { id: 'pomo_10', name: 'Focado', desc: 'Complete 10 pomodoros no total', emoji: '🎯' },
+  { id: 'pomo_50', name: 'Maratonista', desc: 'Complete 50 pomodoros no total', emoji: '🏃' },
+  { id: 'pomo_100', name: 'Centurião', desc: 'Complete 100 pomodoros no total', emoji: '💯' },
+  { id: 'streak_3', name: 'Consistente', desc: 'Streak de 3 dias', emoji: '🔥' },
+  { id: 'streak_7', name: 'Imparável', desc: 'Streak de 7 dias', emoji: '⚡' },
+  { id: 'daily_5', name: 'Dia Produtivo', desc: '5 pomodoros em um dia', emoji: '⭐' },
+  { id: 'daily_8', name: 'Super Produtivo', desc: '8 pomodoros em um dia', emoji: '🌟' },
+  { id: 'tasks_5', name: 'Realizador', desc: '5 tarefas em um dia', emoji: '✅' },
+  { id: 'focus_120', name: 'Mente Focada', desc: '120 min de foco em um dia', emoji: '🧠' },
+];
 
 // ============================================================================
 // TIPOS
@@ -204,7 +221,7 @@ export default function FocusZone() {
         const parsed = JSON.parse(stored);
         if (parsed.date === getToday()) return parsed;
       }
-    } catch {}
+    } catch { /* ignore */ }
     return { date: getToday(), pomodorosCompleted: 0, focusMinutes: 0, tasksCompleted: 0 };
   });
 
@@ -222,12 +239,31 @@ export default function FocusZone() {
         }
         return { currentStreak: 0, lastActiveDate: parsed.lastActiveDate, longestStreak: parsed.longestStreak || 0 };
       }
-    } catch {}
+    } catch { /* ignore */ }
     return { currentStreak: 0, lastActiveDate: '', longestStreak: 0 };
   });
 
   const [autoTransitionCountdown, setAutoTransitionCountdown] = useState<number | null>(null);
   const [showSessionReport, setShowSessionReport] = useState(false);
+
+  // ========== Estados de Análise (Fase 3) ==========
+  const [history, setHistory] = useState<Record<string, DailyStats>>(() => {
+    try {
+      const stored = localStorage.getItem(HISTORY_KEY);
+      if (stored) return JSON.parse(stored);
+    } catch { /* ignore */ }
+    return {};
+  });
+
+  const [unlockedAchievements, setUnlockedAchievements] = useState<string[]>(() => {
+    try {
+      const stored = localStorage.getItem(ACHIEVEMENTS_KEY);
+      if (stored) return JSON.parse(stored);
+    } catch { /* ignore */ }
+    return [];
+  });
+
+  const [showDashboard, setShowDashboard] = useState(false);
 
   // ========== Salvar tarefas no localStorage (com debounce) ==========
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -264,20 +300,77 @@ export default function FocusZone() {
 
   // ========== Persistência de Engajamento ==========
   useEffect(() => {
-    try { localStorage.setItem(DAILY_STATS_KEY, JSON.stringify(dailyStats)); } catch {}
+    try { localStorage.setItem(DAILY_STATS_KEY, JSON.stringify(dailyStats)); } catch { /* ignore */ }
   }, [dailyStats]);
 
   useEffect(() => {
-    try { localStorage.setItem(STREAK_KEY, JSON.stringify(streakData)); } catch {}
+    try { localStorage.setItem(STREAK_KEY, JSON.stringify(streakData)); } catch { /* ignore */ }
   }, [streakData]);
 
   useEffect(() => {
-    try { localStorage.setItem(DAILY_GOAL_KEY, String(dailyGoal)); } catch {}
+    try { localStorage.setItem(DAILY_GOAL_KEY, String(dailyGoal)); } catch { /* ignore */ }
   }, [dailyGoal]);
 
   useEffect(() => {
-    try { localStorage.setItem(AUTO_TRANSITION_KEY, String(autoTransition)); } catch {}
+    try { localStorage.setItem(AUTO_TRANSITION_KEY, String(autoTransition)); } catch { /* ignore */ }
   }, [autoTransition]);
+
+  // ========== Histórico e Conquistas (Fase 3) ==========
+  // Atualizar histórico quando dailyStats muda
+  useEffect(() => {
+    setHistory(prev => {
+      const updated = { ...prev, [dailyStats.date]: dailyStats };
+      // Limpar entradas com mais de 30 dias
+      const cutoff = new Date();
+      cutoff.setDate(cutoff.getDate() - 30);
+      const cutoffStr = cutoff.toISOString().split('T')[0];
+      const cleaned: Record<string, DailyStats> = {};
+      for (const [date, stats] of Object.entries(updated)) {
+        if (date >= cutoffStr) cleaned[date] = stats;
+      }
+      try { localStorage.setItem(HISTORY_KEY, JSON.stringify(cleaned)); } catch { /* ignore */ }
+      return cleaned;
+    });
+  }, [dailyStats]);
+
+  // Verificar conquistas
+  useEffect(() => {
+    const totalPomos = Object.values(history).reduce((sum, s) => sum + s.pomodorosCompleted, 0);
+    const newUnlocked: string[] = [];
+
+    const checks: [string, boolean][] = [
+      ['first_pomo', totalPomos >= 1],
+      ['pomo_10', totalPomos >= 10],
+      ['pomo_50', totalPomos >= 50],
+      ['pomo_100', totalPomos >= 100],
+      ['streak_3', streakData.longestStreak >= 3],
+      ['streak_7', streakData.longestStreak >= 7],
+      ['daily_5', dailyStats.pomodorosCompleted >= 5],
+      ['daily_8', dailyStats.pomodorosCompleted >= 8],
+      ['tasks_5', dailyStats.tasksCompleted >= 5],
+      ['focus_120', dailyStats.focusMinutes >= 120],
+    ];
+
+    for (const [id, condition] of checks) {
+      if (condition && !unlockedAchievements.includes(id)) {
+        newUnlocked.push(id);
+      }
+    }
+
+    if (newUnlocked.length > 0) {
+      setUnlockedAchievements(prev => {
+        const updated = [...prev, ...newUnlocked];
+        try { localStorage.setItem(ACHIEVEMENTS_KEY, JSON.stringify(updated)); } catch { /* ignore */ }
+        return updated;
+      });
+      for (const id of newUnlocked) {
+        const achievement = ACHIEVEMENTS.find(a => a.id === id);
+        if (achievement) {
+          toast({ title: `${achievement.emoji} ${achievement.name}`, description: achievement.desc });
+        }
+      }
+    }
+  }, [dailyStats, streakData, history, unlockedAchievements]);
 
   const updateStreak = useCallback((newPomodorosCompleted: number) => {
     if (newPomodorosCompleted >= dailyGoal) {
@@ -620,7 +713,9 @@ export default function FocusZone() {
       }
 
       if (e.key === 'Escape') {
-        if (showSessionReport) {
+        if (showDashboard) {
+          setShowDashboard(false);
+        } else if (showSessionReport) {
           setShowSessionReport(false);
         } else if (showSettings) {
           closeSettings();
@@ -628,12 +723,13 @@ export default function FocusZone() {
           navigate(-1);
         }
       }
-      if (e.key === ' ' && !showSettings && !showSessionReport) {
+      const anyModal = showSettings || showSessionReport || showDashboard;
+      if (e.key === ' ' && !anyModal) {
         e.preventDefault();
         setAutoTransitionCountdown(null);
         setIsRunning((v) => !v);
       }
-      if (e.key.toLowerCase() === 'n' && !showSettings && !showSessionReport) {
+      if (e.key.toLowerCase() === 'n' && !anyModal) {
         e.preventDefault();
         newTaskInputRef.current?.focus();
       }
@@ -641,7 +737,7 @@ export default function FocusZone() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [editingTaskId, navigate, showSessionReport, showSettings]);
+  }, [editingTaskId, navigate, showSessionReport, showSettings, showDashboard]);
 
   // ========== Título dinâmico na aba do navegador ==========
   useEffect(() => {
@@ -675,6 +771,34 @@ export default function FocusZone() {
     shortBreak: { bg: '#10b981', light: '#d1fae5' },
     longBreak: { bg: '#8b5cf6', light: '#ede9fe' }
   };
+
+  // Dados do dashboard semanal
+  const weeklyData = (() => {
+    const days = [];
+    for (let i = 6; i >= 0; i--) {
+      const d = new Date();
+      d.setDate(d.getDate() - i);
+      const dateStr = d.toISOString().split('T')[0];
+      const dayName = d.toLocaleDateString('pt-BR', { weekday: 'short' }).slice(0, 3);
+      days.push({
+        date: dateStr,
+        dayName,
+        stats: history[dateStr] || { pomodorosCompleted: 0, focusMinutes: 0, tasksCompleted: 0 }
+      });
+    }
+    return days;
+  })();
+
+  const weeklyTotals = weeklyData.reduce(
+    (acc, d) => ({
+      pomodoros: acc.pomodoros + d.stats.pomodorosCompleted,
+      minutes: acc.minutes + d.stats.focusMinutes,
+      tasks: acc.tasks + d.stats.tasksCompleted,
+    }),
+    { pomodoros: 0, minutes: 0, tasks: 0 }
+  );
+
+  const totalAllTimePomodoros = Object.values(history).reduce((sum, s) => sum + s.pomodorosCompleted, 0);
 
   // ========== RENDER ==========
   return (
@@ -751,6 +875,14 @@ export default function FocusZone() {
           </div>
 
           <div className="flex items-center gap-2">
+            <button
+              onClick={() => setShowDashboard(true)}
+              className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all border border-white/20 hover:scale-105"
+              aria-label="Dashboard e conquistas"
+            >
+              <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5" />
+              <span className="text-sm sm:text-base hidden sm:inline">Stats</span>
+            </button>
             <button
               onClick={openSettings}
               className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all border border-white/20 hover:scale-105"
@@ -1512,6 +1644,126 @@ export default function FocusZone() {
           </div>
         </div>
       )}
+    {/* Modal de Dashboard */}
+    {showDashboard && (
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+        onClick={() => setShowDashboard(false)}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="dashboard-title"
+      >
+        <div
+          className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-lg mx-4 p-6 space-y-5 max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200"
+          onClick={(e) => e.stopPropagation()}
+        >
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <h2 id="dashboard-title" className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
+              <BarChart3 className="w-5 h-5 text-indigo-600" />
+              Dashboard Semanal
+            </h2>
+            <button
+              onClick={() => setShowDashboard(false)}
+              className="p-2 hover:bg-gray-100 dark:hover:bg-gray-800 rounded-lg transition-colors"
+              aria-label="Fechar dashboard"
+            >
+              <X className="w-5 h-5 text-gray-500" />
+            </button>
+          </div>
+
+          {/* Gráfico semanal */}
+          <div>
+            <div className="flex items-end justify-between gap-1 h-32 px-2">
+              {weeklyData.map(day => {
+                const maxPomos = Math.max(...weeklyData.map(d => d.stats.pomodorosCompleted), 1);
+                const height = (day.stats.pomodorosCompleted / maxPomos) * 100;
+                const isToday = day.date === getToday();
+                return (
+                  <div key={day.date} className="flex-1 flex flex-col items-center gap-1">
+                    <span className="text-[10px] text-gray-500 font-bold tabular-nums">
+                      {day.stats.pomodorosCompleted || ''}
+                    </span>
+                    <div className="w-full flex justify-center" style={{ height: '100px' }}>
+                      <div
+                        className={`w-8 rounded-t-lg transition-all self-end ${
+                          isToday ? 'bg-indigo-500' : day.stats.pomodorosCompleted > 0 ? 'bg-indigo-300' : 'bg-gray-200'
+                        }`}
+                        style={{ height: `${day.stats.pomodorosCompleted > 0 ? Math.max(height, 8) : 4}%` }}
+                      />
+                    </div>
+                    <span className={`text-[10px] ${isToday ? 'font-bold text-indigo-600' : 'text-gray-500'}`}>
+                      {day.dayName}
+                    </span>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+
+          {/* Totais semanais */}
+          <div className="grid grid-cols-3 gap-3">
+            <div className="bg-indigo-50 dark:bg-indigo-900/30 rounded-xl p-3 text-center">
+              <p className="text-xl font-bold text-indigo-600">{weeklyTotals.pomodoros}</p>
+              <p className="text-[10px] text-gray-600 dark:text-gray-400">Pomodoros</p>
+            </div>
+            <div className="bg-green-50 dark:bg-green-900/30 rounded-xl p-3 text-center">
+              <p className="text-xl font-bold text-green-600">{weeklyTotals.minutes}</p>
+              <p className="text-[10px] text-gray-600 dark:text-gray-400">Minutos</p>
+            </div>
+            <div className="bg-amber-50 dark:bg-amber-900/30 rounded-xl p-3 text-center">
+              <p className="text-xl font-bold text-amber-600">{weeklyTotals.tasks}</p>
+              <p className="text-[10px] text-gray-600 dark:text-gray-400">Tarefas</p>
+            </div>
+          </div>
+
+          {/* Resumo geral */}
+          <div className="flex items-center justify-between bg-gray-50 dark:bg-gray-800 rounded-xl p-3">
+            <div className="text-center flex-1">
+              <p className="text-lg font-bold text-gray-800 dark:text-white">{totalAllTimePomodoros}</p>
+              <p className="text-[10px] text-gray-500">Total geral</p>
+            </div>
+            <div className="w-px h-8 bg-gray-300 dark:bg-gray-600" />
+            <div className="text-center flex-1">
+              <p className="text-lg font-bold text-orange-500">
+                {streakData.currentStreak > 0 ? <>{streakData.currentStreak}<Flame className="w-4 h-4 inline" /></> : '0'}
+              </p>
+              <p className="text-[10px] text-gray-500">Streak atual</p>
+            </div>
+            <div className="w-px h-8 bg-gray-300 dark:bg-gray-600" />
+            <div className="text-center flex-1">
+              <p className="text-lg font-bold text-purple-600">{streakData.longestStreak}</p>
+              <p className="text-[10px] text-gray-500">Melhor streak</p>
+            </div>
+          </div>
+
+          {/* Conquistas */}
+          <div>
+            <h3 className="text-sm font-bold text-gray-700 dark:text-gray-300 mb-3 flex items-center gap-2">
+              <Award className="w-4 h-4 text-yellow-500" />
+              Conquistas ({unlockedAchievements.length}/{ACHIEVEMENTS.length})
+            </h3>
+            <div className="grid grid-cols-2 gap-2">
+              {ACHIEVEMENTS.map(a => {
+                const unlocked = unlockedAchievements.includes(a.id);
+                return (
+                  <div key={a.id} className={`p-2.5 rounded-xl border text-center transition-all ${
+                    unlocked
+                      ? 'bg-yellow-50 dark:bg-yellow-900/20 border-yellow-200 dark:border-yellow-800'
+                      : 'bg-gray-50 dark:bg-gray-800 border-gray-200 dark:border-gray-700 opacity-50'
+                  }`}>
+                    <span className="text-xl">{unlocked ? a.emoji : '🔒'}</span>
+                    <p className="text-xs font-semibold text-gray-900 dark:text-white mt-1">{a.name}</p>
+                    <p className="text-[10px] text-gray-500 dark:text-gray-400">{a.desc}</p>
+                  </div>
+                );
+              })}
+            </div>
+          </div>
+        </div>
+      </div>
+    )}
+
     {/* Modal de Relatório da Sessão */}
     {showSessionReport && (
       <div
