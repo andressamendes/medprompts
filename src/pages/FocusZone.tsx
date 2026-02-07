@@ -902,14 +902,25 @@ export default function FocusZone() {
       {/* Container principal */}
       <div className="relative z-10 min-h-screen flex flex-col">
         {/* HEADER */}
-        <header id="main-navigation" className="w-full p-3 sm:p-6 flex justify-between items-center" role="banner">
-          <div>
-            <h1 className="text-xl sm:text-3xl font-bold text-white drop-shadow-lg">
-              Focus Zone
-            </h1>
+        <header id="main-navigation" className="w-full p-2 sm:p-6 flex justify-between items-center gap-2" role="banner">
+          <h1 className="text-lg sm:text-3xl font-bold text-white drop-shadow-lg flex-shrink-0">
+            Focus Zone
+          </h1>
+
+          {/* Estatísticas da Sessão - Mobile (compacto) */}
+          <div className="flex sm:hidden items-center gap-1.5 bg-white/10 backdrop-blur-sm rounded-lg px-2 py-1 border border-white/20 text-[10px] text-white font-medium flex-shrink-0">
+            <span>{dailyStats.pomodorosCompleted}/{dailyGoal}</span>
+            <span className="text-white/40">|</span>
+            <span>{totalFocusMinutes}m</span>
+            {streakData.currentStreak > 0 && (
+              <>
+                <span className="text-white/40">|</span>
+                <span className="text-orange-400">{streakData.currentStreak}<Flame className="w-3 h-3 inline" /></span>
+              </>
+            )}
           </div>
 
-          {/* Estatísticas da Sessão */}
+          {/* Estatísticas da Sessão - Desktop */}
           <div className="hidden sm:flex items-center gap-3">
             <div className="flex items-center gap-4 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/20">
               <div className="text-center">
@@ -942,30 +953,30 @@ export default function FocusZone() {
             </div>
           </div>
 
-          <div className="flex items-center gap-1 sm:gap-2">
+          <div className="flex items-center gap-1 sm:gap-2 flex-shrink-0">
             <button
               onClick={toggleFullscreen}
-              className="p-2 sm:px-3 sm:py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all border border-white/20 hover:scale-105"
+              className="hidden sm:flex p-2 sm:px-3 sm:py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all border border-white/20 hover:scale-105"
               aria-label={isFullscreen ? "Sair do fullscreen" : "Entrar em fullscreen"}
               title={isFullscreen ? "Sair (F)" : "Fullscreen (F)"}
             >
-              {isFullscreen ? <Minimize2 className="w-4 h-4 sm:w-5 sm:h-5" /> : <Maximize2 className="w-4 h-4 sm:w-5 sm:h-5" />}
+              {isFullscreen ? <Minimize2 className="w-5 h-5" /> : <Maximize2 className="w-5 h-5" />}
             </button>
             <button
               onClick={() => setShowDashboard(true)}
-              className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all border border-white/20 hover:scale-105"
+              className="flex items-center gap-2 p-2 sm:px-4 sm:py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all border border-white/20 hover:scale-105"
               aria-label="Dashboard e conquistas"
             >
               <BarChart3 className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span className="text-sm sm:text-base hidden sm:inline">Stats</span>
+              <span className="text-sm hidden sm:inline">Stats</span>
             </button>
             <button
               onClick={openSettings}
-              className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all border border-white/20 hover:scale-105"
+              className="flex items-center gap-2 p-2 sm:px-4 sm:py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all border border-white/20 hover:scale-105"
               aria-label="Configurações do Pomodoro"
             >
               <Settings className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span className="text-sm sm:text-base hidden sm:inline">Config</span>
+              <span className="text-sm hidden sm:inline">Config</span>
             </button>
             <button
               onClick={() => {
@@ -975,60 +986,63 @@ export default function FocusZone() {
                   navigate(-1);
                 }
               }}
-              className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all border border-white/20 hover:scale-105"
+              className="flex items-center gap-2 p-2 sm:px-4 sm:py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all border border-white/20 hover:scale-105"
               aria-label="Sair do Focus Zone"
             >
               <X className="w-4 h-4 sm:w-5 sm:h-5" />
-              <span className="text-sm sm:text-base hidden sm:inline">Sair</span>
+              <span className="text-sm hidden sm:inline">Sair</span>
             </button>
           </div>
         </header>
 
         {/* CONTEÚDO PRINCIPAL - Layout de duas colunas */}
-        <section className="flex-1 flex items-start justify-center px-3 sm:px-6 pb-6 pt-2" aria-label="Timer Pomodoro e lista de tarefas">
+        <section className="flex-1 flex items-start justify-center px-2 sm:px-6 pb-4 sm:pb-6 pt-1 sm:pt-2" aria-label="Timer Pomodoro e lista de tarefas">
           <div className="w-full max-w-6xl">
-            <div className="flex flex-col lg:flex-row gap-4 lg:gap-6">
+            <div className="flex flex-col lg:flex-row gap-3 lg:gap-6">
 
               {/* ============================================================ */}
               {/* COLUNA ESQUERDA - Timer Pomodoro (60% em desktop) */}
               {/* ============================================================ */}
               <div className="w-full lg:w-[60%]">
-                <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-5 sm:p-8 space-y-5 border border-white/20">
+                <div className="bg-white/95 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl p-4 sm:p-8 space-y-4 sm:space-y-5 border border-white/20">
 
                   {/* Seletor de Modos */}
-                  <div className="flex gap-2 justify-center flex-wrap" role="group" aria-label="Selecionar modo do timer">
+                  <div className="flex gap-1.5 sm:gap-2 justify-center" role="group" aria-label="Selecionar modo do timer">
                     <button
                       onClick={() => changeMode('focus')}
                       aria-pressed={mode === 'focus'}
-                      className={`px-3 sm:px-4 py-2 rounded-xl font-semibold text-sm transition-all ${
+                      className={`px-3 sm:px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm transition-all ${
                         mode === 'focus'
-                          ? 'bg-blue-600 text-white shadow-lg scale-105'
+                          ? 'text-white shadow-lg scale-105'
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       }`}
+                      style={mode === 'focus' ? { backgroundColor: modeColors.focus.bg } : {}}
                     >
-                      Foco
+                      Foco {settings.focusDuration}min
                     </button>
                     <button
                       onClick={() => changeMode('shortBreak')}
                       aria-pressed={mode === 'shortBreak'}
-                      className={`px-3 sm:px-4 py-2 rounded-xl font-semibold text-sm transition-all ${
+                      className={`px-3 sm:px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm transition-all ${
                         mode === 'shortBreak'
-                          ? 'bg-green-600 text-white shadow-lg scale-105'
+                          ? 'text-white shadow-lg scale-105'
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       }`}
+                      style={mode === 'shortBreak' ? { backgroundColor: modeColors.shortBreak.bg } : {}}
                     >
-                      Pausa 5min
+                      Pausa {settings.shortBreak}min
                     </button>
                     <button
                       onClick={() => changeMode('longBreak')}
                       aria-pressed={mode === 'longBreak'}
-                      className={`px-3 sm:px-4 py-2 rounded-xl font-semibold text-sm transition-all ${
+                      className={`px-3 sm:px-4 py-2 rounded-xl font-semibold text-xs sm:text-sm transition-all ${
                         mode === 'longBreak'
-                          ? 'bg-green-600 text-white shadow-lg scale-105'
+                          ? 'text-white shadow-lg scale-105'
                           : 'bg-gray-100 text-gray-600 hover:bg-gray-200'
                       }`}
+                      style={mode === 'longBreak' ? { backgroundColor: modeColors.longBreak.bg } : {}}
                     >
-                      Pausa 15min
+                      Longa {settings.longBreak}min
                     </button>
                   </div>
 
@@ -1194,8 +1208,8 @@ export default function FocusZone() {
                     </div>
                   )}
 
-                  {/* Atalhos de teclado como badges */}
-                  <div className="pt-3 border-t border-gray-200">
+                  {/* Atalhos de teclado - apenas desktop */}
+                  <div className="hidden sm:block pt-3 border-t border-gray-200">
                     <p className="text-xs text-gray-500 text-center mb-2">Atalhos de teclado</p>
                     <div className="flex flex-wrap gap-2 justify-center">
                       <kbd className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 border border-gray-300 rounded-md text-xs font-mono shadow-sm">
@@ -1223,7 +1237,7 @@ export default function FocusZone() {
               {/* COLUNA DIREITA - Checklist de Tarefas (40% em desktop) */}
               {/* ============================================================ */}
               <div className="w-full lg:w-[40%]">
-                <div className="bg-white/95 backdrop-blur-xl rounded-3xl shadow-2xl p-5 sm:p-6 border border-white/20 h-full flex flex-col">
+                <div className="bg-white/95 backdrop-blur-xl rounded-2xl sm:rounded-3xl shadow-2xl p-3 sm:p-6 border border-white/20 h-full flex flex-col">
 
                   {/* Header do Checklist */}
                   <div className="flex items-center justify-between mb-4">
@@ -1322,7 +1336,7 @@ export default function FocusZone() {
                   </div>
 
                   {/* Lista de tarefas */}
-                  <div className="flex-1 overflow-y-auto space-y-2 min-h-[200px] max-h-[400px] lg:max-h-none">
+                  <div className="flex-1 overflow-y-auto space-y-2 min-h-[150px] max-h-[50vh] sm:max-h-[400px] lg:max-h-none">
                     {tasks.length === 0 ? (
                       <div className="flex flex-col items-center justify-center h-full py-8 text-gray-400">
                         <ListTodo className="w-12 h-12 mb-3 opacity-50" aria-hidden="true" />
@@ -1342,12 +1356,12 @@ export default function FocusZone() {
                             ${celebratingTaskId === task.id ? 'animate-pulse scale-[1.02]' : ''}
                           `}
                         >
-                          <div className="flex items-center gap-3">
-                            {/* Botão de estado com três fases - Touch target 44x44px (WCAG 2.5.5) */}
+                          <div className="flex items-center gap-2 sm:gap-3">
+                            {/* Botão de estado com três fases */}
                             <button
                               onClick={() => cycleTaskStatus(task.id)}
                               className={`
-                                flex-shrink-0 w-11 h-11 min-w-[44px] min-h-[44px] rounded-full border-2 flex items-center justify-center transition-all
+                                flex-shrink-0 w-8 h-8 sm:w-11 sm:h-11 min-w-[32px] min-h-[32px] sm:min-w-[44px] sm:min-h-[44px] rounded-full border-2 flex items-center justify-center transition-all
                                 ${task.status === 'completed' && 'bg-green-500 border-green-500 text-white'}
                                 ${task.status === 'in_progress' && 'bg-indigo-500 border-indigo-500 text-white animate-pulse'}
                                 ${task.status === 'pending' && 'border-gray-300 hover:border-indigo-400 hover:bg-indigo-50'}
@@ -1407,43 +1421,45 @@ export default function FocusZone() {
                             {/* Ações - Visíveis em touch, hover em desktop */}
                             {/* Touch targets de 44x44px mínimo para WCAG 2.5.5 */}
                             {!editingTaskId && (
-                              <div className="flex items-center gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity">
+                              <div className="flex items-center gap-0 sm:gap-0.5 opacity-100 sm:opacity-0 sm:group-hover:opacity-100 transition-opacity flex-shrink-0">
                                 {/* Botão de conclusão rápida para tarefas pendentes */}
                                 {task.status === 'pending' && (
                                   <button
                                     onClick={() => completeTask(task.id)}
-                                    className="min-w-[44px] min-h-[44px] p-2.5 hover:bg-green-100 rounded-lg transition-colors flex items-center justify-center"
+                                    className="min-w-[36px] min-h-[36px] sm:min-w-[44px] sm:min-h-[44px] p-1.5 sm:p-2.5 hover:bg-green-100 rounded-lg transition-colors flex items-center justify-center"
                                     aria-label="Concluir tarefa"
                                     title="Concluir direto"
                                   >
-                                    <Check className="w-5 h-5 text-green-600" />
+                                    <Check className="w-4 h-4 sm:w-5 sm:h-5 text-green-600" />
+                                  </button>
+                                )}
+                                {task.status !== 'completed' && (
+                                  <button
+                                    onClick={() => cyclePriority(task.id)}
+                                    className="min-w-[36px] min-h-[36px] sm:min-w-[44px] sm:min-h-[44px] p-1.5 sm:p-2.5 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-center"
+                                    aria-label={`Prioridade: ${PRIORITY_COLORS[task.priority].label}`}
+                                    title={`Prioridade: ${PRIORITY_COLORS[task.priority].label}`}
+                                  >
+                                    {task.priority === 'none' ? (
+                                      <span className="w-4 h-4 sm:w-5 sm:h-5 rounded-full border-2 border-dashed border-gray-300" />
+                                    ) : (
+                                      <span className={`w-4 h-4 sm:w-5 sm:h-5 rounded-full ${PRIORITY_COLORS[task.priority].dot}`} />
+                                    )}
                                   </button>
                                 )}
                                 <button
-                                  onClick={() => cyclePriority(task.id)}
-                                  className="min-w-[44px] min-h-[44px] p-2.5 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-center"
-                                  aria-label={`Prioridade: ${PRIORITY_COLORS[task.priority].label}`}
-                                  title={`Prioridade: ${PRIORITY_COLORS[task.priority].label}`}
-                                >
-                                  {task.priority === 'none' ? (
-                                    <span className="w-5 h-5 rounded-full border-2 border-dashed border-gray-300" />
-                                  ) : (
-                                    <span className={`w-5 h-5 rounded-full ${PRIORITY_COLORS[task.priority].dot}`} />
-                                  )}
-                                </button>
-                                <button
                                   onClick={() => startEditing(task)}
-                                  className="min-w-[44px] min-h-[44px] p-2.5 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-center"
+                                  className="min-w-[36px] min-h-[36px] sm:min-w-[44px] sm:min-h-[44px] p-1.5 sm:p-2.5 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-center"
                                   aria-label="Editar tarefa"
                                 >
-                                  <Edit2 className="w-5 h-5 text-gray-500" />
+                                  <Edit2 className="w-4 h-4 sm:w-5 sm:h-5 text-gray-500" />
                                 </button>
                                 <button
                                   onClick={() => deleteTask(task.id)}
-                                  className="min-w-[44px] min-h-[44px] p-2.5 hover:bg-red-100 rounded-lg transition-colors flex items-center justify-center"
+                                  className="min-w-[36px] min-h-[36px] sm:min-w-[44px] sm:min-h-[44px] p-1.5 sm:p-2.5 hover:bg-red-100 rounded-lg transition-colors flex items-center justify-center"
                                   aria-label="Excluir tarefa"
                                 >
-                                  <Trash2 className="w-5 h-5 text-red-500" />
+                                  <Trash2 className="w-4 h-4 sm:w-5 sm:h-5 text-red-500" />
                                 </button>
                               </div>
                             )}
@@ -1451,7 +1467,7 @@ export default function FocusZone() {
 
                           {/* Barra de progresso de tempo por tarefa */}
                           {task.status !== 'pending' && task.focusTimeSpent > 0 && (
-                            <div className="ml-10">
+                            <div className="ml-8 sm:ml-10">
                               <div className="flex items-center gap-2">
                                 <div className="flex-1 h-1 bg-gray-200 rounded-full overflow-hidden">
                                   <div
@@ -1490,7 +1506,8 @@ export default function FocusZone() {
                         </span>
                       </div>
                       <p className="text-[10px] text-gray-400 text-center mt-2">
-                        Clique no círculo para avançar estado • Duplo clique no texto para editar
+                        <span className="sm:hidden">Toque no círculo para avançar estado</span>
+                        <span className="hidden sm:inline">Clique no círculo para avançar estado • Duplo clique no texto para editar</span>
                       </p>
                     </div>
                   )}
@@ -1522,14 +1539,14 @@ export default function FocusZone() {
           aria-labelledby="settings-title"
         >
           <div
-            className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 space-y-6 animate-in zoom-in-95 duration-200"
+            className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6 space-y-6 max-h-[90vh] overflow-y-auto animate-in zoom-in-95 duration-200"
             onClick={(e) => e.stopPropagation()}
           >
             {/* Header do Modal */}
             <div className="flex items-center justify-between">
               <h2 id="settings-title" className="text-xl font-bold text-gray-900 dark:text-white flex items-center gap-2">
                 <Settings className="w-5 h-5 text-indigo-600" aria-hidden="true" />
-                Configurações do Pomodoro
+                Configurações
               </h2>
               <button
                 onClick={closeSettings}
@@ -1714,7 +1731,7 @@ export default function FocusZone() {
               <p className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
                 🎨 Aparência
               </p>
-              <div className="grid grid-cols-5 gap-2">
+              <div className="grid grid-cols-3 sm:grid-cols-5 gap-2">
                 {THEMES.map(theme => (
                   <button
                     key={theme.id}
