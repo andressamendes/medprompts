@@ -11,7 +11,10 @@ import {
   ListTodo,
   Trophy,
   Settings,
-  RotateCcw
+  RotateCcw,
+  Target,
+  Flame,
+  BarChart3
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { SEOHead } from "@/components/SEOHead";
@@ -60,6 +63,13 @@ const TIME_PRESETS: { name: string; emoji: string; settings: PomodoroSettings }[
 // LocalStorage keys
 const TASKS_STORAGE_KEY = 'focuszone_tasks';
 const SETTINGS_STORAGE_KEY = 'focuszone_settings';
+const DAILY_GOAL_KEY = 'focuszone_daily_goal';
+const AUTO_TRANSITION_KEY = 'focuszone_auto_transition';
+const DAILY_STATS_KEY = 'focuszone_daily_stats';
+const STREAK_KEY = 'focuszone_streak';
+
+// Helper para data atual
+const getToday = () => new Date().toISOString().split('T')[0];
 
 // ============================================================================
 // TIPOS
@@ -74,6 +84,19 @@ interface Task {
   createdAt: number;
   completedAt?: number;
   focusTimeSpent: number; // Tempo dedicado em segundos
+}
+
+interface DailyStats {
+  date: string;
+  pomodorosCompleted: number;
+  focusMinutes: number;
+  tasksCompleted: number;
+}
+
+interface StreakData {
+  currentStreak: number;
+  lastActiveDate: string;
+  longestStreak: number;
 }
 
 // ============================================================================
@@ -158,6 +181,53 @@ export default function FocusZone() {
   const [editingText, setEditingText] = useState('');
   const [celebratingTaskId, setCelebratingTaskId] = useState<string | null>(null);
   const newTaskInputRef = useRef<HTMLInputElement>(null);
+  const sessionStartRef = useRef(Date.now());
+
+  // ========== Estados de Engajamento (Fase 2) ==========
+  const [dailyGoal, setDailyGoal] = useState<number>(() => {
+    try {
+      const stored = localStorage.getItem(DAILY_GOAL_KEY);
+      return stored ? parseInt(stored) || 8 : 8;
+    } catch { return 8; }
+  });
+
+  const [autoTransition, setAutoTransition] = useState<boolean>(() => {
+    try {
+      return localStorage.getItem(AUTO_TRANSITION_KEY) === 'true';
+    } catch { return false; }
+  });
+
+  const [dailyStats, setDailyStats] = useState<DailyStats>(() => {
+    try {
+      const stored = localStorage.getItem(DAILY_STATS_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        if (parsed.date === getToday()) return parsed;
+      }
+    } catch {}
+    return { date: getToday(), pomodorosCompleted: 0, focusMinutes: 0, tasksCompleted: 0 };
+  });
+
+  const [streakData, setStreakData] = useState<StreakData>(() => {
+    try {
+      const stored = localStorage.getItem(STREAK_KEY);
+      if (stored) {
+        const parsed = JSON.parse(stored);
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        const today = getToday();
+        if (parsed.lastActiveDate === today || parsed.lastActiveDate === yesterdayStr) {
+          return parsed;
+        }
+        return { currentStreak: 0, lastActiveDate: parsed.lastActiveDate, longestStreak: parsed.longestStreak || 0 };
+      }
+    } catch {}
+    return { currentStreak: 0, lastActiveDate: '', longestStreak: 0 };
+  });
+
+  const [autoTransitionCountdown, setAutoTransitionCountdown] = useState<number | null>(null);
+  const [showSessionReport, setShowSessionReport] = useState(false);
 
   // ========== Salvar tarefas no localStorage (com debounce) ==========
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -191,6 +261,43 @@ export default function FocusZone() {
       // Silenciar erros de storage
     }
   }, []);
+
+  // ========== Persistência de Engajamento ==========
+  useEffect(() => {
+    try { localStorage.setItem(DAILY_STATS_KEY, JSON.stringify(dailyStats)); } catch {}
+  }, [dailyStats]);
+
+  useEffect(() => {
+    try { localStorage.setItem(STREAK_KEY, JSON.stringify(streakData)); } catch {}
+  }, [streakData]);
+
+  useEffect(() => {
+    try { localStorage.setItem(DAILY_GOAL_KEY, String(dailyGoal)); } catch {}
+  }, [dailyGoal]);
+
+  useEffect(() => {
+    try { localStorage.setItem(AUTO_TRANSITION_KEY, String(autoTransition)); } catch {}
+  }, [autoTransition]);
+
+  const updateStreak = useCallback((newPomodorosCompleted: number) => {
+    if (newPomodorosCompleted >= dailyGoal) {
+      setStreakData(prev => {
+        const today = getToday();
+        if (prev.lastActiveDate === today) return prev;
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+        const yesterdayStr = yesterday.toISOString().split('T')[0];
+        const newStreak = prev.lastActiveDate === yesterdayStr
+          ? prev.currentStreak + 1
+          : 1;
+        return {
+          currentStreak: newStreak,
+          lastActiveDate: today,
+          longestStreak: Math.max(prev.longestStreak, newStreak)
+        };
+      });
+    }
+  }, [dailyGoal]);
 
   // ========== Funções de Configurações ==========
   const openSettings = () => {
@@ -276,6 +383,18 @@ export default function FocusZone() {
       const newCycles = completedCycles + 1;
       setCompletedCycles(newCycles);
 
+      // Atualizar estatísticas diárias
+      setDailyStats(prev => {
+        const newStats = {
+          ...prev,
+          date: getToday(),
+          pomodorosCompleted: prev.pomodorosCompleted + 1,
+          focusMinutes: prev.focusMinutes + settings.focusDuration,
+        };
+        updateStreak(newStats.pomodorosCompleted);
+        return newStats;
+      });
+
       if (newCycles % settings.cyclesBeforeLongBreak === 0) {
         setMode('longBreak');
         setTimer(settings.longBreak * 60);
@@ -287,7 +406,12 @@ export default function FocusZone() {
       setMode('focus');
       setTimer(settings.focusDuration * 60);
     }
-  }, [mode, completedCycles, settings, sendNotification]);
+
+    // Auto-transição
+    if (autoTransition) {
+      setAutoTransitionCountdown(5);
+    }
+  }, [mode, completedCycles, settings, sendNotification, autoTransition, updateStreak]);
 
   // Decrementar timer e incrementar tempo de foco
   useEffect(() => {
@@ -327,15 +451,31 @@ export default function FocusZone() {
     };
   }, [isRunning, handleTimerComplete, mode]);
 
+  // ========== Auto-transição entre ciclos ==========
+  useEffect(() => {
+    if (autoTransitionCountdown === null) return;
+    if (autoTransitionCountdown <= 0) {
+      setAutoTransitionCountdown(null);
+      setIsRunning(true);
+      return;
+    }
+    const timeout = setTimeout(() => {
+      setAutoTransitionCountdown(prev => prev !== null ? prev - 1 : null);
+    }, 1000);
+    return () => clearTimeout(timeout);
+  }, [autoTransitionCountdown]);
+
   const changeMode = (newMode: PomodoroMode) => {
     setMode(newMode);
     setTimer(getDuration(newMode));
     setIsRunning(false);
+    setAutoTransitionCountdown(null);
   };
 
   const resetTimer = () => {
     setIsRunning(false);
     setTimer(getDuration(mode));
+    setAutoTransitionCountdown(null);
   };
 
   // ========== Cleanup ao sair da página ==========
@@ -392,6 +532,7 @@ export default function FocusZone() {
           // Trigger celebration animation
           setCelebratingTaskId(taskId);
           setTimeout(() => setCelebratingTaskId(null), 600);
+          setDailyStats(ds => ({ ...ds, tasksCompleted: ds.tasksCompleted + 1 }));
         } else {
           newStatus = 'pending';
         }
@@ -412,6 +553,7 @@ export default function FocusZone() {
       if (task.id === taskId && task.status !== 'completed') {
         setCelebratingTaskId(taskId);
         setTimeout(() => setCelebratingTaskId(null), 600);
+        setDailyStats(ds => ({ ...ds, tasksCompleted: ds.tasksCompleted + 1 }));
         return {
           ...task,
           status: 'completed' as TaskStatus,
@@ -458,7 +600,6 @@ export default function FocusZone() {
   // Estatísticas
   const completedCount = tasks.filter(t => t.status === 'completed').length;
   const inProgressCount = tasks.filter(t => t.status === 'in_progress').length;
-  const pendingCount = tasks.filter(t => t.status === 'pending').length;
   const totalCount = tasks.length;
   const progressPercent = totalCount > 0 ? Math.round((completedCount / totalCount) * 100) : 0;
   const currentTask = tasks.find(t => t.status === 'in_progress');
@@ -479,13 +620,20 @@ export default function FocusZone() {
       }
 
       if (e.key === 'Escape') {
-        navigate(-1);
+        if (showSessionReport) {
+          setShowSessionReport(false);
+        } else if (showSettings) {
+          closeSettings();
+        } else {
+          navigate(-1);
+        }
       }
-      if (e.key === ' ') {
+      if (e.key === ' ' && !showSettings && !showSessionReport) {
         e.preventDefault();
+        setAutoTransitionCountdown(null);
         setIsRunning((v) => !v);
       }
-      if (e.key.toLowerCase() === 'n') {
+      if (e.key.toLowerCase() === 'n' && !showSettings && !showSessionReport) {
         e.preventDefault();
         newTaskInputRef.current?.focus();
       }
@@ -493,7 +641,7 @@ export default function FocusZone() {
 
     window.addEventListener('keydown', handleKeyDown);
     return () => window.removeEventListener('keydown', handleKeyDown);
-  }, [editingTaskId, navigate]);
+  }, [editingTaskId, navigate, showSessionReport, showSettings]);
 
   // ========== Título dinâmico na aba do navegador ==========
   useEffect(() => {
@@ -573,8 +721,8 @@ export default function FocusZone() {
           <div className="hidden sm:flex items-center gap-3">
             <div className="flex items-center gap-4 bg-white/10 backdrop-blur-sm rounded-xl px-4 py-2 border border-white/20">
               <div className="text-center">
-                <p className="text-lg font-bold text-white">{completedCycles}</p>
-                <p className="text-[10px] text-gray-300 uppercase tracking-wide">Pomodoros</p>
+                <p className="text-lg font-bold text-white">{dailyStats.pomodorosCompleted}<span className="text-sm text-gray-400">/{dailyGoal}</span></p>
+                <p className="text-[10px] text-gray-300 uppercase tracking-wide">Meta diária</p>
               </div>
               <div className="w-px h-8 bg-white/20" />
               <div className="text-center">
@@ -588,10 +736,17 @@ export default function FocusZone() {
                   {inProgressCount > 0 && <span className="text-sm font-bold text-indigo-400">+{inProgressCount}</span>}
                   <span className="text-gray-400 text-sm">/{totalCount}</span>
                 </div>
-                <p className="text-[10px] text-gray-300 uppercase tracking-wide">
-                  {pendingCount > 0 ? `${pendingCount} pendentes` : 'tarefas'}
-                </p>
+                <p className="text-[10px] text-gray-300 uppercase tracking-wide">tarefas</p>
               </div>
+              {streakData.currentStreak > 0 && (
+                <>
+                  <div className="w-px h-8 bg-white/20" />
+                  <div className="text-center">
+                    <p className="text-lg font-bold text-orange-400">{streakData.currentStreak}<Flame className="w-4 h-4 inline text-orange-400" /></p>
+                    <p className="text-[10px] text-gray-300 uppercase tracking-wide">Streak</p>
+                  </div>
+                </>
+              )}
             </div>
           </div>
 
@@ -605,7 +760,13 @@ export default function FocusZone() {
               <span className="text-sm sm:text-base hidden sm:inline">Config</span>
             </button>
             <button
-              onClick={() => navigate(-1)}
+              onClick={() => {
+                if (completedCycles > 0 || totalFocusTime > 0) {
+                  setShowSessionReport(true);
+                } else {
+                  navigate(-1);
+                }
+              }}
               className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all border border-white/20 hover:scale-105"
               aria-label="Sair do Focus Zone"
             >
@@ -740,6 +901,9 @@ export default function FocusZone() {
                   <div className="text-center">
                     <p className="text-sm text-gray-600">
                       Ciclos completados: <span className="font-bold text-blue-600">{completedCycles}</span>
+                      {streakData.currentStreak > 0 && (
+                        <span className="ml-2 text-orange-500 font-bold">{streakData.currentStreak}<Flame className="w-3.5 h-3.5 inline text-orange-500" /></span>
+                      )}
                     </p>
                     <div className="flex justify-center gap-1 mt-2" role="img" aria-label={`Progresso: ${completedCycles % 4} de 4 ciclos para pausa longa`}>
                       {[...Array(4)].map((_, i) => (
@@ -754,6 +918,20 @@ export default function FocusZone() {
                         />
                       ))}
                     </div>
+                    {/* Meta diária compacta */}
+                    <div className="mt-2 flex items-center justify-center gap-2">
+                      <div className="w-24 h-1.5 bg-gray-200 rounded-full overflow-hidden">
+                        <div
+                          className={`h-full rounded-full transition-all ${
+                            dailyStats.pomodorosCompleted >= dailyGoal ? 'bg-green-500' : 'bg-indigo-500'
+                          }`}
+                          style={{ width: `${Math.min((dailyStats.pomodorosCompleted / dailyGoal) * 100, 100)}%` }}
+                        />
+                      </div>
+                      <span className="text-[10px] text-gray-500">
+                        {dailyStats.pomodorosCompleted}/{dailyGoal} meta
+                      </span>
+                    </div>
                   </div>
 
                   {/* CONTROLES DO POMODORO */}
@@ -766,6 +944,7 @@ export default function FocusZone() {
                       } text-white font-semibold rounded-xl px-6 py-3 sm:px-8 sm:py-3 transition-all shadow-lg hover:scale-105 flex-1 max-w-[180px] flex items-center justify-center gap-2`}
                       onClick={() => {
                         if (!isRunning) requestNotificationPermission();
+                        setAutoTransitionCountdown(null);
                         setIsRunning(!isRunning);
                       }}
                       aria-label={isRunning ? "Pausar timer" : "Iniciar timer"}
@@ -791,6 +970,21 @@ export default function FocusZone() {
                       Reset
                     </button>
                   </div>
+
+                  {/* Auto-transição countdown */}
+                  {autoTransitionCountdown !== null && (
+                    <div className="flex items-center justify-center gap-3 bg-indigo-50 rounded-xl p-3">
+                      <p className="text-sm text-gray-700">
+                        Próximo ciclo em <span className="font-bold text-indigo-600">{autoTransitionCountdown}s</span>
+                      </p>
+                      <button
+                        onClick={() => setAutoTransitionCountdown(null)}
+                        className="text-xs px-3 py-1.5 bg-gray-200 hover:bg-gray-300 text-gray-700 rounded-lg transition-colors font-medium"
+                      >
+                        Cancelar
+                      </button>
+                    </div>
+                  )}
 
                   {/* Atalhos de teclado como badges */}
                   <div className="pt-3 border-t border-gray-200">
@@ -1242,6 +1436,54 @@ export default function FocusZone() {
               </p>
             </div>
 
+            {/* Engajamento */}
+            <div className="space-y-4 pt-2 border-t border-gray-200 dark:border-gray-700">
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                <Target className="w-4 h-4 text-indigo-600" />
+                Engajamento
+              </p>
+
+              {/* Meta diária */}
+              <div className="space-y-2">
+                <label htmlFor="daily-goal" className="block text-sm font-medium text-gray-700 dark:text-gray-300">
+                  Meta diária de pomodoros
+                </label>
+                <input
+                  id="daily-goal"
+                  type="number"
+                  min="1"
+                  max="20"
+                  value={dailyGoal}
+                  onChange={(e) => setDailyGoal(Math.max(1, Math.min(20, parseInt(e.target.value) || 1)))}
+                  className="w-full px-4 py-2.5 border border-gray-300 dark:border-gray-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-indigo-500 dark:bg-gray-800 dark:text-white"
+                />
+                <p className="text-xs text-gray-500 dark:text-gray-400">
+                  Alcançar a meta mantém seu streak ativo (1-20)
+                </p>
+              </div>
+
+              {/* Auto-transição */}
+              <div className="flex items-center justify-between">
+                <div>
+                  <p className="text-sm font-medium text-gray-700 dark:text-gray-300">Auto-transição</p>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Iniciar próximo ciclo automaticamente</p>
+                </div>
+                <button
+                  onClick={() => setAutoTransition(!autoTransition)}
+                  className={`relative w-12 h-7 rounded-full transition-colors ${
+                    autoTransition ? 'bg-indigo-600' : 'bg-gray-300 dark:bg-gray-600'
+                  }`}
+                  role="switch"
+                  aria-checked={autoTransition}
+                  aria-label="Ativar auto-transição entre ciclos"
+                >
+                  <span className={`absolute top-0.5 left-0.5 w-6 h-6 bg-white rounded-full shadow transition-transform ${
+                    autoTransition ? 'translate-x-5' : 'translate-x-0'
+                  }`} />
+                </button>
+              </div>
+            </div>
+
             {/* Botões de Ação */}
             <div className="flex items-center justify-between pt-2">
               <button
@@ -1270,6 +1512,89 @@ export default function FocusZone() {
           </div>
         </div>
       )}
+    {/* Modal de Relatório da Sessão */}
+    {showSessionReport && (
+      <div
+        className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm"
+        onClick={() => setShowSessionReport(false)}
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="report-title"
+      >
+        <div
+          className="bg-white dark:bg-gray-900 rounded-2xl shadow-2xl w-full max-w-sm mx-4 p-6 space-y-5 animate-in zoom-in-95 duration-200"
+          onClick={(e) => e.stopPropagation()}
+        >
+          <div className="text-center">
+            <BarChart3 className="w-8 h-8 text-indigo-600 mx-auto mb-2" />
+            <h2 id="report-title" className="text-xl font-bold text-gray-900 dark:text-white">Relatório da Sessão</h2>
+          </div>
+
+          <div className="grid grid-cols-2 gap-3">
+            <div className="bg-indigo-50 dark:bg-indigo-900/30 rounded-xl p-3 text-center">
+              <p className="text-2xl font-bold text-indigo-600">{completedCycles}</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Pomodoros</p>
+            </div>
+            <div className="bg-green-50 dark:bg-green-900/30 rounded-xl p-3 text-center">
+              <p className="text-2xl font-bold text-green-600">{totalFocusMinutes}</p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Min focados</p>
+            </div>
+            <div className="bg-amber-50 dark:bg-amber-900/30 rounded-xl p-3 text-center">
+              <p className="text-2xl font-bold text-amber-600">
+                {tasks.filter(t => t.completedAt && t.completedAt >= sessionStartRef.current).length}
+              </p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Tarefas concluídas</p>
+            </div>
+            <div className="bg-orange-50 dark:bg-orange-900/30 rounded-xl p-3 text-center">
+              <p className="text-2xl font-bold text-orange-500">
+                {streakData.currentStreak > 0 ? <>{streakData.currentStreak}<Flame className="w-5 h-5 inline" /></> : '—'}
+              </p>
+              <p className="text-xs text-gray-600 dark:text-gray-400">Streak</p>
+            </div>
+          </div>
+
+          {/* Progresso da meta diária */}
+          <div className="bg-gray-50 dark:bg-gray-800 rounded-xl p-3">
+            <div className="flex items-center justify-between mb-2">
+              <span className="text-xs font-medium text-gray-600 dark:text-gray-400">Meta diária</span>
+              <span className="text-xs font-bold text-indigo-600">
+                {dailyStats.pomodorosCompleted}/{dailyGoal}
+              </span>
+            </div>
+            <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+              <div
+                className={`h-full rounded-full transition-all ${
+                  dailyStats.pomodorosCompleted >= dailyGoal
+                    ? 'bg-gradient-to-r from-green-500 to-emerald-500'
+                    : 'bg-gradient-to-r from-indigo-500 to-purple-500'
+                }`}
+                style={{ width: `${Math.min((dailyStats.pomodorosCompleted / dailyGoal) * 100, 100)}%` }}
+              />
+            </div>
+            {dailyStats.pomodorosCompleted >= dailyGoal && (
+              <p className="text-xs text-green-600 dark:text-green-400 mt-1 text-center font-medium">
+                Meta alcançada!
+              </p>
+            )}
+          </div>
+
+          <div className="flex gap-3">
+            <button
+              onClick={() => setShowSessionReport(false)}
+              className="flex-1 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white rounded-xl transition-colors font-medium text-sm"
+            >
+              Continuar
+            </button>
+            <button
+              onClick={() => navigate(-1)}
+              className="flex-1 px-4 py-2.5 bg-gray-200 hover:bg-gray-300 dark:bg-gray-700 dark:hover:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl transition-colors font-medium text-sm"
+            >
+              Sair
+            </button>
+          </div>
+        </div>
+      </div>
+    )}
     </main>
     </>
   );
