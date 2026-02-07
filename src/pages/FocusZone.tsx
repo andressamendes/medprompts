@@ -15,7 +15,9 @@ import {
   Target,
   Flame,
   BarChart3,
-  Award
+  Award,
+  Maximize2,
+  Minimize2
 } from "lucide-react";
 import { toast } from "@/hooks/use-toast";
 import { SEOHead } from "@/components/SEOHead";
@@ -70,6 +72,16 @@ const DAILY_STATS_KEY = 'focuszone_daily_stats';
 const STREAK_KEY = 'focuszone_streak';
 const HISTORY_KEY = 'focuszone_history';
 const ACHIEVEMENTS_KEY = 'focuszone_achievements';
+const THEME_KEY = 'focuszone_theme';
+
+// Temas visuais
+const THEMES = [
+  { id: 'indigo', name: 'Padrão', emoji: '💜', focus: '#6366f1', focusLight: '#e0e7ff', break: '#10b981', breakLight: '#d1fae5', long: '#8b5cf6', longLight: '#ede9fe' },
+  { id: 'ocean', name: 'Oceano', emoji: '🌊', focus: '#0ea5e9', focusLight: '#e0f2fe', break: '#14b8a6', breakLight: '#ccfbf1', long: '#6366f1', longLight: '#e0e7ff' },
+  { id: 'forest', name: 'Floresta', emoji: '🌲', focus: '#16a34a', focusLight: '#dcfce7', break: '#84cc16', breakLight: '#ecfccb', long: '#059669', longLight: '#d1fae5' },
+  { id: 'sunset', name: 'Pôr do Sol', emoji: '🌅', focus: '#f97316', focusLight: '#fff7ed', break: '#eab308', breakLight: '#fefce8', long: '#ef4444', longLight: '#fef2f2' },
+  { id: 'rose', name: 'Rosa', emoji: '🌸', focus: '#ec4899', focusLight: '#fce7f3', break: '#a855f7', breakLight: '#f3e8ff', long: '#f43f5e', longLight: '#fff1f2' },
+];
 
 // Helper para data atual
 const getToday = () => new Date().toISOString().split('T')[0];
@@ -93,14 +105,23 @@ const ACHIEVEMENTS: { id: string; name: string; desc: string; emoji: string }[] 
 // ============================================================================
 
 type TaskStatus = 'pending' | 'in_progress' | 'completed';
+type TaskPriority = 'none' | 'low' | 'medium' | 'high';
+
+const PRIORITY_COLORS: Record<TaskPriority, { border: string; dot: string; label: string }> = {
+  none: { border: '', dot: '', label: 'Sem prioridade' },
+  low: { border: 'border-l-blue-400', dot: 'bg-blue-400', label: 'Baixa' },
+  medium: { border: 'border-l-yellow-400', dot: 'bg-yellow-400', label: 'Média' },
+  high: { border: 'border-l-red-500', dot: 'bg-red-500', label: 'Alta' },
+};
 
 interface Task {
   id: string;
   text: string;
   status: TaskStatus;
+  priority: TaskPriority;
   createdAt: number;
   completedAt?: number;
-  focusTimeSpent: number; // Tempo dedicado em segundos
+  focusTimeSpent: number;
 }
 
 interface DailyStats {
@@ -165,6 +186,7 @@ export default function FocusZone() {
             const baseTask = {
               id: task.id as string,
               text: task.text as string,
+              priority: (task.priority as TaskPriority) ?? 'none',
               createdAt: task.createdAt as number,
               completedAt: task.completedAt as number | undefined,
               focusTimeSpent: (task.focusTimeSpent as number) ?? 0,
@@ -181,6 +203,7 @@ export default function FocusZone() {
             return {
               ...baseTask,
               status: (task.status as TaskStatus) ?? 'pending',
+              priority: (task.priority as TaskPriority) ?? 'none',
             };
           });
         }
@@ -265,6 +288,15 @@ export default function FocusZone() {
 
   const [showDashboard, setShowDashboard] = useState(false);
 
+  // ========== Estados de Polish (Fase 4) ==========
+  const [selectedTheme, setSelectedTheme] = useState<string>(() => {
+    try {
+      return localStorage.getItem(THEME_KEY) || 'indigo';
+    } catch { return 'indigo'; }
+  });
+
+  const [isFullscreen, setIsFullscreen] = useState(false);
+
   // ========== Salvar tarefas no localStorage (com debounce) ==========
   const saveTimeoutRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -314,6 +346,25 @@ export default function FocusZone() {
   useEffect(() => {
     try { localStorage.setItem(AUTO_TRANSITION_KEY, String(autoTransition)); } catch { /* ignore */ }
   }, [autoTransition]);
+
+  // ========== Persistência de Polish ==========
+  useEffect(() => {
+    try { localStorage.setItem(THEME_KEY, selectedTheme); } catch { /* ignore */ }
+  }, [selectedTheme]);
+
+  useEffect(() => {
+    const handler = () => setIsFullscreen(!!document.fullscreenElement);
+    document.addEventListener('fullscreenchange', handler);
+    return () => document.removeEventListener('fullscreenchange', handler);
+  }, []);
+
+  const toggleFullscreen = useCallback(() => {
+    if (!document.fullscreenElement) {
+      document.documentElement.requestFullscreen().catch(() => { /* ignore */ });
+    } else {
+      document.exitFullscreen().catch(() => { /* ignore */ });
+    }
+  }, []);
 
   // ========== Histórico e Conquistas (Fase 3) ==========
   // Atualizar histórico quando dailyStats muda
@@ -593,6 +644,7 @@ export default function FocusZone() {
       id: generateId(),
       text,
       status: 'pending',
+      priority: 'none',
       createdAt: Date.now(),
       focusTimeSpent: 0
     };
@@ -665,6 +717,17 @@ export default function FocusZone() {
     setTasks(prev => prev.filter(task => task.status !== 'completed'));
   };
 
+  const cyclePriority = (taskId: string) => {
+    const priorities: TaskPriority[] = ['none', 'low', 'medium', 'high'];
+    setTasks(prev => prev.map(task => {
+      if (task.id === taskId) {
+        const idx = priorities.indexOf(task.priority || 'none');
+        return { ...task, priority: priorities[(idx + 1) % priorities.length] };
+      }
+      return task;
+    }));
+  };
+
   const startEditing = (task: Task) => {
     setEditingTaskId(task.id);
     setEditingText(task.text);
@@ -733,6 +796,10 @@ export default function FocusZone() {
         e.preventDefault();
         newTaskInputRef.current?.focus();
       }
+      if (e.key.toLowerCase() === 'f' && !anyModal) {
+        e.preventDefault();
+        toggleFullscreen();
+      }
     };
 
     window.addEventListener('keydown', handleKeyDown);
@@ -766,10 +833,11 @@ export default function FocusZone() {
     longBreak: 'Pausa Longa'
   };
 
+  const currentTheme = THEMES.find(t => t.id === selectedTheme) || THEMES[0];
   const modeColors = {
-    focus: { bg: '#6366f1', light: '#e0e7ff' },
-    shortBreak: { bg: '#10b981', light: '#d1fae5' },
-    longBreak: { bg: '#8b5cf6', light: '#ede9fe' }
+    focus: { bg: currentTheme.focus, light: currentTheme.focusLight },
+    shortBreak: { bg: currentTheme.break, light: currentTheme.breakLight },
+    longBreak: { bg: currentTheme.long, light: currentTheme.longLight }
   };
 
   // Dados do dashboard semanal
@@ -874,7 +942,15 @@ export default function FocusZone() {
             </div>
           </div>
 
-          <div className="flex items-center gap-2">
+          <div className="flex items-center gap-1 sm:gap-2">
+            <button
+              onClick={toggleFullscreen}
+              className="p-2 sm:px-3 sm:py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all border border-white/20 hover:scale-105"
+              aria-label={isFullscreen ? "Sair do fullscreen" : "Entrar em fullscreen"}
+              title={isFullscreen ? "Sair (F)" : "Fullscreen (F)"}
+            >
+              {isFullscreen ? <Minimize2 className="w-4 h-4 sm:w-5 sm:h-5" /> : <Maximize2 className="w-4 h-4 sm:w-5 sm:h-5" />}
+            </button>
             <button
               onClick={() => setShowDashboard(true)}
               className="flex items-center gap-2 px-3 py-2 sm:px-4 sm:py-2 bg-white/10 hover:bg-white/20 text-white rounded-lg transition-all border border-white/20 hover:scale-105"
@@ -1131,6 +1207,10 @@ export default function FocusZone() {
                         <span className="text-gray-700">Tarefa</span>
                       </kbd>
                       <kbd className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 border border-gray-300 rounded-md text-xs font-mono shadow-sm">
+                        <span className="text-gray-500">F</span>
+                        <span className="text-gray-700">Tela cheia</span>
+                      </kbd>
+                      <kbd className="inline-flex items-center gap-1 px-2 py-1 bg-gray-100 border border-gray-300 rounded-md text-xs font-mono shadow-sm">
                         <span className="text-gray-500">Esc</span>
                         <span className="text-gray-700">Sair</span>
                       </kbd>
@@ -1255,6 +1335,7 @@ export default function FocusZone() {
                           key={task.id}
                           className={`
                             group flex flex-col gap-2 p-3 rounded-xl border transition-all duration-300
+                            ${task.priority !== 'none' ? `border-l-4 ${PRIORITY_COLORS[task.priority].border}` : ''}
                             ${task.status === 'completed' && 'bg-green-50 border-green-200'}
                             ${task.status === 'in_progress' && 'bg-indigo-50 border-indigo-300 ring-2 ring-indigo-200'}
                             ${task.status === 'pending' && 'bg-white border-gray-200 hover:border-indigo-300 hover:shadow-sm'}
@@ -1338,6 +1419,18 @@ export default function FocusZone() {
                                     <Check className="w-5 h-5 text-green-600" />
                                   </button>
                                 )}
+                                <button
+                                  onClick={() => cyclePriority(task.id)}
+                                  className="min-w-[44px] min-h-[44px] p-2.5 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-center"
+                                  aria-label={`Prioridade: ${PRIORITY_COLORS[task.priority].label}`}
+                                  title={`Prioridade: ${PRIORITY_COLORS[task.priority].label}`}
+                                >
+                                  {task.priority === 'none' ? (
+                                    <span className="w-5 h-5 rounded-full border-2 border-dashed border-gray-300" />
+                                  ) : (
+                                    <span className={`w-5 h-5 rounded-full ${PRIORITY_COLORS[task.priority].dot}`} />
+                                  )}
+                                </button>
                                 <button
                                   onClick={() => startEditing(task)}
                                   className="min-w-[44px] min-h-[44px] p-2.5 hover:bg-gray-100 rounded-lg transition-colors flex items-center justify-center"
@@ -1613,6 +1706,36 @@ export default function FocusZone() {
                     autoTransition ? 'translate-x-5' : 'translate-x-0'
                   }`} />
                 </button>
+              </div>
+            </div>
+
+            {/* Aparência */}
+            <div className="space-y-4 pt-2 border-t border-gray-200 dark:border-gray-700">
+              <p className="text-sm font-medium text-gray-700 dark:text-gray-300 flex items-center gap-2">
+                🎨 Aparência
+              </p>
+              <div className="grid grid-cols-5 gap-2">
+                {THEMES.map(theme => (
+                  <button
+                    key={theme.id}
+                    onClick={() => setSelectedTheme(theme.id)}
+                    className={`flex flex-col items-center gap-1 p-2 rounded-xl border-2 transition-all ${
+                      selectedTheme === theme.id
+                        ? 'border-indigo-500 bg-indigo-50 dark:bg-indigo-900/30 scale-105'
+                        : 'border-gray-200 dark:border-gray-700 hover:border-gray-300 dark:hover:border-gray-600'
+                    }`}
+                    aria-label={`Tema ${theme.name}`}
+                    title={theme.name}
+                  >
+                    <span className="text-lg">{theme.emoji}</span>
+                    <span className="text-[10px] text-gray-600 dark:text-gray-400 font-medium">{theme.name}</span>
+                    <div className="flex gap-0.5">
+                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: theme.focus }} />
+                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: theme.break }} />
+                      <span className="w-2 h-2 rounded-full" style={{ backgroundColor: theme.long }} />
+                    </div>
+                  </button>
+                ))}
               </div>
             </div>
 
