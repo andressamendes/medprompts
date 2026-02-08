@@ -1,8 +1,10 @@
+import { useState, useEffect, useCallback } from "react";
 import { Link } from "react-router-dom";
 import { PublicNavbar } from "@/components/PublicNavbar";
 import { SEOHead } from "@/components/SEOHead";
 import { Button } from "@/components/ui/button";
-import { ArrowLeft, ExternalLink, BookOpen, GraduationCap, Target, Clock, Brain, CheckCircle2, Lightbulb } from "lucide-react";
+import { ArrowLeft, ExternalLink, BookOpen, GraduationCap, Target, Clock, Brain, CheckCircle2, Lightbulb, Play, Star, StickyNote, RotateCcw, Filter } from "lucide-react";
+import { toast } from "@/hooks/use-toast";
 
 // ============================================================================
 // DADOS DOS SIMULADOS
@@ -120,10 +122,138 @@ const PERIODOS: Periodo[] = [
 ];
 
 // ============================================================================
+// PROGRESSO E TRACKING
+// ============================================================================
+
+const PROGRESS_KEY = 'simulados_progress';
+
+type SimuladoStatus = 'pending' | 'in_progress' | 'completed';
+type FilterType = 'all' | 'pending' | 'in_progress' | 'completed';
+
+interface SimuladoProgress {
+  status: SimuladoStatus;
+  confidence: number; // 0-5 (0 = não avaliado)
+  note: string;
+  lastReviewedAt: number | null;
+}
+
+type ProgressMap = Record<string, SimuladoProgress>;
+
+const DEFAULT_PROGRESS: SimuladoProgress = {
+  status: 'pending',
+  confidence: 0,
+  note: '',
+  lastReviewedAt: null,
+};
+
+const ALL_SIMULADO_IDS = PERIODOS.flatMap(p => p.simulados.map(s => s.id));
+
+function daysAgo(timestamp: number): number {
+  return Math.floor((Date.now() - timestamp) / (1000 * 60 * 60 * 24));
+}
+
+function daysAgoLabel(timestamp: number): string {
+  const d = daysAgo(timestamp);
+  if (d === 0) return 'Hoje';
+  if (d === 1) return 'Ontem';
+  return `${d} dias atrás`;
+}
+
+// ============================================================================
 // COMPONENTE PRINCIPAL
 // ============================================================================
 
 const Simulados = () => {
+  // ========== Estado de Progresso ==========
+  const [progress, setProgress] = useState<ProgressMap>(() => {
+    try {
+      const stored = localStorage.getItem(PROGRESS_KEY);
+      if (stored) return JSON.parse(stored);
+    } catch { /* ignore */ }
+    return {};
+  });
+
+  const [filter, setFilter] = useState<FilterType>('all');
+  const [expandedNote, setExpandedNote] = useState<string | null>(null);
+
+  // Persistência
+  useEffect(() => {
+    try { localStorage.setItem(PROGRESS_KEY, JSON.stringify(progress)); } catch { /* ignore */ }
+  }, [progress]);
+
+  // ========== Helpers ==========
+  const getProgress = useCallback((id: string): SimuladoProgress => {
+    return progress[id] || DEFAULT_PROGRESS;
+  }, [progress]);
+
+  const cycleStatus = useCallback((id: string) => {
+    setProgress(prev => {
+      const current = prev[id] || DEFAULT_PROGRESS;
+      const order: SimuladoStatus[] = ['pending', 'in_progress', 'completed'];
+      const nextIdx = (order.indexOf(current.status) + 1) % order.length;
+      const nextStatus = order[nextIdx];
+      const labels: Record<SimuladoStatus, string> = {
+        pending: 'Pendente',
+        in_progress: 'Em andamento',
+        completed: 'Concluído',
+      };
+      toast({ title: labels[nextStatus], description: `Status atualizado` });
+      return {
+        ...prev,
+        [id]: {
+          ...current,
+          status: nextStatus,
+          lastReviewedAt: nextStatus === 'completed' ? Date.now() : current.lastReviewedAt,
+        }
+      };
+    });
+  }, []);
+
+  const setConfidence = useCallback((id: string, value: number) => {
+    setProgress(prev => ({
+      ...prev,
+      [id]: { ...(prev[id] || DEFAULT_PROGRESS), confidence: value }
+    }));
+  }, []);
+
+  const saveNote = useCallback((id: string, note: string) => {
+    setProgress(prev => ({
+      ...prev,
+      [id]: { ...(prev[id] || DEFAULT_PROGRESS), note }
+    }));
+  }, []);
+
+  // ========== Estatísticas Computadas ==========
+  const stats = (() => {
+    let completed = 0, inProgress = 0, pending = 0, totalConfidence = 0, ratedCount = 0;
+    for (const id of ALL_SIMULADO_IDS) {
+      const p = progress[id];
+      if (!p || p.status === 'pending') pending++;
+      else if (p.status === 'in_progress') inProgress++;
+      else completed++;
+      if (p && p.confidence > 0) { totalConfidence += p.confidence; ratedCount++; }
+    }
+    return {
+      completed, inProgress, pending,
+      total: ALL_SIMULADO_IDS.length,
+      avgConfidence: ratedCount > 0 ? (totalConfidence / ratedCount).toFixed(1) : '—',
+      progressPercent: Math.round((completed / ALL_SIMULADO_IDS.length) * 100),
+    };
+  })();
+
+  const periodoStats = (periodo: Periodo) => {
+    let completed = 0;
+    for (const s of periodo.simulados) {
+      if (progress[s.id]?.status === 'completed') completed++;
+    }
+    return { completed, total: periodo.simulados.length, percent: Math.round((completed / periodo.simulados.length) * 100) };
+  };
+
+  const filteredSimulados = (simulados: Simulado[]) => {
+    if (filter === 'all') return simulados;
+    return simulados.filter(s => getProgress(s.id).status === filter);
+  };
+
   return (
     <>
       <SEOHead
@@ -180,21 +310,34 @@ const Simulados = () => {
                 Links para os espaços Perplexity com questões das disciplinas. Clique para acessar cada simulado.
               </p>
 
-              {/* Estatísticas */}
+              {/* Estatísticas dinâmicas */}
               <dl className="flex flex-wrap items-center justify-center gap-6 sm:gap-8 pt-4" aria-label="Estatísticas dos simulados">
                 <div className="text-center">
-                  <dd className="text-2xl font-bold text-blue-600 dark:text-blue-400">10</dd>
-                  <dt className="text-sm text-gray-600 dark:text-gray-400">Simulados</dt>
+                  <dd className="text-2xl font-bold text-green-600 dark:text-green-400">{stats.completed}<span className="text-sm text-gray-400">/{stats.total}</span></dd>
+                  <dt className="text-sm text-gray-600 dark:text-gray-400">Concluídos</dt>
                 </div>
                 <div className="text-center">
-                  <dd className="text-2xl font-bold text-purple-600 dark:text-purple-400">2</dd>
-                  <dt className="text-sm text-gray-600 dark:text-gray-400">Períodos</dt>
+                  <dd className="text-2xl font-bold text-blue-600 dark:text-blue-400">{stats.inProgress}</dd>
+                  <dt className="text-sm text-gray-600 dark:text-gray-400">Em andamento</dt>
                 </div>
                 <div className="text-center">
-                  <dd className="text-2xl font-bold text-green-600 dark:text-green-400">4</dd>
-                  <dt className="text-sm text-gray-600 dark:text-gray-400">Disciplinas</dt>
+                  <dd className="text-2xl font-bold text-amber-600 dark:text-amber-400">{stats.avgConfidence}</dd>
+                  <dt className="text-sm text-gray-600 dark:text-gray-400">Confiança média</dt>
                 </div>
               </dl>
+
+              {/* Barra de progresso geral */}
+              {stats.completed > 0 && (
+                <div className="max-w-xs mx-auto pt-2">
+                  <div className="h-2 bg-gray-200 dark:bg-gray-700 rounded-full overflow-hidden">
+                    <div
+                      className="h-full bg-gradient-to-r from-green-500 to-emerald-500 rounded-full transition-all duration-500"
+                      style={{ width: `${stats.progressPercent}%` }}
+                    />
+                  </div>
+                  <p className="text-xs text-gray-500 dark:text-gray-400 mt-1">{stats.progressPercent}% concluído</p>
+                </div>
+              )}
             </header>
 
             {/* Seção de Objetivos */}
@@ -235,101 +378,224 @@ const Simulados = () => {
               </div>
             </section>
 
-            {/* Destaques por Período */}
+            {/* Destaques por Período com progresso */}
             <section aria-labelledby="destaques-heading" className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <h2 id="destaques-heading" className="sr-only">Simulados disponíveis por período</h2>
-              <div className="bg-gradient-to-br from-blue-500 to-blue-600 rounded-xl p-5 text-white shadow-lg">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-blue-100 text-sm font-medium">1º Período</p>
-                    <p className="text-3xl font-bold mt-1">5 simulados</p>
-                    <p className="text-blue-100 text-xs mt-2">SOI, HAM, IESC, MCM + Integradora</p>
+              {PERIODOS.map(periodo => {
+                const ps = periodoStats(periodo);
+                const colors = periodo.numero === 1
+                  ? { from: 'from-blue-500', to: 'to-blue-600', light: 'text-blue-100', bar: 'bg-blue-200', fill: 'bg-white/80' }
+                  : { from: 'from-purple-500', to: 'to-purple-600', light: 'text-purple-100', bar: 'bg-purple-200', fill: 'bg-white/80' };
+                return (
+                  <div key={periodo.numero} className={`bg-gradient-to-br ${colors.from} ${colors.to} rounded-xl p-5 text-white shadow-lg`}>
+                    <div className="flex items-center justify-between">
+                      <div>
+                        <p className={`${colors.light} text-sm font-medium`}>{periodo.titulo}</p>
+                        <p className="text-3xl font-bold mt-1">{ps.completed}<span className="text-lg opacity-70">/{ps.total}</span></p>
+                        <p className={`${colors.light} text-xs mt-1`}>
+                          {ps.completed === ps.total ? 'Todos concluídos!' : `${ps.total - ps.completed} restantes`}
+                        </p>
+                      </div>
+                      <div className="text-5xl opacity-80" aria-hidden="true">{periodo.numero === 1 ? '📘' : '📗'}</div>
+                    </div>
+                    {/* Barra de progresso do período */}
+                    <div className={`mt-3 h-1.5 ${colors.bar} rounded-full overflow-hidden`}>
+                      <div className={`h-full ${colors.fill} rounded-full transition-all duration-500`} style={{ width: `${ps.percent}%` }} />
+                    </div>
                   </div>
-                  <div className="text-5xl opacity-80" aria-hidden="true">📘</div>
-                </div>
-              </div>
-              <div className="bg-gradient-to-br from-purple-500 to-purple-600 rounded-xl p-5 text-white shadow-lg">
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-purple-100 text-sm font-medium">2º Período</p>
-                    <p className="text-3xl font-bold mt-1">5 simulados</p>
-                    <p className="text-purple-100 text-xs mt-2">SOI, HAM, IESC, MCM + Integradora</p>
-                  </div>
-                  <div className="text-5xl opacity-80" aria-hidden="true">📗</div>
-                </div>
-              </div>
+                );
+              })}
             </section>
 
+            {/* Filtros por Status */}
+            <div className="flex flex-wrap items-center gap-2">
+              <Filter className="w-4 h-4 text-gray-400" aria-hidden="true" />
+              {([
+                { key: 'all' as FilterType, label: 'Todos', count: stats.total },
+                { key: 'pending' as FilterType, label: 'Pendentes', count: stats.pending },
+                { key: 'in_progress' as FilterType, label: 'Em andamento', count: stats.inProgress },
+                { key: 'completed' as FilterType, label: 'Concluídos', count: stats.completed },
+              ]).map(f => (
+                <button
+                  key={f.key}
+                  onClick={() => setFilter(f.key)}
+                  className={`px-3 py-1.5 rounded-lg text-xs font-medium transition-all ${
+                    filter === f.key
+                      ? 'bg-blue-600 text-white shadow-sm'
+                      : 'bg-white dark:bg-gray-800 text-gray-600 dark:text-gray-400 border border-gray-200 dark:border-gray-700 hover:border-blue-300'
+                  }`}
+                  aria-pressed={filter === f.key}
+                >
+                  {f.label} {f.count > 0 && <span className="ml-1 opacity-70">({f.count})</span>}
+                </button>
+              ))}
+            </div>
+
             {/* Seções dos Períodos */}
-            {PERIODOS.map((periodo) => (
+            {PERIODOS.map((periodo) => {
+              const filtered = filteredSimulados(periodo.simulados);
+              if (filter !== 'all' && filtered.length === 0) return null;
+              const ps = periodoStats(periodo);
+              return (
               <section key={periodo.numero} aria-labelledby={`periodo-${periodo.numero}`}>
                 {/* Header da Seção */}
                 <div className="flex items-center gap-3 mb-5 pb-3 border-b-2 border-gray-200 dark:border-gray-700">
                   <div className={`w-12 h-12 rounded-xl flex items-center justify-center text-2xl ${periodo.bgIcon}`}>
                     {periodo.numero === 1 ? "📘" : "📗"}
                   </div>
-                  <div>
+                  <div className="flex-1">
                     <h2 id={`periodo-${periodo.numero}`} className="text-2xl font-bold text-gray-900 dark:text-white">
                       {periodo.titulo}
                     </h2>
                     <p className="text-sm text-gray-600 dark:text-gray-400">
-                      {periodo.simulados.length} simulados disponíveis
+                      {ps.completed}/{ps.total} concluídos
                     </p>
                   </div>
                 </div>
 
                 {/* Lista de Simulados */}
                 <ul className="space-y-3 list-none" role="list" aria-label={`Simulados do ${periodo.titulo}`}>
-                  {periodo.simulados.map((simulado) => (
-                    <li key={simulado.id}>
-                      <a
-                        href={simulado.url}
-                      target="_blank"
-                      rel="noopener noreferrer"
-                      className={`
-                        flex items-center gap-3 sm:gap-4 p-3 sm:p-4
+                  {filtered.map((simulado) => {
+                    const prog = getProgress(simulado.id);
+                    const needsReview = prog.lastReviewedAt && daysAgo(prog.lastReviewedAt) >= 5;
+                    return (
+                    <li key={simulado.id} className="space-y-0">
+                      <div className={`
+                        p-3 sm:p-4
                         bg-white dark:bg-gray-800/50
-                        border-2 border-gray-200 dark:border-gray-700
-                        rounded-xl shadow-sm
+                        border-2 rounded-xl shadow-sm
                         transition-all duration-200
-                        hover:shadow-md hover:-translate-y-0.5
-                        ${periodo.hoverBorder}
-                        focus:outline-none focus:ring-2 focus:ring-offset-2 ${periodo.focusRing}
-                      `}
-                      aria-label={`Abrir ${simulado.titulo} em nova aba`}
-                    >
-                      {/* Ícone */}
-                      <div
-                        className={`
-                          w-10 h-10 sm:w-11 sm:h-11 rounded-lg flex items-center justify-center
-                          text-lg sm:text-xl flex-shrink-0 ${periodo.bgIcon}
-                        `}
-                        aria-hidden="true"
-                      >
-                        {simulado.emoji}
-                      </div>
+                        ${prog.status === 'completed' ? 'border-green-300 dark:border-green-700 bg-green-50/50 dark:bg-green-950/20' :
+                          prog.status === 'in_progress' ? 'border-blue-300 dark:border-blue-700 bg-blue-50/50 dark:bg-blue-950/20' :
+                          'border-gray-200 dark:border-gray-700'}
+                        ${needsReview ? 'ring-2 ring-amber-300 dark:ring-amber-600' : ''}
+                      `}>
+                        <div className="flex items-center gap-3 sm:gap-4">
+                          {/* Botão de Status */}
+                          <button
+                            onClick={() => cycleStatus(simulado.id)}
+                            className={`
+                              w-9 h-9 sm:w-10 sm:h-10 rounded-full border-2 flex items-center justify-center flex-shrink-0 transition-all
+                              ${prog.status === 'completed' ? 'bg-green-500 border-green-500 text-white' :
+                                prog.status === 'in_progress' ? 'bg-blue-500 border-blue-500 text-white' :
+                                'border-gray-300 dark:border-gray-600 hover:border-blue-400'}
+                            `}
+                            aria-label={
+                              prog.status === 'pending' ? 'Marcar como em andamento' :
+                              prog.status === 'in_progress' ? 'Marcar como concluído' :
+                              'Marcar como pendente'
+                            }
+                            title={
+                              prog.status === 'pending' ? 'Pendente - clique para iniciar' :
+                              prog.status === 'in_progress' ? 'Em andamento - clique para concluir' :
+                              'Concluído - clique para reabrir'
+                            }
+                          >
+                            {prog.status === 'completed' && <CheckCircle2 className="w-4 h-4 sm:w-5 sm:h-5" />}
+                            {prog.status === 'in_progress' && <Play className="w-3.5 h-3.5 sm:w-4 sm:h-4" />}
+                          </button>
 
-                      {/* Conteúdo */}
-                      <div className="flex-1 min-w-0">
-                        <h3 className="font-semibold text-sm sm:text-base text-gray-900 dark:text-white truncate">
-                          {simulado.titulo}
-                        </h3>
-                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
-                          {simulado.subtitulo}
-                        </p>
-                      </div>
+                          {/* Conteúdo + Link */}
+                          <a
+                            href={simulado.url}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className={`
+                              flex-1 min-w-0 flex items-center gap-3
+                              hover:opacity-80 transition-opacity
+                              focus:outline-none focus:ring-2 focus:ring-offset-2 ${periodo.focusRing} rounded-lg
+                            `}
+                            aria-label={`Abrir ${simulado.titulo} em nova aba`}
+                          >
+                            <div
+                              className={`
+                                w-9 h-9 sm:w-10 sm:h-10 rounded-lg flex items-center justify-center
+                                text-lg flex-shrink-0 ${periodo.bgIcon}
+                              `}
+                              aria-hidden="true"
+                            >
+                              {simulado.emoji}
+                            </div>
+                            <div className="flex-1 min-w-0">
+                              <h3 className={`font-semibold text-sm sm:text-base truncate ${
+                                prog.status === 'completed' ? 'text-green-800 dark:text-green-300' : 'text-gray-900 dark:text-white'
+                              }`}>
+                                {simulado.titulo}
+                              </h3>
+                              <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 truncate">
+                                {simulado.subtitulo}
+                              </p>
+                            </div>
+                            <ExternalLink className="h-4 w-4 text-gray-400 flex-shrink-0" aria-hidden="true" />
+                          </a>
 
-                      {/* Ícone de link externo */}
-                      <ExternalLink
-                        className="h-4 w-4 sm:h-5 sm:w-5 text-gray-400 flex-shrink-0"
-                        aria-hidden="true"
-                      />
-                    </a>
+                          {/* Botão de Notas */}
+                          <button
+                            onClick={() => setExpandedNote(expandedNote === simulado.id ? null : simulado.id)}
+                            className={`p-1.5 sm:p-2 rounded-lg transition-colors flex-shrink-0 ${
+                              prog.note ? 'text-amber-500 bg-amber-50 dark:bg-amber-950/30' : 'text-gray-400 hover:bg-gray-100 dark:hover:bg-gray-800'
+                            }`}
+                            aria-label={prog.note ? 'Ver nota' : 'Adicionar nota'}
+                            title={prog.note ? 'Tem nota - clique para ver' : 'Adicionar nota'}
+                          >
+                            <StickyNote className="w-4 h-4" />
+                          </button>
+                        </div>
+
+                        {/* Linha de meta-info: estrelas de confiança + data de revisão */}
+                        {prog.status === 'completed' && (
+                          <div className="flex items-center gap-3 mt-2 ml-12 sm:ml-14 flex-wrap">
+                            {/* Estrelas de confiança */}
+                            <div className="flex items-center gap-0.5" aria-label={`Confiança: ${prog.confidence} de 5`}>
+                              {[1, 2, 3, 4, 5].map(n => (
+                                <button
+                                  key={n}
+                                  onClick={() => setConfidence(simulado.id, prog.confidence === n ? 0 : n)}
+                                  className="p-0 transition-transform hover:scale-125"
+                                  aria-label={`${n} estrela${n > 1 ? 's' : ''}`}
+                                >
+                                  <Star className={`w-3.5 h-3.5 sm:w-4 sm:h-4 ${
+                                    n <= prog.confidence ? 'fill-amber-400 text-amber-400' : 'text-gray-300 dark:text-gray-600'
+                                  }`} />
+                                </button>
+                              ))}
+                              <span className="text-[10px] text-gray-500 ml-1">Confiança</span>
+                            </div>
+
+                            {/* Data de revisão */}
+                            {prog.lastReviewedAt && (
+                              <span className={`flex items-center gap-1 text-[10px] ${
+                                needsReview ? 'text-amber-600 dark:text-amber-400 font-medium' : 'text-gray-500'
+                              }`}>
+                                <RotateCcw className="w-3 h-3" />
+                                {daysAgoLabel(prog.lastReviewedAt)}
+                                {needsReview && ' - Hora de revisar!'}
+                              </span>
+                            )}
+                          </div>
+                        )}
+
+                        {/* Nota expansível */}
+                        {expandedNote === simulado.id && (
+                          <div className="mt-3 ml-12 sm:ml-14">
+                            <textarea
+                              value={prog.note}
+                              onChange={(e) => saveNote(simulado.id, e.target.value)}
+                              placeholder="Anotações sobre este simulado..."
+                              rows={3}
+                              className="w-full text-sm px-3 py-2 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:bg-gray-800 dark:text-white resize-none"
+                            />
+                            <p className="text-[10px] text-gray-400 mt-1">Suas notas são salvas automaticamente</p>
+                          </div>
+                        )}
+                      </div>
                     </li>
-                  ))}
+                    );
+                  })}
                 </ul>
               </section>
-            ))}
+              );
+            })}
 
             {/* Seção de Orientações Práticas */}
             <section aria-labelledby="orientacoes-heading" className="bg-gradient-to-br from-slate-50 to-blue-50 dark:from-gray-800/80 dark:to-gray-800/50 rounded-2xl border border-gray-200 dark:border-gray-700 p-5 sm:p-6 shadow-sm">
