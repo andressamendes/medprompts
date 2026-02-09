@@ -14,20 +14,16 @@ import {
   Timer,
   Library,
   Stethoscope,
-  Heart
+  Heart,
+  GraduationCap,
+  Flame
 } from 'lucide-react';
 
 /**
- * ✨ Home v4.0 - Plataforma Educacional (FOCO EM APRENDIZADO)
+ * Home v5.0 - Plataforma Educacional Completa
  *
- * MUDANÇAS v4.0:
- * - ✅ Tom educacional, não comercial
- * - ✅ Hub de ferramentas em destaque
- * - ✅ Remoção de linguagem de marketing exagerada
- * - ✅ Estatísticas integradas nos cards
- * - ✅ Layout funcional tipo documentação
- * - ✅ Foco em produtividade e aprendizado
- * - ✅ Navbar compartilhado (PublicNavbar)
+ * v5.0: Hub com 5 ferramentas, descrições atualizadas,
+ * grid 3 colunas, botões de ação para Simulados e Focus Zone
  */
 
 // ============================================================================
@@ -97,38 +93,47 @@ const TOOLS_HUB: Array<{
   {
     icon: Brain,
     title: 'Biblioteca de Prompts',
-    description: 'Flashcards, resumos, mapas mentais, casos clínicos e questões prontas para usar',
-    badge: '26 prompts',
-    tags: ['Estudos', 'Prática', 'Revisão'],
+    description: 'Flashcards, resumos, mapas mentais, casos clínicos e questões prontas para copiar e usar nas IAs',
+    badge: '26+ prompts',
+    tags: ['Estudos', 'Clínica', 'Revisão'],
     color: 'purple',
     link: '/prompts'
   },
   {
     icon: Zap,
     title: 'Guia de IAs',
-    description: 'Compare ChatGPT, Claude, Perplexity e Gemini para escolher a melhor ferramenta',
-    badge: '4 IAs',
-    tags: ['Comparativo', 'Funcionalidades'],
+    description: 'Compare 11 IAs incluindo ChatGPT Health, Claude Opus, Gemini 2.5 e Perplexity com prós, contras e preços',
+    badge: '11 IAs',
+    tags: ['Comparativo', '2026'],
     color: 'blue',
     link: '/guia-ias'
   },
   {
+    icon: Library,
+    title: 'Ferramentas',
+    description: 'Catálogo de recursos: PubMed, UpToDate, Anki, Radiopaedia, MDCalc e dezenas de apps para medicina',
+    badge: '40+ recursos',
+    tags: ['Pesquisa', 'Clínica', 'Estudo'],
+    color: 'orange',
+    link: '/ferramentas'
+  },
+  {
     icon: Timer,
     title: 'Focus Zone',
-    description: 'Timer Pomodoro para sessões de estudo focadas com tracking de progresso',
-    badge: 'Pomodoro',
-    tags: ['Produtividade', 'XP'],
+    description: 'Pomodoro com tarefas, temas visuais, conquistas, streaks, dashboard semanal e modo fullscreen',
+    badge: 'Pomodoro+',
+    tags: ['Produtividade', 'Gamificação'],
     color: 'green',
     link: '/focus-zone'
   },
   {
-    icon: Library,
-    title: 'Hub de Recursos',
-    description: 'Mnemônicos, desafios semanais, casos clínicos e sistema de gamificação',
-    badge: '+ ferramentas',
-    tags: ['Conquistas', 'Comunidade'],
-    color: 'orange',
-    link: '/ferramentas'
+    icon: GraduationCap,
+    title: 'Simulados',
+    description: 'Simulados N1 do 1º e 2º período com tracking de progresso, notas e revisão espaçada',
+    badge: '10 simulados',
+    tags: ['Provas', 'Progresso'],
+    color: 'indigo',
+    link: '/simulados'
   }
 ];
 
@@ -143,9 +148,9 @@ const CATEGORIES: Array<{
 }> = [
   {
     icon: BookOpen,
-    title: 'Estudos',
-    description: 'Flashcards, resumos, mapas mentais, questões e simulados',
-    count: '12 prompts',
+    title: 'Estudos e Revisão',
+    description: 'Flashcards, resumos, mapas mentais, tabelas comparativas e questões',
+    count: 'Acadêmico',
     color: 'indigo',
     link: '/prompts'
   },
@@ -153,13 +158,13 @@ const CATEGORIES: Array<{
     icon: Stethoscope,
     title: 'Prática Clínica',
     description: 'Casos clínicos, diagnóstico diferencial, conduta e prescrição médica',
-    count: '14 prompts',
+    count: 'Clínico',
     color: 'rose',
     link: '/prompts'
   }
 ];
 
-// Recursos educacionais (não benefícios comerciais)
+// Recursos educacionais
 const FEATURES: Array<{
   icon: LucideIcon;
   title: string;
@@ -168,22 +173,22 @@ const FEATURES: Array<{
   {
     icon: Target,
     title: 'Estudo Direcionado',
-    description: 'Prompts organizados por categoria e tipo de uso acadêmico'
+    description: 'Prompts organizados por categoria e prontos para copiar nas IAs'
   },
   {
-    icon: BookOpen,
-    title: 'Copiar e Usar',
-    description: 'Todos os prompts prontos para copiar direto nas IAs'
+    icon: Flame,
+    title: 'Gamificação',
+    description: 'Conquistas, streaks diários e metas no Focus Zone'
   },
   {
     icon: Trophy,
-    title: 'Acompanhe Progresso',
-    description: 'Sistema de XP, níveis e conquistas (área logada)'
+    title: 'Tracking de Progresso',
+    description: 'Acompanhe simulados e sessões de foco com dados persistentes'
   },
   {
     icon: Heart,
-    title: 'Organização Pessoal',
-    description: 'Sistema de favoritos e tags personalizadas'
+    title: 'Gratuito e Open-Source',
+    description: 'Todos os recursos disponíveis sem custo, para sempre'
   }
 ];
 
@@ -233,8 +238,8 @@ export default function NewIndex() {
 
           {/* Descrição Funcional */}
           <p className="text-lg md:text-xl text-gray-600 dark:text-gray-400 max-w-3xl mx-auto">
-            Biblioteca colaborativa com 26+ prompts para ChatGPT, Claude e Perplexity,
-            guia comparativo de IAs e ferramentas de produtividade acadêmica.
+            Prompts otimizados, guia comparativo de 11 IAs, simulados com tracking
+            de progresso, timer Pomodoro gamificado e catálogo de ferramentas médicas.
           </p>
 
           {/* Botões de Ação */}
@@ -250,7 +255,10 @@ export default function NewIndex() {
               </Link>
             </Button>
             <Button asChild size="lg" variant="outline" className="border-gray-300 dark:border-gray-700">
-              <Link to="/guia-ias">Ver Recursos</Link>
+              <Link to="/simulados">Simulados</Link>
+            </Button>
+            <Button asChild size="lg" variant="outline" className="border-gray-300 dark:border-gray-700">
+              <Link to="/focus-zone">Focus Zone</Link>
             </Button>
           </div>
         </div>
@@ -269,42 +277,42 @@ export default function NewIndex() {
             </p>
           </div>
 
-          {/* Grid 2x2 de Cards Funcionais */}
-          <div className="grid md:grid-cols-2 gap-6">
+          {/* Grid responsivo: 1 col mobile, 2 col tablet, 3 col desktop (5 items) */}
+          <div className="grid sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6">
             {TOOLS_HUB.map((tool, index) => (
               <AccessibleCard
                 key={tool.link}
                 onClick={() => navigate(tool.link)}
                 ariaLabel={`Acessar ${tool.title}: ${tool.description}`}
-                className={`group p-6 cursor-pointer hover:shadow-xl transition-all duration-300 border-2 ${COLOR_CLASSES[tool.color].border} animate-in fade-in slide-in-from-bottom-4`}
-                style={{ animationDelay: `${index * 100}ms` }}
+                className={`group p-5 sm:p-6 cursor-pointer hover:shadow-xl transition-all duration-300 border-2 ${COLOR_CLASSES[tool.color].border} animate-in fade-in slide-in-from-bottom-4`}
+                style={{ animationDelay: `${index * 80}ms` }}
               >
-                <div className="space-y-4">
+                <div className="space-y-3">
                   {/* Header do Card */}
                   <div className="flex items-start justify-between">
-                    <div className={`p-3 ${COLOR_CLASSES[tool.color].bg} rounded-lg group-hover:scale-110 transition-transform duration-300`}>
-                      <tool.icon className={`h-7 w-7 ${COLOR_CLASSES[tool.color].text}`} aria-hidden="true" />
+                    <div className={`p-2.5 ${COLOR_CLASSES[tool.color].bg} rounded-lg group-hover:scale-110 transition-transform duration-300`}>
+                      <tool.icon className={`h-6 w-6 ${COLOR_CLASSES[tool.color].text}`} aria-hidden="true" />
                     </div>
-                    <span className={`text-sm font-semibold px-3 py-1 rounded-full ${COLOR_CLASSES[tool.color].badge}`}>
+                    <span className={`text-xs font-semibold px-2.5 py-1 rounded-full ${COLOR_CLASSES[tool.color].badge}`}>
                       {tool.badge}
                     </span>
                   </div>
 
                   {/* Conteúdo do Card */}
                   <div>
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-white mb-2 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
+                    <h3 className="text-lg font-bold text-gray-900 dark:text-white mb-1.5 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors">
                       {tool.title}
                     </h3>
-                    <p className="text-gray-600 dark:text-gray-300 text-sm mb-3">
+                    <p className="text-gray-600 dark:text-gray-300 text-sm mb-3 line-clamp-2">
                       {tool.description}
                     </p>
 
                     {/* Tags */}
-                    <div className="flex flex-wrap gap-2 mb-4">
+                    <div className="flex flex-wrap gap-1.5">
                       {tool.tags.map((tag) => (
                         <span
                           key={`${tool.link}-${tag}`}
-                          className="text-xs px-2 py-1 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-md"
+                          className="text-xs px-2 py-0.5 bg-gray-100 dark:bg-gray-800 text-gray-600 dark:text-gray-400 rounded-md"
                         >
                           {tag}
                         </span>
@@ -312,10 +320,11 @@ export default function NewIndex() {
                     </div>
                   </div>
 
-                  {/* Botão de Ação */}
-                  <Button variant="outline" className="w-full group-hover:bg-purple-50 dark:group-hover:bg-purple-900/20 group-hover:border-purple-300 dark:group-hover:border-purple-700 transition-colors">
+                  {/* Link visual */}
+                  <div className="flex items-center gap-1 text-sm font-medium text-gray-500 group-hover:text-purple-600 dark:group-hover:text-purple-400 transition-colors pt-1">
                     Acessar
-                  </Button>
+                    <ArrowRight className="h-3.5 w-3.5 group-hover:translate-x-1 transition-transform" aria-hidden="true" />
+                  </div>
                 </div>
               </AccessibleCard>
             ))}
@@ -460,6 +469,14 @@ export default function NewIndex() {
                     className="text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
                   >
                     Ferramentas
+                  </Link>
+                </li>
+                <li>
+                  <Link
+                    to="/simulados"
+                    className="text-gray-600 dark:text-gray-400 hover:text-purple-600 dark:hover:text-purple-400 transition-colors"
+                  >
+                    Simulados
                   </Link>
                 </li>
                 <li>
